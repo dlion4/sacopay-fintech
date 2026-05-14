@@ -1,0 +1,168 @@
+:root {
+  --neon-green: #00ff66;
+  --dark-bg: #050608;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+// Wrap everything to isolate the cyber background to the home page only
+.home-cyber-wrapper {
+  background-color: #050608;
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  
+  // Apply the parallax background here instead of body tag
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 255, 102, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(0, 255, 102, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 255, 102, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+    opacity: 0.1;
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 0 0 L 80 0 80 80' fill='none' stroke='%23ffffff' stroke-width='0.5'/%3E%3Cpath d='M 40 40 Q 60 20 80 40 T 120 40' fill='none' stroke='%2300ff66' stroke-width='1' opacity='0.5'/%3E%3Cpath d='M 40 45 Q 60 25 80 45 T 120 45' fill='none' stroke='%2300ff66' stroke-width='1' opacity='0.2'/%3E%3C/svg%3E");
+    background-size: 80px 80px;
+    pointer-events: none;
+    // Bind to Angular variable via inline style in HTML
+  }
+}
+
+// Make sure content sits above backgrounds
+.content-layer {
+  position: relative;
+  z-index: 2;
+}
+
+// Glassmorphism Utilities
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 255, 102, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 255, 102, 0.15);
+  }
+}
+
+.cyber-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(10, 12, 16, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+// Typography & Buttons
+.text-neon { color: #00ff66 !important; text-shadow: 0 0 15px rgba(0, 255, 102, 0.5); }
+
+.btn-neon {
+  background-color: #00ff66;
+  color: #000;
+  font-weight: 700;
+  border-radius: 50px;
+  padding: 14px 35px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.5);
+  border: none;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    background-color: #00cc52;
+    color: #000;
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.7);
+    transform: scale(1.03);
+  }
+}
+
+.btn-outline-neon {
+  background-color: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  padding: 14px 35px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #00ff66;
+    color: #00ff66;
+    background-color: rgba(0,255,102,0.05);
+  }
+}
+
+// Tabs
+.nav-tabs-cyber {
+  border-bottom: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .nav-link {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    border: none;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 50px;
+    transition: background 0.3s, color 0.3s;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.05);
+    }
+    &.active {
+      color: #fff;
+      background: #00ff66;
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+    }
+  }
+}
+
+// Member Stack
+.member-stack .member-avatar {
+  width: 50px; height: 50px; border-radius: 50%; border: 2px solid #050608;
+  margin-right: -15px; position: relative; z-index: 1; transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-5px); z-index: 2;
+  }
+}
+
+// Wavy Line Component
+.glowing-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 102, 0.5), transparent);
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+}
+
+// Responsive typography fixes
+.hero-heading { font-size: 5rem; font-weight: 900; line-height: 1; letter-spacing: -3px; margin-bottom: 25px; }
+.section-heading { font-size: 3.2rem; font-weight: 800; line-height: 1.1; letter-spacing: -2px; margin-bottom: 25px; }
+.panel-heading { font-size: 3.5rem; font-weight: 800; line-height: 1; letter-spacing: -2px; }
+
+@media (max-width: 768px) {
+  .hero-heading { font-size: 3rem; letter-spacing: -1px; }
+  .section-heading { font-size: 2.2rem; letter-spacing: -1px; }
+  .panel-heading { font-size: 2.5rem; letter-spacing: -1px; }
+  .glass-card { padding: 2rem !important; }
+  .cyber-panel { padding: 1.5rem !important; }
+}
