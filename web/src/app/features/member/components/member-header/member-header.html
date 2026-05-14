@@ -1,0 +1,43 @@
+<header class="sp-header d-flex align-items-center justify-content-between px-3 px-lg-4">
+  <div class="d-flex align-items-center flex-grow-1">
+      <button class="btn btn-light d-lg-none me-2" (click)="onToggleMenu()">
+          <i class="fa-solid fa-bars"></i>
+      </button>
+      
+      <h4 class="mb-0 fw-bold d-none d-sm-block text-dark">Member Portal</h4>
+      
+      <div class="ms-lg-4 ms-2 position-relative d-none d-md-block" style="max-width: 300px; width: 100%;">
+          <i class="fa-solid fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+          <input type="text" class="form-control bg-light border-0 rounded-pill ps-5" placeholder="Search transactions, loans...">
+      </div>
+  </div>
+
+  <div class="d-flex align-items-center gap-2 gap-sm-3">
+      <button class="btn btn-primary rounded-pill px-3 d-none d-sm-flex align-items-center gap-2">
+          <i class="fa-solid fa-plus"></i> <span class="d-none d-md-inline">New Deposit</span>
+      </button>
+      <button class="btn btn-primary rounded-circle d-sm-none" style="width:38px; height:38px;">
+          <i class="fa-solid fa-plus"></i>
+      </button>
+
+      <div class="position-relative">
+          <button class="btn btn-light rounded-circle position-relative" style="width: 40px; height: 40px;">
+              <i class="fa-regular fa-bell text-dark"></i>
+              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                  <span class="visually-hidden">New alerts</span>
+              </span>
+          </button>
+      </div>
+
+      <div class="vr mx-1 d-none d-sm-block"></div>
+
+      <div class="d-flex align-items-center gap-2 cursor-pointer p-1 pe-2 rounded-pill hover-bg-light transition-all">
+          <img src="https://ui-avatars.com/api/?name=John+Doe&background=1a73e8&color=fff" alt="User" class="rounded-circle" width="36" height="36">
+          <div class="d-none d-md-block">
+              <div class="fw-semibold text-dark lh-1" style="font-size: 0.9rem;">John Doe</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Premium Member</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-muted ms-1 d-none d-md-block" style="font-size: 0.7rem;"></i>
+      </div>
+  </div>
+</header>

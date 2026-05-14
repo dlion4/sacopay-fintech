@@ -1,0 +1,18 @@
+<div class="sp-layout-wrapper">
+  <div class="sp-sidebar-backdrop" 
+       [class.show]="isSidebarOpen" 
+       (click)="closeSidebar()"></div>
+
+  <app-member-sidebar 
+       [isOpen]="isSidebarOpen" 
+       (closeMenu)="closeSidebar()">
+  </app-member-sidebar>
+
+  <div class="sp-main-content">
+    <app-member-header (toggleMenu)="toggleSidebar()"></app-member-header>
+
+    <main class="sp-page-body">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
