@@ -1,0 +1,688 @@
+<!-- ============================================
+     STATEMENTS COMPONENT — SACCOPay Member Portal
+     Angular v21 Standalone Component
+     ============================================ -->
+
+<!-- ─── PAGE HEADER ─── -->
+<div class="pg-header fade-in">
+    <h2><i class="bi bi-file-text" style="color:var(--primary);"></i> Account Statements</h2>
+    <p>Generate, download, and schedule statements for any of your accounts</p>
+</div>
+
+<!-- ─── STAT STRIP ─── -->
+<div class="stat-strip fade-in">
+    <div class="stat-tile" (click)="switchTab('generate')">
+        <div class="st-icon" style="background:rgba(0,208,132,0.1);color:var(--primary);"><i class="bi bi-file-earmark-plus"></i></div>
+        <div class="st-label">Generate New</div>
+        <div class="st-value">Now</div>
+        <div class="st-sub">Custom statement</div>
+    </div>
+    <div class="stat-tile" (click)="switchTab('downloads')">
+        <div class="st-icon" style="background:rgba(33,150,243,0.1);color:var(--blue);"><i class="bi bi-download"></i></div>
+        <div class="st-label">Recent Downloads</div>
+        <div class="st-value">8</div>
+        <div class="st-sub">Last 30 days</div>
+    </div>
+    <div class="stat-tile" (click)="switchTab('scheduled')">
+        <div class="st-icon" style="background:rgba(255,152,0,0.1);color:var(--orange);"><i class="bi bi-calendar-check"></i></div>
+        <div class="st-label">Auto Statements</div>
+        <div class="st-value">2</div>
+        <div class="st-sub">Active schedules</div>
+    </div>
+    <div class="stat-tile" (click)="switchTab('certificates')">
+        <div class="st-icon" style="background:rgba(156,39,176,0.1);color:var(--purple);"><i class="bi bi-patch-check"></i></div>
+        <div class="st-label">Certificates</div>
+        <div class="st-value">5</div>
+        <div class="st-sub">Loan, Tax, Audit</div>
+    </div>
+</div>
+
+<!-- ─── TABS ─── -->
+<div class="m-tabs fade-in">
+    <button class="m-tab" [class.active]="activeTab === 'generate'" (click)="switchTab('generate')">
+        <i class="bi bi-file-earmark-plus"></i> Generate
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'downloads'" (click)="switchTab('downloads')">
+        <i class="bi bi-clock-history"></i> Recent Downloads
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'scheduled'" (click)="switchTab('scheduled')">
+        <i class="bi bi-calendar-check"></i> Scheduled
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'certificates'" (click)="switchTab('certificates')">
+        <i class="bi bi-patch-check"></i> Certificates
+    </button>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TAB: GENERATE
+     ════════════════════════════════════════════════ -->
+@if (activeTab === 'generate') {
+<div class="tab-pane active" id="pane-generate">
+    <div class="g-card">
+        <div class="g-card-header">
+            <h3><i class="bi bi-file-earmark-plus" style="color:var(--primary);"></i> Generate New Statement</h3>
+        </div>
+        <div class="g-card-body">
+
+            <!-- Account Type -->
+            <div style="margin-bottom:var(--sp-xl);">
+                <label style="font-size:.78rem;font-weight:700;color:var(--text1);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:var(--sp-md);">Select Account / Statement Type</label>
+                <div class="stype-grid">
+                    <div class="stype-card" [class.sel]="selectedStmtType === 'all'" (click)="selectStmtType('all')">
+                        <div class="stype-icon" style="background:rgba(0,208,132,0.1);color:var(--primary);"><i class="bi bi-collection"></i></div>
+                        <div><h6>All Accounts</h6><p>Combined statement</p></div>
+                    </div>
+                    <div class="stype-card" [class.sel]="selectedStmtType === 'savings'" (click)="selectStmtType('savings')">
+                        <div class="stype-icon" style="background:rgba(33,150,243,0.1);color:var(--blue);"><i class="bi bi-piggy-bank"></i></div>
+                        <div><h6>Savings Account</h6><p>Deposits & balance</p></div>
+                    </div>
+                    <div class="stype-card" [class.sel]="selectedStmtType === 'shares'" (click)="selectStmtType('shares')">
+                        <div class="stype-icon" style="background:rgba(26,35,126,0.1);color:#1a237e;"><i class="bi bi-shield-lock"></i></div>
+                        <div><h6>Share Capital</h6><p>Holdings & dividends</p></div>
+                    </div>
+                    <div class="stype-card" [class.sel]="selectedStmtType === 'loans'" (click)="selectStmtType('loans')">
+                        <div class="stype-icon" style="background:rgba(244,67,54,0.1);color:var(--red);"><i class="bi bi-cash-stack"></i></div>
+                        <div><h6>Loans</h6><p>Repayments & balances</p></div>
+                    </div>
+                    <div class="stype-card" [class.sel]="selectedStmtType === 'wallet'" (click)="selectStmtType('wallet')">
+                        <div class="stype-icon" style="background:rgba(156,39,176,0.1);color:var(--purple);"><i class="bi bi-wallet2"></i></div>
+                        <div><h6>Wallet</h6><p>SACCOPay activity</p></div>
+                    </div>
+                    <div class="stype-card" [class.sel]="selectedStmtType === 'mini'" (click)="selectStmtType('mini')">
+                        <div class="stype-icon" style="background:rgba(255,152,0,0.1);color:var(--orange);"><i class="bi bi-receipt"></i></div>
+                        <div><h6>Mini Statement</h6><p>Last 10 transactions</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Range -->
+            <div style="margin-bottom:var(--sp-md);">
+                <label style="font-size:.78rem;font-weight:700;color:var(--text1);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:var(--sp-md);">Quick Date Range</label>
+                <div class="quick-range">
+                    <button class="qr-btn" [class.active]="quickRange === '7d'" (click)="setQuickRange('7d')">Last 7 Days</button>
+                    <button class="qr-btn" [class.active]="quickRange === '30d'" (click)="setQuickRange('30d')">Last 30 Days</button>
+                    <button class="qr-btn" [class.active]="quickRange === '3m'" (click)="setQuickRange('3m')">Last 3 Months</button>
+                    <button class="qr-btn" [class.active]="quickRange === '6m'" (click)="setQuickRange('6m')">Last 6 Months</button>
+                    <button class="qr-btn" [class.active]="quickRange === 'ytd'" (click)="setQuickRange('ytd')">Year to Date</button>
+                    <button class="qr-btn" [class.active]="quickRange === 'lyr'" (click)="setQuickRange('lyr')">Last Year</button>
+                    <button class="qr-btn" [class.active]="quickRange === 'all'" (click)="setQuickRange('all')">All Time</button>
+                </div>
+            </div>
+
+            <!-- Custom Range -->
+            <div class="filter-bar">
+                <div>
+                    <label>From Date</label>
+                    <input type="date" class="finput" [(ngModel)]="dateFrom" id="dateFrom">
+                </div>
+                <div>
+                    <label>To Date</label>
+                    <input type="date" class="finput" [(ngModel)]="dateTo" id="dateTo">
+                </div>
+                <div>
+                    <label>Format</label>
+                    <div class="fmt-pills">
+                        <div class="fmt-pill" [class.sel]="selectedFormat === 'pdf'" (click)="selectFormat('pdf')">
+                            <i class="bi bi-file-earmark-pdf-fill" style="color:#e53935;"></i> PDF
+                        </div>
+                        <div class="fmt-pill" [class.sel]="selectedFormat === 'excel'" (click)="selectFormat('excel')">
+                            <i class="bi bi-file-earmark-excel-fill" style="color:#43a047;"></i> Excel
+                        </div>
+                        <div class="fmt-pill" [class.sel]="selectedFormat === 'csv'" (click)="selectFormat('csv')">
+                            <i class="bi bi-file-earmark-text-fill" style="color:#1e88e5;"></i> CSV
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div style="margin-top:var(--sp-lg);padding:var(--sp-lg);background:var(--bg3);border-radius:var(--r-md);">
+                <h6 style="font-size:.82rem;font-weight:700;margin-bottom:var(--sp-md);"><i class="bi bi-sliders me-1"></i>Statement Options</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="optHeader" [(ngModel)]="optHeader">
+                            <label class="form-check-label" for="optHeader" style="font-size:.82rem;">Include SACCO header & branding</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="optBalance" [(ngModel)]="optBalance">
+                            <label class="form-check-label" for="optBalance" style="font-size:.82rem;">Show running balance column</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="optSummary" [(ngModel)]="optSummary">
+                            <label class="form-check-label" for="optSummary" style="font-size:.82rem;">Include opening/closing summary</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="optCharts" [(ngModel)]="optCharts">
+                            <label class="form-check-label" for="optCharts" style="font-size:.82rem;">Include charts & graphs (PDF only)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="optStamp" [(ngModel)]="optStamp">
+                            <label class="form-check-label" for="optStamp" style="font-size:.82rem;">Add SACCO stamp (verified)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="optPwd" [(ngModel)]="optPwd">
+                            <label class="form-check-label" for="optPwd" style="font-size:.82rem;">Password-protect PDF</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin-top:var(--sp-xl);display:flex;gap:var(--sp-md);flex-wrap:wrap;">
+                <button class="btn-g" (click)="openModal('previewModal')"><i class="bi bi-eye"></i> Preview Statement</button>
+                <button class="btn-o" (click)="openModal('deliveryModal')"><i class="bi bi-envelope"></i> Email Statement</button>
+                <button class="btn-o" (click)="generateAndDownload()"><i class="bi bi-download"></i> Generate & Download</button>
+                <button class="btn-ghost-s" (click)="openModal('scheduleModal')"><i class="bi bi-calendar-plus"></i> Schedule Auto-Generation</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ════════════════════════════════════════════════
+     TAB: RECENT DOWNLOADS
+     ════════════════════════════════════════════════ -->
+@if (activeTab === 'downloads') {
+<div class="tab-pane active" id="pane-downloads">
+    <div class="g-card">
+        <div class="g-card-header">
+            <h3><i class="bi bi-clock-history" style="color:var(--blue);"></i> Recent Downloads</h3>
+            <div style="display:flex;gap:8px;">
+                <select class="fselect" style="font-size:.78rem;padding:6px 10px;width:auto;">
+                    <option>All Types</option>
+                    <option>Savings</option>
+                    <option>Loans</option>
+                    <option>Wallet</option>
+                </select>
+                <button class="btn-ghost-s" (click)="showToast('All downloads cleared')"><i class="bi bi-trash"></i> Clear</button>
+            </div>
+        </div>
+        <div class="g-card-body">
+            @for (stmt of recentDownloads; track stmt.name) {
+            <div class="stmt-row" (click)="openStmtDetail(stmt)">
+                <div class="stmt-icon" [class.pdf]="stmt.format === 'PDF'" [class.excel]="stmt.format === 'Excel'" [class.csv]="stmt.format === 'CSV'">
+                    <i class="bi" [class.bi-file-earmark-pdf-fill]="stmt.format === 'PDF'"
+                       [class.bi-file-earmark-excel-fill]="stmt.format === 'Excel'"
+                       [class.bi-file-earmark-text-fill]="stmt.format === 'CSV'"></i>
+                </div>
+                <div class="stmt-info">
+                    <h6>{{ stmt.name }}</h6>
+                    <p>{{ stmt.description }}</p>
+                </div>
+                <div class="stmt-meta">
+                    <div class="stmt-date">{{ stmt.date }}</div>
+                    <div class="stmt-size">{{ stmt.size }}</div>
+                </div>
+                <div class="stmt-actions">
+                    <button class="btn-icon-s" title="Download" (click)="$event.stopPropagation(); downloadStmt(stmt.name)"><i class="bi bi-download"></i></button>
+                    <button class="btn-icon-s" title="Email" (click)="$event.stopPropagation(); emailStmt(stmt.name)"><i class="bi bi-envelope"></i></button>
+                    <button class="btn-icon-s" title="Share" (click)="$event.stopPropagation(); shareStmt(stmt.name)"><i class="bi bi-share"></i></button>
+                    <button class="btn-icon-s danger" title="Delete" (click)="$event.stopPropagation(); deleteStmt(stmt.name)"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+}
+
+<!-- ════════════════════════════════════════════════
+     TAB: SCHEDULED
+     ════════════════════════════════════════════════ -->
+@if (activeTab === 'scheduled') {
+<div class="tab-pane active" id="pane-scheduled">
+    <div class="g-card">
+        <div class="g-card-header">
+            <h3><i class="bi bi-calendar-check" style="color:var(--orange);"></i> Scheduled Auto-Statements</h3>
+            <button class="btn-g" (click)="openModal('scheduleModal')"><i class="bi bi-plus"></i> New Schedule</button>
+        </div>
+        <div class="g-card-body">
+            @for (sched of schedules; track sched.id) {
+            <div class="sched-row">
+                <div style="display:flex;align-items:center;gap:var(--sp-md);">
+                    <div class="stmt-icon" [class.pdf]="sched.format === 'PDF'" [class.excel]="sched.format === 'Excel'">
+                        <i class="bi" [class.bi-calendar-month]="sched.frequency === 'Monthly'"
+                           [class.bi-calendar3]="sched.frequency === 'Quarterly'"></i>
+                    </div>
+                    <div class="sched-info">
+                        <h6>{{ sched.name }}</h6>
+                        <p>{{ sched.description }}</p>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="sbadge" [class.ready]="sched.status === 'Active'" [class.processing]="sched.status === 'Paused'">{{ sched.status }}</span>
+                    <button class="btn-icon-s" title="Edit" (click)="openModal('editScheduleModal')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn-icon-s" title="Pause" (click)="toggleSchedule(sched)">
+                        <i class="bi" [class.bi-pause]="sched.status === 'Active'" [class.bi-play]="sched.status === 'Paused'"></i>
+                    </button>
+                    <button class="btn-icon-s danger" title="Delete" (click)="deleteSchedule(sched)"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+            }
+
+            <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:rgba(33,150,243,0.06);border:1px solid rgba(33,150,243,0.15);border-radius:var(--r-md);font-size:.82rem;color:#1565c0;display:flex;gap:var(--sp-sm);align-items:flex-start;">
+                <i class="bi bi-info-circle-fill" style="margin-top:2px;flex-shrink:0;"></i>
+                <div>Scheduled statements are automatically generated and emailed on the configured date. You can also access them in <strong>Recent Downloads</strong>.</div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ════════════════════════════════════════════════
+     TAB: CERTIFICATES
+     ════════════════════════════════════════════════ -->
+@if (activeTab === 'certificates') {
+<div class="tab-pane active" id="pane-certificates">
+    <div class="g-card">
+        <div class="g-card-header">
+            <h3><i class="bi bi-patch-check" style="color:var(--purple);"></i> Official Certificates</h3>
+        </div>
+        <div class="g-card-body">
+            @for (cert of certificates; track cert.name) {
+            <div class="stmt-row" (click)="openCertModal(cert)">
+                <div class="stmt-icon" [style.background]="cert.iconBg" [style.color]="cert.iconColor">
+                    <i class="bi" [class.bi-patch-check-fill]="cert.icon === 'patch-check-fill'"
+                       [class.bi-receipt-cutoff]="cert.icon === 'receipt-cutoff'"
+                       [class.bi-shield-fill-check]="cert.icon === 'shield-fill-check'"
+                       [class.bi-person-badge]="cert.icon === 'person-badge'"
+                       [class.bi-file-earmark-check]="cert.icon === 'file-earmark-check'"></i>
+                </div>
+                <div class="stmt-info">
+                    <h6>{{ cert.name }}</h6>
+                    <p>{{ cert.description }}</p>
+                </div>
+                <div class="stmt-meta">
+                    <span class="sbadge" [class.ready]="cert.status === 'Available'" [class.processing]="cert.status === 'Request Required'">{{ cert.status }}</span>
+                </div>
+                <div class="stmt-actions">
+                    @if (cert.status === 'Available' && cert.fileName) {
+                    <button class="btn-icon-s" (click)="$event.stopPropagation(); downloadStmt(cert.fileName!)"><i class="bi bi-download"></i></button>
+                    } @else {
+                    <button class="btn-o" style="font-size:.72rem;padding:6px 12px;" (click)="$event.stopPropagation(); openModal('certRequestModal')">Request</button>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+}
+
+<!-- ════════════════════════════════════════════════
+     MODALS
+     ════════════════════════════════════════════════ -->
+
+<!-- PREVIEW MODAL -->
+@if (showPreviewModal) {
+<div class="modal-overlay" (click)="closeModal('previewModal')">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-green">
+                <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Statement Preview</h5>
+                <button type="button" class="btn-close" (click)="closeModal('previewModal')"></button>
+            </div>
+            <div class="modal-body">
+                <div class="doc-preview">
+                    <div style="text-align:center;border-bottom:2px solid var(--border);padding-bottom:var(--sp-md);margin-bottom:var(--sp-md);">
+                        <div style="font-size:.7rem;color:var(--primary);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">RONGO SACCO SOCIETY LTD</div>
+                        <h2>Combined Account Statement</h2>
+                        <div class="doc-meta">Member: John Kamau · SP-10015 · Period: Nov 18 – Dec 18, 2024</div>
+                    </div>
+                    <div class="row" style="font-size:.78rem;margin-bottom:var(--sp-md);">
+                        <div class="col-6"><strong>Opening Balance:</strong> KES 95,000</div>
+                        <div class="col-6 text-end"><strong>Closing Balance:</strong> KES 128,450</div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th style="text-align:right;">Debit</th>
+                                <th style="text-align:right;">Credit</th>
+                                <th style="text-align:right;">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (tx of previewTransactions; track tx.date + tx.description) {
+                            <tr>
+                                <td>{{ tx.date }}</td>
+                                <td>{{ tx.description }}</td>
+                                <td style="text-align:right;">{{ tx.debit }}</td>
+                                <td style="text-align:right;">{{ tx.credit }}</td>
+                                <td style="text-align:right;">{{ tx.balance }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div style="margin-top:var(--sp-md);padding-top:var(--sp-md);border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.75rem;">
+                        <div>Generated: Dec 18, 2024 · 3:45 PM</div>
+                        <div style="color:var(--primary);">✓ Verified · Stamp Applied</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('previewModal')">Close</button>
+                <button class="btn-o" (click)="emailStmt('preview')"><i class="bi bi-envelope"></i> Email</button>
+                <button class="btn-g" (click)="generateAndDownload()"><i class="bi bi-download"></i> Download Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- DELIVERY MODAL -->
+@if (showDeliveryModal) {
+<div class="modal-overlay" (click)="closeModal('deliveryModal')">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-blue">
+                <h5 class="modal-title"><i class="bi bi-envelope me-2"></i>Email Statement</h5>
+                <button type="button" class="btn-close" (click)="closeModal('deliveryModal')"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">To Email</label>
+                        <input type="email" class="finput" [(ngModel)]="deliveryEmail">
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">CC (Optional)</label>
+                        <input type="email" class="finput" [(ngModel)]="deliveryCc" placeholder="Add another email">
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Subject</label>
+                        <input type="text" class="finput" [(ngModel)]="deliverySubject">
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Message (Optional)</label>
+                        <textarea class="finput" rows="3" [(ngModel)]="deliveryMessage" placeholder="Add a personal note..."></textarea>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="deliveryPwd" [(ngModel)]="deliveryPwd">
+                            <label class="form-check-label" for="deliveryPwd" style="font-size:.82rem;">Password-protect attachment (sent via SMS)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('deliveryModal')">Cancel</button>
+                <button class="btn-g" style="background:linear-gradient(135deg,#1565c0,#1976d2);" (click)="sendEmail()">
+                    <i class="bi bi-send"></i> Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- SCHEDULE MODAL -->
+@if (showScheduleModal) {
+<div class="modal-overlay" (click)="closeModal('scheduleModal')">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-orange">
+                <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>Schedule Auto-Statement</h5>
+                <button type="button" class="btn-close" (click)="closeModal('scheduleModal')"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Statement Type</label>
+                        <select class="fselect" [(ngModel)]="scheduleType">
+                            <option>Combined (All Accounts)</option>
+                            <option>Savings Only</option>
+                            <option>Loans Only</option>
+                            <option>Wallet Only</option>
+                            <option>Share Capital Only</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Frequency</label>
+                        <select class="fselect" [(ngModel)]="scheduleFrequency">
+                            <option>Weekly</option>
+                            <option>Bi-weekly</option>
+                            <option selected>Monthly</option>
+                            <option>Quarterly</option>
+                            <option>Annually</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Day / Date</label>
+                        <select class="fselect" [(ngModel)]="scheduleDay">
+                            <option>1st of month</option>
+                            <option>15th of month</option>
+                            <option>Last day of month</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Format</label>
+                        <select class="fselect" [(ngModel)]="scheduleFormat">
+                            <option>PDF</option>
+                            <option>Excel</option>
+                            <option>CSV</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Delivery</label>
+                        <select class="fselect" [(ngModel)]="scheduleDelivery">
+                            <option>Email</option>
+                            <option>Dashboard Only</option>
+                            <option>Email + Dashboard</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Email Address</label>
+                        <input type="email" class="finput" [(ngModel)]="scheduleEmail">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('scheduleModal')">Cancel</button>
+                <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="createSchedule()">
+                    <i class="bi bi-calendar-check"></i> Create Schedule
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- EDIT SCHEDULE MODAL -->
+@if (showEditScheduleModal) {
+<div class="modal-overlay" (click)="closeModal('editScheduleModal')">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-orange">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Schedule</h5>
+                <button type="button" class="btn-close" (click)="closeModal('editScheduleModal')"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Frequency</label>
+                        <select class="fselect" [(ngModel)]="editFrequency">
+                            <option selected>Monthly</option>
+                            <option>Quarterly</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Day</label>
+                        <select class="fselect" [(ngModel)]="editDay">
+                            <option selected>1st of month</option>
+                            <option>15th</option>
+                            <option>Last day</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Email</label>
+                        <input type="email" class="finput" [(ngModel)]="editEmail">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('editScheduleModal')">Cancel</button>
+                <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="updateSchedule()">
+                    <i class="bi bi-check"></i> Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- STATEMENT DETAIL MODAL -->
+@if (showStmtDetailModal) {
+<div class="modal-overlay" (click)="closeModal('stmtDetailModal')">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-dark">
+                <h5 class="modal-title"><i class="bi bi-file-text me-2"></i>Statement Detail</h5>
+                <button type="button" class="btn-close" (click)="closeModal('stmtDetailModal')"></button>
+            </div>
+            <div class="modal-body">
+                @if (selectedStmt) {
+                <div style="text-align:center;margin-bottom:var(--sp-lg);">
+                    <div style="width:60px;height:60px;border-radius:var(--r-md);background:rgba(244,67,54,0.1);color:#e53935;display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-sm);font-size:1.8rem;">
+                        <i class="bi" [class.bi-file-earmark-pdf-fill]="selectedStmt.format === 'PDF'"
+                           [class.bi-file-earmark-excel-fill]="selectedStmt.format === 'Excel'"
+                           [class.bi-file-earmark-text-fill]="selectedStmt.format === 'CSV'"></i>
+                    </div>
+                    <h5 style="font-weight:700;">{{ selectedStmt.name }}</h5>
+                    <p style="font-size:.82rem;color:var(--text2);">{{ selectedStmt.period }}</p>
+                </div>
+                <div class="drow"><span class="dl">Format</span><span class="dv">{{ selectedStmt.format }}</span></div>
+                <div class="drow"><span class="dl">Size</span><span class="dv">{{ selectedStmt.size }}</span></div>
+                <div class="drow"><span class="dl">Generated</span><span class="dv">{{ selectedStmt.date }}</span></div>
+                <div class="drow"><span class="dl">Status</span><span class="dv" style="color:var(--primary);"><i class="bi bi-check-circle-fill"></i> Verified</span></div>
+                <div class="drow"><span class="dl">SACCO Stamp</span><span class="dv" style="color:var(--primary);">✓ Applied</span></div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('stmtDetailModal')">Close</button>
+                <button class="btn-o" (click)="emailStmt('detail')"><i class="bi bi-envelope"></i> Email</button>
+                <button class="btn-g" (click)="downloadStmt('statement')"><i class="bi bi-download"></i> Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- CERTIFICATE MODAL -->
+@if (showCertificateModal) {
+<div class="modal-overlay" (click)="closeModal('certificateModal')">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-green" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);">
+                <h5 class="modal-title"><i class="bi bi-patch-check me-2"></i>{{ certModalTitle }}</h5>
+                <button type="button" class="btn-close" (click)="closeModal('certificateModal')"></button>
+            </div>
+            <div class="modal-body">
+                <div style="background:white;border:2px solid #6a1b9a;border-radius:var(--r-md);padding:var(--sp-xl);text-align:center;">
+                    <div style="font-size:.7rem;color:#6a1b9a;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">RONGO SACCO SOCIETY LTD</div>
+                    <h3 style="margin:var(--sp-md) 0;font-weight:800;">{{ certModalTitle }}</h3>
+                    <p style="color:var(--text2);font-size:.85rem;">{{ certModalDesc }}</p>
+                    <div style="margin:var(--sp-lg) 0;padding:var(--sp-md);background:var(--bg3);border-radius:var(--r-sm);font-size:.85rem;">
+                        <div class="drow"><span class="dl">Member</span><span class="dv">John Kamau</span></div>
+                        <div class="drow"><span class="dl">Member ID</span><span class="dv">SP-10015</span></div>
+                        <div class="drow"><span class="dl">Date Issued</span><span class="dv">Dec 18, 2024</span></div>
+                        <div class="drow"><span class="dl">Verification Code</span><span class="dv">RS-CERT-7842-2024</span></div>
+                    </div>
+                    <div style="font-size:.7rem;color:var(--text3);">This is an officially generated digital certificate. Verify authenticity at <strong>verify.rongosacco.co.ke</strong></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('certificateModal')">Close</button>
+                <button class="btn-o" (click)="emailStmt('cert')"><i class="bi bi-envelope"></i> Email</button>
+                <button class="btn-g" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);" (click)="downloadStmt('cert')">
+                    <i class="bi bi-download"></i> Download Certificate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- CERT REQUEST MODAL -->
+@if (showCertRequestModal) {
+<div class="modal-overlay" (click)="closeModal('certRequestModal')">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header mh-orange">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up me-2"></i>Request Certificate</h5>
+                <button type="button" class="btn-close" (click)="closeModal('certRequestModal')"></button>
+            </div>
+            <div class="modal-body">
+                <div style="padding:var(--sp-md);background:rgba(33,150,243,0.06);border:1px solid rgba(33,150,243,0.15);border-radius:var(--r-md);font-size:.82rem;color:#1565c0;margin-bottom:var(--sp-lg);">
+                    <i class="bi bi-info-circle-fill me-1"></i> The Audit Confirmation Letter requires SACCO admin approval. Processing typically takes 1-3 business days.
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Auditor / Recipient Name</label>
+                        <input type="text" class="finput" [(ngModel)]="certRequestName" placeholder="e.g. ABC Auditors LLP">
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Auditor Email</label>
+                        <input type="email" class="finput" [(ngModel)]="certRequestEmail" placeholder="auditor@firm.com">
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Reason for Request</label>
+                        <textarea class="finput" rows="3" [(ngModel)]="certRequestReason" placeholder="Brief reason..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost-s" (click)="closeModal('certRequestModal')">Cancel</button>
+                <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="submitCertRequest()">
+                    <i class="bi bi-send"></i> Submit Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- PROFILE MODAL -->
+@if (showProfileModal) {
+<div class="modal-overlay" (click)="closeModal('profileModal')">
+    <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-body" style="padding:var(--sp-xl);text-align:center;">
+                <div class="user-chip-av" style="width:68px;height:68px;font-size:1.4rem;margin:0 auto var(--sp-md);">JK</div>
+                <h5 style="font-weight:700;">John Kamau</h5>
+                <p style="font-size:.78rem;color:var(--text2);margin-bottom:var(--sp-lg);">SP-10015 · Rongo SACCO</p>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <a routerLink="/profile" class="btn-ghost-s" style="text-decoration:none;justify-content:center;"><i class="bi bi-person me-2"></i>Profile</a>
+                    <a routerLink="/settings" class="btn-ghost-s" style="text-decoration:none;justify-content:center;"><i class="bi bi-gear me-2"></i>Settings</a>
+                    <hr style="margin:4px 0;border-color:var(--border);">
+                    <button class="btn-ghost-s" style="color:var(--red);justify-content:center;" (click)="showToast('Logging out...')">
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- TOAST NOTIFICATION -->
+@if (toastVisible) {
+<div class="sp-toast-container">
+    <div class="sp-toast success">
+        <i class="bi bi-check-circle-fill" style="font-size:1.2rem;color:var(--success);flex-shrink:0;"></i>
+        <span style="font-size:.85rem;font-weight:500;">{{ toastMessage }}</span>
+    </div>
+</div>
+}

@@ -1,0 +1,110 @@
+/* member-header.component.scss */
+
+.sp-header {
+  height: var(--header-height, 64px);
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+
+  .hamburger-btn {
+    border: none;
+    background: none;
+    border-radius: 8px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  .sidebar-toggle-btn {
+    border: 1px solid var(--border-medium, rgba(0,0,0,0.1));
+    background: #fff;
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    i {
+      font-size: 14px;
+    }
+
+    .toggle-text {
+      transition: opacity 0.2s;
+    }
+
+    &:hover {
+      background: var(--primary-subtle, rgba(26,115,232,0.08));
+      border-color: var(--primary-border, rgba(26,115,232,0.22));
+      color: var(--primary);
+    }
+
+    &.minimized {
+      background: var(--primary-subtle, rgba(26,115,232,0.08));
+      border-color: var(--primary-border, rgba(26,115,232,0.22));
+      color: var(--primary);
+    }
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F0F2F8;
+    border-radius: 10px;
+    padding: 6px 12px;
+    width: 240px;
+
+    input {
+      font-size: 13px;
+      padding: 0;
+      height: auto;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }
+
+  .notification-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background: #e53935;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+
+  .header-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 767px) {
+  .sp-header {
+    padding: 0 12px;
+
+    .search-box {
+      display: none;
+    }
+  }
+}

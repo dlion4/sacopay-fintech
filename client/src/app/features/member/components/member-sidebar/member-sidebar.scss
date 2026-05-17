@@ -1,0 +1,458 @@
+/* member-sidebar.component.scss */
+/* ========================================== */
+/* SACCO PAY — Member Sidebar                 */
+/* Clean, working version                     */
+/* ========================================== */
+
+:host {
+  display: block;
+}
+
+/* ========================================== */
+/* CSS VARIABLES                              */
+/* ========================================== */
+
+:root {
+  --sidebar-width: 200px;
+  --sidebar-minimized-width: 68px;
+  --sidebar-bg: #0f1115;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --neon-green: #00ff66;
+  --neon-blue: #40c4ec;
+  --text-primary: #e0e0e0;
+  --text-muted: #888;
+  --nav-hover: rgba(0, 255, 102, 0.08);
+  --nav-active: rgba(0, 255, 102, 0.12);
+  --nav-active-border: rgba(0, 255, 102, 0.3);
+  --transition-speed: 0.35s;
+}
+
+/* ========================================== */
+/* SIDEBAR CONTAINER                          */
+/* ========================================== */
+
+.sp-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 1030;
+  transition: width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+/* ========================================== */
+/* BRAND HEADER                               */
+/* ========================================== */
+
+.sidebar-brand {
+  min-height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--sidebar-border);
+  position: relative;
+
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 255, 102, 0.1);
+    color: var(--neon-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: transform var(--transition-speed);
+  }
+
+  .brand-text {
+    transition: opacity var(--transition-speed), width var(--transition-speed);
+    white-space: nowrap;
+    overflow: hidden;
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--neon-blue);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+
+      span {
+        color: var(--neon-green);
+      }
+    }
+
+    .brand-subtitle {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+  }
+
+  .minimize-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(0, 255, 102, 0.2);
+      color: var(--neon-green);
+      transform: scale(1.1);
+    }
+
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+/* ========================================== */
+/* MEMBER BADGE                               */
+/* ========================================== */
+
+.member-badge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--sidebar-border);
+
+  .member-avatar {
+    width: 42px;
+    height: 42px;
+    background: rgba(0, 255, 102, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--neon-green);
+    font-size: 14px;
+    border: 1px solid rgba(0, 255, 102, 0.3);
+    flex-shrink: 0;
+    transition: margin var(--transition-speed);
+  }
+
+  .member-info {
+    flex: 1;
+    min-width: 0;
+    transition: opacity var(--transition-speed), width var(--transition-speed);
+    overflow: hidden;
+
+    .member-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--neon-blue);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .member-id {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .member-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--neon-green);
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--neon-green);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--neon-green);
+      }
+    }
+  }
+}
+
+/* ========================================== */
+/* NAVIGATION                                 */
+/* ========================================== */
+
+.sidebar-nav {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.nav-section {
+  margin-bottom: 4px;
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 8px 16px 4px;
+    transition: opacity var(--transition-speed), height var(--transition-speed);
+  }
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin: 2px 8px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+
+  .nav-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+
+    i {
+      transition: transform 0.2s;
+    }
+  }
+
+  .nav-text {
+    flex: 1;
+    transition: opacity var(--transition-speed), width var(--transition-speed);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .nav-badge {
+    background: rgba(229, 57, 53, 0.9);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 50px;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    transition: opacity var(--transition-speed);
+  }
+
+  .nav-badge-dot {
+    width: 8px;
+    height: 8px;
+    background: #e53935;
+    border-radius: 50%;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    box-shadow: 0 0 6px rgba(229, 57, 53, 0.5);
+  }
+
+  &:hover {
+    background: var(--nav-hover);
+    color: var(--text-primary);
+
+    .nav-icon i {
+      transform: scale(1.1);
+    }
+  }
+
+  &.active {
+    background: var(--nav-active);
+    color: var(--neon-green);
+    box-shadow: inset 3px 0 0 var(--neon-green);
+
+    .nav-icon {
+      color: var(--neon-green);
+    }
+  }
+}
+
+/* ========================================== */
+/* FOOTER                                     */
+/* ========================================== */
+
+.sidebar-footer {
+  flex-shrink: 0;
+  padding: 8px;
+  border-top: 1px solid var(--sidebar-border);
+
+  .nav-link {
+    margin: 0;
+
+    &:hover {
+      background: rgba(229, 57, 53, 0.1);
+      color: #ff5252;
+    }
+  }
+}
+
+/* ========================================== */
+/* MINIMIZED STATE                            */
+/* ========================================== */
+
+.sp-sidebar.minimized {
+  width: var(--sidebar-minimized-width);
+
+  .sidebar-brand {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+
+    .brand-logo {
+      margin: 0 auto;
+    }
+
+    .brand-text {
+      opacity: 0;
+      width: 0;
+    }
+
+    .minimize-btn {
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      background: var(--sidebar-bg);
+      border: 1px solid var(--sidebar-border);
+      z-index: 10;
+
+      i {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .member-badge {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+
+    .member-info {
+      opacity: 0;
+      width: 0;
+    }
+  }
+
+  .nav-section .section-label {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+
+    .nav-text {
+      opacity: 0;
+      width: 0;
+    }
+
+    .nav-badge {
+      opacity: 0;
+    }
+  }
+
+  .sidebar-footer .nav-link {
+    justify-content: center;
+  }
+}
+
+/* ========================================== */
+/* MOBILE SIDEBAR                             */
+/* ========================================== */
+
+@media (max-width: 991px) {
+  .sp-sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+
+    &.show {
+      transform: translateX(0);
+    }
+
+    .minimize-btn {
+      display: none !important;
+    }
+
+    /* Always show everything on mobile */
+    .brand-text,
+    .member-info,
+    .nav-text,
+    .section-label,
+    .nav-badge {
+      opacity: 1 !important;
+      width: auto !important;
+      height: auto !important;
+      display: block !important;
+    }
+
+    .nav-link {
+      justify-content: flex-start !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+  }
+}

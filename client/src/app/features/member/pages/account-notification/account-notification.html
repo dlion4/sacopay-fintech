@@ -1,0 +1,498 @@
+<!-- account-notifications.component.html -->
+<!-- Angular v21 Standalone — Account Notifications Page — Body Only -->
+
+<div class="notif-page fade-in-up" style="max-width:1400px;">
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- BREADCRUMB -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="page-breadcrumb">
+    <a routerLink="/home"><i class="bi bi-house-door me-1"></i>Home</a>
+    <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+    <span>Notifications</span>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- PAGE HEADER -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div>
+      <h4><i class="bi bi-bell me-2" style="color:var(--primary);"></i>Notifications</h4>
+      <p>Manage all your account alerts and messages from your Sacco</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap page-header-actions">
+      <button class="btn btn-sm btn-outline-secondary" (click)="markAllRead()">
+        <i class="bi bi-check2-all me-1"></i>Mark All Read
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="openModal('settingsModal')">
+        <i class="bi bi-sliders me-1"></i>Preferences
+      </button>
+      <button class="btn btn-sm btn-primary" (click)="openModal('composeModal')">
+        <i class="bi bi-pencil-square me-1"></i>New Message
+      </button>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- STATS BAR -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="stats-bar">
+    <div class="stat-chip">
+      <div class="stat-chip-icon" style="background:#dbeafe;color:#2563eb;">
+        <i class="bi bi-bell-fill"></i>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.total }}</div>
+        <div style="font-size:0.72rem;color:#9ca3af;">Total</div>
+      </div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon" style="background:#dcfce7;color:#16a34a;">
+        <i class="bi bi-envelope-open-fill"></i>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.read }}</div>
+        <div style="font-size:0.72rem;color:#9ca3af;">Read</div>
+      </div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon" style="background:#fee2e2;color:#dc2626;">
+        <i class="bi bi-envelope-fill"></i>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.unread }}</div>
+        <div style="font-size:0.72rem;color:#9ca3af;">Unread</div>
+      </div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon" style="background:#fef3c7;color:#d97706;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.highPriority }}</div>
+        <div style="font-size:0.72rem;color:#9ca3af;">High Priority</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- FILTER TABS -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="filter-tabs">
+    @for (tab of filterTabs; track tab.id) {
+    <button class="filter-tab" [class.active]="activeFilter === tab.id" (click)="setFilter(tab.id)">
+      <i class="bi" [class]="tab.icon"></i> {{ tab.label }}
+      <span class="count">{{ tab.count }}</span>
+    </button>
+    }
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- NOTIFICATION LAYOUT -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="notifications-layout">
+
+    <!-- LIST COLUMN -->
+    <div class="notification-list-col">
+      <div class="notif-list-card">
+        <div class="notif-list-header">
+          <h6>Messages</h6>
+          <button class="mark-all-btn" (click)="markAllRead()">Mark all read</button>
+        </div>
+
+        <!-- Search -->
+        <div class="notif-search">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white border-end-0" style="border-radius:6px 0 0 6px;border-color:#e2e8f0;">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0" placeholder="Search notifications…" [(ngModel)]="searchQuery" (input)="searchNotifs()" style="border-radius:0 6px 6px 0;border-color:#e2e8f0;">
+          </div>
+        </div>
+
+        <!-- Notification Items -->
+        <div class="notif-list-scroll">
+          @for (notif of filteredNotifications; track notif.id) {
+          <div class="notif-item"
+            [class.unread]="!notif.read"
+            [class.active]="selectedNotif?.id === notif.id"
+            (click)="showDetail(notif)">
+            <div class="notif-icon-wrap" [class]="'notif-icon-' + notif.priority">
+              <i class="bi" [class]="notif.icon"></i>
+            </div>
+            <div class="notif-meta">
+              <div class="notif-title">{{ notif.title }}</div>
+              <div class="notif-preview">{{ notif.preview }}</div>
+              <div class="notif-time"><i class="bi bi-clock me-1"></i>{{ notif.time }}</div>
+            </div>
+            <div class="notif-right">
+              <span class="priority-badge" [class]="'priority-' + notif.priority">{{ notif.priorityLabel }}</span>
+              @if (!notif.read) {
+              <span class="unread-dot"></span>
+              }
+            </div>
+          </div>
+          }
+          @if (filteredNotifications.length === 0) {
+          <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <div>No notifications found</div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL COLUMN -->
+    <div class="notification-detail-col">
+      @if (selectedNotif) {
+      <div class="notif-detail-card">
+        <div class="notif-detail-scroll">
+
+          <!-- Detail Header -->
+          <div class="notif-detail-header">
+            <div style="flex:1;">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="priority-badge" [class]="'priority-' + selectedNotif.priority">
+                  <i class="bi" [class]="selectedNotif.priorityIcon"></i>{{ selectedNotif.priorityLabel }}
+                </span>
+                <span style="font-size:0.75rem;color:#9ca3af;">
+                  <i class="bi bi-tag me-1"></i>{{ selectedNotif.category }}
+                </span>
+              </div>
+              <h5>{{ selectedNotif.title }}</h5>
+            </div>
+            <div class="notif-actions">
+              <button class="notif-action-btn" title="Mark as Read" (click)="markCurrentRead()">
+                <i class="bi bi-envelope-open"></i>
+              </button>
+              <button class="notif-action-btn" title="Archive" (click)="openModal('archiveModal')">
+                <i class="bi bi-archive"></i>
+              </button>
+              <button class="notif-action-btn" title="Delete" (click)="openModal('deleteModal')">
+                <i class="bi bi-trash"></i>
+              </button>
+              <button class="notif-action-btn" title="Print" onclick="window.print()">
+                <i class="bi bi-printer"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Meta info -->
+          <div class="notif-detail-meta">
+            <div class="meta-row">
+              <span class="meta-label"><i class="bi bi-person me-1"></i>From</span>
+              <span class="meta-value">{{ selectedNotif.from }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="bi bi-exclamation me-1"></i>Priority</span>
+              <span class="meta-value">
+                <span class="priority-badge" [class]="'priority-' + selectedNotif.priority">
+                  <i class="bi" [class]="selectedNotif.priorityIcon"></i>{{ selectedNotif.priorityLabel }}
+                </span>
+              </span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="bi bi-calendar me-1"></i>Date</span>
+              <span class="meta-value">{{ selectedNotif.date }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="bi bi-folder me-1"></i>Category</span>
+              <span class="meta-value">{{ selectedNotif.category }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="bi bi-hash me-1"></i>Reference</span>
+              <span class="meta-value">{{ selectedNotif.ref }}</span>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="notif-body" [innerHTML]="selectedNotif.body"></div>
+
+          <!-- Attachments -->
+          @if (selectedNotif.attachments && selectedNotif.attachments.length > 0) {
+          <div class="attachments-section">
+            <div class="attachments-label"><i class="bi bi-paperclip me-1"></i>Attachments ({{ selectedNotif.attachments.length }})</div>
+            @for (att of selectedNotif.attachments; track att.name) {
+            <a href="#" class="attachment-item" (click)="downloadAttachment(att); $event.preventDefault()">
+              <div class="attachment-icon" [class]="'attachment-' + att.type">
+                <i class="bi" [class]="att.icon"></i>
+              </div>
+              <div class="attachment-info">
+                <div class="file-name">{{ att.name }}</div>
+                <div class="file-size">{{ att.size }}</div>
+              </div>
+              <div class="attachment-download">
+                <i class="bi bi-download"></i>
+              </div>
+            </a>
+            }
+          </div>
+          }
+
+          <!-- Footer Actions -->
+          <div class="notif-detail-footer">
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" (click)="openModal('replyModal')">
+                <i class="bi bi-reply me-1"></i>Reply
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="forwardNotif()">
+                <i class="bi bi-forward me-1"></i>Forward
+              </button>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-danger" (click)="openModal('deleteModal')">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      }
+      @if (!selectedNotif) {
+      <div class="notif-detail-card">
+        <div class="empty-state">
+          <i class="bi bi-bell-slash"></i>
+          <div style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-top:8px;">Select a notification</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Click on any message from the list to view details</div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- FOOTER -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="main-footer">
+    &copy; 2026 SaccoPay v6.1.0 · All rights reserved · <a href="#">Privacy Policy</a> · <a href="#">Terms of Use</a>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- TOAST CONTAINER -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="sp-toast-container">
+    @for (toast of toasts; track toast.id) {
+    <div class="sp-toast" [class]="toast.type" [@slideIn]>
+      <i class="bi" [class]="toast.icon" [style.color]="toast.iconColor" style="font-size:18px;flex-shrink:0;"></i>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">{{ toast.title }}</div>
+        <div style="font-size:11px;color:var(--text-muted);">{{ toast.message }}</div>
+      </div>
+      <button (click)="removeToast(toast.id)" class="btn-close btn-close-sm ms-2" style="font-size:10px;"></button>
+    </div>
+    }
+  </div>
+
+</div><!-- /notif-page -->
+
+<!-- ═════════════════════════════════════════════ -->
+<!--                MODALS                          -->
+<!-- ═════════════════════════════════════════════ -->
+
+<!-- REPLY MODAL -->
+@if (modals.replyModal) {
+<div class="modal-backdrop" (click)="closeModal('replyModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;overflow:hidden;">
+      <div class="modal-header" style="background:var(--primary);color:#fff;border-radius:16px 16px 0 0;">
+        <h6 class="modal-title"><i class="bi bi-reply me-2"></i>Reply to: {{ replyForm.toTitle }}</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal('replyModal')"></button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">To</label>
+          <input type="text" class="form-control form-control-sm" [value]="replyForm.to" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Subject</label>
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="replyForm.subject">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Message</label>
+          <textarea class="form-control form-control-sm" rows="5" placeholder="Type your reply here…" [(ngModel)]="replyForm.message"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Attachment (optional)</label>
+          <input type="file" class="form-control form-control-sm" (change)="onFileSelected($event)">
+        </div>
+      </div>
+      <div class="modal-footer border-top" style="padding:14px 20px;">
+        <button class="btn btn-sm btn-outline-secondary" (click)="closeModal('replyModal')">Cancel</button>
+        <button class="btn btn-sm btn-primary" (click)="sendReply()">
+          <i class="bi bi-send me-1"></i>Send Reply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- COMPOSE MODAL -->
+@if (modals.composeModal) {
+<div class="modal-backdrop" (click)="closeModal('composeModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;overflow:hidden;">
+      <div class="modal-header" style="background:var(--primary);color:#fff;border-radius:16px 16px 0 0;">
+        <h6 class="modal-title"><i class="bi bi-pencil-square me-2"></i>New Message</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal('composeModal')"></button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">To</label>
+          <select class="form-select form-select-sm" [(ngModel)]="composeForm.to">
+            @for (dept of composeDepartments; track dept) {
+            <option [value]="dept">{{ dept }}</option>
+            }
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Subject</label>
+          <input type="text" class="form-control form-control-sm" placeholder="Message subject…" [(ngModel)]="composeForm.subject">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Priority</label>
+          <select class="form-select form-select-sm" [(ngModel)]="composeForm.priority">
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Message</label>
+          <textarea class="form-control form-control-sm" rows="5" placeholder="Type your message here…" [(ngModel)]="composeForm.message"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold" style="font-size:0.82rem;">Attachment (optional)</label>
+          <input type="file" class="form-control form-control-sm" multiple (change)="onFileSelected($event)">
+        </div>
+      </div>
+      <div class="modal-footer border-top" style="padding:14px 20px;">
+        <button class="btn btn-sm btn-outline-secondary" (click)="closeModal('composeModal')">Cancel</button>
+        <button class="btn btn-sm btn-primary" (click)="sendCompose()">
+          <i class="bi bi-send me-1"></i>Send Message
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- SETTINGS / PREFERENCES MODAL -->
+@if (modals.settingsModal) {
+<div class="modal-backdrop" (click)="closeModal('settingsModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;overflow:hidden;">
+      <div class="modal-header" style="background:var(--primary);color:#fff;border-radius:16px 16px 0 0;">
+        <h6 class="modal-title"><i class="bi bi-sliders me-2"></i>Notification Preferences</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal('settingsModal')"></button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+
+        <!-- Email Notifications -->
+        <div class="pref-card">
+          <h6><i class="bi bi-envelope me-2 text-primary"></i>Email Notifications</h6>
+          @for (pref of emailPrefs; track pref.label) {
+          <div class="pref-row">
+            <div>
+              <div class="pref-label">{{ pref.label }}</div>
+              <div class="pref-sub">{{ pref.sub }}</div>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="pref.enabled">
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- SMS Notifications -->
+        <div class="pref-card">
+          <h6><i class="bi bi-phone me-2 text-primary"></i>SMS Notifications</h6>
+          @for (pref of smsPrefs; track pref.label) {
+          <div class="pref-row">
+            <div>
+              <div class="pref-label">{{ pref.label }}</div>
+              <div class="pref-sub">{{ pref.sub }}</div>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="pref.enabled">
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- In-App Notifications -->
+        <div class="pref-card mb-0">
+          <h6><i class="bi bi-app me-2 text-primary"></i>In-App Notifications</h6>
+          @for (pref of inAppPrefs; track pref.label) {
+          <div class="pref-row">
+            <div>
+              <div class="pref-label">{{ pref.label }}</div>
+              <div class="pref-sub">{{ pref.sub }}</div>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="pref.enabled">
+            </div>
+          </div>
+          }
+        </div>
+
+      </div>
+      <div class="modal-footer border-top" style="padding:14px 20px;">
+        <button class="btn btn-sm btn-outline-secondary" (click)="closeModal('settingsModal')">Cancel</button>
+        <button class="btn btn-sm btn-primary" (click)="savePreferences()">
+          <i class="bi bi-check2 me-1"></i>Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- DELETE CONFIRM MODAL -->
+@if (modals.deleteModal) {
+<div class="modal-backdrop" (click)="closeModal('deleteModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;overflow:hidden;">
+      <div class="modal-body text-center py-4">
+        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="bi bi-trash-fill text-danger fs-4"></i>
+        </div>
+        <h6 class="fw-bold mb-1">Delete Notification?</h6>
+        <p class="text-muted" style="font-size:0.82rem;">This action cannot be undone. The notification will be permanently removed.</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <button class="btn btn-sm btn-outline-secondary px-3" (click)="closeModal('deleteModal')">Cancel</button>
+          <button class="btn btn-sm btn-danger px-3" (click)="confirmDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- ARCHIVE CONFIRM MODAL -->
+@if (modals.archiveModal) {
+<div class="modal-backdrop" (click)="closeModal('archiveModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;overflow:hidden;">
+      <div class="modal-body text-center py-4">
+        <div style="width:56px;height:56px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="bi bi-archive-fill text-primary fs-4"></i>
+        </div>
+        <h6 class="fw-bold mb-1">Archive Notification?</h6>
+        <p class="text-muted" style="font-size:0.82rem;">This notification will be moved to your Archive folder.</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <button class="btn btn-sm btn-outline-secondary px-3" (click)="closeModal('archiveModal')">Cancel</button>
+          <button class="btn btn-sm btn-primary px-3" (click)="confirmArchive()">Archive</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}

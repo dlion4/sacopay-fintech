@@ -1,0 +1,1046 @@
+<!-- membership-shares.component.html -->
+<!-- Angular v21 Standalone — My Shares Page — Body Only (no sidebar, no header) -->
+
+<div class="shares-page fiu" style="max-width:1400px;">
+
+    <!-- ═════════════════════════════════════════════ -->
+    <!-- HEADER -->
+    <!-- ═════════════════════════════════════════════ -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">
+                <i class="fas fa-chart-pie me-2" style="color:var(--pri);"></i>My <span
+                    style="color:var(--pri);">Shares</span>
+            </h1>
+            <p class="mb-0" style="color:var(--txm);font-size:14px;">
+                View your share holdings, buy additional shares, track dividends, and download certificates.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('certModal')">
+                <i class="fas fa-certificate me-1"></i> Certificate
+            </button>
+            <button class="btn btn-sm text-white rounded-3 fw-semibold"
+                style="background:var(--grd);box-shadow:var(--sh-o);" (click)="openModal('buySharesModal')">
+                <i class="fas fa-plus-circle me-1"></i> Buy Shares
+            </button>
+        </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════ -->
+    <!-- HERO -->
+    <!-- ═════════════════════════════════════════════ -->
+    <div class="hero-shares p-4 p-lg-5 mb-4">
+        <div class="position-relative" style="z-index:1;">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-6">
+                    <div style="font-size:12px;color:rgba(255,255,255,0.55);font-weight:500;text-transform:uppercase;letter-spacing:.1em;"
+                        class="mb-2">Total Share Capital</div>
+                    <div class="display-5 fw-bold" style="font-family:var(--mono);letter-spacing:-.04em;">
+                        <span style="font-size:.55em;opacity:.7;">KES</span> {{ member.totalCapital | number:'1.0-0'
+                        }}<span style="font-size:.45em;opacity:.4;">.00</span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-3 mt-3" style="font-size:12px;">
+                        <span style="color:rgba(255,255,255,0.7);"><i class="fas fa-cubes me-1"></i> <strong>{{
+                                member.totalShares }}</strong> shares held</span>
+                        <span style="width:1px;height:14px;background:rgba(255,255,255,0.15);"></span>
+                        <span style="color:rgba(255,255,255,0.7);"><i class="fas fa-tag me-1"></i> KES <strong>{{
+                                member.sharePrice }}</strong>/share</span>
+                        <span style="width:1px;height:14px;background:rgba(255,255,255,0.15);"></span>
+                        <span style="color:rgba(255,255,255,0.7);"><i class="fas fa-lock me-1"></i> <strong>{{
+                                member.lockedShares }}</strong> locked (guarantorship)</span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="kpi"
+                                style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
+                                <div class="k" style="color:rgba(255,255,255,0.50);">Available Shares</div>
+                                <div class="v" style="color:var(--grn);">{{ member.availableShares }}</div>
+                                <div style="font-size:10px;color:rgba(255,255,255,0.40);">Transferable</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="kpi"
+                                style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
+                                <div class="k" style="color:rgba(255,255,255,0.50);">Last Dividend</div>
+                                <div class="v" style="color:#FFC107;">KES {{ member.lastDividend | number:'1.0-0' }}
+                                </div>
+                                <a routerLink="/dividends" class="text-decoration-none"
+                                    style="font-size:10px;color:#FFC107;">View dividends →</a>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="kpi"
+                                style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
+                                <div class="k" style="color:rgba(255,255,255,0.50);">Ownership</div>
+                                <div class="v" style="color:rgba(255,255,255,0.85);">{{ member.ownershipPct }}%</div>
+                                <div style="font-size:10px;color:rgba(255,255,255,0.40);">of total SACCO shares</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="kpi"
+                                style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
+                                <div class="k" style="color:rgba(255,255,255,0.50);">Max Purchasable</div>
+                                <div class="v" style="color:var(--pri-l);">{{ member.maxPurchasable }}</div>
+                                <div style="font-size:10px;color:rgba(255,255,255,0.40);">Admin limit: {{
+                                    member.maxTotal }} total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════ -->
+    <!-- TABS -->
+    <!-- ═════════════════════════════════════════════ -->
+    <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto pb-1" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4 py-2" style="font-size:13px;font-weight:600;"
+                [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+                <i class="fas fa-chart-pie me-1"></i> Overview
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4 py-2" style="font-size:13px;font-weight:600;"
+                [class.active]="activeTab === 'history'" (click)="setTab('history')">
+                <i class="fas fa-history me-1"></i> Transaction History
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4 py-2" style="font-size:13px;font-weight:600;"
+                [class.active]="activeTab === 'rules'" (click)="setTab('rules')">
+                <i class="fas fa-book me-1"></i> Share Rules
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- ═════════════════════════════════════════════ -->
+        <!-- TAB: OVERVIEW -->
+        <!-- ═════════════════════════════════════════════ -->
+        @if (activeTab === 'overview') {
+        <div class="tab-pane fade show active">
+            <div class="row g-4">
+
+                <!-- Left: Chart + Certificate -->
+                <div class="col-lg-8">
+
+                    <!-- Growth Chart -->
+                    <div class="c mb-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom gap-2"
+                            style="border-color:rgba(26,29,46,0.06)!important;">
+                            <div class="fw-semibold" style="font-size:14px;">
+                                <i class="fas fa-chart-area me-2" style="color:var(--pri);"></i>Share Growth
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                @for (pd of chartPeriods; track pd.value) {
+                                <button class="btn btn-sm rounded-3"
+                                    [class.btn-outline-secondary]="chartPeriod !== pd.value"
+                                    [class.text-white]="chartPeriod === pd.value"
+                                    [style.background]="chartPeriod === pd.value ? 'var(--pri)' : ''"
+                                    (click)="setChartPeriod(pd.value)">
+                                    {{ pd.label }}
+                                </button>
+                                }
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div style="height:260px;">
+                                <canvas #shareChart></canvas>
+                            </div>
+                            <div class="row g-2 mt-3">
+                                <div class="col-md-3">
+                                    <div class="kpi text-center">
+                                        <div class="k">Started With</div>
+                                        <div class="v">{{ chartStats.startedWith }}</div>
+                                        <div style="font-size:10px;color:var(--txm);">{{ chartStats.startDate }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="kpi text-center">
+                                        <div class="k">Current</div>
+                                        <div class="v" style="color:var(--pri);">{{ member.totalShares }}</div>
+                                        <div style="font-size:10px;color:var(--txm);">+{{ chartStats.growthPct }}%
+                                            growth</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="kpi text-center">
+                                        <div class="k">Total Invested</div>
+                                        <div class="v" style="color:var(--blu);">KES {{ chartStats.totalInvested }}K
+                                        </div>
+                                        <div style="font-size:10px;color:var(--txm);">All time</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="kpi text-center">
+                                        <div class="k">Dividends Earned</div>
+                                        <div class="v" style="color:var(--grn);">KES {{ chartStats.dividendsEarned }}K
+                                        </div>
+                                        <a routerLink="/dividends" class="text-decoration-none"
+                                            style="font-size:10px;color:var(--pri);">View →</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Share Certificate -->
+                    <div class="c mb-4">
+                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom"
+                            style="border-color:rgba(26,29,46,0.06)!important;">
+                            <div class="fw-semibold" style="font-size:14px;">
+                                <i class="fas fa-certificate me-2" style="color:#FFC107;"></i>Share Certificate
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('certModal')">
+                                <i class="fas fa-download me-1"></i> Download
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <div class="share-cert">
+                                <div class="watermark"><i class="fas fa-certificate"></i></div>
+                                <div class="position-relative" style="z-index:1;">
+                                    <div class="text-center mb-3">
+                                        <div
+                                            style="font-size:11px;color:rgba(26,29,46,0.50);text-transform:uppercase;letter-spacing:.15em;font-weight:700;">
+                                            SaccoPay SACCO Ltd</div>
+                                        <div style="font-size:20px;font-weight:800;color:#1A237E;margin-top:4px;">Share
+                                            Certificate</div>
+                                    </div>
+                                    <div class="dv mb-3"></div>
+                                    <div class="row g-3" style="font-size:13px;">
+                                        <div class="col-md-6">
+                                            <div style="color:var(--txm);font-size:11px;">Certificate Number</div>
+                                            <div class="fw-bold" style="font-family:var(--mono);color:#1A237E;">{{
+                                                certificate.number }}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="color:var(--txm);font-size:11px;">Member Name</div>
+                                            <div class="fw-bold">{{ member.fullName }}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="color:var(--txm);font-size:11px;">Total Shares</div>
+                                            <div class="fw-bold"
+                                                style="font-family:var(--mono);color:var(--pri);font-size:18px;">{{
+                                                member.totalShares }} shares</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="color:var(--txm);font-size:11px;">Share Value (per unit)</div>
+                                            <div class="fw-bold" style="font-family:var(--mono);">KES {{
+                                                member.sharePrice | number:'1.2-2' }}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="color:var(--txm);font-size:11px;">Total Capital</div>
+                                            <div class="fw-bold"
+                                                style="font-family:var(--mono);color:var(--grn);font-size:18px;">KES {{
+                                                member.totalCapital | number:'1.2-2' }}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="color:var(--txm);font-size:11px;">Date Issued</div>
+                                            <div class="fw-bold">{{ certificate.dateIssued }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="dv my-3"></div>
+                                    <div class="d-flex justify-content-between align-items-end"
+                                        style="font-size:11px;color:var(--txm);">
+                                        <div>
+                                            <div>Authorized by</div>
+                                            <div class="fw-bold" style="color:var(--tx);">SaccoPay Board of Directors
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div>Seal & Signature</div>
+                                            <div
+                                                style="font-family:var(--mono);color:#1A237E;font-weight:700;font-size:16px;">
+                                                <i class="fas fa-stamp"></i> OFFICIAL</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Side Panels -->
+                <div class="col-lg-4 d-flex flex-column gap-3">
+
+                    <!-- Buy Shares Quick -->
+                    <div class="c" style="background:var(--grd);border:none;color:#fff;">
+                        <div class="p-4 text-center">
+                            <i class="fas fa-chart-line"
+                                style="font-size:28px;opacity:0.85;margin-bottom:8px;display:block;"></i>
+                            <div class="fw-bold" style="font-size:15px;">Grow Your Portfolio</div>
+                            <div style="font-size:12px;opacity:0.8;" class="mb-3">
+                                Buy more shares to increase dividends and voting power. Current price: <strong>KES {{
+                                    member.sharePrice }}/share</strong>
+                            </div>
+                            <button class="btn btn-sm rounded-3 px-4 fw-semibold"
+                                style="background:#fff;color:var(--pri);" (click)="openModal('buySharesModal')">
+                                <i class="fas fa-plus-circle me-1"></i> Buy Shares
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Share Breakdown -->
+                    <div class="c cl" (click)="openModal('breakdownModal')">
+                        <div class="p-3">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div
+                                    style="width:36px;height:36px;background:rgba(26,71,130,0.06);border:1px solid rgba(26,71,130,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#1A237E;">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:700;">Share Breakdown</div>
+                                    <div style="font-size:11px;color:var(--txm);">Available vs Locked</div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <div>
+                                    <div class="d-flex justify-content-between mb-1" style="font-size:12px;">
+                                        <span>Available (Transferable)</span>
+                                        <span class="fw-bold" style="color:var(--grn);">{{ member.availableShares
+                                            }}</span>
+                                    </div>
+                                    <div class="pr">
+                                        <div class="pf" [style.width.%]="breakdownPct.available"
+                                            style="background:var(--grn);"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="d-flex justify-content-between mb-1" style="font-size:12px;">
+                                        <span>Locked (Guarantorship)</span>
+                                        <span class="fw-bold" style="color:var(--ylw);">{{ member.lockedShares }}</span>
+                                    </div>
+                                    <div class="pr">
+                                        <div class="pf" [style.width.%]="breakdownPct.locked"
+                                            style="background:var(--ylw);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                style="font-size:11px;color:var(--pri);text-align:center;margin-top:8px;font-weight:600;">
+                                Tap for details</div>
+                        </div>
+                    </div>
+
+                    <!-- Share Impact on Loans -->
+                    <div class="c cl" (click)="openModal('impactModal')">
+                        <div class="p-3">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div
+                                    style="width:36px;height:36px;background:var(--pri-sub);border:1px solid var(--pri-bdr);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pri);">
+                                    <i class="fas fa-hand-holding-usd"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:700;">Shares & Loan Limit</div>
+                                    <div style="font-size:11px;color:var(--txm);">How shares affect eligibility</div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between" style="font-size:12px;">
+                                <span style="color:var(--txm);">Share Capital</span>
+                                <strong style="font-family:var(--mono);">KES {{ member.totalCapital | number:'1.0-0'
+                                    }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1" style="font-size:12px;">
+                                <span style="color:var(--txm);">Adds to Loan Limit</span>
+                                <strong style="font-family:var(--mono);color:var(--pri);">+ KES {{
+                                    member.loanLimitAddition | number:'1.0-0' }}</strong>
+                            </div>
+                            <div style="font-size:10px;color:var(--txm);margin-top:4px;">Shares are counted at 3× for
+                                loan eligibility alongside savings.</div>
+                        </div>
+                    </div>
+
+                    <!-- Dividend Projection -->
+                    <div class="c cl" routerLink="/dividends">
+                        <div class="p-3">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div
+                                    style="width:36px;height:36px;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--grn);">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:700;">Dividend Projection</div>
+                                    <div style="font-size:11px;color:var(--txm);">Based on last declared rate</div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div style="font-size:11px;color:var(--txm);">Projected Annual Dividend</div>
+                                <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--grn);">
+                                    KES {{ dividendProjection.current | number:'1.0-0' }}</div>
+                                <div style="font-size:11px;color:var(--txm);">At {{ dividendProjection.rate }}% rate on
+                                    {{ member.totalShares }} shares × KES {{ member.sharePrice }}</div>
+                            </div>
+                            <div class="alert border-0 mt-2 mb-0 py-2 px-3"
+                                style="background:rgba(0,200,83,0.04);border-radius:8px;font-size:11px;color:var(--grn);text-align:center;">
+                                <i class="fas fa-lightbulb me-1"></i> Buy {{ dividendProjection.bonusShares }} more
+                                shares → projected dividend becomes <strong>KES {{ dividendProjection.bonusAmount |
+                                    number:'1.0-0' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Shares -->
+                    <div class="c cl" (click)="openModal('transferModal')">
+                        <div class="p-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div
+                                    style="width:36px;height:36px;background:rgba(171,0,217,0.06);border:1px solid rgba(171,0,217,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--pur);">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:700;">Transfer Shares</div>
+                                    <div style="font-size:11px;color:var(--txm);">Transfer to another member (admin
+                                        approval required)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- ═════════════════════════════════════════════ -->
+        <!-- TAB: TRANSACTION HISTORY -->
+        <!-- ═════════════════════════════════════════════ -->
+        @if (activeTab === 'history') {
+        <div class="tab-pane fade show active">
+            <div class="c">
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom gap-2"
+                    style="border-color:rgba(26,29,46,0.06)!important;">
+                    <div class="fw-semibold" style="font-size:14px;">
+                        <i class="fas fa-history me-2" style="color:var(--pri);"></i>Share Transactions
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="exportHistory()">
+                        <i class="fas fa-download me-1"></i> Export
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size:12px;">
+                        <thead>
+                            <tr
+                                style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--txm);background:rgba(26,29,46,0.02);">
+                                <th class="border-0 py-3 px-3">Date</th>
+                                <th class="border-0">Type</th>
+                                <th class="border-0">Shares</th>
+                                <th class="border-0">Price/Share</th>
+                                <th class="border-0">Total</th>
+                                <th class="border-0">Cumulative</th>
+                                <th class="border-0">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (tx of transactions; track tx.id) {
+                            <tr style="cursor:pointer;" (click)="showTxToast(tx)">
+                                <td class="px-3">{{ tx.date }}</td>
+                                <td>
+                                    <span class="b" [style.background]="tx.typeColor.bg" [style.color]="tx.typeColor.fg"
+                                        [style.border]="'1px solid ' + tx.typeColor.bd">
+                                        <i class="fas" [class]="tx.typeIcon"></i> {{ tx.typeLabel }}
+                                    </span>
+                                </td>
+                                <td class="fw-bold" style="font-family:var(--mono);" [style.color]="tx.sharesColor">{{
+                                    tx.sharesPrefix }}{{ tx.shares }}</td>
+                                <td style="font-family:var(--mono);">KES {{ tx.pricePerShare }}</td>
+                                <td class="fw-bold" style="font-family:var(--mono);">KES {{ tx.total | number:'1.0-0' }}
+                                </td>
+                                <td style="font-family:var(--mono);">{{ tx.cumulative }}</td>
+                                <td>
+                                    <span class="b"
+                                        style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-3 border-top d-flex justify-content-between align-items-center"
+                    style="border-color:rgba(26,29,46,0.06)!important;font-size:12px;color:var(--txm);">
+                    <span>{{ transactions.length }} transactions • Total invested: <strong
+                            style="font-family:var(--mono);color:var(--pri);">KES {{ totalInvested | number:'1.0-0'
+                            }}</strong></span>
+                    <button class="btn btn-sm text-white rounded-3 fw-semibold" style="background:var(--grd);"
+                        (click)="openModal('buySharesModal')">
+                        <i class="fas fa-plus me-1"></i> Buy More
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- ═════════════════════════════════════════════ -->
+        <!-- TAB: SHARE RULES -->
+        <!-- ═════════════════════════════════════════════ -->
+        @if (activeTab === 'rules') {
+        <div class="tab-pane fade show active">
+            <div class="c">
+                <div class="p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+                    <div class="fw-semibold" style="font-size:14px;">
+                        <i class="fas fa-book me-2" style="color:var(--pri);"></i>Share Rules & Policy
+                        <span style="font-size:12px;color:var(--txm);font-weight:400;">(Admin-configured)</span>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        @for (rule of shareRules; track rule.title) {
+                        <div class="col-md-6">
+                            <div class="rounded-4 p-3" [style.background]="rule.bg"
+                                [style.border]="rule.border ? '1px solid ' + rule.border : ''">
+                                <div class="fw-semibold mb-2" style="font-size:13px;" [style.color]="rule.titleColor">
+                                    <i class="fas me-2" [class]="rule.icon"></i>{{ rule.title }}
+                                </div>
+                                <div class="d-flex flex-column gap-1" style="font-size:12px;">
+                                    @for (item of rule.items; track item.label) {
+                                    <div class="d-flex justify-content-between">
+                                        <span style="color:var(--txm);">{{ item.label }}</span>
+                                        <strong [style.font-family]="item.mono ? 'var(--mono)' : ''"
+                                            [style.color]="item.color || 'var(--tx)'">{{ item.value }}</strong>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+    </div><!-- /tab-content -->
+
+    <!-- ═════════════════════════════════════════════ -->
+    <!-- TOAST CONTAINER -->
+    <!-- ═════════════════════════════════════════════ -->
+    <div class="toast-c">
+        @for (toast of toasts; track toast.id) {
+        <div class="t" [class]="toast.type" [@slideIn]>
+            <i class="fas" [class]="toast.icon" [style.color]="toast.iconColor"
+                style="font-size:18px;flex-shrink:0;"></i>
+            <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;">{{ toast.title }}</div>
+                <div style="font-size:11px;color:var(--txm);">{{ toast.message }}</div>
+            </div>
+            <button (click)="removeToast(toast.id)" class="btn-close btn-close-sm ms-2"
+                style="font-size:10px;"></button>
+        </div>
+        }
+    </div>
+
+</div><!-- /shares-page -->
+
+<!-- ═════════════════════════════════════════════ -->
+<!--                MODALS                        -->
+<!-- ═════════════════════════════════════════════ -->
+
+<!-- BUY SHARES -->
+@if (modals.buySharesModal) {
+<div class="modal-backdrop" (click)="closeModal('buySharesModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
+            <div style="height:3px;background:var(--grd);"></div>
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold"><i class="fas fa-chart-line me-2" style="color:var(--pri);"></i>Buy
+                        Shares</h5>
+                    <p class="mb-0 mt-1" style="font-size:12px;color:var(--txm);">Purchase additional shares to grow
+                        dividends and increase loan eligibility.</p>
+                </div>
+                <button type="button" class="btn-close" (click)="closeModal('buySharesModal')"></button>
+            </div>
+            <div class="modal-body px-4 pb-4 pt-3">
+                <!-- Current Holdings -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="kpi text-center">
+                            <div class="k">Current</div>
+                            <div class="v" style="color:var(--pri);">{{ member.totalShares }}</div>
+                            <div style="font-size:10px;color:var(--txm);">shares</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="kpi text-center">
+                            <div class="k">Price</div>
+                            <div class="v">KES {{ member.sharePrice }}</div>
+                            <div style="font-size:10px;color:var(--txm);">per share</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="kpi text-center">
+                            <div class="k">Can Buy</div>
+                            <div class="v" style="color:var(--grn);">{{ member.maxPurchasable }}</div>
+                            <div style="font-size:10px;color:var(--txm);">remaining</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Number of Shares <span
+                            class="text-danger">*</span></label>
+                    <input type="number" class="form-control form-control-lg" [(ngModel)]="buyForm.qty" min="1"
+                        [max]="member.maxPurchasable" style="border-radius:12px;font-family:var(--mono);font-size:18px;"
+                        (input)="calcBuy()">
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        @for (q of buyPresets; track q) {
+                        <button class="btn btn-sm rounded-pill fw-semibold"
+                            [class.btn-outline-secondary]="buyForm.qty !== q"
+                            [style.border]="buyForm.qty === q ? '1px solid var(--pri-bdr)' : ''"
+                            [style.color]="buyForm.qty === q ? 'var(--pri)' : ''"
+                            [style.background]="buyForm.qty === q ? 'var(--pri-sub)' : ''" (click)="setBuyQty(q)">
+                            {{ q }}
+                        </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="fw-semibold mb-2" style="font-size:13px;">Pay From <span class="text-danger">*</span></div>
+                <div class="row g-2 mb-3">
+                    @for (pm of buyPaymentMethods; track pm.id) {
+                    <div class="col-6 col-md-3">
+                        <div class="pm" [class.act]="buyForm.source === pm.id" (click)="selBuyPay(pm.id)">
+                            <div class="pi" [style.background]="pm.bg" [style.color]="pm.color"
+                                [style.border]="'1px solid ' + pm.bd">
+                                <i class="fas" [class]="pm.icon"></i>
+                            </div>
+                            <div class="fw-bold" style="font-size:12px;">{{ pm.label }}</div>
+                            <div style="font-size:10px;color:var(--txm);">{{ pm.sub }}</div>
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Summary -->
+                <div class="rounded-4 p-3" style="background:var(--inp);">
+                    <div class="fw-semibold mb-2" style="font-size:12px;"><i class="fas fa-receipt me-2"
+                            style="color:var(--pri);"></i>Purchase Summary</div>
+                    <div class="d-flex flex-column gap-1" style="font-size:13px;">
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">Shares</span>
+                            <strong style="font-family:var(--mono);">{{ buySummary.qty }} shares</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">Price/Share</span>
+                            <strong style="font-family:var(--mono);">KES {{ member.sharePrice }}</strong>
+                        </div>
+                        <div class="dv my-1"></div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-semibold" style="color:var(--pri);">Total Cost</span>
+                            <strong style="font-family:var(--mono);color:var(--pri);font-size:18px;">KES {{
+                                buySummary.totalCost | number:'1.0-0' }}</strong>
+                        </div>
+                        <div class="dv my-1"></div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">New Total Shares</span>
+                            <strong style="font-family:var(--mono);color:var(--grn);">{{ buySummary.newTotal }} (KES {{
+                                buySummary.newCapital | number:'1.0-0' }})</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">New Projected Dividend</span>
+                            <strong style="font-family:var(--mono);color:var(--grn);">KES {{ buySummary.newDividend |
+                                number:'1.0-0' }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button class="btn btn-outline-secondary rounded-3"
+                    (click)="closeModal('buySharesModal')">Cancel</button>
+                <button class="btn text-white rounded-3 fw-semibold px-4"
+                    style="background:var(--grd);box-shadow:var(--sh-o);" (click)="processBuyShares()">
+                    <i class="fas fa-shopping-cart me-1"></i> Buy {{ buyForm.qty }} Shares
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- PROCESSING -->
+@if (modals.procModal) {
+<div class="modal-backdrop"></div>
+<div class="modal show d-block" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+            <div class="modal-body p-4">
+                <div class="stk-loader">
+                    <div class="stk-spinner"></div>
+                    <div class="text-center">
+                        <h6 class="fw-bold" style="color:var(--pri);">Processing Purchase</h6>
+                        <p style="font-size:12px;color:var(--txm);">{{ procMsg }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- SUCCESS -->
+@if (modals.successModal) {
+<div class="modal-backdrop" (click)="closeModal('successModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+            <div style="height:3px;background:var(--grn);"></div>
+            <div class="modal-body p-4 text-center">
+                <div
+                    style="width:64px;height:64px;background:rgba(0,200,83,0.1);border:2px solid rgba(0,200,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;color:var(--grn);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h5 class="fw-bold" style="color:var(--grn);">Shares Purchased!</h5>
+                <div class="fw-bold mt-2" style="font-size:24px;font-family:var(--mono);">{{ sucData.qty }} shares</div>
+                <p style="font-size:12px;color:var(--txm);">{{ sucData.msg }}</p>
+                <div class="rounded-4 p-3 text-start mt-3" style="background:var(--inp);font-size:12px;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span style="color:var(--txm);">Reference</span>
+                        <span class="fw-semibold" style="font-family:var(--mono);color:var(--pri);">{{ sucData.ref
+                            }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span style="color:var(--txm);">New Total</span>
+                        <span class="fw-bold" style="font-family:var(--mono);color:var(--grn);">{{ sucData.newTotal }}
+                            shares</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color:var(--txm);">Capital</span>
+                        <span class="fw-bold" style="font-family:var(--mono);">{{ sucData.capital }}</span>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-outline-secondary rounded-3 flex-fill"
+                        (click)="showToast('Certificate updated & ready to download','success')">
+                        <i class="fas fa-certificate me-1"></i> Certificate
+                    </button>
+                    <button class="btn text-white rounded-3 flex-fill fw-semibold" style="background:var(--grd);"
+                        (click)="closeModal('successModal')">
+                        <i class="fas fa-check me-1"></i> Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- TRANSFER SHARES -->
+@if (modals.transferModal) {
+<div class="modal-backdrop" (click)="closeModal('transferModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
+            <div style="height:3px;background:var(--pur);"></div>
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exchange-alt me-2"
+                        style="color:var(--pur);"></i>Transfer Shares</h5>
+                <button type="button" class="btn-close" (click)="closeModal('transferModal')"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <div class="alert border-0 mb-3"
+                    style="background:rgba(171,0,217,0.04);border-radius:12px;font-size:12px;color:var(--pur);">
+                    <i class="fas fa-info-circle me-1"></i> Transfers require admin approval. Processing takes 3-5
+                    business days. Fee: KES 200. You must retain a minimum of 10 shares.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Transfer To (Member ID or Name) <span
+                            class="text-danger">*</span></label>
+                    <input type="text" class="form-control" style="border-radius:12px;" placeholder="Search member..."
+                        [(ngModel)]="transferForm.to">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Number of Shares <span
+                            class="text-danger">*</span></label>
+                    <input type="number" class="form-control" style="border-radius:12px;font-family:var(--mono);"
+                        [(ngModel)]="transferForm.qty" min="1" [max]="member.availableShares - 10"
+                        (input)="calcTransfer()">
+                    <div class="form-text" style="font-size:11px;">Available: {{ member.availableShares }} shares ({{
+                        member.lockedShares }} locked). Max transferable: {{ member.availableShares - 10 }} (must keep
+                        10).</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Reason</label>
+                    <textarea class="form-control" style="border-radius:12px;font-size:13px;" rows="2"
+                        placeholder="Optional: reason for transfer" [(ngModel)]="transferForm.reason"></textarea>
+                </div>
+                <div class="rounded-4 p-3"
+                    style="background:rgba(171,0,217,0.04);border:1px solid rgba(171,0,217,0.12);font-size:12px;">
+                    <div class="d-flex justify-content-between">
+                        <span style="color:var(--txm);">Shares to Transfer</span>
+                        <strong style="font-family:var(--mono);">{{ transferSummary.qty }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span style="color:var(--txm);">Transfer Fee</span>
+                        <strong style="color:var(--red);font-family:var(--mono);">KES 200</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span style="color:var(--txm);">Your Remaining</span>
+                        <strong style="font-family:var(--mono);">{{ transferSummary.remaining }} shares</strong>
+                    </div>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="trConsent" [(ngModel)]="transferForm.consent">
+                    <label class="form-check-label" for="trConsent" style="font-size:12px;">I understand this transfer
+                        is irreversible once admin-approved. Fee of KES 200 will be deducted.</label>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button class="btn btn-outline-secondary rounded-3"
+                    (click)="closeModal('transferModal')">Cancel</button>
+                <button class="btn text-white rounded-3 fw-semibold"
+                    style="background:linear-gradient(135deg,#7B1FA2,#9C27B0);" (click)="submitTransfer()">
+                    <i class="fas fa-paper-plane me-1"></i> Submit Transfer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- BREAKDOWN -->
+@if (modals.breakdownModal) {
+<div class="modal-backdrop" (click)="closeModal('breakdownModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
+            <div style="height:3px;background:#1A237E;"></div>
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-chart-pie me-2" style="color:#1A237E;"></i>Share
+                    Breakdown</h5>
+                <button type="button" class="btn-close" (click)="closeModal('breakdownModal')"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <div class="text-center mb-4">
+                    <div style="width:120px;height:120px;position:relative;display:inline-block;">
+                        <svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg);">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(26,29,46,0.06)" stroke-width="12" />
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--grn)" stroke-width="12"
+                                stroke-linecap="round" stroke-dasharray="314"
+                                [attr.stroke-dashoffset]="breakdownSvg.availableOffset" />
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--ylw)" stroke-width="12"
+                                stroke-linecap="round" stroke-dasharray="314"
+                                [attr.stroke-dashoffset]="breakdownSvg.lockedOffset"
+                                style="transform:rotate(0deg);transform-origin:center;" />
+                        </svg>
+                        <div
+                            style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                            <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:var(--tx);">{{
+                                member.totalShares }}</div>
+                            <div style="font-size:10px;color:var(--txm);">shares</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between p-3 rounded-3"
+                        style="background:rgba(0,200,83,0.04);border:1px solid rgba(0,200,83,0.12);font-size:13px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:10px;height:10px;background:var(--grn);border-radius:50%;"></div>
+                            <span>Available (Transferable)</span>
+                        </div>
+                        <strong style="font-family:var(--mono);">{{ member.availableShares }} shares</strong>
+                    </div>
+                    <div class="d-flex justify-content-between p-3 rounded-3"
+                        style="background:rgba(249,168,37,0.04);border:1px solid rgba(249,168,37,0.12);font-size:13px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:10px;height:10px;background:var(--ylw);border-radius:50%;"></div>
+                            <span>Locked (Guarantorship)</span>
+                        </div>
+                        <strong style="font-family:var(--mono);color:var(--ylw);">{{ member.lockedShares }}
+                            shares</strong>
+                    </div>
+                </div>
+                <div class="alert border-0 mt-3 mb-0"
+                    style="background:var(--inp);border-radius:12px;font-size:11px;color:var(--txm);">
+                    <i class="fas fa-info-circle me-1" style="color:var(--blu);"></i> {{ member.lockedShares }} shares
+                    locked as collateral for guaranteeing Mary Wanjiku's Development Loan. Released when her loan is
+                    fully repaid.
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button class="btn btn-outline-secondary rounded-3"
+                    (click)="closeModal('breakdownModal')">Close</button>
+                <a routerLink="/guarantors" class="btn btn-outline-primary rounded-3"><i
+                        class="fas fa-handshake me-1"></i> Guarantorship</a>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- IMPACT -->
+@if (modals.impactModal) {
+<div class="modal-backdrop" (click)="closeModal('impactModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
+            <div style="height:3px;background:var(--grd);"></div>
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-hand-holding-usd me-2"
+                        style="color:var(--pri);"></i>Shares & Loan Impact</h5>
+                <button type="button" class="btn-close" (click)="closeModal('impactModal')"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <div class="rounded-4 p-3 mb-3" style="background:var(--inp);">
+                    <div class="d-flex flex-column gap-1" style="font-size:13px;">
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">Share Capital</span>
+                            <strong style="font-family:var(--mono);">KES {{ member.totalCapital | number:'1.0-0'
+                                }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">Savings Balance</span>
+                            <strong style="font-family:var(--mono);">KES {{ member.savingsBalance | number:'1.0-0'
+                                }}</strong>
+                        </div>
+                        <div class="dv my-1"></div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">Combined (for loan calc)</span>
+                            <strong style="font-family:var(--mono);color:var(--blu);">KES {{ member.combinedForLoan |
+                                number:'1.0-0' }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color:var(--txm);">Multiplier (Admin-set)</span>
+                            <strong style="color:var(--pri);">3×</strong>
+                        </div>
+                        <div class="dv my-1"></div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold" style="color:var(--grn);">Gross Loan Limit</span>
+                            <strong style="font-family:var(--mono);color:var(--grn);">KES {{ member.grossLoanLimit |
+                                number:'1.0-0' }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert border-0 mb-0"
+                    style="background:rgba(0,200,83,0.04);border-radius:12px;font-size:11px;color:var(--grn);">
+                    <i class="fas fa-lightbulb me-1"></i> <strong>Tip:</strong> Each additional share (KES 100)
+                    increases your loan limit by KES 300. Buy 30 more shares to add KES 9,000 to your limit.
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('impactModal')">Close</button>
+                <button class="btn text-white rounded-3 fw-semibold" style="background:var(--grd);"
+                    (click)="closeModal('impactModal'); openModal('buySharesModal')">
+                    <i class="fas fa-plus me-1"></i> Buy Shares
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- CERTIFICATE DOWNLOAD -->
+@if (modals.certModal) {
+<div class="modal-backdrop" (click)="closeModal('certModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
+            <div style="height:3px;background:#FFC107;"></div>
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-certificate me-2" style="color:#FFC107;"></i>Share
+                    Certificate</h5>
+                <button type="button" class="btn-close" (click)="closeModal('certModal')"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <div class="text-center p-3 rounded-4 mb-3"
+                    style="background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.20);">
+                    <i class="fas fa-certificate d-block mb-2" style="font-size:40px;color:#FFC107;"></i>
+                    <div style="font-size:12px;font-family:var(--mono);color:var(--txm);">{{ certificate.number }}</div>
+                    <div class="fw-bold mt-1" style="font-size:20px;">{{ member.totalShares }} Shares</div>
+                    <div style="font-size:12px;color:var(--txm);">KES {{ member.totalCapital | number:'1.0-0' }} Capital
+                    </div>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <button class="btn btn-outline-danger rounded-3 w-100"
+                        (click)="downloadCert(); closeModal('certModal')">
+                        <i class="fas fa-file-pdf me-1"></i> Download PDF
+                    </button>
+                    <button class="btn btn-outline-secondary rounded-3 w-100"
+                        (click)="emailCert(); closeModal('certModal')">
+                        <i class="fas fa-envelope me-1"></i> Email Certificate
+                    </button>
+                    <button class="btn btn-outline-secondary rounded-3 w-100"
+                        (click)="shareCert(); closeModal('certModal')">
+                        <i class="fas fa-share-alt me-1"></i> Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- NOTIFICATIONS -->
+@if (modals.notifModal) {
+<div class="modal-backdrop" (click)="closeModal('notifModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+            <div class="modal-header border-0 px-4 pt-4 pb-2">
+                <h5 class="modal-title fw-bold"><i class="fas fa-bell me-2" style="color:var(--pri);"></i>Notifications
+                </h5>
+                <button type="button" class="btn-close" (click)="closeModal('notifModal')"></button>
+            </div>
+            <div class="modal-body px-4 pb-4" style="max-height:300px;overflow:auto;">
+                @for (n of notifications; track n.id) {
+                <div class="d-flex align-items-start gap-3 p-2 rounded-3 mb-1" style="cursor:pointer;"
+                    [style.background]="n.unread ? 'rgba(26,115,232,0.03)' : 'transparent'"
+                    (click)="showToast(n.toastMsg, n.toastType); closeModal('notifModal')">
+                    <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;"
+                        [style.background]="n.iconBg" [style.color]="n.iconColor">
+                        <i class="fas" [class]="n.icon"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:600;">{{ n.title }}</div>
+                        <div style="font-size:11px;color:var(--txm);">{{ n.subtitle }}</div>
+                    </div>
+                    @if (n.unread) {
+                    <div
+                        style="width:6px;height:6px;background:var(--pri);border-radius:50%;margin-top:8px;flex-shrink:0;">
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <a routerLink="/notifications" class="btn btn-outline-secondary rounded-3 w-100"><i
+                        class="fas fa-external-link-alt me-1"></i> All</a>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- LOGOUT -->
+@if (modals.logoutModal) {
+<div class="modal-backdrop" (click)="closeModal('logoutModal')"></div>
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+            <div class="modal-body p-4 text-center">
+                <div
+                    style="width:56px;height:56px;background:rgba(229,57,53,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--red);font-size:24px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h5 class="fw-bold">Logout?</h5>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-outline-secondary rounded-3 flex-fill"
+                        (click)="closeModal('logoutModal')">Stay</button>
+                    <a routerLink="/login" class="btn btn-danger rounded-3 flex-fill"><i
+                            class="fas fa-sign-out-alt me-1"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+

@@ -1,0 +1,35 @@
+/* member-layout.scss */
+/* Keep this file minimal — global styles handle the layout */
+
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.sp-layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Backdrop only — rest is handled globally */
+.sp-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1025;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+body.sidebar-open {
+  overflow: hidden;
+}

@@ -1,0 +1,753 @@
+<!-- Toast container -->
+<div class="toast-container">
+  @for (toast of toasts; track toast.id) {
+    <div class="toast-item {{ toast.type }}" [style.animation]="toast.removing ? 'fadeOut .3s forwards' : 'slideInRight .3s ease'">
+      <i class="bi {{ toast.icon }}" [style.color]="toast.color" style="font-size:1rem"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+  }
+</div>
+
+<div class="deposits-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h2><i class="bi bi-arrow-down-circle-fill" style="color:var(--primary-green);margin-right:.4rem"></i>Deposit Management</h2>
+      <p>Monitor, record, and reconcile all member deposits in real-time</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn-ghost" (click)="openModal('reconcileModal')">
+        <i class="bi bi-arrow-left-right"></i> Reconcile
+      </button>
+      <button class="btn-ghost" (click)="openModal('exportModal')">
+        <i class="bi bi-download"></i> Export
+      </button>
+      <button class="btn-primary-green" (click)="openModal('recordModal')">
+        <i class="bi bi-plus-circle"></i> Record Deposit
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STAT CARDS ── -->
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="stat-card-top">
+        <span class="stat-card-label">Today's Deposits</span>
+        <div class="stat-icon green"><i class="bi bi-calendar-check"></i></div>
+      </div>
+      <div class="stat-value">KES 8.2M</div>
+      <div class="stat-sub">1,234 deposits today</div>
+      <div class="stat-footer">
+        <span class="stat-trend up"><i class="bi bi-arrow-up-short"></i>+18.5% vs yesterday</span>
+        <span class="stat-updated"><i class="bi bi-clock"></i> 2m ago</span>
+      </div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-card-top">
+        <span class="stat-card-label">This Month</span>
+        <div class="stat-icon blue"><i class="bi bi-graph-up-arrow"></i></div>
+      </div>
+      <div class="stat-value">KES 156M</div>
+      <div class="stat-sub">+12.5% vs last month</div>
+      <div class="stat-footer">
+        <span class="stat-trend up"><i class="bi bi-arrow-up-short"></i>24,567 total deposits</span>
+        <span class="stat-updated" style="color:var(--status-success)"><i class="bi bi-check-circle"></i> On target</span>
+      </div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-card-top">
+        <span class="stat-card-label">Pending Approval</span>
+        <div class="stat-icon orange"><i class="bi bi-hourglass-split"></i></div>
+      </div>
+      <div class="stat-value">45</div>
+      <div class="stat-sub">KES 12.8M awaiting</div>
+      <div class="stat-footer">
+        <span class="stat-trend down"><i class="bi bi-exclamation-triangle"></i> Need verification</span>
+        <span class="stat-updated" style="color:var(--accent-orange)">3 over 24h</span>
+      </div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-card-top">
+        <span class="stat-card-label">Success Rate</span>
+        <div class="stat-icon purple"><i class="bi bi-shield-check"></i></div>
+      </div>
+      <div class="stat-value">99.2%</div>
+      <div class="stat-sub">Excellent performance</div>
+      <div class="stat-footer">
+        <span class="stat-trend down"><i class="bi bi-x-circle"></i>12 failed this month</span>
+        <span class="stat-updated" style="color:var(--status-success)">Target: 98%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHANNEL STRIP ── -->
+  <div class="channel-strip">
+    <div class="channel-card" (click)="showToast('M-Pesa channel selected', 'info')">
+      <div class="channel-icon mpesa"><i class="bi bi-phone"></i></div>
+      <div class="channel-info">
+        <div class="channel-name">M-Pesa</div>
+        <div class="channel-amount">KES 4.5M</div>
+        <div class="channel-count">892 deposits</div>
+      </div>
+    </div>
+    <div class="channel-card" (click)="showToast('Bank Transfer channel selected', 'info')">
+      <div class="channel-icon bank"><i class="bi bi-bank"></i></div>
+      <div class="channel-info">
+        <div class="channel-name">Bank Transfer</div>
+        <div class="channel-amount">KES 2.8M</div>
+        <div class="channel-count">234 deposits</div>
+      </div>
+    </div>
+    <div class="channel-card" (click)="showToast('Cash channel selected', 'info')">
+      <div class="channel-icon cash"><i class="bi bi-cash-stack"></i></div>
+      <div class="channel-info">
+        <div class="channel-name">Cash</div>
+        <div class="channel-amount">KES 650K</div>
+        <div class="channel-count">78 deposits</div>
+      </div>
+    </div>
+    <div class="channel-card" (click)="showToast('Cheque channel selected', 'info')">
+      <div class="channel-icon cheque"><i class="bi bi-file-text"></i></div>
+      <div class="channel-info">
+        <div class="channel-name">Cheque</div>
+        <div class="channel-amount">KES 250K</div>
+        <div class="channel-count">30 deposits</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN TABLE + PENDING QUEUE ── -->
+  <div class="content-grid">
+
+    <!-- Deposits Table -->
+    <div class="glass-card" style="overflow:hidden">
+      <div class="glass-card-header">
+        <h5><i class="bi bi-table" style="color:var(--primary-green)"></i>All Deposits</h5>
+        <div class="filter-bar">
+          <div class="filter-search-wrap">
+            <i class="bi bi-search fs-icon"></i>
+            <input type="search" placeholder="Search…" [(ngModel)]="tableSearch" (input)="filterTable()" />
+          </div>
+          <select [(ngModel)]="statusFilter" (change)="filterTable()">
+            <option value="">All Status</option>
+            <option>Completed</option>
+            <option>Pending</option>
+            <option>Processing</option>
+            <option>Failed</option>
+          </select>
+          <select [(ngModel)]="methodFilter" (change)="filterTable()">
+            <option value="">All Methods</option>
+            <option>M-Pesa</option>
+            <option>Bank Transfer</option>
+            <option>Cash</option>
+            <option>Cheque</option>
+          </select>
+          <input type="date" [(ngModel)]="dateFilter" (change)="filterTable()" />
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="deposits-table">
+          <thead>
+            <tr>
+              <th>Deposit ID</th>
+              <th>Date & Time</th>
+              <th>Member</th>
+              <th>Type</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (deposit of filteredDeposits; track deposit.id) {
+              <tr>
+                <td>
+                  <span class="dep-id">{{ deposit.id }}</span><br>
+                  <span class="dep-time">{{ deposit.time }}</span>
+                </td>
+                <td>{{ deposit.date }}</td>
+                <td>
+                  <div class="member-cell">
+                    <div class="member-avatar" [style.background]="deposit.avatarGradient">{{ deposit.initials }}</div>
+                    <div>
+                      <div class="member-name">{{ deposit.memberName }}</div>
+                      <div class="member-id">{{ deposit.memberId }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ deposit.type }}</td>
+                <td>
+                  <span class="method-badge {{ deposit.methodClass }}">
+                    <i class="bi {{ deposit.methodIcon }}"></i>{{ deposit.method }}
+                  </span>
+                </td>
+                <td class="amount-cell">{{ deposit.amount }}</td>
+                <td>
+                  <span class="status-badge {{ deposit.statusClass }}">{{ deposit.status }}</span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    @if (deposit.status === 'Pending') {
+                      <button class="action-btn success" title="Approve" (click)="approveDeposit(deposit)">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                    }
+                    <button class="action-btn" title="View details" (click)="openDetails(deposit)">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="action-btn" title="Print receipt" (click)="showToast('Printing receipt…', 'info')">
+                      <i class="bi bi-printer"></i>
+                    </button>
+                    @if (deposit.status === 'Pending') {
+                      <button class="action-btn danger" title="Reject" (click)="rejectDeposit(deposit)">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-bar">
+        <span class="pagination-info">Showing {{ filteredDeposits.length }} of {{ deposits.length }} deposits</span>
+        <div class="pagination-btns">
+          <button class="pg-btn" (click)="showToast('Previous page', 'info')" [disabled]="currentPage === 1">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          @for (page of [1, 2, 3]; track page) {
+            <button class="pg-btn" [class.active]="currentPage === page" (click)="goToPage(page)">{{ page }}</button>
+          }
+          <span style="align-self:center;font-size:.75rem;color:var(--text-tertiary)">…</span>
+          <button class="pg-btn" (click)="goToPage(207)">207</button>
+          <button class="pg-btn" (click)="showToast('Next page', 'info')">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Queue -->
+    <div class="glass-card" style="overflow:hidden">
+      <div class="glass-card-header">
+        <h5><i class="bi bi-hourglass-split" style="color:var(--accent-orange)"></i>Pending Approval</h5>
+        <span style="background:#fff3e0;color:#e65100;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;">{{ pendingDeposits.length }}</span>
+      </div>
+      <div class="glass-card-body" style="padding-top:.75rem">
+        @for (deposit of pendingDeposits.slice(0, 3); track deposit.id) {
+          <div class="pending-item">
+            <div class="pending-avatar" [style.background]="deposit.avatarGradient">{{ deposit.initials }}</div>
+            <div class="pending-body">
+              <div class="pending-top">
+                <div>
+                  <div class="pending-name">{{ deposit.memberName }}</div>
+                  <div class="pending-meta">{{ deposit.id }} · {{ deposit.memberId }}</div>
+                </div>
+                <div class="pending-amount">{{ deposit.amountShort }}</div>
+              </div>
+              <div class="pending-detail">
+                <span class="method-badge {{ deposit.methodClass }}" style="font-size:.68rem;padding:.2rem .5rem">
+                  <i class="bi {{ deposit.methodIcon }}"></i>{{ deposit.method }}
+                </span>
+                &nbsp;{{ deposit.type }} · Ref: {{ deposit.reference }}
+              </div>
+              <div class="pending-actions">
+                <button class="pend-btn approve" (click)="approveDeposit(deposit)">
+                  <i class="bi bi-check"></i> Approve
+                </button>
+                <button class="pend-btn reject" (click)="rejectDeposit(deposit)">
+                  <i class="bi bi-x"></i> Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+        <div style="padding-top:.75rem;text-align:center">
+          <button class="btn-outline-green" style="font-size:.78rem;width:100%" (click)="showToast('Viewing all pending deposits', 'info')">
+            View All {{ pendingDeposits.length }} Pending <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RECONCILIATION + QUICK ENTRY ── -->
+  <div class="content-grid wide">
+
+    <!-- Reconciliation Panel -->
+    <div class="glass-card" style="overflow:hidden">
+      <div class="glass-card-header">
+        <h5><i class="bi bi-arrow-left-right" style="color:var(--accent-teal)"></i>Reconciliation Status</h5>
+        <button class="btn-primary-green" style="font-size:.75rem;padding:.4rem .875rem" (click)="openModal('reconcileModal')">
+          <i class="bi bi-play-circle"></i> Run Reconcile
+        </button>
+      </div>
+      <div class="glass-card-body">
+        <div class="recon-stats">
+          <div class="recon-stat">
+            <div class="rs-label">System</div>
+            <div class="rs-value">KES 8.2M</div>
+            <div class="rs-sub">Recorded deposits</div>
+          </div>
+          <div class="recon-stat">
+            <div class="rs-label">Statement</div>
+            <div class="rs-value">KES 8.15M</div>
+            <div class="rs-sub">Bank/M-Pesa statement</div>
+          </div>
+          <div class="recon-stat" style="background:#e8f5e9">
+            <div class="rs-label" style="color:#2e7d32">Matched</div>
+            <div class="rs-value" style="color:#2e7d32">1,189</div>
+            <div class="rs-sub" style="color:#4caf50">96.4% match rate</div>
+          </div>
+          <div class="recon-stat" style="background:#fff3e0">
+            <div class="rs-label" style="color:#e65100">Unmatched</div>
+            <div class="rs-value" style="color:#e65100">45</div>
+            <div class="rs-sub" style="color:#ff9800">3.6% discrepancy</div>
+          </div>
+        </div>
+
+        <div style="font-size:.78rem;font-weight:700;color:var(--text-secondary);margin-bottom:.625rem">
+          <i class="bi bi-exclamation-triangle" style="color:var(--status-warning)"></i> Unmatched / Discrepancies
+        </div>
+
+        @for (item of reconciliationItems; track item.id) {
+          <div class="recon-item {{ item.type }}">
+            <div class="recon-top">
+              <span class="recon-ids">{{ item.id }}</span>
+              <span class="recon-time" [style.color]="item.type === 'matched' ? 'var(--status-success)' : ''">
+                @if (item.type === 'matched') {
+                  <i class="bi bi-check-circle"></i> Matched
+                } @else {
+                  {{ item.time }}
+                }
+              </span>
+            </div>
+            <div class="recon-issue">
+              <i class="bi {{ item.issueIcon }}" [style.color]="item.issueColor"></i> {{ item.issue }}
+            </div>
+            @if (item.type !== 'matched') {
+              <div style="margin-top:.5rem;display:flex;gap:.375rem">
+                <button class="pend-btn approve" style="font-size:.7rem" (click)="showToast(item.action1Text, 'success')">
+                  <i class="bi {{ item.action1Icon }}"></i> {{ item.action1Label }}
+                </button>
+                <button class="pend-btn reject" style="font-size:.7rem" (click)="showToast('Item flagged for review', 'warning')">
+                  <i class="bi bi-flag"></i> Flag
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Quick Entry + Activity -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem">
+
+      <!-- Quick Entry Form -->
+      <div class="glass-card" style="overflow:hidden">
+        <div class="glass-card-header">
+          <h5><i class="bi bi-plus-square" style="color:var(--primary-green)"></i>Quick Deposit Entry</h5>
+        </div>
+        <div class="glass-card-body">
+          <p style="font-size:.75rem;color:var(--text-secondary);margin-bottom:1rem">Record offline deposits (cash, cheque) or manual entries</p>
+          <div class="form-field">
+            <label>Member ID / Name</label>
+            <input type="search" placeholder="Search member…" [(ngModel)]="qeMember" (input)="updatePreview()" />
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Deposit Type</label>
+              <select [(ngModel)]="qeType" (change)="updatePreview()">
+                <option>Savings</option>
+                <option>Loan Repayment</option>
+                <option>Share Capital</option>
+                <option>Fixed Deposit</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Payment Method</label>
+              <select [(ngModel)]="qeMethod" (change)="updatePreview()">
+                <option>Cash</option>
+                <option>Cheque</option>
+                <option>Bank Transfer</option>
+                <option>M-Pesa</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Amount (KES)</label>
+            <input type="number" placeholder="0.00" [(ngModel)]="qeAmount" (input)="updatePreview()" />
+          </div>
+          <div class="form-field">
+            <label>Reference Number</label>
+            <input type="text" placeholder="e.g. CASH-1234 / Cheque No." [(ngModel)]="qeRef" />
+          </div>
+
+          <div class="preview-box">
+            <div style="font-size:.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:.5rem">
+              <i class="bi bi-receipt"></i> Deposit Preview
+            </div>
+            <div class="preview-row">
+              <span class="pr-label">Deposit Amount</span>
+              <span class="pr-value">{{ previewAmount }}</span>
+            </div>
+            <div class="preview-row">
+              <span class="pr-label">Processing Fee</span>
+              <span class="pr-value">{{ previewFee }}</span>
+            </div>
+            <div class="preview-row net">
+              <span class="pr-label">Net Deposit</span>
+              <span class="pr-value">{{ previewNet }}</span>
+            </div>
+          </div>
+
+          <button class="btn-primary-green" style="width:100%;justify-content:center" (click)="submitQuickEntry()">
+            <i class="bi bi-check-circle"></i> Record Deposit
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="glass-card" style="overflow:hidden">
+        <div class="glass-card-header">
+          <h5><i class="bi bi-activity" style="color:var(--accent-blue)"></i>Recent Activity</h5>
+          <span style="font-size:.72rem;color:var(--text-tertiary)">Live</span>
+        </div>
+        <div class="glass-card-body" style="padding-top:.5rem;padding-bottom:.75rem">
+          <div class="activity-feed">
+            @for (activity of recentActivity; track activity.id) {
+              <div class="activity-item">
+                <div class="activity-dot" [style.background]="activity.dotBg" [style.color]="activity.dotColor">{{ activity.initials }}</div>
+                <div>
+                  <div class="activity-name">{{ activity.name }}</div>
+                  <div class="activity-meta">{{ activity.meta }}</div>
+                </div>
+                <span class="activity-time">{{ activity.time }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANALYTICS ── -->
+  <div class="content-grid analytics">
+    <!-- 7-Day Trend -->
+    <div class="glass-card" style="overflow:hidden">
+      <div class="glass-card-header">
+        <h5><i class="bi bi-bar-chart" style="color:var(--primary-green)"></i>7-Day Deposit Trend</h5>
+      </div>
+      <div class="glass-card-body">
+        <div class="bar-chart">
+          @for (day of barChartData; track day.day) {
+            <div class="bar-col">
+              <div class="bar-wrap">
+                <div class="bar-fill" [style.height.%]="day.height" [style.background]="day.gradient">
+                  <div class="bar-tip">{{ day.amount }}</div>
+                </div>
+              </div>
+              <span class="bar-day">{{ day.day }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Deposits by Type -->
+    <div class="glass-card" style="overflow:hidden">
+      <div class="glass-card-header">
+        <h5><i class="bi bi-pie-chart" style="color:var(--accent-purple)"></i>Deposits by Type</h5>
+      </div>
+      <div class="glass-card-body">
+        <div class="type-rows">
+          @for (type of depositTypes; track type.name) {
+            <div class="type-row-item">
+              <div class="type-row-top">
+                <span class="type-row-name">{{ type.name }}</span>
+                <div style="text-align:right">
+                  <span class="type-row-amount">{{ type.amount }}</span><br>
+                  <span class="type-pct">{{ type.percent }}% of total</span>
+                </div>
+              </div>
+              <div class="type-progress">
+                <div class="type-progress-fill" [style.width.%]="type.percent" [style.background]="type.gradient"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Depositors -->
+  <div class="glass-card" style="overflow:hidden;margin-top:1.25rem">
+    <div class="glass-card-header">
+      <h5><i class="bi bi-trophy" style="color:var(--accent-orange)"></i>Top 5 Depositors — This Month</h5>
+      <button class="btn-ghost" style="font-size:.75rem;padding:.375rem .75rem" (click)="showToast('Exporting top depositors report…', 'info')">
+        <i class="bi bi-download"></i> Export
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="mini-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Member</th>
+            <th>Total Deposits</th>
+            <th>Frequency</th>
+            <th>Avg. Deposit</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (depositor of topDepositors; track depositor.rank) {
+            <tr>
+              <td>
+                <span class="rank-badge" [style.background]="depositor.badgeGradient">{{ depositor.rank }}</span>
+              </td>
+              <td>
+                <div class="member-cell">
+                  <div class="member-avatar" style="width:28px;height:28px;font-size:.65rem" [style.background]="depositor.avatarGradient">{{ depositor.initials }}</div>
+                  <div>
+                    {{ depositor.name }}<br>
+                    <span class="member-id">{{ depositor.memberId }}</span>
+                  </div>
+                </div>
+              </td>
+              <td style="font-weight:700;color:{{ depositor.rank === 1 ? 'var(--primary-green-dark)' : 'var(--text-primary)' }}">{{ depositor.total }}</td>
+              <td>{{ depositor.frequency }}</td>
+              <td>{{ depositor.average }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /deposits-page -->
+
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- 1. Record Deposit Modal -->
+<div class="modal-overlay" [class.active]="activeModal === 'recordModal'" (click)="closeModalOnOverlay($event, 'recordModal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h4><i class="bi bi-plus-circle" style="color:var(--primary-green)"></i> Record New Deposit</h4>
+      <button class="modal-close" (click)="closeModal('recordModal')"><i class="bi bi-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Member ID / Name *</label>
+        <input type="search" placeholder="Search by name or ID…" [(ngModel)]="recordMember" required />
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Deposit Type *</label>
+          <select [(ngModel)]="recordType" required>
+            <option value="">Select type</option>
+            <option>Savings</option>
+            <option>Loan Repayment</option>
+            <option>Share Capital</option>
+            <option>Fixed Deposit</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Payment Method *</label>
+          <select [(ngModel)]="recordMethod" required>
+            <option value="">Select method</option>
+            <option>M-Pesa</option>
+            <option>Bank Transfer</option>
+            <option>Cash</option>
+            <option>Cheque</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Amount (KES) *</label>
+        <input type="number" placeholder="0.00" min="0" [(ngModel)]="recordAmount" required />
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Reference No.</label>
+          <input type="text" placeholder="e.g. MPESA-ABC1234" [(ngModel)]="recordRef" />
+        </div>
+        <div class="form-field">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="recordDate" required />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Notes</label>
+        <textarea rows="2" placeholder="Optional notes…" style="resize:vertical" [(ngModel)]="recordNotes"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal('recordModal')">Cancel</button>
+      <button class="btn-primary-green" (click)="submitRecordDeposit()">
+        <i class="bi bi-check-circle"></i> Record Deposit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Deposit Details Modal -->
+<div class="modal-overlay" [class.active]="activeModal === 'detailsModal'" (click)="closeModalOnOverlay($event, 'detailsModal')">
+  <div class="modal-box lg">
+    <div class="modal-header">
+      <h4><i class="bi bi-file-earmark-text" style="color:var(--accent-blue)"></i> Deposit Details</h4>
+      <button class="modal-close" (click)="closeModal('detailsModal')"><i class="bi bi-x"></i></button>
+    </div>
+    <div class="modal-body">
+      @if (selectedDeposit) {
+        <div style="display:flex;align-items:center;gap:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border-color);margin-bottom:1rem;flex-wrap:wrap">
+          <div class="member-avatar" style="width:48px;height:48px;font-size:.9rem" [style.background]="selectedDeposit.avatarGradient">{{ selectedDeposit.initials }}</div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:700">{{ selectedDeposit.memberName }}</div>
+            <div style="font-size:.78rem;color:var(--text-secondary)">{{ selectedDeposit.id }} · {{ selectedDeposit.memberId }}</div>
+          </div>
+          <span class="status-badge {{ selectedDeposit.statusClass }}" style="margin-left:auto">{{ selectedDeposit.status }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Deposit ID</span>
+          <span class="detail-value">{{ selectedDeposit.id }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Member</span>
+          <span class="detail-value">{{ selectedDeposit.memberName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Deposit Type</span>
+          <span class="detail-value">{{ selectedDeposit.type }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method</span>
+          <span class="detail-value">{{ selectedDeposit.method }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Amount</span>
+          <span class="detail-value" style="font-weight:800;color:var(--primary-green-dark);font-size:1.05rem">{{ selectedDeposit.amount }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date & Time</span>
+          <span class="detail-value">{{ selectedDeposit.date }} {{ selectedDeposit.time }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Member ID</span>
+          <span class="detail-value">{{ selectedDeposit.memberId }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Reference No.</span>
+          <span class="detail-value" style="font-family:monospace">{{ selectedDeposit.reference }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Status</span>
+          <span class="detail-value">{{ selectedDeposit.status }}</span>
+        </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal('detailsModal')">Close</button>
+      <button class="btn-ghost" (click)="showToast('Printing receipt…', 'info')"><i class="bi bi-printer"></i> Print</button>
+      <button class="btn-primary-green" (click)="showToast('Report downloaded', 'success')"><i class="bi bi-download"></i> Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Export Modal -->
+<div class="modal-overlay" [class.active]="activeModal === 'exportModal'" (click)="closeModalOnOverlay($event, 'exportModal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h4><i class="bi bi-download" style="color:var(--accent-blue)"></i> Export Deposits</h4>
+      <button class="modal-close" (click)="closeModal('exportModal')"><i class="bi bi-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Date Range</label>
+        <div class="form-row">
+          <input type="date" [(ngModel)]="exportDateFrom" placeholder="From" />
+          <input type="date" [(ngModel)]="exportDateTo" placeholder="To" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Filter by Status</label>
+        <select [(ngModel)]="exportStatus">
+          <option value="">All Statuses</option>
+          <option>Completed</option>
+          <option>Pending</option>
+          <option>Processing</option>
+          <option>Failed</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Filter by Method</label>
+        <select [(ngModel)]="exportMethod">
+          <option value="">All Methods</option>
+          <option>M-Pesa</option>
+          <option>Bank Transfer</option>
+          <option>Cash</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Export Format</label>
+        <select [(ngModel)]="exportFormat">
+          <option>CSV (.csv)</option>
+          <option>Excel (.xlsx)</option>
+          <option>PDF Report</option>
+          <option>JSON</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal('exportModal')">Cancel</button>
+      <button class="btn-primary-green" (click)="submitExport()">
+        <i class="bi bi-download"></i> Export Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Reconcile Modal -->
+<div class="modal-overlay" [class.active]="activeModal === 'reconcileModal'" (click)="closeModalOnOverlay($event, 'reconcileModal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h4><i class="bi bi-arrow-left-right" style="color:var(--accent-teal)"></i> Run Reconciliation</h4>
+      <button class="modal-close" (click)="closeModal('reconcileModal')"><i class="bi bi-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--primary-green-ultra-light);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--primary-green-dark)">
+        <i class="bi bi-info-circle"></i> This will compare system records against bank/M-Pesa statements for the selected period.
+      </div>
+      <div class="form-field">
+        <label>Reconciliation Period</label>
+        <div class="form-row">
+          <input type="date" [(ngModel)]="reconcileDateFrom" />
+          <input type="date" [(ngModel)]="reconcileDateTo" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Source</label>
+        <select [(ngModel)]="reconcileSource">
+          <option>M-Pesa Statement</option>
+          <option>KCB Bank Statement</option>
+          <option>Equity Bank Statement</option>
+          <option>Co-op Bank Statement</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Upload Statement File (Optional)</label>
+        <input type="file" accept=".csv,.xlsx,.pdf" (change)="onFileSelected($event)" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal('reconcileModal')">Cancel</button>
+      <button class="btn-primary-green" (click)="runReconcile()">
+        <i class="bi bi-play-circle"></i> Run Reconciliation
+      </button>
+    </div>
+  </div>
+</div>

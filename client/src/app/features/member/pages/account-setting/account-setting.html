@@ -1,0 +1,619 @@
+<!-- Page header -->
+<div class="page-header d-flex align-items-start justify-content-between flex-wrap gap-2">
+  <div>
+    <h4><i class="bi bi-gear me-2" style="color:#1a56db;"></i>Account Settings</h4>
+    <p>Manage your personal information, security, and preferences.</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span style="font-size:0.78rem; color:#6b7280;">Last updated: <strong>Feb 23, 2025</strong></span>
+  </div>
+</div>
+
+<!-- Settings Tabs -->
+<div class="settings-tabs" role="tablist">
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'profile'"
+    (click)="setTab('profile')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'profile'"
+  >
+    <i class="bi bi-person"></i> Profile
+  </button>
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'employment'"
+    (click)="setTab('employment')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'employment'"
+  >
+    <i class="bi bi-briefcase"></i> Employment
+  </button>
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'emergency'"
+    (click)="setTab('emergency')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'emergency'"
+  >
+    <i class="bi bi-telephone-plus"></i> Emergency
+  </button>
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'preferences'"
+    (click)="setTab('preferences')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'preferences'"
+  >
+    <i class="bi bi-globe"></i> Preferences
+  </button>
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'notifications'"
+    (click)="setTab('notifications')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'notifications'"
+  >
+    <i class="bi bi-bell"></i> Notifications
+  </button>
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'security'"
+    (click)="setTab('security')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'security'"
+  >
+    <i class="bi bi-shield-lock"></i> Security
+  </button>
+  <button
+    class="settings-tab-btn"
+    [class.active]="activeTab === 'support'"
+    (click)="setTab('support')"
+    role="tab"
+    [attr.aria-selected]="activeTab === 'support'"
+  >
+    <i class="bi bi-headset"></i> Support
+  </button>
+</div>
+
+<!-- =============================
+     TAB: PROFILE
+============================= -->
+@if (activeTab === 'profile') {
+  <div class="tab-pane-content active" id="tab-profile">
+
+    <!-- Personal Information -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle"><i class="bi bi-person-fill"></i></div>
+        <div>
+          <h6>Personal Information</h6>
+          <p>Your basic information as registered with the Sacco. Some fields are locked for security.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label">First Name <i class="bi bi-lock-fill text-secondary" style="font-size:0.72rem;"></i></label>
+            <input type="text" class="form-control" [(ngModel)]="profile.firstName" readonly />
+            <div class="lock-hint"><i class="bi bi-lock-fill"></i> Locked – contact admin to change</div>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Last Name <i class="bi bi-lock-fill text-secondary" style="font-size:0.72rem;"></i></label>
+            <input type="text" class="form-control" [(ngModel)]="profile.lastName" readonly />
+            <div class="lock-hint"><i class="bi bi-lock-fill"></i> Locked – contact admin to change</div>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control" [(ngModel)]="profile.email" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-control" [(ngModel)]="profile.phone" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">National ID <i class="bi bi-lock-fill text-secondary" style="font-size:0.72rem;"></i></label>
+            <input type="text" class="form-control" [(ngModel)]="profile.nationalId" readonly />
+            <div class="lock-hint"><i class="bi bi-lock-fill"></i> Locked – contact admin to change</div>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Date of Birth <i class="bi bi-lock-fill text-secondary" style="font-size:0.72rem;"></i></label>
+            <input type="date" class="form-control" [(ngModel)]="profile.dateOfBirth" readonly />
+            <div class="lock-hint"><i class="bi bi-lock-fill"></i> Locked – contact admin to change</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Physical Address</label>
+            <input type="text" class="form-control" [(ngModel)]="profile.address" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">County</label>
+            <select class="form-select" [(ngModel)]="profile.county">
+              @for (county of counties; track county) {
+                <option [value]="county">{{ county }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Postal Code</label>
+            <input type="text" class="form-control" [(ngModel)]="profile.postalCode" />
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-cancel" (click)="resetProfile()">Cancel</button>
+          <button class="btn-save" (click)="saveProfile()">
+            <i class="bi bi-check2"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KYC & Verification Status -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#fef3c7; color:#92400e;"><i class="bi bi-shield-check"></i></div>
+        <div>
+          <h6>KYC &amp; Verification Status</h6>
+          <p>Know Your Customer documents and verification progress.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+
+        @for (item of kycItems; track item.id; let last = $last) {
+          <div class="kyc-item" [class.last-item]="last">
+            <div class="kyc-item-info">
+              <h6>{{ item.title }}</h6>
+              <p>{{ item.description }}</p>
+            </div>
+            <div class="kyc-badge-action">
+              <span class="kyc-badge" [class]="item.badgeClass">
+                <i class="bi" [class]="item.badgeIcon"></i> {{ item.badgeText }}
+              </span>
+              @if (item.canUpload) {
+                <button class="btn-upload" (click)="uploadKyc(item.id)">
+                  <i class="bi bi-upload"></i> Upload
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+
+  </div>
+}
+
+<!-- =============================
+     TAB: EMPLOYMENT
+============================= -->
+@if (activeTab === 'employment') {
+  <div class="tab-pane-content active" id="tab-employment">
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#f0fdf4; color:#166534;"><i class="bi bi-briefcase-fill"></i></div>
+        <div>
+          <h6>Employment &amp; Income</h6>
+          <p>Used to determine your loan eligibility and credit limit.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label">Employer Name</label>
+            <input type="text" class="form-control" [(ngModel)]="employment.employerName" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Job Title</label>
+            <input type="text" class="form-control" [(ngModel)]="employment.jobTitle" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Monthly Gross Income (KES)</label>
+            <input type="number" class="form-control" [(ngModel)]="employment.monthlyIncome" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Payroll Number</label>
+            <input type="text" class="form-control" [(ngModel)]="employment.payrollNumber" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Employment Type</label>
+            <select class="form-select" [(ngModel)]="employment.employmentType">
+              @for (type of employmentTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Years at Current Job</label>
+            <input type="number" class="form-control" [(ngModel)]="employment.yearsAtJob" min="0" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Employer Contact (HR)</label>
+            <input type="tel" class="form-control" [(ngModel)]="employment.employerContact" />
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-cancel" (click)="resetEmployment()">Cancel</button>
+          <button class="btn-save" (click)="saveEmployment()">
+            <i class="bi bi-check2"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- =============================
+     TAB: EMERGENCY CONTACT
+============================= -->
+@if (activeTab === 'emergency') {
+  <div class="tab-pane-content active" id="tab-emergency">
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#fef2f2; color:#991b1b;"><i class="bi bi-telephone-plus-fill"></i></div>
+        <div>
+          <h6>Emergency Contact</h6>
+          <p>Contact details to reach in case of emergency or loan guarantorship.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label">Contact Name</label>
+            <input type="text" class="form-control" [(ngModel)]="emergency.contactName" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Relationship</label>
+            <select class="form-select" [(ngModel)]="emergency.relationship">
+              @for (rel of relationships; track rel) {
+                <option [value]="rel">{{ rel }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-control" [(ngModel)]="emergency.phone" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Alternative Phone</label>
+            <input type="tel" class="form-control" [(ngModel)]="emergency.altPhone" />
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-cancel" (click)="resetEmergency()">Cancel</button>
+          <button class="btn-save" (click)="saveEmergency()">
+            <i class="bi bi-check2"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- =============================
+     TAB: PREFERENCES
+============================= -->
+@if (activeTab === 'preferences') {
+  <div class="tab-pane-content active" id="tab-preferences">
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#f0f9ff; color:#0369a1;"><i class="bi bi-globe2"></i></div>
+        <div>
+          <h6>Regional Preferences</h6>
+          <p>Localisation, currency, date and timezone settings.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label">Language</label>
+            <select class="form-select" [(ngModel)]="preferences.language">
+              @for (lang of languages; track lang) {
+                <option [value]="lang">{{ lang }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Currency Display</label>
+            <select class="form-select" [(ngModel)]="preferences.currency">
+              @for (curr of currencies; track curr) {
+                <option [value]="curr">{{ curr }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Time Zone</label>
+            <select class="form-select" [(ngModel)]="preferences.timezone">
+              @for (tz of timezones; track tz) {
+                <option [value]="tz">{{ tz }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Date Format</label>
+            <select class="form-select" [(ngModel)]="preferences.dateFormat">
+              @for (format of dateFormats; track format) {
+                <option [value]="format">{{ format }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-cancel" (click)="resetPreferences()">Cancel</button>
+          <button class="btn-save" (click)="savePreferences()">
+            <i class="bi bi-check2"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- =============================
+     TAB: NOTIFICATIONS
+============================= -->
+@if (activeTab === 'notifications') {
+  <div class="tab-pane-content active" id="tab-notifications">
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#fefce8; color:#a16207;"><i class="bi bi-bell-fill"></i></div>
+        <div>
+          <h6>Notification Preferences</h6>
+          <p>Control how and when you receive alerts from SaccoPay.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+
+        <p class="mb-2 notif-section-title">Email Notifications</p>
+
+        @for (notif of emailNotifications; track notif.id) {
+          <div class="notif-row">
+            <div class="notif-row-info">
+              <h6>{{ notif.title }}</h6>
+              <p>{{ notif.description }}</p>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="notif.id"
+                [(ngModel)]="notif.enabled"
+                [disabled]="notif.disabled"
+              />
+            </div>
+          </div>
+        }
+
+        <p class="mt-3 mb-2 notif-section-title">SMS Notifications</p>
+
+        @for (notif of smsNotifications; track notif.id) {
+          <div class="notif-row">
+            <div class="notif-row-info">
+              <h6>{{ notif.title }}</h6>
+              <p>{{ notif.description }}</p>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="notif.id"
+                [(ngModel)]="notif.enabled"
+                [disabled]="notif.disabled"
+              />
+            </div>
+          </div>
+        }
+
+        <div class="save-row">
+          <button class="btn-cancel" (click)="resetNotifications()">Cancel</button>
+          <button class="btn-save" (click)="saveNotifications()">
+            <i class="bi bi-check2"></i> Save Preferences
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- =============================
+     TAB: SECURITY
+============================= -->
+@if (activeTab === 'security') {
+  <div class="tab-pane-content active" id="tab-security">
+
+    <!-- Change Password -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#fef2f2; color:#991b1b;"><i class="bi bi-key-fill"></i></div>
+        <div>
+          <h6>Change Password</h6>
+          <p>We recommend using a strong, unique password.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        <div class="row g-3">
+          <div class="col-12 col-sm-6">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-control" [(ngModel)]="security.currentPassword" placeholder="Enter current password" />
+          </div>
+          <div class="col-12 col-sm-6"></div>
+          <div class="col-12 col-sm-6">
+            <label class="form-label">New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              [(ngModel)]="security.newPassword"
+              (input)="checkPasswordStrength()"
+              placeholder="Min 8 characters"
+            />
+            <div class="pass-strength-bar" [style.width.%]="passStrength.width" [style.background]="passStrength.color"></div>
+            <div class="pass-strength-label" [style.color]="passStrength.color">
+              {{ passStrength.label }}
+            </div>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" [(ngModel)]="security.confirmPassword" placeholder="Repeat new password" />
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-cancel" (click)="resetPassword()">Cancel</button>
+          <button class="btn-save" (click)="updatePassword()">
+            <i class="bi bi-check2"></i> Update Password
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Actions -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#eff6ff; color:#1e40af;"><i class="bi bi-shield-lock-fill"></i></div>
+        <div>
+          <h6>Security &amp; Access</h6>
+          <p>Manage two-factor authentication, active sessions and access logs.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+
+        <div class="security-action-row">
+          <div class="info">
+            <h6>Two-Factor Authentication (2FA)</h6>
+            <p>Add an extra layer of protection via SMS OTP on login.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="status-badge enabled">Enabled</span>
+            <button class="btn-outline-danger-sm" (click)="toggle2FA()">Disable 2FA</button>
+          </div>
+        </div>
+
+        <div class="security-action-row">
+          <div class="info">
+            <h6>Active Sessions</h6>
+            <p>You have {{ activeSessions }} active sessions. Last login: Chrome, Nairobi — Feb 23, 2025</p>
+          </div>
+          <button class="btn-outline-danger-sm" (click)="signOutAll()">Sign Out All</button>
+        </div>
+
+        <div class="security-action-row">
+          <div class="info">
+            <h6>Login Activity Log</h6>
+            <p>View recent sign-in history and detect suspicious activity.</p>
+          </div>
+          <button class="btn-outline-primary-sm" (click)="viewLoginLog()">View Log</button>
+        </div>
+
+        <div class="security-action-row">
+          <div class="info">
+            <h6>Download My Data</h6>
+            <p>Request a full export of your account data and transaction history.</p>
+          </div>
+          <button class="btn-outline-primary-sm" (click)="requestDataExport()">Request Export</button>
+        </div>
+
+        <div class="security-action-row">
+          <div class="info">
+            <h6>Close Account</h6>
+            <p>Permanently deactivate your SaccoPay account. This action is irreversible.</p>
+          </div>
+          <button class="btn-outline-danger-sm" (click)="closeAccount()">Close Account</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+}
+
+<!-- =============================
+     TAB: SUPPORT
+============================= -->
+@if (activeTab === 'support') {
+  <div class="tab-pane-content active" id="tab-support">
+
+    <!-- Member Summary -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#f0fdf4; color:#166534;"><i class="bi bi-person-badge-fill"></i></div>
+        <div>
+          <h6>Member Profile Summary</h6>
+          <p>Your verified account details on record.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            <div class="member-avatar">JD</div>
+          </div>
+          <div class="col">
+            <div class="member-name">John Doe</div>
+            <div class="member-email">john.doe@enterprise-email.com</div>
+            <div class="mt-1">
+              <span class="kyc-verified-badge">
+                <i class="bi bi-shield-check"></i> KYC Documents Completely Verified
+              </span>
+            </div>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <div class="info-row"><i class="bi bi-phone me-2 text-primary"></i>Mobile: <strong>+254 712 345 678</strong></div>
+          </div>
+          <div class="col-sm-6">
+            <div class="info-row"><i class="bi bi-card-text me-2 text-primary"></i>National ID: <strong>12345678</strong></div>
+          </div>
+          <div class="col-sm-6">
+            <div class="info-row"><i class="bi bi-geo-alt me-2 text-primary"></i>Residence: <strong>Nairobi Zone</strong></div>
+          </div>
+          <div class="col-sm-6">
+            <div class="info-row"><i class="bi bi-heart me-2 text-primary"></i>Next of Kin: <strong>Jane Doe (Spouse)</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support Tickets -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="icon-circle" style="background:#fef3c7; color:#92400e;"><i class="bi bi-headset"></i></div>
+        <div>
+          <h6>Support Tickets</h6>
+          <p>Track your open and resolved support requests.</p>
+        </div>
+      </div>
+      <div class="section-card-body">
+        @for (ticket of supportTickets; track ticket.id) {
+          <div class="support-ticket-row">
+            <div>
+              <div class="ticket-id">{{ ticket.id }}</div>
+              <div class="ticket-subject">{{ ticket.subject }}</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="ticket-priority" [class]="ticket.priorityClass">{{ ticket.priority }}</span>
+              <span class="ticket-status" [class]="ticket.statusClass">{{ ticket.status }}</span>
+            </div>
+          </div>
+        }
+
+        <div class="mt-3 pt-2 border-top d-flex flex-wrap gap-3 align-items-center">
+          <div class="contact-info"><i class="bi bi-telephone me-1 text-primary"></i>Call: <strong>+254 700 000 000</strong></div>
+          <div class="contact-info"><i class="bi bi-envelope me-1 text-primary"></i>Mail: <strong>support@saccopay.co.ke</strong></div>
+          <button class="btn-save ms-auto" (click)="newTicket()">
+            <i class="bi bi-plus"></i> New Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+}
+
+<!-- Toast Container -->
+<div class="toast-container-custom" id="toastContainer">
+  @for (toast of toasts; track toast.id) {
+    <div class="toast-msg" [class]="toast.type" @toastAnimation>
+      <i class="bi toast-icon" [class]="toast.icon"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+  }
+</div>

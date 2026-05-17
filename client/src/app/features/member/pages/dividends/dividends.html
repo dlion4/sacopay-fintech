@@ -1,0 +1,762 @@
+<!-- ================================================================
+     DIVIDENDS & RETURNS — ANGULAR v21
+     ================================================================ -->
+
+<div class="page-content fiu">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1><i class="fas fa-coins me-2" style="color:var(--gold);"></i>Dividends <span style="color:var(--pri);">& Returns</span></h1>
+      <p>Track your dividend earnings, interest credits, and projected returns from your SACCO membership.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline-secondary rounded-3" (click)="openModal('policy')"><i class="fas fa-book me-1"></i> Dividend Policy</button>
+      <button class="btn btn-outline-secondary rounded-3" (click)="openModal('projector')"><i class="fas fa-calculator me-1"></i> Projector</button>
+      <a routerLink="/shares" class="btn btn-primary-grad rounded-3"><i class="fas fa-chart-line me-1"></i> Buy Shares</a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-div">
+    <div class="hero-inner">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-6">
+          <div class="hero-label">Total Returns Earned (All Time)</div>
+          <div class="hero-value"><span class="prefix">KES</span> 8,275<span class="suffix">.00</span></div>
+          <div class="hero-meta">
+            <span><i class="fas fa-coins me-1" style="color:var(--gold);"></i> Dividends: <strong>KES 3,400</strong></span>
+            <span class="sep"></span>
+            <span><i class="fas fa-percentage me-1"></i> Savings Interest: <strong>KES 4,875</strong></span>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="kpi">
+                <div class="k">Last Dividend</div>
+                <div class="v" style="color:var(--gold);">KES 3,400</div>
+                <div class="sub">FY 2024 • Paid Dec 2024</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="kpi">
+                <div class="k">Projected (2025)</div>
+                <div class="v" style="color:var(--grn);">KES 3,600</div>
+                <div class="sub">Based on current shares</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="kpi">
+                <div class="k">Interest (YTD)</div>
+                <div class="v" style="color:rgba(255,255,255,0.85);">KES 725</div>
+                <div class="sub">Savings @ 7% p.a.</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="kpi">
+                <div class="k">Shares Held</div>
+                <div class="v" style="color:var(--pri-l);">120</div>
+                <a routerLink="/shares" class="text-decoration-none" style="font-size:10px;color:var(--pri-l);">Manage →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="m-tabs">
+    <button class="m-tab" [class.active]="activeTab === 'dividends'" (click)="switchTab('dividends')">
+      <i class="fas fa-coins"></i> Share Dividends
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'interest'" (click)="switchTab('interest')">
+      <i class="fas fa-percentage"></i> Savings Interest
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'projections'" (click)="switchTab('projections')">
+      <i class="fas fa-chart-line"></i> Projections
+    </button>
+  </div>
+
+  <!-- =======================================
+       TAB 1: SHARE DIVIDENDS
+  ======================================= -->
+  @if (activeTab === 'dividends') {
+  <div class="tab-pane fiu">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <!-- Dividend Chart -->
+        <div class="c mb-4">
+          <div class="c-header">
+            <div class="fw-semibold"><i class="fas fa-chart-bar me-2" style="color:var(--gold);"></i>Dividend History</div>
+            <button class="btn btn-outline-secondary rounded-3" (click)="exportDividends()"><i class="fas fa-download me-1"></i> Export</button>
+          </div>
+          <div class="c-body">
+            <div class="chart-wrap">
+              <canvas #divChartCanvas></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Yearly Dividend Cards -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="fw-bold mb-0"><i class="fas fa-calendar-alt me-2" style="color:var(--pri);"></i>Annual Dividend Records</h6>
+        </div>
+        <div class="row g-3 mb-4">
+          <!-- FY 2024 — Latest -->
+          <div class="col-md-6">
+            <div class="yr-card latest" (click)="openDividendDetail('2024')">
+              <div class="yr-ribbon">LATEST</div>
+              <div class="d-flex align-items-start justify-content-between mb-3">
+                <div>
+                  <div class="yr-label">Financial Year 2024</div>
+                  <div class="yr-value grn">KES 3,400</div>
+                </div>
+                <span class="b b-success"><i class="fas fa-check-circle"></i> Paid</span>
+              </div>
+              <div class="dv mb-3"></div>
+              <div class="row g-2" style="font-size:12px;">
+                <div class="col-6"><span style="color:var(--txm);">Rate Declared</span><div class="fw-bold" style="color:var(--grn);">30%</div></div>
+                <div class="col-6"><span style="color:var(--txm);">Shares at Declaration</span><div class="fw-bold" style="font-family:var(--mono);">100 × KES 100</div></div>
+                <div class="col-6"><span style="color:var(--txm);">Share Capital</span><div class="fw-bold" style="font-family:var(--mono);">KES 10,000</div></div>
+                <div class="col-6"><span style="color:var(--txm);">Paid On</span><div class="fw-bold">Dec 20, 2024</div></div>
+                <div class="col-6"><span style="color:var(--txm);">Payment Method</span><div class="fw-bold"><i class="fas fa-piggy-bank me-1" style="color:var(--grn);"></i>Savings Account</div></div>
+                <div class="col-6"><span style="color:var(--txm);">Withholding Tax</span><div class="fw-bold" style="color:var(--red);">KES 170 (5%)</div></div>
+              </div>
+              <div class="dv my-3"></div>
+              <div class="d-flex justify-content-between" style="font-size:13px;">
+                <span style="color:var(--txm);">Net Received</span>
+                <strong style="font-family:var(--mono);color:var(--grn);font-size:16px;">KES 3,230</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- FY 2023 — Not yet joined -->
+          <div class="col-md-6">
+            <div class="yr-card" style="opacity:0.6;" (click)="openDividendDetail('2023')">
+              <div class="d-flex align-items-start justify-content-between mb-3">
+                <div>
+                  <div class="yr-label">Financial Year 2023</div>
+                  <div class="yr-value muted">—</div>
+                </div>
+                <span class="b b-na"><i class="fas fa-ban"></i> N/A</span>
+              </div>
+              <div class="dv mb-3"></div>
+              <div class="text-center py-4">
+                <i class="fas fa-user-clock d-block mb-2" style="font-size:28px;color:var(--txm);opacity:0.5;"></i>
+                <div style="font-size:13px;color:var(--txm);">Not yet a member</div>
+                <div style="font-size:11px;color:var(--txm);margin-top:4px;">You joined SaccoPay on Jan 15, 2024</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Panels -->
+      <div class="col-lg-4 d-flex flex-column gap-3">
+        <!-- How Dividends Work -->
+        <div class="side-card" (click)="openModal('howItWorks')">
+          <div class="side-card-inner">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="side-icon" style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.20);color:var(--gold);">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;">How Dividends Work</div>
+                <div style="font-size:11px;color:var(--txm);">Understanding your returns</div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:var(--tx2);">Dividends are declared annually at the AGM based on SACCO performance. Your dividend = Share Capital × Declared Rate.</div>
+            <div style="font-size:11px;color:var(--pri);text-align:center;margin-top:8px;font-weight:600;">Tap to learn more</div>
+          </div>
+        </div>
+
+        <!-- Boost Returns CTA -->
+        <div class="cta-card green">
+          <i class="fas fa-rocket" style="font-size:28px;opacity:0.85;margin-bottom:8px;display:block;"></i>
+          <div style="font-size:15px;font-weight:700;">Boost Your Returns</div>
+          <div style="font-size:12px;opacity:0.8;" class="mb-3">Buy 30 more shares to increase your annual dividend from <strong>KES 3,600</strong> to <strong>KES 4,500</strong>.</div>
+          <a routerLink="/shares" class="btn btn-white rounded-3 px-4"><i class="fas fa-plus-circle me-1"></i> Buy 30 Shares (KES 3,000)</a>
+        </div>
+
+        <!-- Dividend Payout Preference -->
+        <div class="side-card" (click)="openModal('payoutPref')">
+          <div class="side-card-inner">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="side-icon" style="background:rgba(2,136,209,0.06);border:1px solid rgba(2,136,209,0.18);color:var(--blu);">
+                <i class="fas fa-wallet"></i>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;">Payout Preference</div>
+                <div style="font-size:11px;color:var(--txm);">Where dividends are credited</div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between" style="font-size:12px;">
+              <span style="color:var(--txm);">Current Setting</span>
+              <strong><i class="fas fa-piggy-bank me-1" style="color:var(--grn);"></i>Savings Account</strong>
+            </div>
+            <div style="font-size:11px;color:var(--pri);text-align:center;margin-top:8px;font-weight:600;">Tap to change</div>
+          </div>
+        </div>
+
+        <!-- Next Dividend Estimate -->
+        <div class="side-card" (click)="openModal('projector')">
+          <div class="side-card-inner">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="side-icon" style="background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.20);color:var(--grn);">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;">Next Dividend</div>
+                <div style="font-size:11px;color:var(--txm);">Estimated — FY 2025</div>
+              </div>
+            </div>
+            <div class="text-center mb-2">
+              <div style="font-size:28px;font-weight:800;font-family:var(--mono);color:var(--grn);">~ KES 3,600</div>
+              <div style="font-size:11px;color:var(--txm);">120 shares × KES 100 × 30% rate</div>
+            </div>
+            <div class="alert-box warning">
+              <i class="fas fa-info-circle me-1"></i> Projection only. Actual rate declared at AGM (March 2026).
+            </div>
+          </div>
+        </div>
+
+        <!-- Tax Info -->
+        <div class="side-card" (click)="openModal('tax')">
+          <div class="side-card-inner">
+            <div class="d-flex align-items-center gap-2">
+              <div class="side-icon" style="background:rgba(229,57,53,0.06);border:1px solid rgba(229,57,53,0.18);color:var(--red);">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;">Withholding Tax</div>
+                <div style="font-size:11px;color:var(--txm);">KRA compliance info</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- =======================================
+       TAB 2: SAVINGS INTEREST
+  ======================================= -->
+  @if (activeTab === 'interest') {
+  <div class="tab-pane fiu">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="c">
+          <div class="c-header">
+            <div class="fw-semibold"><i class="fas fa-percentage me-2" style="color:var(--blu);"></i>Monthly Savings Interest</div>
+            <button class="btn btn-outline-secondary rounded-3" (click)="exportInterest()"><i class="fas fa-download me-1"></i> Export</button>
+          </div>
+          <div class="c-body">
+            <!-- Interest Chart -->
+            <div class="chart-wrap-sm mb-4">
+              <canvas #intChartCanvas></canvas>
+            </div>
+
+            <!-- Monthly Records -->
+            <div class="d-flex flex-column gap-1">
+              @for (record of interestRecords; track record.month) {
+              <div class="interest-row" [class.highlighted]="record.status === 'pending'" (click)="openInterestDetail(record)">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="interest-icon" [class.pending]="record.status === 'pending'" [class.credited]="record.status === 'credited'">
+                    <i class="fas fa-{{ record.status === 'pending' ? 'clock' : 'check' }}"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;">{{ record.month }}</div>
+                    <div style="font-size:10px;color:var(--txm);">
+                      @if (record.status === 'pending') {
+                        Pending — credits on Feb 28
+                      } @else {
+                        Credited {{ record.creditedOn }}
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold" style="font-family:var(--mono);" [style.color]="record.status === 'pending' ? 'var(--pri)' : 'var(--grn)'">
+                    @if (record.status === 'pending') { ~ }KES {{ record.amount }}
+                  </div>
+                  <span class="b" [class.b-pending]="record.status === 'pending'" [class.b-success]="record.status === 'credited'" style="font-size:9px;">
+                    @if (record.status === 'pending') {
+                      <i class="fas fa-clock"></i> Pending
+                    } @else {
+                      <i class="fas fa-check"></i>
+                    }
+                  </span>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="dv my-3"></div>
+            <div class="d-flex justify-content-between" style="font-size:14px;">
+              <span class="fw-semibold">Lifetime Interest Earned</span>
+              <strong style="font-family:var(--mono);color:var(--grn);font-size:18px;">KES 4,875</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interest Side Panels -->
+      <div class="col-lg-4 d-flex flex-column gap-3">
+        <div class="c">
+          <div class="c-body">
+            <div class="fw-semibold mb-3" style="font-size:14px;"><i class="fas fa-cog me-2" style="color:var(--blu);"></i>Interest Settings <span style="font-size:11px;color:var(--txm);font-weight:400;">(Admin)</span></div>
+            <div class="d-flex flex-column gap-2" style="font-size:12px;">
+              <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Rate</span><strong style="color:var(--blu);">7% p.a.</strong></div>
+              <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Method</span><strong>Compound Monthly</strong></div>
+              <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Credit Date</span><strong>Last day of month</strong></div>
+              <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Calculated On</span><strong>Average daily balance</strong></div>
+              <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Projected Annual</span><strong style="color:var(--grn);font-family:var(--mono);">~ KES 6,913</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-card blue">
+          <i class="fas fa-piggy-bank" style="font-size:28px;opacity:0.85;display:block;margin-bottom:8px;"></i>
+          <div style="font-size:15px;font-weight:700;">Earn More Interest</div>
+          <div style="font-size:12px;opacity:0.8;" class="mb-3">Increase your savings balance to earn more monthly interest. Every KES 10,000 extra → ~KES 58/month.</div>
+          <a routerLink="/deposits" class="btn btn-white rounded-3 px-4"><i class="fas fa-plus me-1"></i> Deposit Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- =======================================
+       TAB 3: PROJECTIONS
+  ======================================= -->
+  @if (activeTab === 'projections') {
+  <div class="tab-pane fiu">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="c">
+          <div class="c-header">
+            <div class="fw-semibold"><i class="fas fa-chart-line me-2" style="color:var(--grn);"></i>5-Year Return Projection</div>
+          </div>
+          <div class="c-body">
+            <div class="chart-wrap-lg">
+              <canvas #projChartCanvas></canvas>
+            </div>
+            <div class="alert-box warning mt-3 mb-0">
+              <i class="fas fa-exclamation-triangle me-1"></i> Projections are estimates based on current rates and shares. Actual dividends depend on SACCO performance and AGM decisions.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="c">
+          <div class="c-header">
+            <div class="fw-semibold"><i class="fas fa-table me-2" style="color:var(--pri);"></i>Projection Table</div>
+          </div>
+          <div class="c-body d-flex flex-column gap-2">
+            @for (proj of projectionYears; track proj.year) {
+            <div class="proj-row" [class.highlighted]="proj.year === 2025" [class.normal]="proj.year !== 2025">
+              <div>
+                <div class="fw-bold">{{ proj.year }}</div>
+                <div style="font-size:10px;color:var(--txm);">{{ proj.shares }} shares</div>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold" style="font-family:var(--mono);color:var(--grn);">KES {{ proj.dividend.toLocaleString() }}</div>
+                <div style="font-size:10px;color:var(--txm);">+ KES {{ proj.interest.toLocaleString() }} interest</div>
+              </div>
+            </div>
+            }
+            <div class="dv my-2"></div>
+            <div class="proj-row highlighted" style="font-size:14px;">
+              <span class="fw-bold" style="color:var(--grn);">5-Year Total Returns</span>
+              <strong style="font-family:var(--mono);color:var(--grn);font-size:18px;">KES 63,800</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+</div><!-- /page-content -->
+
+<!-- ====================================================================
+     MODALS
+==================================================================== -->
+
+<!-- Dividend Detail Modal -->
+@if (showDividendDetailModal) {
+<div class="modal-overlay" (click)="closeModal('dividendDetail')">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-bar green"></div>
+    <div class="modal-header">
+      <h5><i class="fas fa-coins me-2" style="color:var(--gold);"></i>Dividend Details — FY {{ selectedDividendYear }}</h5>
+      <button class="modal-close-btn" (click)="closeModal('dividendDetail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      @if (selectedDividend) {
+      <div class="text-center mb-4">
+        <div style="width:64px;height:64px;background:rgba(0,200,83,0.1);border:2px solid rgba(0,200,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;color:var(--grn);">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div style="font-size:11px;color:var(--grn);font-weight:600;text-transform:uppercase;">Paid</div>
+        <div class="fw-bold mt-1" style="font-size:28px;font-family:var(--mono);color:var(--grn);">KES {{ selectedDividend.amount.toLocaleString() }}</div>
+        <div style="font-size:12px;color:var(--txm);">Financial Year {{ selectedDividend.year }}</div>
+      </div>
+      <div class="rounded-4 overflow-hidden" style="background:var(--inp);">
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Shares at Declaration</span><strong style="font-family:var(--mono);">{{ selectedDividend.sharesAtDeclaration }}</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Share Capital</span><strong style="font-family:var(--mono);">KES {{ selectedDividend.shareCapital.toLocaleString() }}</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Declared Rate</span><strong style="color:var(--grn);">{{ selectedDividend.rate }}%</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Gross Dividend</span><strong style="font-family:var(--mono);">KES {{ (selectedDividend.amount - 400).toLocaleString() }}</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Interest on Savings</span><strong style="font-family:var(--mono);">+ KES 400</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Withholding Tax (5%)</span><strong style="font-family:var(--mono);color:var(--red);">- KES {{ selectedDividend.tax.toLocaleString() }}</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Net Paid</span><strong style="font-family:var(--mono);color:var(--grn);font-size:16px;">KES {{ selectedDividend.netAmount.toLocaleString() }}</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;font-size:13px;">
+          <span style="color:var(--txm);">Payment Date</span><strong>{{ selectedDividend.paidOn }}</strong>
+        </div>
+        <div class="d-flex justify-content-between p-3" style="font-size:13px;">
+          <span style="color:var(--txm);">Credited To</span><strong><i class="fas fa-piggy-bank me-1" style="color:var(--grn);"></i>{{ selectedDividend.paymentMethod }}</strong>
+        </div>
+      </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('dividendDetail')">Close</button>
+      <button class="btn btn-outline-secondary rounded-3" (click)="downloadDividendCertificate()"><i class="fas fa-download me-1"></i> Certificate</button>
+      <button class="btn btn-outline-secondary rounded-3" (click)="downloadTaxCertificate()"><i class="fas fa-file-invoice-dollar me-1"></i> Tax Cert</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Interest Detail Modal -->
+@if (showInterestDetailModal) {
+<div class="modal-overlay" (click)="closeModal('interestDetail')">
+  <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-bar" [class.blue]="selectedInterestStatus === 'pending'" [class.green]="selectedInterestStatus === 'credited'"></div>
+    <div class="modal-header">
+      <h5>
+        <i class="fas fa-percentage me-2" [style.color]="selectedInterestStatus === 'pending' ? 'var(--pri)' : 'var(--grn)'"></i>
+        {{ selectedInterestMonth }} Interest
+      </h5>
+      <button class="modal-close-btn" (click)="closeModal('interestDetail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="text-center mb-3">
+        <div style="width:56px;height:56px;border:2px solid;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:22px;"
+             [style.background]="selectedInterestStatus === 'pending' ? 'var(--pri-sub)' : 'rgba(0,200,83,0.08)'"
+             [style.border-color]="selectedInterestStatus === 'pending' ? 'var(--pri-bdr)' : 'rgba(0,200,83,0.2)'"
+             [style.color]="selectedInterestStatus === 'pending' ? 'var(--pri)' : 'var(--grn)'">
+          <i class="fas fa-{{ selectedInterestStatus === 'pending' ? 'clock' : 'check-circle' }}"></i>
+        </div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;" [style.color]="selectedInterestStatus === 'pending' ? 'var(--pri)' : 'var(--grn)'">
+          {{ selectedInterestStatus === 'pending' ? 'Pending' : 'Credited' }}
+        </div>
+        <div class="fw-bold mt-1" style="font-size:24px;font-family:var(--mono);" [style.color]="selectedInterestStatus === 'pending' ? 'var(--pri)' : 'var(--grn)'">
+          {{ selectedInterestStatus === 'pending' ? '~' : '' }}KES {{ selectedInterestAmount }}
+        </div>
+      </div>
+      <div class="rounded-4 p-3" style="background:var(--inp);font-size:12px;">
+        <div class="d-flex justify-content-between mb-1"><span style="color:var(--txm);">Month</span><strong>{{ selectedInterestMonth }}</strong></div>
+        <div class="d-flex justify-content-between mb-1"><span style="color:var(--txm);">Rate</span><strong>7% p.a. (compound)</strong></div>
+        <div class="d-flex justify-content-between mb-1"><span style="color:var(--txm);">Avg. Balance</span><strong style="font-family:var(--mono);">~KES 97,000</strong></div>
+        <div class="d-flex justify-content-between">
+          <span style="color:var(--txm);">{{ selectedInterestStatus === 'pending' ? 'Expected Credit' : 'Credited On' }}</span>
+          <strong>{{ selectedInterestStatus === 'pending' ? 'Feb 28, 2025' : 'Jan 31, 2025' }}</strong>
+        </div>
+      </div>
+      @if (selectedInterestStatus === 'pending') {
+      <div class="alert-box warning mt-3 mb-0">
+        <i class="fas fa-info-circle me-1"></i> Interest will be auto-credited on the last day of the month.
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}
+
+<!-- How Dividends Work Modal -->
+@if (showHowItWorksModal) {
+<div class="modal-overlay" (click)="closeModal('howItWorks')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-bar gold"></div>
+    <div class="modal-header">
+      <h5><i class="fas fa-question-circle me-2" style="color:var(--gold);"></i>How Dividends Work</h5>
+      <button class="modal-close-btn" (click)="closeModal('howItWorks')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="d-flex flex-column gap-3">
+        <div class="step-item">
+          <div class="step-number" style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.20);color:var(--gold);">1</div>
+          <div>
+            <div class="step-title">You Buy Shares</div>
+            <div class="step-desc">Each share costs KES 100 (admin-set). The more shares you hold, the higher your dividend.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number" style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.20);color:var(--gold);">2</div>
+          <div>
+            <div class="step-title">SACCO Earns Profits</div>
+            <div class="step-desc">From loan interest, investments, and service fees throughout the financial year.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number" style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.20);color:var(--gold);">3</div>
+          <div>
+            <div class="step-title">Board Declares Dividend</div>
+            <div class="step-desc">At the AGM, the board declares a dividend rate (e.g., 30% of share capital) based on performance.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number" style="background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);color:var(--grn);">4</div>
+          <div>
+            <div class="step-title">You Receive Payment</div>
+            <div class="step-desc">Dividend = Your Share Capital × Rate. Paid to your preferred account after withholding tax (5%) deduction.</div>
+          </div>
+        </div>
+      </div>
+      <div class="dv my-3"></div>
+      <div class="rounded-4 p-3" style="background:var(--inp);">
+        <div class="fw-semibold mb-2" style="font-size:13px;"><i class="fas fa-calculator me-2" style="color:var(--pri);"></i>Your Example</div>
+        <div class="d-flex flex-column gap-1" style="font-size:12px;">
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Shares Held</span><strong style="font-family:var(--mono);">120 × KES 100 = KES 12,000</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Last Rate</span><strong style="color:var(--grn);">30%</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Gross Dividend</span><strong style="font-family:var(--mono);">KES 12,000 × 30% = KES 3,600</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Tax (5%)</span><strong style="color:var(--red);font-family:var(--mono);">- KES 180</strong></div>
+          <div class="dv my-1"></div>
+          <div class="d-flex justify-content-between"><span class="fw-bold" style="color:var(--grn);">Net Dividend</span><strong style="font-family:var(--mono);color:var(--grn);font-size:16px;">KES 3,420</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('howItWorks')">Got It</button>
+      <a routerLink="/shares" class="btn btn-primary-grad rounded-3"><i class="fas fa-chart-line me-1"></i> Buy More Shares</a>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Payout Preference Modal -->
+@if (showPayoutPrefModal) {
+<div class="modal-overlay" (click)="closeModal('payoutPref')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-bar blue"></div>
+    <div class="modal-header">
+      <h5><i class="fas fa-wallet me-2" style="color:var(--blu);"></i>Dividend Payout Preference</h5>
+      <button class="modal-close-btn" (click)="closeModal('payoutPref')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:16px;">Choose where your future dividends should be credited. This applies to all declared dividends.</div>
+      <div class="d-flex flex-column gap-2">
+        @for (opt of payoutOptions; track opt.id) {
+        <div class="payout-option" [class.selected]="opt.selected" (click)="selectPayout(opt.id)">
+          <div class="payout-option-inner">
+            <i class="fas {{ opt.icon }} payout-icon" [style.color]="opt.iconColor"></i>
+            <div>
+              <div class="payout-title">{{ opt.title }}</div>
+              <div class="payout-subtitle">{{ opt.subtitle }}</div>
+            </div>
+          </div>
+          <i class="fas {{ opt.selected ? 'fa-check-circle' : 'fa-circle' }} payout-check" [style.color]="opt.selected ? 'var(--grn)' : 'var(--txm)'"></i>
+        </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('payoutPref')">Cancel</button>
+      <button class="btn btn-primary-grad rounded-3" (click)="savePayoutPreference()"><i class="fas fa-save me-1"></i> Save</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Tax Info Modal -->
+@if (showTaxModal) {
+<div class="modal-overlay" (click)="closeModal('tax')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-bar red"></div>
+    <div class="modal-header">
+      <h5><i class="fas fa-file-invoice-dollar me-2" style="color:var(--red);"></i>Withholding Tax</h5>
+      <button class="modal-close-btn" (click)="closeModal('tax')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="rounded-4 p-3 mb-3" style="background:rgba(229,57,53,0.03);border:1px solid rgba(229,57,53,0.12);">
+        <div class="d-flex flex-column gap-1" style="font-size:13px;">
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Tax Rate on Dividends</span><strong style="color:var(--red);">5%</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Withheld by</span><strong>SaccoPay (at source)</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Remitted to</span><strong>KRA</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Your KRA PIN</span><strong style="font-family:var(--mono);">A123456789B</strong></div>
+        </div>
+      </div>
+      <div class="fw-semibold mb-2" style="font-size:13px;">Tax Deducted History</div>
+      <div class="d-flex flex-column gap-1">
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);font-size:12px;">
+          <span>FY 2024 Dividend</span><strong style="font-family:var(--mono);color:var(--red);">KES 170</strong>
+        </div>
+      </div>
+      <div class="dv my-3"></div>
+      <div style="font-size:11px;color:var(--txm);">Tax certificates can be used for your annual KRA tax returns. SaccoPay automatically remits withholding tax on your behalf as required by the Income Tax Act.</div>
+      <button class="btn btn-outline-secondary rounded-3 w-100 mt-3" (click)="downloadTaxCertificateFY()"><i class="fas fa-download me-1"></i> Download Tax Certificate (FY 2024)</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('tax')">Close</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Policy Modal -->
+@if (showPolicyModal) {
+<div class="modal-overlay" (click)="closeModal('policy')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-bar gold"></div>
+    <div class="modal-header">
+      <h5><i class="fas fa-book me-2" style="color:var(--gold);"></i>Dividend Policy</h5>
+      <button class="modal-close-btn" (click)="closeModal('policy')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="d-flex flex-column gap-2" style="font-size:13px;">
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Declaration</span><strong>Annual (at AGM)</strong></div>
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Basis</span><strong>Share capital held</strong></div>
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Last Rate</span><strong style="color:var(--grn);">30% of capital</strong></div>
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Qualification</span><strong>Hold shares 6+ months</strong></div>
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Payment</span><strong>Within 30 days of AGM</strong></div>
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Tax</span><strong style="color:var(--red);">5% WHT deducted at source</strong></div>
+        <div class="d-flex justify-content-between p-3 rounded-3" style="background:var(--inp);"><span style="color:var(--txm);">Payout Options</span><strong>Savings / Wallet / M-Pesa / Reinvest</strong></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('policy')">Close</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Projector Modal -->
+@if (showProjectorModal) {
+<div class="modal-overlay" (click)="closeModal('projector')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-bar grad"></div>
+    <div class="modal-header">
+      <h5><i class="fas fa-calculator me-2" style="color:var(--pri);"></i>Dividend Projector</h5>
+      <button class="modal-close-btn" (click)="closeModal('projector')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label">Shares</label>
+          <input type="number" class="form-control" [(ngModel)]="pjShares" style="border-radius:12px;font-family:var(--mono);">
+        </div>
+        <div class="col-6">
+          <label class="form-label">Dividend Rate (%)</label>
+          <input type="number" class="form-control" [(ngModel)]="pjRate" style="border-radius:12px;font-family:var(--mono);">
+        </div>
+      </div>
+      <div class="rounded-4 p-3" style="background:var(--inp);">
+        <div class="d-flex flex-column gap-1" style="font-size:13px;">
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Share Capital</span><strong style="font-family:var(--mono);" id="pjCapital">KES {{ pjCapital.toLocaleString() }}</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Gross Dividend</span><strong style="font-family:var(--mono);color:var(--grn);" id="pjGross">KES {{ pjGross.toLocaleString() }}</strong></div>
+          <div class="d-flex justify-content-between"><span style="color:var(--txm);">Tax (5%)</span><strong style="font-family:var(--mono);color:var(--red);" id="pjTax">- KES {{ pjTax.toLocaleString() }}</strong></div>
+          <div class="dv my-1"></div>
+          <div class="d-flex justify-content-between"><span class="fw-bold" style="color:var(--grn);">Net Dividend</span><strong style="font-family:var(--mono);color:var(--grn);font-size:18px;" id="pjNet">KES {{ pjNet.toLocaleString() }}</strong></div>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button class="btn btn-outline-secondary rounded-pill" (click)="setProjectorShares(150)">150 shares</button>
+        <button class="btn btn-outline-secondary rounded-pill" (click)="setProjectorShares(200)">200 shares</button>
+        <button class="btn btn-outline-secondary rounded-pill" (click)="setProjectorShares(300)">300 shares</button>
+        <button class="btn btn-outline-secondary rounded-pill" (click)="setProjectorShares(500)">500 shares</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('projector')">Close</button>
+      <a routerLink="/shares" class="btn btn-primary-grad rounded-3"><i class="fas fa-plus me-1"></i> Buy Shares</a>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Notifications Modal -->
+@if (showNotificationsModal) {
+<div class="modal-overlay" (click)="closeModal('notifications')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5><i class="fas fa-bell me-2" style="color:var(--pri);"></i>Notifications</h5>
+      <button class="modal-close-btn" (click)="closeModal('notifications')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="max-height:350px;overflow:auto;">
+      @for (notif of notifications; track notif.title) {
+      <div class="notif-item" [class.highlighted]="notif.isNew" (click)="handleNotification(notif)">
+        <div class="notif-icon" [style.background]="notif.iconBg" [style.color]="notif.iconColor">
+          <i class="fas {{ notif.icon }}"></i>
+        </div>
+        <div style="flex:1;">
+          <div class="notif-title">{{ notif.title }}</div>
+          <div class="notif-subtitle">{{ notif.subtitle }}</div>
+        </div>
+        @if (notif.isNew) {
+          <div class="notif-dot"></div>
+        }
+      </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <a routerLink="/notifications" class="btn btn-outline-secondary rounded-3 w-100"><i class="fas fa-external-link-alt me-1"></i> All</a>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Logout Modal -->
+@if (showLogoutModal) {
+<div class="modal-overlay" (click)="closeModal('logout')">
+  <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-body p-4 text-center">
+      <div style="width:56px;height:56px;background:rgba(229,57,53,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--red);font-size:24px;">
+        <i class="fas fa-sign-out-alt"></i>
+      </div>
+      <h5 class="fw-bold">Logout?</h5>
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline-secondary rounded-3 flex-fill" (click)="closeModal('logout')">Stay</button>
+        <a routerLink="/login" class="btn btn-danger rounded-3 flex-fill"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Toast -->
+@if (toast.show) {
+<div class="toast-container">
+  <div class="toast-msg" [class]="toast.type">
+    <i class="fas toast-icon" [class]="toast.type"
+       [class.fa-check-circle]="toast.type === 'success'"
+       [class.fa-exclamation-circle]="toast.type === 'error'"
+       [class.fa-exclamation-triangle]="toast.type === 'warning'"
+       [class.fa-info-circle]="toast.type === 'info'"
+       [class.fa-bell]="toast.type === 'primary'">
+    </i>
+    <div style="flex:1;">
+      <div class="toast-title">{{ toast.type.charAt(0).toUpperCase() + toast.type.slice(1) }}</div>
+      <div class="toast-body">{{ toast.message }}</div>
+    </div>
+    <button class="toast-close" (click)="toast.show = false"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+}

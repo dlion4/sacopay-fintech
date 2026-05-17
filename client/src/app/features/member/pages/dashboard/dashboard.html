@@ -1,0 +1,642 @@
+<!-- ═══════════════════════════════════════════════════════════════
+   SACCO PAY — MEMBER DASHBOARD COMPONENT TEMPLATE
+   ═══════════════════════════════════════════════════════════════ -->
+
+<div class="fade-in-up" (keydown.escape)="onKeydown($event)">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     SECTION: DASHBOARD
+     ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- Quick Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3" *ngFor="let stat of stats">
+      <div class="stat-card stat-card--{{stat.variant}}">
+        <div class="stat-card-body">
+          <div class="stat-icon"><i class="bi {{stat.icon}}"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">{{stat.label}}</span>
+            <h3 class="stat-value">{{stat.value}}</h3>
+            <span class="stat-change" [class.positive]="stat.changePositive" [class.negative]="!stat.changePositive">
+              <i class="bi" [class.bi-arrow-up-short]="stat.changePositive" [class.bi-arrow-down-short]="!stat.changePositive"></i>
+              {{stat.change}}
+            </span>
+          </div>
+        </div>
+        <div class="stat-card-footer">
+          <a href="javascript:void(0)" class="stat-link" (click)="navigateTo(stat.link)">
+            View Details <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions + Account Summary -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="dashboard-card h-100">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-lightning-charge-fill text-accent me-2"></i>Quick Actions
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-6 col-md-3" *ngFor="let action of quickActions">
+              <button
+                class="btn btn-outline-accent w-100 quick-action-btn"
+                (click)="action.modal ? openModal(action.modal) : navigateTo(action.action!)"
+              >
+                <i class="bi {{action.icon}} d-block"></i>
+                <span>{{action.label}}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="dashboard-card h-100">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-person-badge-fill text-accent me-2"></i>Account Summary
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush summary-list">
+            <li class="list-group-item">
+              <span class="text-muted">Member No.</span>
+              <strong>{{memberNumber}}</strong>
+            </li>
+            <li class="list-group-item">
+              <span class="text-muted">Joined</span>
+              <strong>{{memberSince}}</strong>
+            </li>
+            <li class="list-group-item">
+              <span class="text-muted">Status</span>
+              <span class="sp-badge badge-success">{{accountStatus}}</span>
+            </li>
+            <li class="list-group-item">
+              <span class="text-muted">Loan Limit</span>
+              <strong>{{loanLimit}}</strong>
+            </li>
+            <li class="list-group-item">
+              <span class="text-muted">Guarantors</span>
+              <strong>{{guarantorsAvailable}} Available</strong>
+            </li>
+            <li class="list-group-item">
+              <span class="text-muted">Next Contribution</span>
+              <strong class="text-accent">{{nextContribution}}</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transactions + Loan Status -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-7">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-clock-history text-accent me-2"></i>Recent Transactions
+          </h6>
+          <button class="btn btn-sm btn-outline-accent" (click)="navigateTo('transactions')">View All</button>
+        </div>
+        <div class="card-body p-0">
+          <div class="sp-table-wrap">
+            <table class="table table-hover mb-0 align-middle sp-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th class="text-end">Amount</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tx of transactions">
+                  <td><small>{{tx.date}}</small></td>
+                  <td>
+                    <span class="sp-badge" [class]="'badge-' + tx.typeColor">{{tx.type}}</span>
+                  </td>
+                  <td>{{tx.description}}</td>
+                  <td class="text-end fw-semibold" [style.color]="'var(--' + tx.amountColor + ')'">{{tx.amount}}</td>
+                  <td class="text-center">
+                    <span class="sp-badge" [class]="'badge-' + tx.statusColor">{{tx.status}}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="dashboard-card h-100">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-pie-chart-fill text-accent me-2"></i>Active Loans
+          </h6>
+          <button class="btn btn-sm btn-outline-accent" (click)="navigateTo('loans')">View All</button>
+        </div>
+        <div class="card-body">
+          <div class="loan-progress-card" *ngFor="let loan of loans">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="fw-semibold">{{loan.name}}</span>
+              <span class="small text-muted">KES {{loan.repaid | number}} / {{loan.total | number}}</span>
+            </div>
+            <div class="sp-progress">
+              <div
+                class="sp-progress-fill"
+                [style.width.%]="loan.percent"
+                [style.background]="'var(--' + loan.color + ')'"
+              ></div>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+              <small class="text-muted">{{loan.percent}}% Repaid</small>
+              <small class="text-muted">Due: {{loan.dueDate}}</small>
+            </div>
+          </div>
+          <div class="alert alert-info-custom d-flex align-items-center mt-3 mb-0">
+            <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+            <div>
+              <strong>Total Outstanding:</strong> {{totalOutstanding}}<br>
+              <small>Next installment: {{nextInstallment}}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contribution Trend + Announcements -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-bar-chart-line-fill text-accent me-2"></i>Contribution Trend (2024)
+          </h6>
+          <div class="btn-group btn-group-sm" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-accent"
+              [class.active]="chartPeriod === 'Monthly'"
+              (click)="setChartPeriod('Monthly')"
+            >Monthly</button>
+            <button
+              type="button"
+              class="btn btn-outline-accent"
+              [class.active]="chartPeriod === 'Quarterly'"
+              (click)="setChartPeriod('Quarterly')"
+            >Quarterly</button>
+            <button
+              type="button"
+              class="btn btn-outline-accent"
+              [class.active]="chartPeriod === 'Yearly'"
+              (click)="setChartPeriod('Yearly')"
+            >Yearly</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-placeholder">
+            <div class="chart-bars">
+              <div class="chart-bar-item" *ngFor="let bar of chartBars">
+                <div
+                  class="chart-bar"
+                  [class.active-bar]="bar.isActive"
+                  [class.upcoming]="bar.isUpcoming"
+                  [style.height]="bar.height"
+                  [title]="bar.amount"
+                ></div>
+                <span>{{bar.month}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="dashboard-card h-100">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="bi bi-megaphone-fill text-accent me-2"></i>Announcements
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="announcement-list">
+            <div
+              class="announcement-item"
+              *ngFor="let ann of announcements"
+              (click)="openAnnouncement(ann)"
+            >
+              <div class="mb-1" *ngIf="ann.badge">
+                <span class="sp-badge" [class]="'badge-' + ann.badgeColor">{{ann.badge}}</span>
+              </div>
+              <h6>{{ann.title}}</h6>
+              <p class="mb-1">{{ann.description}}</p>
+              <small><i class="bi bi-calendar3 me-1"></i>{{ann.date}}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="content-footer">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <p class="mb-1 mb-md-0">&copy; 2024 SaccoPay. All rights reserved.</p>
+      <div class="d-flex gap-3">
+        <a href="javascript:void(0)" class="text-decoration-none">Privacy Policy</a>
+        <a href="javascript:void(0)" class="text-decoration-none">Terms of Service</a>
+        <a href="javascript:void(0)" class="text-decoration-none">Help Center</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+   MODALS
+   ═══════════════════════════════════════════════════════════════ -->
+
+<!-- MODAL: Make Contribution -->
+<div class="modal-overlay" *ngIf="activeModal === 'contribute'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h5><i class="bi bi-plus-circle-fill text-accent me-2"></i>Make Contribution</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="handleContribute()">
+        <div class="mb-3">
+          <label class="form-label">Contribution Type</label>
+          <select class="form-select" [(ngModel)]="contributeForm.type" name="cType" required>
+            <option value="">Select type...</option>
+            <option>Monthly Savings</option>
+            <option>Extra Contribution</option>
+            <option>Share Capital</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Amount (KES)</label>
+          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="contributeForm.amount" name="cAmount" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Payment Method</label>
+          <select class="form-select" [(ngModel)]="contributeForm.method" name="cMethod" required>
+            <option value="">Select method...</option>
+            <option>M-Pesa</option>
+            <option>Bank Transfer</option>
+            <option>Card Payment</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Phone Number (for M-Pesa)</label>
+          <input type="tel" class="form-control" placeholder="e.g. 0712345678" [(ngModel)]="contributeForm.phone" name="cPhone" />
+        </div>
+        <div class="alert alert-info-custom small">
+          <i class="bi bi-info-circle-fill me-1"></i>An M-Pesa STK push will be sent to your phone. Please enter your PIN to complete.
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-accent" (click)="handleContribute()">
+        <i class="bi bi-send-fill me-2"></i>Submit Payment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Apply Loan -->
+<div class="modal-overlay" *ngIf="activeModal === 'loanApply'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <h5><i class="bi bi-bank text-accent me-2"></i>Loan Application</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="handleLoanApply()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Loan Type</label>
+            <select class="form-select" [(ngModel)]="loanApplyForm.type" name="lType" required>
+              <option value="">Select loan type...</option>
+              <option>Normal Loan</option>
+              <option>Emergency Loan</option>
+              <option>Education Loan</option>
+              <option>Asset Finance</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Loan Amount (KES)</label>
+            <input type="number" class="form-control" placeholder="Enter amount" min="1000" [(ngModel)]="loanApplyForm.amount" name="lAmount" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Repayment Period (Months)</label>
+            <select class="form-select" [(ngModel)]="loanApplyForm.period" name="lPeriod" required>
+              <option value="">Select period...</option>
+              <option>6 Months</option>
+              <option>12 Months</option>
+              <option>18 Months</option>
+              <option>24 Months</option>
+              <option>36 Months</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Purpose</label>
+            <select class="form-select" [(ngModel)]="loanApplyForm.purpose" name="lPurpose" required>
+              <option value="">Select purpose...</option>
+              <option>Business</option>
+              <option>Education</option>
+              <option>Medical</option>
+              <option>Home Improvement</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Guarantor 1 (Member No.)</label>
+            <input type="text" class="form-control" placeholder="e.g. SP-2024-0123" [(ngModel)]="loanApplyForm.guarantor1" name="lGuarantor1" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Guarantor 2 (Member No.)</label>
+            <input type="text" class="form-control" placeholder="e.g. SP-2024-0456" [(ngModel)]="loanApplyForm.guarantor2" name="lGuarantor2" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Additional Notes</label>
+            <textarea class="form-control" rows="2" placeholder="Any additional information..." [(ngModel)]="loanApplyForm.notes" name="lNotes"></textarea>
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="loanTerms" [(ngModel)]="loanApplyForm.terms" name="lTerms" required>
+              <label class="form-check-label" for="loanTerms">I agree to the <a href="javascript:void(0)" class="text-accent">loan terms and conditions</a></label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-accent" (click)="handleLoanApply()">
+        <i class="bi bi-send-fill me-2"></i>Submit Application
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Withdraw -->
+<div class="modal-overlay" *ngIf="activeModal === 'withdraw'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h5><i class="bi bi-cash-stack text-accent me-2"></i>Withdrawal Request</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="handleWithdraw()">
+        <div class="mb-3">
+          <label class="form-label">Withdrawal From</label>
+          <select class="form-select" [(ngModel)]="withdrawForm.from" name="wFrom" required>
+            <option value="">Select account...</option>
+            <option>Savings Account (KES 245,000)</option>
+            <option>Dividends Account (KES 12,300)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Amount (KES)</label>
+          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="withdrawForm.amount" name="wAmount" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Withdraw To</label>
+          <select class="form-select" [(ngModel)]="withdrawForm.to" name="wTo" required>
+            <option value="">Select method...</option>
+            <option>M-Pesa (0712***456)</option>
+            <option>Bank Account (KCB ***789)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Reason</label>
+          <textarea class="form-control" rows="2" placeholder="Reason for withdrawal..." [(ngModel)]="withdrawForm.reason" name="wReason"></textarea>
+        </div>
+        <div class="alert alert-warning-custom small">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i>Withdrawals are processed within 48 hours and may require admin approval.
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-accent" (click)="handleWithdraw()">
+        <i class="bi bi-send-fill me-2"></i>Submit Request
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Transfer -->
+<div class="modal-overlay" *ngIf="activeModal === 'transfer'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h5><i class="bi bi-arrow-left-right text-accent me-2"></i>Internal Transfer</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="handleTransfer()">
+        <div class="mb-3">
+          <label class="form-label">From Account</label>
+          <select class="form-select" [(ngModel)]="transferForm.from" name="tFrom" required>
+            <option value="">Select source...</option>
+            <option>Savings Account</option>
+            <option>Dividends Account</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">To Account</label>
+          <select class="form-select" [(ngModel)]="transferForm.to" name="tTo" required>
+            <option value="">Select destination...</option>
+            <option>Share Capital</option>
+            <option>Loan Repayment</option>
+            <option>Another Member (Enter Member No.)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Amount (KES)</label>
+          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="transferForm.amount" name="tAmount" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Narration</label>
+          <input type="text" class="form-control" placeholder="Transfer description..." [(ngModel)]="transferForm.narration" name="tNarration" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-accent" (click)="handleTransfer()">
+        <i class="bi bi-send-fill me-2"></i>Transfer Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Repay Loan -->
+<div class="modal-overlay" *ngIf="activeModal === 'repayLoan'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h5><i class="bi bi-credit-card-fill text-accent me-2"></i>Loan Repayment</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="handleRepayLoan()">
+        <div class="mb-3">
+          <label class="form-label">Select Loan</label>
+          <select class="form-select" [(ngModel)]="repayLoanForm.loan" name="rLoan" required>
+            <option value="">Select loan...</option>
+            <option>Normal Loan (LN-2024-0089) — Bal: KES 40,000</option>
+            <option>Emergency Loan (LN-2024-0112) — Bal: KES 5,000</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Repayment Amount (KES)</label>
+          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="repayLoanForm.amount" name="rAmount" required />
+          <div class="form-text">Monthly installment: KES 8,500</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Payment Method</label>
+          <select class="form-select" [(ngModel)]="repayLoanForm.method" name="rMethod" required>
+            <option value="">Select method...</option>
+            <option>M-Pesa</option>
+            <option>Bank Transfer</option>
+            <option>From Savings</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-accent" (click)="handleRepayLoan()">
+        <i class="bi bi-send-fill me-2"></i>Pay Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: New Support Ticket -->
+<div class="modal-overlay" *ngIf="activeModal === 'newTicket'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h5><i class="bi bi-ticket-detailed-fill text-accent me-2"></i>New Support Ticket</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="handleNewTicket()">
+        <div class="mb-3">
+          <label class="form-label">Subject</label>
+          <input type="text" class="form-control" placeholder="Brief description of your issue" [(ngModel)]="ticketForm.subject" name="sSubject" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Category</label>
+          <select class="form-select" [(ngModel)]="ticketForm.category" name="sCategory" required>
+            <option value="">Select category...</option>
+            <option>Payments</option>
+            <option>Loans</option>
+            <option>Account</option>
+            <option>Technical</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Priority</label>
+          <select class="form-select" [(ngModel)]="ticketForm.priority" name="sPriority" required>
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="4" placeholder="Describe your issue in detail..." [(ngModel)]="ticketForm.description" name="sDescription" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Attachment (Optional)</label>
+          <input type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event)" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-accent" (click)="handleNewTicket()">
+        <i class="bi bi-send-fill me-2"></i>Submit Ticket
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Announcement Detail -->
+<div class="modal-overlay" *ngIf="activeModal === 'announcement'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h5><i class="bi bi-megaphone-fill text-accent me-2"></i>Announcement</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedAnnouncement">
+      <h5>{{selectedAnnouncement.title}}</h5>
+      <p class="text-muted small mb-3"><i class="bi bi-calendar3 me-1"></i>Posted: {{selectedAnnouncement.date}}</p>
+      <p>Dear Members,</p>
+      <p>You are cordially invited to the SaccoPay Annual General Meeting scheduled for <strong>December 15, 2024 at 10:00 AM</strong> at the Nairobi Conference Center.</p>
+      <p><strong>Agenda:</strong></p>
+      <ul>
+        <li>Review of 2024 Financial Performance</li>
+        <li>Declaration of Dividends</li>
+        <li>Election of Board Members</li>
+        <li>New Product Launches for 2025</li>
+        <li>Any Other Business</li>
+      </ul>
+      <p>Please confirm your attendance by December 10, 2024.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
+      <button type="button" class="btn btn-accent" (click)="confirmAttendance()">
+        <i class="bi bi-check-circle me-2"></i>Confirm Attendance
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Logout Confirmation -->
+<div class="modal-overlay" *ngIf="activeModal === 'logout'" (click)="closeModalOnBackdrop($event)">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-header">
+      <h5><i class="bi bi-box-arrow-left text-danger me-2"></i>Logout</h5>
+      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body text-center">
+      <i class="bi bi-question-circle display-4 text-warning mb-3 d-block"></i>
+      <p>Are you sure you want to logout?</p>
+    </div>
+    <div class="modal-footer justify-content-center">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button type="button" class="btn btn-danger" (click)="handleLogout()">
+        <i class="bi bi-box-arrow-left me-2"></i>Logout
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+   TOAST CONTAINER
+   ═══════════════════════════════════════════════════════════════ -->
+<div class="sp-toast-container">
+  <div class="sp-toast {{toast.type}}" *ngFor="let toast of toasts">
+    <i class="bi {{getToastIcon(toast.type)}}" [style.color]="getToastColor(toast.type)" style="font-size:18px;flex-shrink:0;"></i>
+    <div class="toast-content">
+      <div class="toast-title">{{toast.type | titlecase}}</div>
+      <div class="toast-message">{{toast.message}}</div>
+    </div>
+    <button class="toast-close" (click)="removeToast(toast.id)">&times;</button>
+  </div>
+</div>

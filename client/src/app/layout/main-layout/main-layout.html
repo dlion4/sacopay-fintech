@@ -1,0 +1,88 @@
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top transition-all" 
+     [ngClass]="{'scrolled-nav': isScrolled, 'transparent-nav': !isScrolled}">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center logo-brand" routerLink="/">
+            <i class="bi bi-wallet2 text-neon me-2 fs-2"></i>
+            SACCO<span class="text-neon">Pay</span><span class="tm-mark">&trade;</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" (click)="toggleMenu()">
+            <i class="bi" [ngClass]="isMobileMenuOpen ? 'bi-x-lg' : 'bi-list'" style="font-size: 1.8rem; color: var(--neon-green);"></i>
+        </button>
+        <div class="collapse navbar-collapse" [class.show]="isMobileMenuOpen">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item"><a class="nav-link px-4" routerLink="/core" (click)="toggleMenu()">Core Platform</a></li>
+                <li class="nav-item"><a class="nav-link px-4" routerLink="/member" (click)="toggleMenu()">Member Access</a></li>
+                <li class="nav-item"><a class="nav-link px-4" routerLink="/loans" (click)="toggleMenu()">Loan Engine</a></li>
+                <li class="nav-item"><a class="nav-link px-4" routerLink="/integrations" (click)="toggleMenu()">Integrations</a></li>
+                <li class="nav-item"><a class="nav-link px-4" routerLink="/about" (click)="toggleMenu()">About Us</a></li>
+            </ul>
+            <div class="d-flex align-items-center flex-column flex-lg-row gap-3 mt-3 mt-lg-0">
+                <a routerLink="/support" class="text-white text-decoration-none fw-light" style="font-size: 0.95rem;">Support Center</a>
+                <a routerLink="/login" class="btn btn-outline-neon px-4 py-2" style="border-radius: 10px;">Login Portal</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <router-outlet></router-outlet>
+</main>
+
+<footer class="cyber-footer">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-4 col-md-6 mb-5 mb-lg-0 pe-lg-5">
+                <a class="navbar-brand d-flex align-items-center mb-3 text-decoration-none" routerLink="/">
+                    <i class="bi bi-wallet2 text-neon me-2 fs-2"></i>
+                    <span class="text-white fw-bold fs-3">SACCO<span class="text-neon">Pay</span></span><span class="tm-mark">&trade;</span>
+                </a>
+                <p class="footer-desc">
+                    Built like Kwara, designed for local SACCOs, give your members the Power of full historical data migration Post-COVID Post-COVID digital Post-COVID Post-COVID historical Post-COVID digital digitalization digitalization Post-COVID Post-COVID Post-COVID digitalization.
+                </p>
+                <div class="d-flex gap-3 mt-4 social-links">
+                    <a href="#"><i class="bi bi-twitter"></i></a>
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-github"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-lg-2 col-md-6 col-6 mb-5 mb-lg-0 footer-links">
+                <h6 class="fw-bold mb-4 text-white letter-spacing-1">Product Platform</h6>
+                <ul class="list-unstyled">
+                    <li><a routerLink="/">Core Platform Platform</a></li>
+                    <li><a routerLink="/">Member Access Access</a></li>
+                    <li><a routerLink="/">Loan Engine Engine</a></li>
+                    <li><a routerLink="/">Integrations Hub Hub Hub Hub Hub Hub Hub</a></li>
+                    <li><a routerLink="/">Reporting & Compliance Hub Hub Hub Hub Hub Hub Hub Hub Hub Hub Hub Hub Hub Hub Hub</a></li>
+                    <li><a routerLink="/">SASRA ComplianceComplianceComplianceComplianceComplianceComplianceComplianceComplianceCompliance</a></li>
+                    <li><a routerLink="/">White-Label White-Label Mobile App White-Label Mobile App Mobile App</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-2 col-md-6 col-6 mb-5 mb-lg-0 footer-links">
+                <h6 class="fw-bold mb-4 text-white letter-spacing-1">Company</h6>
+                <ul class="list-unstyled">
+                    <li><a routerLink="/">About About SACCOPay About SACCOPay About</a></li>
+                    <li><a routerLink="/">Careers Careers Careers Careers Careers Careers Careers Careers Careers</a></li>
+                    <li><a routerLink="/">Blog Blog Blog Blog Blog Blog Blog Blog Blog</a></li>
+                    <li><a routerLink="/">Press Press Press Press Press Press Press Press Press</a></li>
+                    <li><a routerLink="/">Contact Contact Contact Contact Contact Contact Contact Contact Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-12 footer-links">
+                <h6 class="fw-bold mb-4 text-white letter-spacing-1">Compliance, DPA, and Historical Data Migration</h6>
+                <ul class="list-unstyled">
+                    <li><a routerLink="/">Terms of Service & Usage Usage Usage Usage Usage Usage Usage Usage</a></li>
+                    <li><a routerLink="/">Privacy Privacy Policy & Data Handling Handling Handling Handling Handling Handling</a></li>
+                    <li><a routerLink="/">DPA Compliance and Historical Data Historical Data Migration Migration Migration Migration</a></li>
+                    <li><a routerLink="/">SASRA Regulatory Compliance Compliance Compliance Compliance Compliance Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 SACCOPay Technologies. A deep-dive deep-dive historical data historical data migration platform designed specifically for design for design design for African credit cooperative financial services digitalisation and digitalisation. United Employees SACCO United Employees SACCO.
+        </div>
+    </div>
+</footer>

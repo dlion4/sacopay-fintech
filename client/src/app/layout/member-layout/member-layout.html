@@ -1,0 +1,33 @@
+<!-- member-layout.component.html -->
+<!-- Responsive layout: sidebar col-2 / content col-10, collapsible, no overflow -->
+
+<div class="sp-layout-wrapper" [class.sidebar-minimized]="isSidebarMinimized" [class.sidebar-open]="isSidebarOpen">
+
+  <!-- Mobile Backdrop -->
+  <div class="sp-sidebar-backdrop" 
+       [class.show]="isSidebarOpen" 
+       (click)="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <app-member-sidebar 
+       [isOpen]="isSidebarOpen" 
+       [isMinimized]="isSidebarMinimized"
+       (closeMenu)="closeSidebar()"
+       (toggleMinimizeEvent)="toggleMinimize()">
+  </app-member-sidebar>
+
+  <!-- Main Content Area -->
+  <div class="sp-main-content">
+    <!-- Header -->
+    <app-member-header 
+        (toggleMenu)="toggleSidebar()"
+        [isSidebarMinimized]="isSidebarMinimized"
+        (toggleMinimize)="toggleMinimize()">
+    </app-member-header>
+
+    <!-- Page Body -->
+    <main class="sp-page-body">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

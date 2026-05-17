@@ -1,0 +1,135 @@
+/* member-layout.component.scss */
+/* ========================================== */
+/* SACCO PAY — Member Layout                  */
+/* Fixed sidebar + margin-offset content      */
+/* ========================================== */
+
+:root {
+  --sidebar-width: 260px;
+  --sidebar-minimized-width: 68px;
+  --header-height: 64px;
+  --transition-speed: 0.35s;
+}
+
+/* ========================================== */
+/* WRAPPER                                    */
+/* ========================================== */
+
+.sp-layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* ========================================== */
+/* SIDEBAR HOST                               */
+/* The inner .sp-sidebar is position:fixed.   */
+/* The host takes NO space in flex flow.      */
+/* ========================================== */
+
+app-member-sidebar {
+  display: block;
+  width: 0;
+  flex-shrink: 0;
+}
+
+/* ========================================== */
+/* MAIN CONTENT                               */
+/* Pushed right by sidebar width via margin.  */
+/* ========================================== */
+
+.sp-main-content {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  transition: margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1),
+              width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Minimized: smaller offset */
+.sp-layout-wrapper.sidebar-minimized .sp-main-content {
+  margin-left: var(--sidebar-minimized-width);
+  width: calc(100% - var(--sidebar-minimized-width));
+}
+
+/* ========================================== */
+/* PAGE BODY                                  */
+/* ========================================== */
+
+.sp-page-body {
+  flex: 1;
+  padding: 20px;
+  overflow-x: hidden;
+  background: #F5F6FA;
+  min-height: calc(100vh - var(--header-height));
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ========================================== */
+/* MOBILE (< 992px)                           */
+/* ========================================== */
+
+@media (max-width: 991px) {
+  app-member-sidebar {
+    width: 0;
+  }
+
+  .sp-main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .sp-page-body {
+    padding: 16px;
+  }
+
+  /* Backdrop */
+  .sp-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1025;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+
+    &.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* ========================================== */
+/* TABLET (992px - 1199px)                  */
+/* ========================================== */
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  :root {
+    --sidebar-width: 220px;
+  }
+}
+
+/* ========================================== */
+/* LARGE SCREENS (1400px+)                  */
+/* ========================================== */
+
+@media (min-width: 1400px) {
+  .sp-page-body {
+    padding: 28px;
+  }
+}
+
+/* ========================================== */
+/* UTILITY                                    */
+/* ========================================== */
+
+body.sidebar-open {
+  overflow: hidden;
+}

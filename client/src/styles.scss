@@ -1,0 +1,162 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$magenta-palette,
+        tertiary: mat.$violet-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
+/* You can add global styles to this file, and also import other style files */
+/* ========================================== */
+/* MEMBER LAYOUT — GLOBAL OVERRIDE            */
+/* Add at the BOTTOM of src/styles.scss       */
+/* This bypasses Angular view encapsulation     */
+/* ========================================== */
+
+/* Wrapper */
+app-member-layout {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+app-member-layout .sp-layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Sidebar host takes NO space in flex flow */
+app-member-layout app-member-sidebar {
+  display: block;
+  width: 0 !important;
+  min-width: 0 !important;
+  flex-shrink: 0;
+}
+
+/* ========================================== */
+/* MAIN CONTENT — THE CRITICAL FIX            */
+/* ========================================== */
+
+app-member-layout .sp-main-content {
+  flex: 1 1 auto !important;
+  min-width: 0;
+  margin-left: 260px !important;           /* ← SIDEBAR WIDTH OFFSET */
+  width: calc(100% - 260px) !important;    /* ← CONTENT WIDTH */
+  max-width: calc(100% - 260px) !important;
+  display: flex !important;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Minimized state */
+app-member-layout .sp-layout-wrapper.sidebar-minimized .sp-main-content {
+  margin-left: 68px !important;
+  width: calc(100% - 68px) !important;
+  max-width: calc(100% - 68px) !important;
+}
+
+/* Page body */
+app-member-layout .sp-page-body {
+  flex: 1;
+  padding: 20px;
+  overflow-x: hidden;
+  background: #F5F6FA;
+  min-height: calc(100vh - 64px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ========================================== */
+/* MOBILE (< 992px)                           */
+/* ========================================== */
+
+@media (max-width: 991px) {
+  app-member-layout .sp-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  app-member-layout .sp-page-body {
+    padding: 16px;
+  }
+
+  app-member-layout .sp-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1025;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+
+  app-member-layout .sp-sidebar-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* ========================================== */
+/* TABLET (992px - 1199px)                    */
+/* ========================================== */
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  app-member-layout .sp-main-content {
+    margin-left: 220px !important;
+    width: calc(100% - 220px) !important;
+    max-width: calc(100% - 220px) !important;
+  }
+
+  app-member-layout .sp-layout-wrapper.sidebar-minimized .sp-main-content {
+    margin-left: 68px !important;
+    width: calc(100% - 68px) !important;
+    max-width: calc(100% - 68px) !important;
+  }
+}
+
+/* ========================================== */
+/* LARGE SCREENS (1400px+)                    */
+/* ========================================== */
+
+@media (min-width: 1400px) {
+  app-member-layout .sp-page-body {
+    padding: 28px;
+  }
+}

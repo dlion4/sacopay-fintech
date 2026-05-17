@@ -1,0 +1,354 @@
+<!-- member-support.component.html -->
+<!-- Angular v21 Standalone — Member Support Page — Body Only -->
+
+<div class="support-page fade-in-up" style="max-width:1400px;">
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- ALERT BANNER -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="alert-banner gap-section">
+    <div class="alert-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <div>
+      <div class="alert-title">Loan Payment Due in 4 Days</div>
+      <div class="alert-text">
+        Your Emergency Loan installment of <strong>KES 3,200</strong> is due on <strong>Mar 1, 2025</strong>. Need help with repayment options?
+      </div>
+    </div>
+    <button class="btn-alert" (click)="showToast('Redirecting to loan repayment...','info')">Pay Now</button>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- STATS CARDS -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="row g-3 gap-section">
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.openTickets }}</div>
+        <div class="stat-label">Open Tickets</div>
+        <div class="stat-sub">{{ stats.resolvedThisWeek }} resolved this week</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.avgResponseTime }}</div>
+        <div class="stat-label">Avg. Response Time</div>
+        <div class="stat-sub">Faster than last week</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">{{ stats.pendingEscalation }}</div>
+        <div class="stat-label">Pending Escalation</div>
+        <div class="stat-sub">Awaiting admin review</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-value" style="color:#00C853">{{ stats.satisfactionScore }}%</div>
+        <div class="stat-label">Satisfaction Score</div>
+        <div class="stat-sub">Based on {{ stats.ratingCount }} ratings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- PAGE TABS -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div class="page-tabs">
+    @for (tab of pageTabs; track tab.id) {
+    <button class="page-tab-btn" [class.active]="activeTab === tab.id" (click)="setTab(tab.id)">
+      <i class="bi" [class]="tab.icon"></i> {{ tab.label }}
+    </button>
+    }
+  </div>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- TAB 1: MY TICKETS -->
+  <!-- ═════════════════════════════════════════════ -->
+  @if (activeTab === 'tickets') {
+  <div class="tab-section visible">
+    <div class="sp-card gap-section">
+      <div class="sp-card-header">
+        <div>
+          <div class="card-title"><i class="bi bi-ticket-perforated-fill text-orange me-2"></i>My Support Tickets</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Track and manage all your support requests</div>
+        </div>
+        <button class="btn-new-ticket" (click)="showToast('Opening new ticket form...','info')">
+          <i class="bi bi-plus-lg"></i> New Ticket
+        </button>
+      </div>
+      <div class="sp-card-body p-0">
+        <div class="table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Subject &amp; Preview</th>
+                <th class="hide-sm">Category</th>
+                <th class="hide-xs">Priority</th>
+                <th>Status</th>
+                <th class="hide-sm">Last Update</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ticket of tickets; track ticket.id) {
+              <tr>
+                <td><span class="ticket-id">{{ ticket.id }}</span></td>
+                <td>
+                  <div class="ticket-subject">{{ ticket.subject }}</div>
+                  <div class="ticket-preview">{{ ticket.preview }}</div>
+                </td>
+                <td class="hide-sm"><span style="font-size:0.75rem">{{ ticket.category }}</span></td>
+                <td class="hide-xs"><span class="priority-{{ ticket.priority }}">{{ ticket.priorityLabel }}</span></td>
+                <td>
+                  <span class="sp-badge badge-{{ ticket.status }}">
+                    <span class="dot"></span>{{ ticket.statusLabel }}
+                  </span>
+                </td>
+                <td class="hide-sm" style="font-size:0.72rem;color:var(--text-muted)">{{ ticket.lastUpdate }}</td>
+                <td>
+                  <a href="#" class="btn-view" (click)="viewTicket(ticket); $event.preventDefault()">View</a>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- TAB 2: FAQ -->
+  <!-- ═════════════════════════════════════════════ -->
+  @if (activeTab === 'faq') {
+  <div class="tab-section visible">
+    <div class="row g-3 gap-section">
+      <div class="col-12 col-lg-8">
+        <div class="sp-card">
+          <div class="sp-card-header">
+            <div class="card-title"><i class="bi bi-patch-question-fill text-orange me-2"></i>Frequently Asked Questions</div>
+          </div>
+          <div class="sp-card-body p-0">
+            @for (faq of faqs; track faq.id; let i = $index) {
+            <div class="accordion-item" [class.first-item]="i === 0" [class.last-item]="i === faqs.length - 1">
+              <button class="accordion-btn" (click)="toggleFaq(faq.id)" [attr.aria-expanded]="faq.open">
+                {{ faq.question }}
+                <i class="bi bi-chevron-down acc-icon" [class.rotated]="faq.open"></i>
+              </button>
+              @if (faq.open) {
+              <div class="accordion-body-text" [innerHTML]="faq.answer"></div>
+              }
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <!-- Top Searches -->
+        <div class="sp-card mb-3">
+          <div class="sp-card-header">
+            <div class="card-title"><i class="bi bi-search text-orange me-2"></i>Top Searches</div>
+          </div>
+          <div class="sp-card-body">
+            <div class="search-pills">
+              @for (pill of searchPills; track pill) {
+              <span class="search-pill" (click)="showToast('Searching: ' + pill,'info')">{{ pill }}</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Guides -->
+        <div class="sp-card">
+          <div class="sp-card-header">
+            <div class="card-title"><i class="bi bi-play-circle-fill text-orange me-2"></i>Video Guides</div>
+          </div>
+          <div class="sp-card-body d-flex flex-column gap-2">
+            @for (video of videoGuides; track video.title) {
+            <div class="video-card" (click)="showToast('Playing video: ' + video.title,'info')">
+              <div class="play-icon"><i class="bi bi-play-fill"></i></div>
+              <div>
+                <div class="video-title">{{ video.title }}</div>
+                <div class="video-dur"><i class="bi bi-clock me-1"></i>{{ video.duration }}</div>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- TAB 3: RESOURCES -->
+  <!-- ═════════════════════════════════════════════ -->
+  @if (activeTab === 'resources') {
+  <div class="tab-section visible">
+    <div class="row g-3 gap-section">
+      @for (res of resources; track res.name) {
+      <div class="col-12 col-sm-6 col-xl-4">
+        <div class="resource-card">
+          <span class="resource-type-badge" [class]="'rtype-' + res.type">
+            <i class="bi" [class]="res.typeIcon"></i>{{ res.typeLabel }}
+          </span>
+          <div class="resource-name">{{ res.name }}</div>
+          <div class="resource-desc">{{ res.desc }}</div>
+          <a href="#" class="resource-link" (click)="downloadResource(res); $event.preventDefault()">
+            {{ res.actionLabel }} <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- TAB 4: FEEDBACK -->
+  <!-- ═════════════════════════════════════════════ -->
+  @if (activeTab === 'feedback') {
+  <div class="tab-section visible">
+    <div class="row g-3">
+
+      <!-- Feedback Form -->
+      <div class="col-12 col-lg-7">
+        <div class="sp-card">
+          <div class="sp-card-header">
+            <div>
+              <div class="card-title"><i class="bi bi-star-fill text-orange me-2"></i>Rate Your Support Experience</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Your feedback helps us serve you better</div>
+            </div>
+          </div>
+          <div class="sp-card-body">
+            <!-- Star Rating -->
+            <div class="mb-3">
+              <label class="form-label-sp">How would you rate our support? <span>*</span></label>
+              <div class="stars-widget">
+                @for (star of [1,2,3,4,5]; track star) {
+                <button class="star-btn"
+                  [class.active]="star <= currentRating"
+                  [class.hover]="star <= hoverRating"
+                  (click)="setRating(star)"
+                  (mouseenter)="setHover(star)"
+                  (mouseleave)="clearHover()">
+                  &#9733;
+                </button>
+                }
+              </div>
+              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.35rem;">{{ starLabel }}</div>
+            </div>
+
+            <!-- Ticket Select -->
+            <div class="mb-3">
+              <label class="form-label-sp">Which ticket are you rating?</label>
+              <select class="sp-input sp-select" [(ngModel)]="feedbackForm.ticket">
+                <option value="">— Select a ticket —</option>
+                @for (t of feedbackTickets; track t) {
+                <option [value]="t">{{ t }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- What went well -->
+            <div class="mb-3">
+              <label class="form-label-sp">What went well?</label>
+              <textarea class="sp-input sp-textarea" placeholder="Tell us what you appreciated about the support experience..." [(ngModel)]="feedbackForm.positive"></textarea>
+            </div>
+
+            <!-- What to improve -->
+            <div class="mb-3">
+              <label class="form-label-sp">What can we improve?</label>
+              <textarea class="sp-input sp-textarea" placeholder="Share suggestions or areas that need improvement..." [(ngModel)]="feedbackForm.improvement"></textarea>
+            </div>
+
+            <!-- Consent -->
+            <div class="mb-3">
+              <label class="sp-checkbox">
+                <input type="checkbox" [(ngModel)]="feedbackForm.consent" />
+                <span>I consent to my feedback being used for service improvement</span>
+              </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 flex-wrap">
+              <button class="btn-submit" (click)="submitFeedback()">
+                <i class="bi bi-send-fill me-2"></i>Submit Feedback
+              </button>
+              <button class="btn-secondary-sp" (click)="clearFeedback()">
+                <i class="bi bi-x-lg me-1"></i>Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback History + Metrics -->
+      <div class="col-12 col-lg-5">
+        <!-- History -->
+        <div class="sp-card mb-3">
+          <div class="sp-card-header">
+            <div class="card-title"><i class="bi bi-clock-history text-orange me-2"></i>Your Feedback History</div>
+          </div>
+          <div class="sp-card-body d-flex flex-column gap-3">
+            @for (fb of feedbackHistory; track fb.ticket) {
+            <div class="feedback-card">
+              <div class="d-flex align-items-start justify-content-between">
+                <div class="fb-ticket">{{ fb.ticket }}</div>
+                <div class="fb-stars">{{ fb.stars }}</div>
+              </div>
+              <div class="fb-quote">"{{ fb.quote }}"</div>
+              <div class="fb-date"><i class="bi bi-calendar3 me-1"></i>{{ fb.date }}</div>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Support Metrics -->
+        <div class="sp-card">
+          <div class="sp-card-header">
+            <div class="card-title"><i class="bi bi-bar-chart-fill text-orange me-2"></i>Support Metrics</div>
+          </div>
+          <div class="sp-card-body">
+            @for (metric of supportMetrics; track metric.label) {
+            <div class="metric-item">
+              <span class="metric-label"><i class="bi me-2 text-orange" [class]="metric.icon"></i>{{ metric.label }}</span>
+              <span class="metric-value">{{ metric.value }}</span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- FOOTER -->
+  <!-- ═════════════════════════════════════════════ -->
+  <footer class="app-footer">
+    <span>&copy; 2025 <a routerLink="/home">SaccoPay</a>. All rights reserved.</span>
+    <span>
+      <a href="#" (click)="showToast('Opening Help Center...','info'); $event.preventDefault()">Help Center</a> &nbsp;·&nbsp;
+      <a href="#" (click)="showToast('Opening Privacy Policy...','info'); $event.preventDefault()">Privacy Policy</a> &nbsp;·&nbsp;
+      <a href="#" (click)="showToast('Opening Terms...','info'); $event.preventDefault()">Terms</a>
+    </span>
+  </footer>
+
+  <!-- ═════════════════════════════════════════════ -->
+  <!-- TOAST CONTAINER -->
+  <!-- ═════════════════════════════════════════════ -->
+  <div id="toast-container">
+    @for (toast of toasts; track toast.id) {
+    <div class="toast-msg" [class]="'toast-' + toast.type" [@slideInToast]>
+      <i class="bi" [class]="toast.icon"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+    }
+  </div>
+
+</div><!-- /support-page -->

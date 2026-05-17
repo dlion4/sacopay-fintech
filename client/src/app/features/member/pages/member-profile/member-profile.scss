@@ -1,0 +1,408 @@
+:root {
+  --pri: #1a73e8;
+  --pri-l: #1558b0;
+  --pri-sub: rgba(255,107,0,0.06);
+  --pri-bdr: rgba(255,107,0,0.20);
+  --bg: #F5F6FA;
+  --card: #fff;
+  --inp: #F0F2F8;
+  --tx: #1A1D2E;
+  --tx2: rgba(26,29,46,0.72);
+  --txm: rgba(26,29,46,0.50);
+  --mono: 'JetBrains Mono', monospace;
+  --sh-s: 0 1px 3px rgba(0,0,0,0.06);
+  --sh-m: 0 4px 12px rgba(0,0,0,0.08);
+  --sh-o: 0 4px 16px rgba(255,107,0,0.18);
+  --grd: linear-gradient(135deg, #1a73e8, #1558b0, #00f7ff);
+  --sbw: 260px;
+  --grn: #00C853;
+  --red: #E53935;
+  --ylw: #F9A825;
+  --blu: #0288D1;
+  --pur: #AB00D9;
+}
+
+:host {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--tx);
+  min-height: 100vh;
+}
+
+/* ─── Cards ─── */
+.c {
+  background: #fff;
+  border: 1px solid rgba(26,29,46,0.06);
+  border-radius: 16px;
+  box-shadow: var(--sh-s);
+  transition: all .25s;
+  overflow: hidden;
+}
+.c:hover { box-shadow: var(--sh-m); }
+
+/* ─── Profile Hero ─── */
+.profile-hero {
+  background: linear-gradient(135deg, #0D1B3E 0%, #1A2D5C 50%, #253D73 100%);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+.hero-orb {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,107,0,0.10);
+  border-radius: 50%;
+}
+
+/* ─── Avatar ─── */
+.avatar-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--grd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: var(--sh-o);
+  position: relative;
+  cursor: pointer;
+  transition: transform .2s;
+}
+.avatar-ring:hover { transform: scale(1.05); }
+.avatar-ring .cam {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pri);
+  font-size: 12px;
+  box-shadow: var(--sh-s);
+  border: 2px solid var(--bg);
+}
+
+/* ─── Edit Profile Button ─── */
+.edit-profile-btn {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.20);
+}
+.edit-profile-btn:hover {
+  background: rgba(255,255,255,0.20);
+  color: #fff;
+}
+
+/* ─── Badges ─── */
+.b {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ─── Progress ─── */
+.pr {
+  height: 6px;
+  border-radius: 50px;
+  background: rgba(26,29,46,0.06);
+  overflow: hidden;
+}
+.pf {
+  height: 100%;
+  border-radius: 50px;
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+/* ─── KPIs ─── */
+.kpi {
+  background: var(--inp);
+  border: 1px solid rgba(26,29,46,0.08);
+  border-radius: 14px;
+  padding: 14px;
+}
+.kpi .k { font-size: 11px; color: var(--txm); }
+.kpi .v { font-family: var(--mono); font-weight: 800; }
+
+/* ─── Field Rows ─── */
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(26,29,46,0.04);
+  font-size: 13px;
+}
+.field-row:last-child { border-bottom: none; }
+.field-row .fl {
+  color: var(--txm);
+  font-weight: 500;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+.field-row .fv {
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ─── Document Cards ─── */
+.doc-card {
+  border: 2px dashed rgba(26,29,46,0.12);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: #fff;
+}
+.doc-card:hover {
+  border-color: var(--pri-bdr);
+  background: var(--pri-sub);
+}
+.doc-card.uploaded {
+  border-style: solid;
+  border-color: rgba(0,200,83,0.25);
+  background: rgba(0,200,83,0.03);
+}
+.doc-card.rejected {
+  border-style: solid;
+  border-color: rgba(229,57,53,0.25);
+  background: rgba(229,57,53,0.03);
+}
+
+/* ─── NOK Avatar ─── */
+.nok-avatar {
+  width: 40px;
+  height: 40px;
+  border: 1px solid;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ─── Bank Card ─── */
+.bank-card { transition: all .2s; }
+.bank-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.bank-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Sessions ─── */
+.session-current {
+  background: rgba(0,200,83,0.03);
+  border: 1px solid rgba(0,200,83,0.12);
+}
+.session-other {
+  background: var(--inp);
+}
+
+/* ─── Divider ─── */
+.dv {
+  height: 1px;
+  background: rgba(26,29,46,0.06);
+}
+
+/* ─── Toast ─── */
+.toast-c {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.t {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid rgba(26,29,46,0.10);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  min-width: 300px;
+  max-width: 420px;
+  animation: slideInRight .3s ease;
+}
+.t.success { border-left: 3px solid var(--grn); }
+.t.warning { border-left: 3px solid var(--ylw); }
+.t.danger { border-left: 3px solid var(--red); }
+.t.info { border-left: 3px solid var(--blu); }
+.t.primary { border-left: 3px solid var(--pri); }
+
+/* ─── Modal Backdrop ─── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1040;
+  animation: fadeIn .2s ease;
+}
+
+/* ─── Modal Content ─── */
+.modal-content {
+  border-radius: 20px;
+  overflow: hidden;
+}
+.modal-accent {
+  height: 3px;
+  background: var(--grd);
+}
+.modal-accent-red {
+  height: 3px;
+  background: var(--red);
+}
+.modal-accent-blu {
+  height: 3px;
+  background: var(--blu);
+}
+.modal-accent-ylw {
+  height: 3px;
+  background: var(--ylw);
+}
+.modal-accent-grn {
+  height: 3px;
+  background: var(--grn);
+}
+
+/* ─── Save Button ─── */
+.save-btn {
+  background: var(--grd);
+}
+.save-btn:hover {
+  opacity: 0.9;
+  color: #fff;
+}
+
+/* ─── Upload Button ─── */
+.upload-btn {
+  background: var(--grd);
+}
+.upload-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Health Ring ─── */
+.health-ring-container {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  display: inline-block;
+}
+.health-ring-score {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--mono);
+}
+
+/* ─── PIN Input ─── */
+.pin-input {
+  font-family: var(--mono);
+  font-size: 24px;
+  letter-spacing: 12px;
+}
+
+/* ─── Notification Item ─── */
+.notif-item {
+  transition: all .15s;
+}
+.notif-item:hover {
+  background: rgba(255,107,0,0.06) !important;
+}
+
+/* ─── Animations ─── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fiu { animation: fadeInUp .4s ease both; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(26,29,46,0.12); border-radius: 50px; }
+
+/* ─── Tab Pills ─── */
+.nav-pills .nav-link {
+  color: var(--txm);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.nav-pills .nav-link:hover {
+  color: var(--tx);
+  background: rgba(26,29,46,0.04);
+}
+.nav-pills .nav-link.active {
+  background: var(--grd);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(26,29,46,0.12);
+}
+
+/* ─── Form Controls ─── */
+.form-control, .form-select {
+  border-color: rgba(26,29,46,0.10);
+  font-size: 13px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--pri);
+  box-shadow: 0 0 0 3px rgba(26,29,46,0.06);
+}
+
+/* ─── Form Switch ─── */
+.form-check-input:checked {
+  background-color: var(--grn);
+  border-color: var(--grn);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 991px) {
+  .p-lg-4 { padding: 1rem !important; }
+  .p-lg-5 { padding: 1.5rem !important; }
+}
+@media (max-width: 768px) {
+  .avatar-ring { width: 80px; height: 80px; font-size: 28px; }
+  .field-row { flex-direction: column; gap: 4px; }
+  .field-row .fv { text-align: left; }
+}

@@ -1,0 +1,1124 @@
+<!-- ================================================================
+     GUARANTORSHIP MANAGEMENT — ANGULAR v21
+     ================================================================ -->
+
+<div class="page-content">
+
+  <!-- ===== HERO CARD ===== -->
+  <div class="hero-card fade-in">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <div>
+          <div class="hero-label">Guarantorship Overview</div>
+          <div class="hero-value">KES 1,150,000</div>
+          <div class="hero-sub">Total Guaranteed Exposure (Active Guarantorships)</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <span class="hero-status good"><i class="bi bi-shield-check"></i> Guarantor Score: Excellent</span>
+          <span style="font-size:0.72rem;opacity:0.5;">Last updated: Today, 3:45 PM</span>
+        </div>
+      </div>
+      <div class="hero-kpis">
+        <div class="kpi-box" (click)="switchTab('guaranteeing')">
+          <div class="k-label">I'm Guaranteeing</div>
+          <div class="k-value">3</div>
+          <div class="k-sub">Active guarantorships</div>
+        </div>
+        <div class="kpi-box" (click)="switchTab('my-loans')">
+          <div class="k-label">My Loans' Guarantors</div>
+          <div class="k-value">2</div>
+          <div class="k-sub">Confirmed guarantors</div>
+        </div>
+        <div class="kpi-box" (click)="switchTab('incoming')">
+          <div class="k-label">Incoming Requests</div>
+          <div class="k-value" style="color:#ffb74d;">2</div>
+          <div class="k-sub">Awaiting your approval</div>
+        </div>
+        <div class="kpi-box" (click)="switchTab('history')">
+          <div class="k-label">Completed</div>
+          <div class="k-value">5</div>
+          <div class="k-sub">All-time fulfilled</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incoming Requests Banner -->
+  <div class="alert-banner fade-in">
+    <i class="bi bi-person-plus-fill"></i>
+    <div>
+      <strong>2 new guarantor requests</strong> awaiting your decision — Grace Akinyi &amp; Bernard Kiprop have requested you as guarantor. <strong>Respond within 7 days.</strong>
+    </div>
+    <button class="btn-g" (click)="switchTab('incoming')" style="flex-shrink:0;font-size:0.78rem;">Review Now</button>
+  </div>
+
+  <!-- ===== TABS ===== -->
+  <div class="m-tabs fade-in">
+    <button class="m-tab" [class.active]="activeTab === 'guaranteeing'" (click)="switchTab('guaranteeing')">
+      <i class="bi bi-people-fill"></i> I'm Guaranteeing <span class="tab-badge green">3</span>
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'incoming'" (click)="switchTab('incoming')">
+      <i class="bi bi-envelope-arrow-down"></i> Incoming Requests <span class="tab-badge red">2</span>
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'my-loans'" (click)="switchTab('my-loans')">
+      <i class="bi bi-cash-stack"></i> My Loans' Guarantors <span class="tab-badge blue">2</span>
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'history'" (click)="switchTab('history')">
+      <i class="bi bi-clock-history"></i> History <span class="tab-badge orange">5</span>
+    </button>
+    <button class="m-tab" [class.active]="activeTab === 'score'" (click)="switchTab('score')">
+      <i class="bi bi-patch-check"></i> My Score
+    </button>
+  </div>
+
+  <!-- =======================================
+       TAB 1: I'M GUARANTEEING
+  ======================================= -->
+  @if (activeTab === 'guaranteeing') {
+  <div class="tab-pane fade-in">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="g-card mb-4">
+          <div class="g-card-header">
+            <h3><i class="bi bi-people-fill" style="color:var(--primary);"></i> Active Guarantorships (3)</h3>
+            <button class="btn-ghost-s" (click)="openModal('exposure')">
+              <i class="bi bi-pie-chart"></i> Exposure Summary
+            </button>
+          </div>
+          <div class="g-card-body">
+
+            @for (g of guaranteeing; track g.code) {
+            <div class="guarantor-card" [class.active]="g.status === 'Active'" [class.defaulted]="g.status === 'Overdue'"
+                 [style.border-color]="g.status === 'Overdue' ? 'rgba(244,67,54,0.3)' : ''"
+                 [style.background]="g.status === 'Overdue' ? 'rgba(244,67,54,0.02)' : ''">
+              <div class="gc-top">
+                <div class="gc-member">
+                  <div class="gc-av" [class]="g.avatarClass">{{ g.code }}</div>
+                  <div>
+                    <div class="gc-name">{{ g.name }}</div>
+                    <div class="gc-id">{{ g.memberId }} · {{ g.loanType }} · Since {{ g.since }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  @if (g.status === 'Active') {
+                    <span class="sbadge active"><i class="bi bi-circle-fill" style="font-size:0.3rem;"></i> Active</span>
+                  } @else if (g.status === 'Overdue') {
+                    <span class="sbadge defaulted"><i class="bi bi-exclamation-triangle-fill" style="font-size:0.5rem;"></i> Overdue</span>
+                  }
+                  <button class="btn-ghost-s" (click)="openGuarantorDetail(g)"><i class="bi bi-eye"></i></button>
+                </div>
+              </div>
+
+              @if (g.status === 'Overdue') {
+              <div class="overdue-warning">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                <strong>{{ g.overdueDays }} days overdue</strong> — Missed December installment (KES {{ g.overdueAmount?.toLocaleString() }}). Your guarantee of KES {{ g.myExposure.toLocaleString() }} is at risk. Please contact the borrower.
+              </div>
+              }
+
+              <div class="gc-details">
+                <div class="gc-detail"><div class="label">Loan Amount</div><div class="value">KES {{ g.loanAmount.toLocaleString() }}</div></div>
+                <div class="gc-detail"><div class="label">My Exposure</div><div class="value" [style.color]="g.status === 'Overdue' ? 'var(--red)' : 'var(--orange)'">KES {{ g.myExposure.toLocaleString() }}</div></div>
+                <div class="gc-detail"><div class="label">Repaid</div><div class="value" style="color:var(--primary);">{{ g.repaid }}</div></div>
+                <div class="gc-detail"><div class="label">Outstanding</div><div class="value">KES {{ g.outstanding.toLocaleString() }}</div></div>
+                <div class="gc-detail"><div class="label">Last Payment</div><div class="value">{{ g.lastPayment }}</div></div>
+                <div class="gc-detail"><div class="label">Status</div>
+                  @if (g.status === 'Active') {
+                    <div class="value" style="color:var(--primary);">On Track ✓</div>
+                  } @else if (g.status === 'Overdue') {
+                    <div class="value" style="color:var(--red);">{{ g.riskLevel }} ⚠</div>
+                  }
+                </div>
+              </div>
+
+              <div class="exposure-bar">
+                <div class="exposure-label">
+                  <span style="font-size:0.7rem;color:var(--text3);">Repayment progress</span>
+                  <span style="font-size:0.7rem;font-weight:600;" [style.color]="g.status === 'Overdue' ? 'var(--orange)' : ''">{{ g.progress }}%</span>
+                </div>
+                <div class="exp-track">
+                  <div class="exp-fill" [class]="getExposureFillClass(g)" [style.width.%]="g.progress"></div>
+                </div>
+              </div>
+
+              <div style="margin-top:var(--sp-md);display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-ghost-s" (click)="openGuarantorDetail(g)"><i class="bi bi-eye"></i> View Details</button>
+                <button class="btn-ghost-s" (click)="openModal('paymentHistory')"><i class="bi bi-list-ul"></i> Payment History</button>
+                @if (g.status === 'Active') {
+                  <button class="btn-ghost-s" (click)="openModal('contactBorrower')"><i class="bi bi-chat-dots"></i> Contact</button>
+                } @else {
+                  <button class="btn-ghost-s" style="color:var(--red);" (click)="openModal('contactBorrower')"><i class="bi bi-telephone"></i> Contact Urgently</button>
+                  <button class="btn-ghost-s" (click)="openModal('release')"><i class="bi bi-escape"></i> Request Release</button>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="col-lg-4">
+        <!-- Exposure Summary -->
+        <div class="g-card mb-4">
+          <div class="g-card-header"><h3>Exposure Breakdown</h3></div>
+          <div class="g-card-body">
+            <div style="display:flex;justify-content:center;margin-bottom:var(--sp-lg);">
+              <div class="score-ring" [style.background]="getScoreRingStyle()">
+                <div class="sr-center">
+                  <div style="font-size:1.2rem;font-weight:800;">65%</div>
+                  <div style="font-size:0.65rem;color:var(--text3);">Capacity Used</div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:0.82rem;">
+              <div class="drow"><span class="dl">Total Exposure</span><span class="dv">KES 575,000</span></div>
+              <div class="drow"><span class="dl">Max Allowable</span><span class="dv">KES 875,000</span></div>
+              <div class="drow"><span class="dl">Remaining Capacity</span><span class="dv" style="color:var(--primary);">KES 300,000</span></div>
+              <div class="drow"><span class="dl">Active Loans</span><span class="dv">3</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rules & Limits -->
+        <div class="g-card mb-4">
+          <div class="g-card-header"><h3><i class="bi bi-shield-check" style="color:var(--primary);"></i> Guarantor Rules</h3></div>
+          <div class="g-card-body">
+            <div class="rule-box">
+              <h6><i class="bi bi-info-circle-fill"></i> SACCO Policy</h6>
+              <p>You may guarantee loans up to <strong>3.5× your savings balance</strong> (KES 875,000). Each guarantee must not exceed your own savings account balance.</p>
+            </div>
+            <div style="font-size:0.82rem;">
+              <div class="chk-item"><div class="chk-icon ok"><i class="bi bi-check-lg"></i></div><span>KYC fully verified — eligible to guarantee</span></div>
+              <div class="chk-item"><div class="chk-icon ok"><i class="bi bi-check-lg"></i></div><span>Own loan repayment — On track</span></div>
+              <div class="chk-item"><div class="chk-icon warn"><i class="bi bi-dash"></i></div><span>1 overdue borrower — Monitor closely</span></div>
+              <div class="chk-item"><div class="chk-icon ok"><i class="bi bi-check-lg"></i></div><span>2 guarantee slots still available</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="g-card">
+          <div class="g-card-header"><h3>Actions</h3></div>
+          <div class="g-card-body" style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-o w-100" (click)="openModal('exposure')"><i class="bi bi-pie-chart"></i> Full Exposure Report</button>
+            <button class="btn-ghost-s w-100" (click)="openModal('howItWorks')"><i class="bi bi-question-circle"></i> How Guarantorship Works</button>
+            <button class="btn-ghost-s w-100" (click)="openModal('contactBorrower')"><i class="bi bi-chat-dots"></i> Contact a Borrower</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- =======================================
+       TAB 2: INCOMING REQUESTS
+  ======================================= -->
+  @if (activeTab === 'incoming') {
+  <div class="tab-pane fade-in">
+    <div class="row g-4">
+      <div class="col-lg-8">
+
+        <div class="tip-box mb-4">
+          <i class="bi bi-info-circle-fill" style="flex-shrink:0;margin-top:2px;"></i>
+          <div>Review each request carefully. As a guarantor, you are <strong>legally liable</strong> for the loan if the borrower defaults. You have <strong>7 days</strong> to respond before the request expires.</div>
+        </div>
+
+        @for (req of incomingRequests; track req.code) {
+        <div class="incoming-card">
+          <span class="new-pill">NEW</span>
+          <div class="gc-top" style="margin-top:8px;">
+            <div class="gc-member">
+              <div class="gc-av" [class]="req.avatarClass">{{ req.code }}</div>
+              <div>
+                <div class="gc-name">{{ req.name }}</div>
+                <div class="gc-id">{{ req.memberId }} · {{ req.loanType }} · {{ req.sentTime }}</div>
+              </div>
+            </div>
+            <span class="sbadge requested"><i class="bi bi-clock"></i> Pending</span>
+          </div>
+
+          <div class="gc-details" style="margin-top:var(--sp-md);">
+            <div class="gc-detail"><div class="label">Loan Amount</div><div class="value">KES {{ req.loanAmount.toLocaleString() }}</div></div>
+            <div class="gc-detail"><div class="label">Your Exposure</div><div class="value" style="color:var(--orange);">KES {{ req.myExposure.toLocaleString() }}</div></div>
+            <div class="gc-detail"><div class="label">Loan Purpose</div><div class="value">{{ req.purpose }}</div></div>
+            <div class="gc-detail"><div class="label">Tenure</div><div class="value">{{ req.tenure }}</div></div>
+            <div class="gc-detail"><div class="label">Guarantor #</div><div class="value">{{ req.guarantorNumber }}</div></div>
+            <div class="gc-detail"><div class="label">Expires</div><div class="value" style="color:var(--red);">{{ req.expires }}</div></div>
+          </div>
+
+          <div style="padding:var(--sp-md) 0;border-top:1px solid rgba(255,152,0,0.2);margin-top:var(--sp-md);">
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:var(--sp-sm);">{{ req.name }}'s Credit Profile:</div>
+            <div class="credit-profile-row">
+              @for (item of req.creditProfile; track item.text) {
+                <span><i class="bi bi-{{ item.icon }}" [style.color]="item.color"></i> {{ item.text }}</span>
+              }
+            </div>
+          </div>
+
+          @if (req.caution) {
+          <div class="caution-box">
+            <i class="bi bi-exclamation-triangle me-1"></i><strong>Caution:</strong> {{ req.caution }}
+          </div>
+          }
+
+          <div style="display:flex;gap:8px;margin-top:var(--sp-md);flex-wrap:wrap;">
+            <button class="btn-g" (click)="openModal('otp'); startOtpTimer();"><i class="bi bi-check-circle"></i> Approve &amp; Guarantee</button>
+            <button class="btn-red" (click)="openModal('decline')"><i class="bi bi-x-circle"></i> Decline</button>
+            <button class="btn-ghost-s" (click)="openModal('requestDetail')"><i class="bi bi-eye"></i> Full Details</button>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="col-lg-4">
+        <div class="g-card mb-4">
+          <div class="g-card-header"><h3><i class="bi bi-shield-exclamation" style="color:var(--orange);"></i> Before You Decide</h3></div>
+          <div class="g-card-body">
+            <div class="rule-box">
+              <h6><i class="bi bi-exclamation-triangle-fill"></i> Your Responsibility</h6>
+              <p>By approving, you agree to repay this loan from your savings if the borrower defaults. Ensure you trust the borrower and can absorb the risk.</p>
+            </div>
+            <div style="font-size:0.82rem;margin-top:var(--sp-md);">
+              <div class="chk-item"><div class="chk-icon warn"><i class="bi bi-dash"></i></div><div><strong>Current capacity:</strong> KES 300,000 remaining. Grace's request uses KES 150,000 (50%) of it.</div></div>
+              <div class="chk-item"><div class="chk-icon fail"><i class="bi bi-x-lg"></i></div><div>Approving both requests would exceed your 65% capacity warning.</div></div>
+              <div class="chk-item"><div class="chk-icon ok"><i class="bi bi-check-lg"></i></div><div>OTP verification required to approve — your security is protected.</div></div>
+            </div>
+            <button class="btn-o w-100 mt-3" (click)="openModal('howItWorks')"><i class="bi bi-question-circle"></i> How Guarantorship Works</button>
+          </div>
+        </div>
+        <div class="g-card">
+          <div class="g-card-header"><h3>Your Capacity</h3></div>
+          <div class="g-card-body" style="font-size:0.82rem;">
+            <div class="drow"><span class="dl">Savings Balance</span><span class="dv">KES 250,000</span></div>
+            <div class="drow"><span class="dl">Max Guarantee (3.5×)</span><span class="dv">KES 875,000</span></div>
+            <div class="drow"><span class="dl">Currently Guaranteed</span><span class="dv" style="color:var(--orange);">KES 575,000</span></div>
+            <div class="drow"><span class="dl">Remaining</span><span class="dv" style="color:var(--primary);">KES 300,000</span></div>
+            <div class="drow"><span class="dl">Grace Request</span><span class="dv">KES 150,000</span></div>
+            <div class="drow"><span class="dl">Bernard Request</span><span class="dv">KES 375,000</span></div>
+            <div style="margin-top:var(--sp-md);padding:var(--sp-sm);background:rgba(244,67,54,0.08);border-radius:var(--r-sm);font-size:0.8rem;color:var(--red);">
+              <i class="bi bi-exclamation-circle-fill me-1"></i>Approving both (KES 525,000) would exceed remaining capacity!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- =======================================
+       TAB 3: MY LOANS' GUARANTORS
+  ======================================= -->
+  @if (activeTab === 'my-loans') {
+  <div class="tab-pane fade-in">
+    <div class="row g-4">
+      <div class="col-lg-8">
+
+        <!-- Active Loan with Guarantors -->
+        <div class="g-card mb-4">
+          <div class="g-card-header">
+            <h3><i class="bi bi-cash-stack" style="color:var(--primary);"></i> My Active Loan — LN-2024-00845</h3>
+            <button class="btn-ghost-s" routerLink="/loans"><i class="bi bi-arrow-right"></i> View Loan</button>
+          </div>
+          <div class="g-card-body">
+            <div style="background:var(--primary-ultra);border-radius:var(--r-md);padding:var(--sp-lg);margin-bottom:var(--sp-lg);">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-md);font-size:0.85rem;">
+                <div><div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Loan</div><div style="font-weight:700;">KES 180,000</div></div>
+                <div><div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Type</div><div style="font-weight:700;">Education Loan</div></div>
+                <div><div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Progress</div><div style="font-weight:700;color:var(--primary);">58% (7/12)</div></div>
+              </div>
+            </div>
+
+            <div style="font-size:0.85rem;font-weight:700;margin-bottom:var(--sp-md);color:var(--text2);">My Guarantors (2 confirmed)</div>
+
+            @for (g of myLoanGuarantors; track g.code) {
+            <div class="request-card">
+              <div class="gc-top">
+                <div class="gc-member">
+                  <div class="gc-av" [class]="g.avatarClass">{{ g.code }}</div>
+                  <div>
+                    <div class="gc-name">{{ g.name }}</div>
+                    <div class="gc-id">{{ g.memberId }} · {{ g.role }}</div>
+                  </div>
+                </div>
+                <span class="sbadge active"><i class="bi bi-check-circle-fill" style="font-size:0.5rem;"></i> Confirmed</span>
+              </div>
+              <div style="font-size:0.82rem;display:flex;gap:var(--sp-xl);margin-top:var(--sp-sm);flex-wrap:wrap;">
+                <span><span style="color:var(--text3);">Exposure:</span> <strong>KES {{ g.exposure.toLocaleString() }}</strong></span>
+                <span><span style="color:var(--text3);">Confirmed:</span> <strong>{{ g.confirmedDate }}</strong></span>
+                <span><span style="color:var(--text3);">Guarantor #:</span> <strong>{{ g.guarantorNumber }}</strong></span>
+              </div>
+              <div style="margin-top:var(--sp-sm);">
+                <button class="btn-ghost-s" (click)="openModal('thankGuarantor')"><i class="bi bi-hand-thumbs-up"></i> Thank Guarantor</button>
+              </div>
+            </div>
+            }
+
+            <div class="tip-box mt-3">
+              <i class="bi bi-lightbulb-fill" style="flex-shrink:0;margin-top:2px;"></i>
+              <div>Your guarantors are doing you a favour. Keep your loan on track — late payments affect their guarantee capacity and your relationship.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Requesting Guarantors for New Loan -->
+        <div class="g-card">
+          <div class="g-card-header">
+            <h3><i class="bi bi-plus-circle" style="color:var(--orange);"></i> New Loan Application — Needs Guarantors</h3>
+            <span class="sbadge pending">In Progress</span>
+          </div>
+          <div class="g-card-body">
+            <div style="background:rgba(255,152,0,0.06);border:1px solid rgba(255,152,0,0.2);border-radius:var(--r-md);padding:var(--sp-lg);margin-bottom:var(--sp-lg);">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-md);font-size:0.85rem;">
+                <div><div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Loan</div><div style="font-weight:700;">KES 300,000</div></div>
+                <div><div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Type</div><div style="font-weight:700;">Personal Loan</div></div>
+                <div><div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Status</div><div style="font-weight:700;color:var(--orange);">2/2 Needed</div></div>
+              </div>
+            </div>
+
+            <div style="font-size:0.85rem;font-weight:700;margin-bottom:var(--sp-md);color:var(--text2);">Guarantor Requests Sent</div>
+
+            @for (req of pendingGuarantorRequests; track req.code) {
+            <div class="request-card">
+              <div class="gc-top">
+                <div class="gc-member">
+                  <div class="gc-av" [class]="req.avatarClass">{{ req.code }}</div>
+                  <div><div class="gc-name">{{ req.name }}</div><div class="gc-id">{{ req.memberId }} · {{ req.confirmedDate }}</div></div>
+                </div>
+                <span class="sbadge pending"><i class="bi bi-hourglass-split" style="font-size:0.5rem;"></i> Pending</span>
+              </div>
+              <div style="margin-top:var(--sp-sm);display:flex;gap:8px;">
+                <button class="btn-ghost-s" (click)="openModal('resend')"><i class="bi bi-arrow-clockwise"></i> Resend Reminder</button>
+                <button class="btn-ghost-s" style="color:var(--red);" (click)="openModal('cancel')"><i class="bi bi-x-circle"></i> Cancel Request</button>
+              </div>
+            </div>
+            }
+
+            <div class="request-card">
+              <div class="gc-top">
+                <div class="gc-member">
+                  <div class="gc-av c1" style="background:var(--bg3);"><i class="bi bi-person-plus" style="color:var(--text3);"></i></div>
+                  <div>
+                    <div class="gc-name" style="color:var(--text3);">Guarantor #2 — Not yet selected</div>
+                    <div class="gc-id">Loan requires 2 guarantors</div>
+                  </div>
+                </div>
+                <span class="sbadge" style="background:rgba(158,158,158,0.1);color:#616161;">Needed</span>
+              </div>
+              <div style="margin-top:var(--sp-sm);">
+                <button class="btn-g" (click)="openModal('selectGuarantor')"><i class="bi bi-person-plus"></i> Select Guarantor</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="g-card mb-4">
+          <div class="g-card-header"><h3><i class="bi bi-lightbulb" style="color:var(--orange);"></i> Tips for Borrowers</h3></div>
+          <div class="g-card-body">
+            <div style="font-size:0.82rem;display:flex;flex-direction:column;gap:var(--sp-md);">
+              <div style="display:flex;gap:var(--sp-sm);">
+                <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,208,132,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;font-weight:700;color:var(--primary);">1</div>
+                <div><strong>Choose wisely.</strong> Ask people who trust you and have capacity — colleagues, family, or SACCO officials.</div>
+              </div>
+              <div style="display:flex;gap:var(--sp-sm);">
+                <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,208,132,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;font-weight:700;color:var(--primary);">2</div>
+                <div><strong>Communicate.</strong> Inform guarantors about the loan purpose and your repayment plan.</div>
+              </div>
+              <div style="display:flex;gap:var(--sp-sm);">
+                <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,208,132,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;font-weight:700;color:var(--primary);">3</div>
+                <div><strong>Pay on time.</strong> Late payments damage your guarantors' capacity and your relationship.</div>
+              </div>
+              <div style="display:flex;gap:var(--sp-sm);">
+                <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,208,132,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;font-weight:700;color:var(--primary);">4</div>
+                <div><strong>Appreciate them.</strong> Use the "Thank Guarantor" feature to send a message of gratitude.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- =======================================
+       TAB 4: HISTORY
+  ======================================= -->
+  @if (activeTab === 'history') {
+  <div class="tab-pane fade-in">
+    <div class="g-card">
+      <div class="g-card-header">
+        <h3><i class="bi bi-clock-history" style="color:var(--text2);"></i> Guarantorship History (5 Completed)</h3>
+        <button class="btn-ghost-s" (click)="openModal('downloadHistory')"><i class="bi bi-download"></i> Download Statement</button>
+      </div>
+      <div class="g-card-body">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Borrower</th>
+                <th>Loan Type</th>
+                <th style="text-align:right;">Amount</th>
+                <th style="text-align:right;">My Exposure</th>
+                <th style="text-align:center;">Status</th>
+                <th style="text-align:center;">Period</th>
+                <th style="text-align:center;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of historyRecords; track h.memberId) {
+              <tr (mouseenter)="onRowHover($event, true)" (mouseleave)="onRowHover($event, false)">
+                <td>
+                  <div style="font-weight:600;">{{ h.borrower }}</div>
+                  <div style="font-size:0.68rem;color:var(--text3);">{{ h.memberId }}</div>
+                </td>
+                <td>{{ h.loanType }}</td>
+                <td style="text-align:right;font-weight:600;">KES {{ h.amount.toLocaleString() }}</td>
+                <td style="text-align:right;">KES {{ h.myExposure.toLocaleString() }}</td>
+                <td style="text-align:center;">
+                  @if (h.status === 'Completed') {
+                    <span class="sbadge completed">Completed ✓</span>
+                  } @else if (h.status === 'Released') {
+                    <span class="sbadge released">Released</span>
+                  } @else {
+                    <span class="sbadge declined">Declined</span>
+                  }
+                </td>
+                <td style="text-align:center;font-size:0.78rem;color:var(--text3);">{{ h.period }}</td>
+                <td style="text-align:center;">
+                  <button class="btn-ghost-s" (click)="openHistoryDetail(h)"><i class="bi bi-eye"></i></button>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- =======================================
+       TAB 5: MY SCORE
+  ======================================= -->
+  @if (activeTab === 'score') {
+  <div class="tab-pane fade-in">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="g-card">
+          <div class="g-card-header"><h3><i class="bi bi-patch-check" style="color:var(--primary);"></i> Guarantor Score</h3></div>
+          <div class="g-card-body" style="text-align:center;">
+            <div style="position:relative;width:200px;height:200px;margin:0 auto var(--sp-xl);">
+              <div style="width:200px;height:200px;border-radius:50%;display:flex;align-items:center;justify-content:center;"
+                   [style.background]="getScoreConicStyle()">
+                <div style="width:160px;height:160px;background:var(--bg2);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                  <div style="font-size:3rem;font-weight:800;color:var(--primary);line-height:1;">A+</div>
+                  <div style="font-size:0.82rem;color:var(--text3);">85/100</div>
+                </div>
+              </div>
+            </div>
+            <h4 style="font-weight:700;color:var(--primary);">Excellent Guarantor</h4>
+            <p style="font-size:0.82rem;color:var(--text2);">You are a trusted guarantor within Rongo SACCO. Your score qualifies you for up to 3.5× savings in guarantees.</p>
+
+            <div style="margin-top:var(--sp-lg);text-align:left;">
+              <div style="font-size:0.82rem;font-weight:700;margin-bottom:var(--sp-sm);">Score Breakdown</div>
+              @for (s of scoreBreakdown; track s.label) {
+              <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:3px;">
+                  <span>{{ s.label }}</span><span style="font-weight:700;">{{ s.score }}/{{ s.max }}</span>
+                </div>
+                <div style="height:5px;background:var(--bg3);border-radius:var(--r-full);overflow:hidden;">
+                  <div style="height:100%;border-radius:var(--r-full);transition:width 0.6s;"
+                       [style.width.%]="(s.score / s.max) * 100"
+                       [style.background]="'linear-gradient(90deg, ' + s.color + ', ' + (s.color === 'var(--primary)' ? 'var(--teal)' : '#ffb74d') + ')'">
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="g-card mb-4">
+          <div class="g-card-header"><h3>Score History &amp; Benefits</h3></div>
+          <div class="g-card-body">
+            <div class="chart-wrap">
+              <canvas #scoreChartCanvas></canvas>
+            </div>
+            <div style="margin-top:var(--sp-xl);">
+              <div style="font-size:0.85rem;font-weight:700;margin-bottom:var(--sp-md);">Benefits of Your Score</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-md);">
+                <div style="background:rgba(0,208,132,0.06);border:1px solid rgba(0,208,132,0.2);border-radius:var(--r-md);padding:var(--sp-md);">
+                  <div style="font-size:0.82rem;font-weight:700;color:var(--primary);margin-bottom:4px;">3.5× Capacity</div>
+                  <div style="font-size:0.75rem;color:var(--text2);">Guarantee up to KES 875,000 based on your savings</div>
+                </div>
+                <div style="background:rgba(0,208,132,0.06);border:1px solid rgba(0,208,132,0.2);border-radius:var(--r-md);padding:var(--sp-md);">
+                  <div style="font-size:0.82rem;font-weight:700;color:var(--primary);margin-bottom:4px;">Priority Processing</div>
+                  <div style="font-size:0.75rem;color:var(--text2);">Your own loan applications get faster approvals</div>
+                </div>
+                <div style="background:rgba(0,208,132,0.06);border:1px solid rgba(0,208,132,0.2);border-radius:var(--r-md);padding:var(--sp-md);">
+                  <div style="font-size:0.82rem;font-weight:700;color:var(--primary);margin-bottom:4px;">Trusted Status</div>
+                  <div style="font-size:0.75rem;color:var(--text2);">Members prefer A+ guarantors — you get fewer rejections</div>
+                </div>
+                <div style="background:rgba(0,208,132,0.06);border:1px solid rgba(0,208,132,0.2);border-radius:var(--r-md);padding:var(--sp-md);">
+                  <div style="font-size:0.82rem;font-weight:700;color:var(--primary);margin-bottom:4px;">Reduce to A</div>
+                  <div style="font-size:0.75rem;color:var(--text2);">Resolve Samuel's overdue to maintain your A+ score</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+</div><!-- /page-content -->
+
+<!-- ====================================================================
+     MODALS
+==================================================================== -->
+
+<!-- Guarantor Detail Modal -->
+@if (showGuarantorDetailModal) {
+<div class="modal-overlay" (click)="closeModal('guarantorDetail')">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-people-fill me-2"></i>Guarantorship Detail</h5>
+      <button class="modal-close-btn" (click)="closeModal('guarantorDetail')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      @if (selectedGuarantorship) {
+      <div>
+        <div style="display:flex;align-items:center;gap:var(--sp-lg);padding:var(--sp-lg);background:var(--primary-ultra);border-radius:var(--r-md);margin-bottom:var(--sp-lg);">
+          <div class="gc-av c3" style="width:56px;height:56px;font-size:1.1rem;">{{ selectedGuarantorship.code }}</div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;">{{ selectedGuarantorship.name }}</div>
+            <div style="font-size:0.78rem;color:var(--text2);">{{ selectedGuarantorship.memberId }} · {{ selectedGuarantorship.loanType }}</div>
+            <span class="sbadge" [class.active]="selectedGuarantorship.status === 'Active'" [class.defaulted]="selectedGuarantorship.status === 'Overdue'">{{ selectedGuarantorship.status }}</span>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="drow"><span class="dl">Loan Amount</span><span class="dv">KES {{ selectedGuarantorship.loanAmount.toLocaleString() }}</span></div>
+            <div class="drow"><span class="dl">My Exposure</span><span class="dv">KES {{ selectedGuarantorship.myExposure.toLocaleString() }}</span></div>
+            <div class="drow"><span class="dl">Outstanding</span><span class="dv">KES {{ selectedGuarantorship.outstanding.toLocaleString() }}</span></div>
+            <div class="drow"><span class="dl">Repaid So Far</span><span class="dv">KES {{ (selectedGuarantorship.loanAmount - selectedGuarantorship.outstanding).toLocaleString() }}</span></div>
+          </div>
+          <div class="col-md-6">
+            <div class="drow"><span class="dl">Loan Start</span><span class="dv">{{ selectedGuarantorship.startDate }}</span></div>
+            <div class="drow"><span class="dl">Loan End</span><span class="dv">{{ selectedGuarantorship.endDate }}</span></div>
+            <div class="drow"><span class="dl">Loan Purpose</span><span class="dv">{{ selectedGuarantorship.purpose }}</span></div>
+            <div class="drow"><span class="dl">Interest Rate</span><span class="dv">{{ selectedGuarantorship.interestRate }}% p.a.</span></div>
+          </div>
+        </div>
+        <h6 style="font-weight:700;margin:var(--sp-lg) 0 var(--sp-md);">Payment Timeline</h6>
+        <div class="guar-timeline">
+          @for (item of paymentTimeline; track item.time) {
+          <div class="gt-item" [class.done]="item.type === 'done'" [class.bad]="item.type === 'bad'">
+            <div class="gt-time">{{ item.time }}</div>
+            <div class="gt-content">{{ item.content }}</div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('guarantorDetail')">Close</button>
+      <button class="btn-ghost-s" (click)="closeAndOpen('guarantorDetail', 'paymentHistory')"><i class="bi bi-list-ul"></i> Full Payment History</button>
+      <button class="btn-o" (click)="closeAndOpen('guarantorDetail', 'contactBorrower')"><i class="bi bi-chat-dots"></i> Contact Borrower</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- OTP Approval Modal -->
+@if (showOtpModal) {
+<div class="modal-overlay" (click)="closeModal('otp')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-shield-lock-fill me-2"></i>Confirm Guarantorship — OTP</h5>
+      <button class="modal-close-btn" (click)="closeModal('otp')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.25);border-radius:var(--r-md);padding:var(--sp-lg);margin-bottom:var(--sp-lg);">
+        <div style="font-size:0.82rem;font-weight:700;color:#e65100;margin-bottom:6px;"><i class="bi bi-exclamation-triangle-fill me-1"></i> Final Confirmation</div>
+        <div style="font-size:0.82rem;color:var(--text2);">By entering the OTP, you agree to guarantee <strong>Grace Akinyi's</strong> loan of <strong>KES 300,000</strong>. Your exposure: <strong>KES 150,000</strong>. This is legally binding.</div>
+      </div>
+      <div style="text-align:center;">
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:var(--sp-sm);">Enter the 6-digit OTP sent to your phone <strong>0722-XXX-123</strong></p>
+        <div class="otp-row">
+          @for (digit of otpDigits; track $index) {
+          <input type="text" class="otp-box" maxlength="1" [id]="'otp-' + $index"
+                 [(ngModel)]="otpDigits[$index]"
+                 (input)="onOtpInput($index, $event)"
+                 (keydown)="onOtpKeydown($index, $event)">
+          }
+        </div>
+        <p style="font-size:0.75rem;color:var(--text3);">OTP expires in <strong style="color:var(--red);">{{ otpTimeDisplay }}</strong> &nbsp;·&nbsp; <a href="javascript:void(0)" (click)="resendOtp()" style="color:var(--primary);">Resend OTP</a></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('otp')">Cancel</button>
+      <button class="btn-g" (click)="approveGuarantor()"><i class="bi bi-shield-check"></i> Verify &amp; Approve</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Decline Guarantor Modal -->
+@if (showDeclineModal) {
+<div class="modal-overlay" (click)="closeModal('decline')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gr">
+      <h5><i class="bi bi-x-circle me-2"></i>Decline Guarantor Request</h5>
+      <button class="modal-close-btn" (click)="closeModal('decline')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="flbl">Reason for Declining</label>
+          <select class="fselect finput" [(ngModel)]="declineReason">
+            <option>Personal financial constraints</option>
+            <option>Already at maximum guarantee capacity</option>
+            <option>Not close enough with borrower</option>
+            <option>Concerns about borrower's repayment ability</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="flbl">Message to Borrower (Optional)</label>
+          <textarea class="finput" rows="3" placeholder="A kind message explaining your decision..." [(ngModel)]="declineMessage"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('decline')">Go Back</button>
+      <button class="btn-red" (click)="declineGuarantor()"><i class="bi bi-x-circle"></i> Decline Request</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Request Detail Modal -->
+@if (showRequestDetailModal) {
+<div class="modal-overlay" (click)="closeModal('requestDetail')">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header gb">
+      <h5><i class="bi bi-person-lines-fill me-2"></i>Full Request Details — Grace Akinyi</h5>
+      <button class="modal-close-btn" (click)="closeModal('requestDetail')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <h6 style="font-weight:700;margin-bottom:var(--sp-sm);">Borrower Profile</h6>
+          <div class="drow"><span class="dl">Full Name</span><span class="dv">Grace Akinyi Otieno</span></div>
+          <div class="drow"><span class="dl">Member ID</span><span class="dv">SP-10067</span></div>
+          <div class="drow"><span class="dl">Member Since</span><span class="dv">Jan 2022 (3 years)</span></div>
+          <div class="drow"><span class="dl">KYC Status</span><span class="dv" style="color:var(--primary);">✓ Verified</span></div>
+          <div class="drow"><span class="dl">Credit Score</span><span class="dv">742 (Good)</span></div>
+          <div class="drow"><span class="dl">Own Savings</span><span class="dv">KES 85,000</span></div>
+          <div class="drow"><span class="dl">Active Loans</span><span class="dv">0 (none)</span></div>
+        </div>
+        <div class="col-md-6">
+          <h6 style="font-weight:700;margin-bottom:var(--sp-sm);">Loan Details</h6>
+          <div class="drow"><span class="dl">Loan Type</span><span class="dv">Personal Loan</span></div>
+          <div class="drow"><span class="dl">Amount</span><span class="dv">KES 300,000</span></div>
+          <div class="drow"><span class="dl">Purpose</span><span class="dv">School fees — University</span></div>
+          <div class="drow"><span class="dl">Tenure</span><span class="dv">12 months</span></div>
+          <div class="drow"><span class="dl">Monthly Installment</span><span class="dv">KES 28,000</span></div>
+          <div class="drow"><span class="dl">Interest Rate</span><span class="dv">14% p.a.</span></div>
+          <div class="drow"><span class="dl">Your Exposure</span><span class="dv">KES 150,000</span></div>
+        </div>
+      </div>
+      <div class="tip-box mt-3">
+        <i class="bi bi-lightbulb-fill" style="flex-shrink:0;margin-top:2px;color:var(--blue);"></i>
+        <div>Grace has no active loans and a Good credit score. Her monthly installment (KES 28,000) is 33% of her estimated income, which is within acceptable limits.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('requestDetail')">Close</button>
+      <button class="btn-red" (click)="closeAndOpen('requestDetail', 'decline')"><i class="bi bi-x-circle"></i> Decline</button>
+      <button class="btn-g" (click)="closeAndOpen('requestDetail', 'otp'); startOtpTimer();"><i class="bi bi-check-circle"></i> Approve &amp; Guarantee</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Contact Borrower Modal -->
+@if (showContactBorrowerModal) {
+<div class="modal-overlay" (click)="closeModal('contactBorrower')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-chat-dots-fill me-2"></i>Contact Borrower</h5>
+      <button class="modal-close-btn" (click)="closeModal('contactBorrower')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--bg3);border-radius:var(--r-md);padding:var(--sp-md);margin-bottom:var(--sp-md);font-size:0.85rem;">
+        <div style="font-weight:600;">Samuel Kibet · SP-10189</div>
+        <div style="color:var(--text2);">0710-XXX-321 · samuel.k@email.com</div>
+      </div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="flbl">Contact Via</label>
+          <div style="display:flex;gap:var(--sp-md);">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="contactMethod" value="SMS" [(ngModel)]="contactMethod" checked>
+              <label class="form-check-label">SMS</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="contactMethod" value="In-App" [(ngModel)]="contactMethod">
+              <label class="form-check-label">In-App Message</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <label class="flbl">Message</label>
+          <textarea class="finput" rows="4" [(ngModel)]="contactMessage"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('contactBorrower')">Cancel</button>
+      <button class="btn-g" (click)="sendMessage()"><i class="bi bi-send"></i> Send Message</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Release Request Modal -->
+@if (showReleaseModal) {
+<div class="modal-overlay" (click)="closeModal('release')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header go">
+      <h5><i class="bi bi-door-open me-2"></i>Request Guarantor Release</h5>
+      <button class="modal-close-btn" (click)="closeModal('release')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-warning" style="font-size:0.82rem;border:none;background:rgba(255,152,0,0.1);">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i>Requesting a release requires admin approval. A replacement guarantor must be found before you can be released.
+      </div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="flbl">Reason for Release Request</label>
+          <select class="fselect finput" [(ngModel)]="releaseReason">
+            <option>Financial hardship — need my capacity freed</option>
+            <option>Relationship with borrower has changed</option>
+            <option>Borrower has been unresponsive</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="flbl">Supporting Details</label>
+          <textarea class="finput" rows="3" placeholder="Explain why you need to be released..." [(ngModel)]="releaseDetails"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('release')">Cancel</button>
+      <button class="btn-g" (click)="requestRelease()"><i class="bi bi-send"></i> Submit Release Request</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Exposure Summary Modal -->
+@if (showExposureModal) {
+<div class="modal-overlay" (click)="closeModal('exposure')">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header gd">
+      <h5><i class="bi bi-pie-chart-fill me-2"></i>Full Exposure Report</h5>
+      <button class="modal-close-btn" (click)="closeModal('exposure')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-md);margin-bottom:var(--sp-lg);">
+        <div style="padding:var(--sp-lg);background:var(--primary-ultra);border-radius:var(--r-md);text-align:center;">
+          <div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Total Guaranteed</div>
+          <div style="font-size:1.3rem;font-weight:700;margin-top:4px;">KES 1,150,000</div>
+        </div>
+        <div style="padding:var(--sp-lg);background:var(--primary-ultra);border-radius:var(--r-md);text-align:center;">
+          <div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">Total Outstanding</div>
+          <div style="font-size:1.3rem;font-weight:700;margin-top:4px;">KES 799,500</div>
+        </div>
+        <div style="padding:var(--sp-lg);background:var(--primary-ultra);border-radius:var(--r-md);text-align:center;">
+          <div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;font-weight:600;">At-Risk Amount</div>
+          <div style="font-size:1.3rem;font-weight:700;margin-top:4px;color:var(--red);">KES 200,000</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas #exposureChartCanvas></canvas>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('exposure')">Close</button>
+      <button class="btn-o" (click)="downloadExposureReport()"><i class="bi bi-download"></i> Download PDF</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- How Guarantorship Works Modal -->
+@if (showHowItWorksModal) {
+<div class="modal-overlay" (click)="closeModal('howItWorks')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-question-circle-fill me-2"></i>How Guarantorship Works</h5>
+      <button class="modal-close-btn" (click)="closeModal('howItWorks')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:var(--sp-md);">
+        <div style="display:flex;gap:var(--sp-md);">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,208,132,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);flex-shrink:0;">1</div>
+          <div><strong>Member applies for a loan</strong><br><span style="font-size:0.82rem;color:var(--text2);">The SACCO requires 2 guarantors for loans above KES 100,000 as a safety net.</span></div>
+        </div>
+        <div style="display:flex;gap:var(--sp-md);">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,208,132,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);flex-shrink:0;">2</div>
+          <div><strong>Borrower selects you as guarantor</strong><br><span style="font-size:0.82rem;color:var(--text2);">You receive a notification and have 7 days to accept or decline. Review their profile carefully.</span></div>
+        </div>
+        <div style="display:flex;gap:var(--sp-md);">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,208,132,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);flex-shrink:0;">3</div>
+          <div><strong>You verify with OTP</strong><br><span style="font-size:0.82rem;color:var(--text2);">Your OTP approval is legally binding. A portion of your savings capacity is pledged.</span></div>
+        </div>
+        <div style="display:flex;gap:var(--sp-md);">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,208,132,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);flex-shrink:0;">4</div>
+          <div><strong>If borrower defaults</strong><br><span style="font-size:0.82rem;color:var(--text2);">The SACCO may claim the guaranteed amount from your savings. You can then pursue repayment from the borrower.</span></div>
+        </div>
+        <div style="display:flex;gap:var(--sp-md);">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,208,132,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);flex-shrink:0;">5</div>
+          <div><strong>Upon completion</strong><br><span style="font-size:0.82rem;color:var(--text2);">Once fully repaid, your guarantee is released, capacity restored, and your score improves.</span></div>
+        </div>
+      </div>
+      <div class="rule-box mt-4">
+        <h6><i class="bi bi-info-circle-fill"></i> Rongo SACCO Policy</h6>
+        <p>Maximum guarantee: 3.5× your savings. Maximum 5 active guarantorships. Must have own loan in good standing.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-g" (click)="closeModal('howItWorks')"><i class="bi bi-check-circle"></i> Got It</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Payment History Modal -->
+@if (showPaymentHistoryModal) {
+<div class="modal-overlay" (click)="closeModal('paymentHistory')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-list-ul me-2"></i>Payment History — Peter Omondi</h5>
+      <button class="modal-close-btn" (click)="closeModal('paymentHistory')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="guar-timeline">
+        <div class="gt-item done"><div class="gt-time">Dec 15, 2024</div><div class="gt-content">Installment 8 — KES 28,750 paid via M-Pesa <span style="color:var(--primary);">✓</span></div></div>
+        <div class="gt-item done"><div class="gt-time">Nov 15, 2024</div><div class="gt-content">Installment 7 — KES 28,750 paid via M-Pesa <span style="color:var(--primary);">✓</span></div></div>
+        <div class="gt-item done"><div class="gt-time">Oct 15, 2024</div><div class="gt-content">Installment 6 — KES 28,750 paid via M-Pesa <span style="color:var(--primary);">✓</span></div></div>
+        <div class="gt-item done"><div class="gt-time">Sep 15, 2024</div><div class="gt-content">Installment 5 — KES 28,750 paid via Bank Transfer <span style="color:var(--primary);">✓</span></div></div>
+        <div class="gt-item done"><div class="gt-time">Aug 15, 2024</div><div class="gt-content">Loan disbursed — KES 500,000 sent to Peter Omondi</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('paymentHistory')">Close</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Thank Guarantor Modal -->
+@if (showThankGuarantorModal) {
+<div class="modal-overlay" (click)="closeModal('thankGuarantor')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-hand-thumbs-up-fill me-2"></i>Thank Your Guarantor</h5>
+      <button class="modal-close-btn" (click)="closeModal('thankGuarantor')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:var(--sp-lg);">
+        <div style="font-size:3rem;">🙏</div>
+        <p style="font-size:0.85rem;color:var(--text2);">Send a message of appreciation to your guarantor.</p>
+      </div>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="flbl">Message</label>
+          <textarea class="finput" rows="4" [(ngModel)]="thankYouMessage"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('thankGuarantor')">Cancel</button>
+      <button class="btn-g" (click)="sendThankYou()"><i class="bi bi-send"></i> Send Thank You</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Select Guarantor Modal -->
+@if (showSelectGuarantorModal) {
+<div class="modal-overlay" (click)="closeModal('selectGuarantor')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gh">
+      <h5><i class="bi bi-person-plus-fill me-2"></i>Select a Guarantor</h5>
+      <button class="modal-close-btn" (click)="closeModal('selectGuarantor')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <label class="flbl">Search Member</label>
+          <input type="text" class="finput" placeholder="Search by name or member ID..." [(ngModel)]="guarantorSearch">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--sp-sm);">
+        @for (c of guarantorCandidates; track c.code) {
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--sp-md);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;"
+             (mouseenter)="onCandidateHover($event, true)" (mouseleave)="onCandidateHover($event, false)">
+          <div class="gc-member">
+            <div class="gc-av" [class]="c.avatarClass" style="width:36px;height:36px;">{{ c.code }}</div>
+            <div>
+              <div style="font-weight:600;font-size:0.85rem;">{{ c.name }}</div>
+              <div style="font-size:0.7rem;color:var(--text3);">{{ c.memberId }} · Score: {{ c.score }} · Capacity: {{ c.capacity }}</div>
+            </div>
+          </div>
+          <button class="btn-g" style="font-size:0.72rem;padding:6px 12px;" (click)="selectGuarantor(c)"><i class="bi bi-person-check"></i> Select</button>
+        </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('selectGuarantor')">Cancel</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- History Detail Modal -->
+@if (showHistoryDetailModal) {
+<div class="modal-overlay" (click)="closeModal('historyDetail')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gd">
+      <h5><i class="bi bi-clock-history me-2"></i>Guarantorship Record</h5>
+      <button class="modal-close-btn" (click)="closeModal('historyDetail')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      @if (selectedHistory) {
+      <div class="drow"><span class="dl">Borrower</span><span class="dv">{{ selectedHistory.borrower }}</span></div>
+      <div class="drow"><span class="dl">Loan Type</span><span class="dv">{{ selectedHistory.loanType }}</span></div>
+      <div class="drow"><span class="dl">Amount Guaranteed</span><span class="dv">KES {{ selectedHistory.amount.toLocaleString() }}</span></div>
+      <div class="drow"><span class="dl">Outcome</span><span class="dv">{{ selectedHistory.status }}{{ selectedHistory.status === 'Completed' ? ' ✓' : '' }}</span></div>
+      <div class="drow"><span class="dl">Impact on Score</span><span class="dv" style="color:var(--primary);">+5 points</span></div>
+      <div class="drow"><span class="dl">Certificate</span><span class="dv"><a href="javascript:void(0)" (click)="downloadCertificate()" style="color:var(--primary);">Download Certificate</a></span></div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('historyDetail')">Close</button>
+      <button class="btn-o" (click)="downloadCertificate()"><i class="bi bi-download"></i> Download Certificate</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Profile Modal -->
+@if (showProfileModal) {
+<div class="modal-overlay" (click)="closeModal('profile')">
+  <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-body" style="padding:var(--sp-xl);text-align:center;">
+      <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-md);color:white;font-size:1.4rem;font-weight:700;">JK</div>
+      <h5 style="font-weight:700;">John Kamau</h5>
+      <p style="font-size:0.78rem;color:var(--text2);margin-bottom:4px;">SP-10015 · Rongo SACCO</p>
+      <span class="sbadge active" style="margin-bottom:var(--sp-md);display:inline-block;">Active Member</span>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a routerLink="/profile" class="btn-ghost-s" style="text-decoration:none;justify-content:center;"><i class="bi bi-person me-2"></i>My Profile</a>
+        <a routerLink="/settings" class="btn-ghost-s" style="text-decoration:none;justify-content:center;"><i class="bi bi-gear me-2"></i>Settings</a>
+        <hr style="margin:var(--sp-sm) 0;border-color:var(--border);">
+        <button class="btn-ghost-s" style="color:var(--red);justify-content:center;" (click)="showToast('Logging out...')"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Resend Reminder Modal -->
+@if (showResendModal) {
+<div class="modal-overlay" (click)="closeModal('resend')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header go">
+      <h5><i class="bi bi-arrow-clockwise me-2"></i>Resend Reminder</h5>
+      <button class="modal-close-btn" (click)="closeModal('resend')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--text2);">A reminder will be sent to <strong>David Otieno</strong> via SMS and in-app notification.</p>
+      <textarea class="finput mt-2" rows="2" placeholder="Optional personal message..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('resend')">Cancel</button>
+      <button class="btn-g" (click)="resendReminder()"><i class="bi bi-send"></i> Send Reminder</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Cancel Request Modal -->
+@if (showCancelModal) {
+<div class="modal-overlay" (click)="closeModal('cancel')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gr">
+      <h5><i class="bi bi-x-circle me-2"></i>Cancel Guarantor Request</h5>
+      <button class="modal-close-btn" (click)="closeModal('cancel')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--text2);">Are you sure you want to cancel the request to <strong>David Otieno</strong>? You can select a different guarantor.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('cancel')">Go Back</button>
+      <button class="btn-red" (click)="cancelRequest()"><i class="bi bi-x-circle"></i> Cancel Request</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Download History Modal -->
+@if (showDownloadHistoryModal) {
+<div class="modal-overlay" (click)="closeModal('downloadHistory')">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header gd">
+      <h5><i class="bi bi-download me-2"></i>Download Guarantorship Statement</h5>
+      <button class="modal-close-btn" (click)="closeModal('downloadHistory')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="flbl">Format</label>
+          <select class="fselect finput" [(ngModel)]="downloadFormat">
+            <option>PDF</option>
+            <option>Excel</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="flbl">Period</label>
+          <select class="fselect finput" [(ngModel)]="downloadPeriod">
+            <option>All Time</option>
+            <option>This Year</option>
+            <option>Last Year</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost-s" (click)="closeModal('downloadHistory')">Cancel</button>
+      <button class="btn-g" (click)="downloadStatement()"><i class="bi bi-download"></i> Download</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Toast -->
+@if (toast.show) {
+<div class="toast-container">
+  <div class="toast-msg" [class.success]="toast.type === 'success'" [class.error]="toast.type === 'error'">
+    <i class="bi bi-{{ toast.type === 'success' ? 'check-circle-fill' : 'x-circle-fill' }}"></i>
+    {{ toast.message }}
+  </div>
+</div>
+}

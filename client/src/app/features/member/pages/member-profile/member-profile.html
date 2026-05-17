@@ -1,0 +1,800 @@
+<!-- ═════════════════════════════════════════════ -->
+<!--         MEMBER PROFILE — Angular v21          -->
+<!-- ═════════════════════════════════════════════ -->
+
+<!-- TOAST CONTAINER -->
+<div class="toast-c">
+  @for (toast of toasts; track toast.id) {
+    <div class="t {{ toast.type }}">
+      <i class="fas {{ getToastIcon(toast.type) }}" [style.color]="getToastColor(toast.type)" style="font-size:18px;flex-shrink:0;"></i>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">{{ toast.type | titlecase }}</div>
+        <div style="font-size:11px;color:var(--txm);">{{ toast.message }}</div>
+      </div>
+      <button (click)="removeToast(toast.id)" class="btn-close btn-close-sm ms-2" style="font-size:10px;"></button>
+    </div>
+  }
+</div>
+
+<!-- PAGE -->
+<div class="p-3 p-lg-4 fiu" style="max-width:1400px;">
+
+  <!-- HEADER -->
+  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="fas fa-user-circle me-2" style="color:var(--pri);"></i>My <span style="color:var(--pri);">Profile</span></h1>
+      <p class="mb-0" style="color:var(--txm);font-size:14px;">View and manage your personal information, documents, and security settings.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('activity')"><i class="fas fa-history me-1"></i> Activity Log</button>
+      <a routerLink="/settings" class="btn btn-sm btn-outline-secondary rounded-3"><i class="fas fa-cog me-1"></i> Settings</a>
+    </div>
+  </div>
+
+  <!-- PROFILE HEADER CARD -->
+  <div class="c mb-4">
+    <div class="p-4 p-lg-5 profile-hero">
+      <div class="hero-orb"></div>
+      <div class="row align-items-center g-4">
+        <div class="col-auto">
+          <div class="avatar-ring" (click)="avatarInput.click()">
+            {{ profile.initials }}
+            <div class="cam"><i class="fas fa-camera"></i></div>
+          </div>
+          <input type="file" #avatarInput style="display:none;" accept="image/*" (change)="onAvatarUpload($event)">
+        </div>
+        <div class="col">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+            <h3 class="fw-bold mb-0">{{ profile.fullName }}</h3>
+            <span class="b" style="background:rgba(0,200,83,0.15);color:var(--grn);border:1px solid rgba(0,200,83,0.25);"><i class="fas fa-check-circle"></i> {{ profile.status }}</span>
+            <span class="b" style="background:rgba(255,107,0,0.15);color:var(--pri-l);border:1px solid rgba(255,107,0,0.25);">{{ profile.memberCategory }}</span>
+          </div>
+          <div class="d-flex flex-wrap gap-3 mt-2" style="font-size:13px;color:rgba(255,255,255,0.65);">
+            <span><i class="fas fa-id-badge me-1"></i> <strong style="font-family:var(--mono);color:rgba(255,255,255,0.85);">{{ profile.memberNo }}</strong></span>
+            <span><i class="fas fa-calendar me-1"></i> Joined <strong style="color:rgba(255,255,255,0.85);">{{ profile.memberSince }}</strong></span>
+            <span><i class="fas fa-clock me-1"></i> Last login <strong style="color:rgba(255,255,255,0.85);">{{ profile.lastLogin }}</strong></span>
+          </div>
+        </div>
+        <div class="col-lg-3 text-lg-end">
+          <button class="btn btn-sm rounded-pill px-3 fw-semibold edit-profile-btn" (click)="openModal('editPersonal')"><i class="fas fa-edit me-1"></i> Edit Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Completion -->
+    <div class="px-4 py-3 d-flex flex-wrap align-items-center justify-content-between gap-3" style="background:rgba(255,107,0,0.03);border-bottom:1px solid rgba(26,29,46,0.06);">
+      <div class="d-flex align-items-center gap-3">
+        <div style="font-size:13px;font-weight:600;">Profile Completion</div>
+        <div style="width:200px;">
+          <div class="pr" style="height:8px;"><div class="pf" [style.width.%]="profileCompletion" style="background:var(--grd);position:relative;"></div></div>
+        </div>
+        <span class="fw-bold" style="font-size:14px;color:var(--pri);font-family:var(--mono);">{{ profileCompletion }}%</span>
+      </div>
+      <div class="d-flex gap-2">
+        @if (missingDocsCount > 0) {
+          <button class="btn btn-sm btn-outline-warning rounded-3" (click)="openModal('missingItems')" style="font-size:12px;"><i class="fas fa-exclamation-triangle me-1"></i> {{ missingDocsCount }} items missing</button>
+        }
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="p-4">
+      <div class="row g-3">
+        @for (kpi of kpis; track kpi.label) {
+          <div class="col-6 col-lg-3">
+            <div class="kpi text-center">
+              <div class="k">{{ kpi.label }}</div>
+              <div class="v" [style.color]="kpi.color">{{ kpi.value }}</div>
+              @if (kpi.link) {
+                <a [routerLink]="kpi.link" class="text-decoration-none" style="font-size:10px;color:var(--pri);">View <i class="fas fa-arrow-right ms-1"></i></a>
+              }
+              @if (kpi.subtext) {
+                <span style="font-size:10px;color:var(--grn);"><i class="fas {{ kpi.subIcon }}"></i> {{ kpi.subtext }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto pb-1" role="tablist">
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'personal'" (click)="setTab('personal')" style="font-size:13px;font-weight:600;"><i class="fas fa-user me-1"></i> Personal</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'contact'" (click)="setTab('contact')" style="font-size:13px;font-weight:600;"><i class="fas fa-phone-alt me-1"></i> Contact</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'employment'" (click)="setTab('employment')" style="font-size:13px;font-weight:600;"><i class="fas fa-briefcase me-1"></i> Employment</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'nok'" (click)="setTab('nok')" style="font-size:13px;font-weight:600;"><i class="fas fa-heart me-1"></i> Next of Kin</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'banking'" (click)="setTab('banking')" style="font-size:13px;font-weight:600;"><i class="fas fa-university me-1"></i> Banking</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'docs'" (click)="setTab('docs')" style="font-size:13px;font-weight:600;"><i class="fas fa-file-alt me-1"></i> Documents</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill px-4 py-2" [class.active]="activeTab === 'security'" (click)="setTab('security')" style="font-size:13px;font-weight:600;"><i class="fas fa-shield-alt me-1"></i> Security</button></li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ═══ TAB: PERSONAL ═══ -->
+    @if (activeTab === 'personal') {
+      <div class="tab-pane fade show active">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="c">
+              <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+                <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-user me-2" style="color:var(--pri);"></i>Personal Information</div>
+                <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('editPersonal')"><i class="fas fa-edit me-1"></i> Edit</button>
+              </div>
+              <div class="p-4">
+                <div class="field-row"><span class="fl">Full Name</span><span class="fv">{{ personal.fullName }}</span></div>
+                <div class="field-row"><span class="fl">Date of Birth</span><span class="fv">{{ personal.dob }} <span style="color:var(--txm);font-weight:400;font-size:12px;">({{ personal.age }} years)</span></span></div>
+                <div class="field-row"><span class="fl">Gender</span><span class="fv">{{ personal.gender }}</span></div>
+                <div class="field-row"><span class="fl">National ID</span><span class="fv" style="font-family:var(--mono);">{{ personal.nationalId }}</span></div>
+                <div class="field-row">
+                  <span class="fl">KRA PIN</span>
+                  <span class="fv" style="font-family:var(--mono);">
+                    @if (personal.kraPin) {
+                      {{ personal.kraPin }}
+                    } @else {
+                      <span style="color:var(--ylw);">Not provided</span>
+                      <button class="btn btn-sm btn-outline-warning rounded-pill ms-2" style="font-size:10px;" (click)="openModal('editPersonal')">Add</button>
+                    }
+                  </span>
+                </div>
+                <div class="field-row"><span class="fl">Nationality</span><span class="fv">{{ personal.nationality }}</span></div>
+                <div class="field-row"><span class="fl">Marital Status</span><span class="fv">{{ personal.maritalStatus }}</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="c mb-3">
+              <div class="p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;"><div class="fw-semibold" style="font-size:14px;"><i class="fas fa-id-badge me-2" style="color:var(--pri);"></i>Membership</div></div>
+              <div class="p-3">
+                <div class="field-row"><span class="fl">Member No.</span><span class="fv" style="font-family:var(--mono);color:var(--pri);">{{ profile.memberNo }}</span></div>
+                <div class="field-row"><span class="fl">Since</span><span class="fv">{{ profile.memberSince }}</span></div>
+                <div class="field-row"><span class="fl">Category</span><span class="fv">Regular</span></div>
+                <div class="field-row"><span class="fl">Share Cert.</span><span class="fv" style="font-family:var(--mono);">{{ profile.shareCert }}</span></div>
+                <div class="field-row"><span class="fl">Reg Fee</span><span class="fv"><span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);"><i class="fas fa-check"></i> Paid</span></span></div>
+                <div class="field-row"><span class="fl">Status</span><span class="fv"><span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);"><i class="fas fa-check-circle"></i> {{ profile.status }}</span></span></div>
+              </div>
+            </div>
+            <div class="c" style="cursor:pointer;" (click)="openModal('health')">
+              <div class="p-3">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <div style="width:36px;height:36px;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--grn);"><i class="fas fa-heartbeat"></i></div>
+                  <div><div style="font-size:13px;font-weight:700;">Account Health</div><div style="font-size:11px;color:var(--txm);">Tap for full breakdown</div></div>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                  <div><div class="d-flex justify-content-between mb-1" style="font-size:11px;"><span style="color:var(--txm);">Savings</span><span class="fw-bold" style="color:var(--grn);">90/100</span></div><div class="pr"><div class="pf" style="width:90%;background:var(--grn);"></div></div></div>
+                  <div><div class="d-flex justify-content-between mb-1" style="font-size:11px;"><span style="color:var(--txm);">Repayment</span><span class="fw-bold" style="color:var(--pri);">75/100</span></div><div class="pr"><div class="pf" style="width:75%;background:var(--grd);"></div></div></div>
+                  <div><div class="d-flex justify-content-between mb-1" style="font-size:11px;"><span style="color:var(--txm);">Profile</span><span class="fw-bold" style="color:var(--ylw);">78/100</span></div><div class="pr"><div class="pf" style="width:78%;background:var(--ylw);"></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: CONTACT ═══ -->
+    @if (activeTab === 'contact') {
+      <div class="tab-pane fade show active">
+        <div class="c">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+            <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-phone-alt me-2" style="color:var(--pri);"></i>Contact Information</div>
+            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('editContact')"><i class="fas fa-edit me-1"></i> Edit</button>
+          </div>
+          <div class="p-4">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <div class="field-row"><span class="fl">Primary Phone</span><span class="fv" style="font-family:var(--mono);">{{ contact.primaryPhone }} <span class="b ms-2" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;"><i class="fas fa-check"></i> Verified</span></span></div>
+                <div class="field-row"><span class="fl">Secondary Phone</span><span class="fv" style="font-family:var(--mono);">{{ contact.secondaryPhone }}</span></div>
+                <div class="field-row"><span class="fl">Email</span><span class="fv">{{ contact.email }} <span class="b ms-2" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;"><i class="fas fa-check"></i> Verified</span></span></div>
+              </div>
+              <div class="col-md-6">
+                <div class="field-row"><span class="fl">Postal Address</span><span class="fv">{{ contact.postalAddress }}</span></div>
+                <div class="field-row"><span class="fl">Physical Address</span><span class="fv">{{ contact.physicalAddress }}</span></div>
+                <div class="field-row"><span class="fl">County</span><span class="fv">{{ contact.county }}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: EMPLOYMENT ═══ -->
+    @if (activeTab === 'employment') {
+      <div class="tab-pane fade show active">
+        <div class="c">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+            <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-briefcase me-2" style="color:var(--pri);"></i>Employment Details</div>
+            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('editEmployment')"><i class="fas fa-edit me-1"></i> Edit</button>
+          </div>
+          <div class="p-4">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <div class="field-row"><span class="fl">Employer</span><span class="fv">{{ employment.employer }}</span></div>
+                <div class="field-row"><span class="fl">Employee No.</span><span class="fv" style="font-family:var(--mono);">{{ employment.employeeNo }}</span></div>
+                <div class="field-row"><span class="fl">Department</span><span class="fv">{{ employment.department }}</span></div>
+                <div class="field-row"><span class="fl">Position</span><span class="fv">{{ employment.position }}</span></div>
+              </div>
+              <div class="col-md-6">
+                <div class="field-row"><span class="fl">Employment Type</span><span class="fv">{{ employment.employmentType }}</span></div>
+                <div class="field-row"><span class="fl">Monthly Salary</span><span class="fv" style="font-family:var(--mono);">KES {{ employment.monthlySalary | number }} <span class="b ms-2" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;"><i class="fas fa-lock"></i> Private</span></span></div>
+                <div class="field-row"><span class="fl">Years Employed</span><span class="fv">{{ employment.yearsEmployed }} years</span></div>
+                <div class="field-row"><span class="fl">Employer Phone</span><span class="fv" style="font-family:var(--mono);">{{ employment.employerPhone }}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: NEXT OF KIN ═══ -->
+    @if (activeTab === 'nok') {
+      <div class="tab-pane fade show active">
+        <div class="c">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+            <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-heart me-2" style="color:var(--red);"></i>Next of Kin / Beneficiaries</div>
+            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('editNok')"><i class="fas fa-edit me-1"></i> Edit</button>
+          </div>
+          <div class="p-4">
+            <div class="row g-4">
+              @for (ben of beneficiaries; track ben.name) {
+                <div class="col-md-6">
+                  <div class="rounded-4 p-3" style="background:var(--inp);">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                      <div class="nok-avatar" [style.border-color]="ben.borderColor" [style.color]="ben.color">{{ ben.initials }}</div>
+                      <div>
+                        <div class="fw-bold" style="font-size:14px;">{{ ben.name }}</div>
+                        <span class="b" [style.background]="ben.isPrimary ? 'rgba(229,57,53,0.06)' : 'rgba(2,136,209,0.06)'" [style.color]="ben.color" [style.border]="'1px solid ' + ben.borderColor" style="font-size:9px;">
+                          @if (ben.isPrimary) { <i class="fas fa-heart"></i> Primary } @else { Secondary }
+                        </span>
+                      </div>
+                      <span class="ms-auto fw-bold" style="font-size:18px;color:{{ ben.color }};font-family:var(--mono);">{{ ben.allocation }}%</span>
+                    </div>
+                    <div class="field-row"><span class="fl">Relationship</span><span class="fv">{{ ben.relationship }}</span></div>
+                    <div class="field-row"><span class="fl">ID Number</span><span class="fv" style="font-family:var(--mono);">{{ ben.idNumber }}</span></div>
+                    <div class="field-row"><span class="fl">Phone</span><span class="fv" style="font-family:var(--mono);">{{ ben.phone }}</span></div>
+                  </div>
+                </div>
+              }
+            </div>
+            <button class="btn btn-sm btn-outline-secondary rounded-3 mt-3" (click)="openModal('editNok')"><i class="fas fa-plus me-1"></i> Add Beneficiary</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: BANKING ═══ -->
+    @if (activeTab === 'banking') {
+      <div class="tab-pane fade show active">
+        <div class="c">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+            <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-university me-2" style="color:var(--blu);"></i>Bank & Mobile Money</div>
+            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('editBank')"><i class="fas fa-plus me-1"></i> Add Account</button>
+          </div>
+          <div class="p-4">
+            <div class="row g-3">
+              @for (account of bankAccounts; track account.number) {
+                <div class="col-md-6">
+                  <div class="rounded-4 p-3 bank-card" [style.background]="account.type === 'mpesa' ? 'rgba(0,200,83,0.03)' : 'rgba(2,136,209,0.03)'" [style.border]="'1px solid ' + account.borderColor">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <div class="bank-icon" [style.background]="account.type === 'mpesa' ? 'rgba(0,200,83,0.08)' : 'rgba(2,136,209,0.06)'" [style.color]="account.color"><i class="fas {{ account.icon }}"></i></div>
+                      <div><div class="fw-bold" style="font-size:13px;">{{ account.name }}</div><div style="font-size:11px;color:var(--txm);">{{ account.provider }}</div></div>
+                      @if (account.isDefault) {
+                        <span class="ms-auto b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;"><i class="fas fa-check"></i> Default</span>
+                      }
+                      @if (!account.isDefault && account.isVerified) {
+                        <span class="ms-auto b" [style.background]="account.type === 'mpesa' ? 'rgba(0,200,83,0.08)' : 'rgba(2,136,209,0.06)'" [style.color]="account.color" [style.border]="'1px solid ' + account.borderColor" style="font-size:9px;"><i class="fas fa-check"></i> Verified</span>
+                      }
+                    </div>
+                    <div class="field-row"><span class="fl">{{ account.type === 'bank' ? 'Account No.' : 'Number' }}</span><span class="fv" style="font-family:var(--mono);">{{ account.number }}</span></div>
+                    <div class="field-row"><span class="fl">{{ account.type === 'bank' ? 'Account Name' : 'Name' }}</span><span class="fv">{{ account.accountName }}</span></div>
+                    <div class="d-flex gap-2 mt-2">
+                      <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="setDefaultBank(account)"><i class="fas fa-star"></i></button>
+                      <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('editBank')"><i class="fas fa-edit"></i></button>
+                      @if (!account.isDefault) {
+                        <button class="btn btn-sm btn-outline-danger rounded-3" (click)="removeBankAccount(account)"><i class="fas fa-trash"></i></button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: DOCUMENTS ═══ -->
+    @if (activeTab === 'docs') {
+      <div class="tab-pane fade show active">
+        <div class="c">
+          <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;">
+            <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-file-alt me-2" style="color:var(--pri);"></i>Documents <span style="font-size:12px;color:var(--txm);font-weight:400;">(Admin-required)</span></div>
+          </div>
+          <div class="p-4">
+            <div class="row g-3">
+              @for (doc of documents; track doc.id) {
+                <div class="col-md-4">
+                  <div class="doc-card" [class.uploaded]="doc.status === 'verified' || doc.status === 'under_review'" [class.rejected]="doc.status === 'rejected'" [style.border-color]="doc.borderColor" [style.background]="doc.bgColor" (click)="onDocClick(doc)">
+                    @if (doc.status === 'missing') {
+                      <div (click)="$event.stopPropagation(); docInput.click()" style="cursor:pointer;">
+                        <input type="file" #docInput style="display:none;" (change)="onDocUpload(doc.id, $event)">
+                        <i class="fas {{ doc.icon }} d-block mb-2" style="font-size:28px;color:{{ doc.color }};"></i>
+                        <div class="fw-bold" style="font-size:13px;">{{ doc.name }}</div>
+                        <div style="font-size:11px;color:var(--txm);">{{ doc.description }}</div>
+                        <span class="b mt-2" [style.background]="doc.bgColor" [style.color]="doc.color" [style.border]="'1px solid ' + doc.borderColor"><i class="fas fa-clock"></i> Missing</span>
+                      </div>
+                    } @else {
+                      <i class="fas {{ doc.icon }} d-block mb-2" style="font-size:28px;color:{{ doc.color }};"></i>
+                      <div class="fw-bold" style="font-size:13px;">{{ doc.name }}</div>
+                      <div style="font-size:11px;color:var(--txm);">{{ doc.description }}</div>
+                      <span class="b mt-2" [style.background]="doc.bgColor" [style.color]="doc.color" [style.border]="'1px solid ' + doc.borderColor">
+                        @if (doc.status === 'verified') { <i class="fas fa-check-circle"></i> Verified }
+                        @if (doc.status === 'under_review') { <i class="fas fa-hourglass-half"></i> Under Review }
+                        @if (doc.status === 'rejected') { <i class="fas fa-times-circle"></i> Rejected }
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            @if (missingDocsCount > 0) {
+              <div class="alert border-0 mt-3 mb-0" style="background:rgba(249,168,37,0.06);border-radius:12px;font-size:12px;color:var(--ylw);">
+                <i class="fas fa-exclamation-triangle me-1"></i> <strong>{{ missingDocsCount }} documents missing.</strong> Complete your profile to increase loan eligibility and unlock higher limits. Documents are verified by admin within 24 hours.
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TAB: SECURITY ═══ -->
+    @if (activeTab === 'security') {
+      <div class="tab-pane fade show active">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="c">
+              <div class="p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;"><div class="fw-semibold" style="font-size:14px;"><i class="fas fa-lock me-2" style="color:var(--pri);"></i>Password & PIN</div></div>
+              <div class="p-4 d-flex flex-column gap-3">
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:var(--inp);">
+                  <div><div style="font-size:13px;font-weight:600;">Login Password</div><div style="font-size:11px;color:var(--txm);">Last changed 45 days ago</div></div>
+                  <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('changePass')"><i class="fas fa-key me-1"></i> Change</button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:var(--inp);">
+                  <div><div style="font-size:13px;font-weight:600;">Transaction PIN</div><div style="font-size:11px;color:var(--txm);">4-digit secure PIN</div></div>
+                  <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openModal('changePin')"><i class="fas fa-th me-1"></i> Change</button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:var(--inp);">
+                  <div><div style="font-size:13px;font-weight:600;">Two-Factor Auth (2FA)</div><div style="font-size:11px;color:var(--txm);">SMS OTP on login</div></div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" style="width:44px;height:22px;" [checked]="twoFactorEnabled" (change)="toggle2FA($event)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="c mb-3">
+              <div class="p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;"><div class="fw-semibold" style="font-size:14px;"><i class="fas fa-desktop me-2" style="color:var(--blu);"></i>Active Sessions</div></div>
+              <div class="p-4 d-flex flex-column gap-2">
+                @for (session of sessions; track session.device + session.browser) {
+                  <div class="d-flex align-items-center justify-content-between p-3 rounded-3" [class.session-current]="session.isCurrent" [class.session-other]="!session.isCurrent">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="fas {{ session.device === 'iPhone' ? 'fa-mobile-alt' : 'fa-desktop' }}" [style.color]="session.isCurrent ? 'var(--grn)' : 'var(--txm)'"></i>
+                      <div><div style="font-size:12px;font-weight:600;">{{ session.browser }} — {{ session.device }}</div><div style="font-size:10px;color:var(--txm);">{{ session.location }} • {{ session.time }}</div></div>
+                    </div>
+                    @if (session.isCurrent) {
+                      <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;">Current</span>
+                    } @else {
+                      <button class="btn btn-sm btn-outline-danger rounded-3" style="font-size:11px;" (click)="terminateSession(session)"><i class="fas fa-times"></i></button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="c">
+              <div class="p-3 border-bottom" style="border-color:rgba(26,29,46,0.06)!important;"><div class="fw-semibold" style="font-size:14px;"><i class="fas fa-history me-2" style="color:var(--pri);"></i>Login History</div></div>
+              <div class="p-3" style="max-height:200px;overflow:auto;">
+                @for (record of loginHistory; track record.date) {
+                  <div class="d-flex justify-content-between py-2" [class.border-bottom]="!$last" style="font-size:12px;border-color:rgba(26,29,46,0.04)!important;">
+                    <span style="color:var(--txm);">{{ record.date }}</span>
+                    <span>{{ record.browser }} — {{ record.device }} — {{ record.location }}</span>
+                    <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;"><i class="fas fa-check"></i></span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div><!-- /tab-content -->
+</div><!-- /page -->
+
+<!-- ═════════════════════════════════════════════ -->
+<!--                MODALS                        -->
+<!-- ═════════════════════════════════════════════ -->
+
+<!-- BACKDROP -->
+@if (showEditPersonal || showEditContact || showEditEmployment || showEditNok || showEditBank || showChangePass || showChangePin || showMissingItems || showHealth || showActivity || showNotif || showLogout) {
+  <div class="modal-backdrop" (click)="closeAllModals()"></div>
+}
+
+<!-- Edit Personal -->
+@if (showEditPersonal) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-user-edit me-2" style="color:var(--pri);"></i>Edit Personal Info</h5>
+          <button type="button" class="btn-close" (click)="closeModal('editPersonal')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">First Name <span class="text-danger">*</span></label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editPersonal.firstName"></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Middle Name</label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editPersonal.middleName"></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Last Name <span class="text-danger">*</span></label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editPersonal.lastName"></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Date of Birth</label><input type="date" class="form-control" style="border-radius:12px;" [(ngModel)]="editPersonal.dob"></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Gender</label><select class="form-select" style="border-radius:12px;" [(ngModel)]="editPersonal.gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Marital Status</label><select class="form-select" style="border-radius:12px;" [(ngModel)]="editPersonal.maritalStatus"><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">National ID <span class="text-danger">*</span></label><input type="text" class="form-control" style="border-radius:12px;font-family:var(--mono);" [(ngModel)]="editPersonal.nationalId" readonly><div class="form-text" style="font-size:10px;">ID cannot be changed. Contact admin.</div></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">KRA PIN</label><input type="text" class="form-control" style="border-radius:12px;font-family:var(--mono);" placeholder="A123456789B" [(ngModel)]="editPersonal.kraPin"></div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('editPersonal')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="savePersonal()"><i class="fas fa-save me-1"></i> Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Contact -->
+@if (showEditContact) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-phone-alt me-2" style="color:var(--pri);"></i>Edit Contact</h5>
+          <button type="button" class="btn-close" (click)="closeModal('editContact')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Primary Phone <span class="text-danger">*</span></label><input type="tel" class="form-control" style="border-radius:12px;font-family:var(--mono);" [(ngModel)]="editContact.primaryPhone"></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Secondary Phone</label><input type="tel" class="form-control" style="border-radius:12px;font-family:var(--mono);" [(ngModel)]="editContact.secondaryPhone"></div>
+            <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px;">Email <span class="text-danger">*</span></label><input type="email" class="form-control" style="border-radius:12px;" [(ngModel)]="editContact.email"></div>
+            <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px;">Physical Address</label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editContact.physicalAddress"></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Postal Address</label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editContact.postalAddress"></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">County</label><select class="form-select" style="border-radius:12px;" [(ngModel)]="editContact.county">
+              @for (c of counties; track c) { <option [value]="c" [selected]="c === editContact.county">{{ c }}</option> }
+            </select></div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('editContact')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="saveContact()"><i class="fas fa-save me-1"></i> Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Employment -->
+@if (showEditEmployment) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-briefcase me-2" style="color:var(--pri);"></i>Edit Employment</h5>
+          <button type="button" class="btn-close" (click)="closeModal('editEmployment')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Employer <span class="text-danger">*</span></label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editEmployment.employer"></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Employee No.</label><input type="text" class="form-control" style="border-radius:12px;font-family:var(--mono);" [(ngModel)]="editEmployment.employeeNo"></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Department</label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editEmployment.department"></div>
+            <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Position</label><input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="editEmployment.position"></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Employment Type</label><select class="form-select" style="border-radius:12px;" [(ngModel)]="editEmployment.employmentType"><option>Permanent</option><option>Contract</option><option>Self-employed</option></select></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Monthly Salary</label><div class="input-group"><span class="input-group-text" style="border-radius:12px 0 0 12px;background:var(--inp);">KES</span><input type="number" class="form-control" style="border-radius:0 12px 12px 0;font-family:var(--mono);" [(ngModel)]="editEmployment.monthlySalary"></div></div>
+            <div class="col-md-4"><label class="form-label fw-semibold" style="font-size:13px;">Years Employed</label><input type="number" class="form-control" style="border-radius:12px;" [(ngModel)]="editEmployment.yearsEmployed"></div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('editEmployment')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="saveEmployment()"><i class="fas fa-save me-1"></i> Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Next of Kin -->
+@if (showEditNok) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent-red"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-heart me-2" style="color:var(--red);"></i>Manage Beneficiaries</h5>
+          <button type="button" class="btn-close" (click)="closeModal('editNok')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="alert border-0 mb-3" style="background:rgba(229,57,53,0.04);border-radius:12px;font-size:12px;color:var(--red);"><i class="fas fa-info-circle me-1"></i> Total allocation must equal 100%. This determines how your savings/shares are distributed in case of death or incapacitation.</div>
+          <div class="rounded-4 p-3 mb-3" style="background:var(--inp);">
+            <div class="fw-semibold mb-2" style="font-size:13px;">Beneficiary 1 (Primary)</div>
+            <div class="row g-3">
+              <div class="col-md-4"><label class="form-label" style="font-size:12px;">Full Name <span class="text-danger">*</span></label><input type="text" class="form-control form-control-sm" style="border-radius:10px;" value="Jane  D."></div>
+              <div class="col-md-3"><label class="form-label" style="font-size:12px;">Relationship <span class="text-danger">*</span></label><select class="form-select form-select-sm" style="border-radius:10px;"><option selected>Spouse</option><option>Child</option><option>Parent</option><option>Sibling</option></select></div>
+              <div class="col-md-3"><label class="form-label" style="font-size:12px;">Phone</label><input type="tel" class="form-control form-control-sm" style="border-radius:10px;font-family:var(--mono);" value="0722111222"></div>
+              <div class="col-md-2"><label class="form-label" style="font-size:12px;">Allocation</label><div class="input-group input-group-sm"><input type="number" class="form-control" style="border-radius:10px 0 0 10px;font-family:var(--mono);" value="70"><span class="input-group-text" style="border-radius:0 10px 10px 0;">%</span></div></div>
+            </div>
+          </div>
+          <div class="rounded-4 p-3 mb-3" style="background:var(--inp);">
+            <div class="fw-semibold mb-2" style="font-size:13px;">Beneficiary 2</div>
+            <div class="row g-3">
+              <div class="col-md-4"><label class="form-label" style="font-size:12px;">Full Name</label><input type="text" class="form-control form-control-sm" style="border-radius:10px;" value="Peter  D."></div>
+              <div class="col-md-3"><label class="form-label" style="font-size:12px;">Relationship</label><select class="form-select form-select-sm" style="border-radius:10px;"><option>Spouse</option><option>Child</option><option>Parent</option><option selected>Sibling</option></select></div>
+              <div class="col-md-3"><label class="form-label" style="font-size:12px;">Phone</label><input type="tel" class="form-control form-control-sm" style="border-radius:10px;font-family:var(--mono);" value="0711333444"></div>
+              <div class="col-md-2"><label class="form-label" style="font-size:12px;">Allocation</label><div class="input-group input-group-sm"><input type="number" class="form-control" style="border-radius:10px 0 0 10px;font-family:var(--mono);" value="30"><span class="input-group-text" style="border-radius:0 10px 10px 0;">%</span></div></div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="showToast('Add another beneficiary form below','info')"><i class="fas fa-plus me-1"></i> Add Another</button>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('editNok')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="saveNok()"><i class="fas fa-save me-1"></i> Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Bank -->
+@if (showEditBank) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent-blu"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-university me-2" style="color:var(--blu);"></i>Add/Edit Account</h5>
+          <button type="button" class="btn-close" (click)="closeModal('editBank')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px;">Account Type</label><select class="form-select" style="border-radius:12px;" [(ngModel)]="editBank.type"><option value="mpesa">M-Pesa (Safaricom)</option><option value="airtel">Airtel Money</option><option value="bank">Bank Account</option></select></div>
+            @if (editBank.type !== 'bank') {
+              <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px;">Phone Number</label><input type="tel" class="form-control" style="border-radius:12px;font-family:var(--mono);" placeholder="0712 345 890" [(ngModel)]="editBank.phone"></div>
+            }
+            @if (editBank.type === 'bank') {
+              <div class="row g-3 m-0">
+                <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Bank Name</label><select class="form-select" style="border-radius:12px;" [(ngModel)]="editBank.bankName">
+                  @for (b of banks; track b) { <option [value]="b" [selected]="b === editBank.bankName">{{ b }}</option> }
+                </select></div>
+                <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Branch</label><input type="text" class="form-control" style="border-radius:12px;" placeholder="e.g., Nairobi Main" [(ngModel)]="editBank.branch"></div>
+                <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Account No.</label><input type="text" class="form-control" style="border-radius:12px;font-family:var(--mono);" placeholder="Account number" [(ngModel)]="editBank.accountNo"></div>
+                <div class="col-md-6"><label class="form-label fw-semibold" style="font-size:13px;">Account Name</label><input type="text" class="form-control" style="border-radius:12px;" placeholder="As it appears on account" [(ngModel)]="editBank.accountName"></div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('editBank')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="saveBank()"><i class="fas fa-save me-1"></i> Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Change Password -->
+@if (showChangePass) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-key me-2" style="color:var(--pri);"></i>Change Password</h5>
+          <button type="button" class="btn-close" (click)="closeModal('changePass')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:13px;">Current Password</label><input type="password" class="form-control" style="border-radius:12px;" placeholder="••••••••" [(ngModel)]="changePass.current"></div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:13px;">New Password</label>
+            <input type="password" class="form-control" style="border-radius:12px;" placeholder="••••••••" [(ngModel)]="changePass.newPass" (input)="checkPasswordStrength()">
+            <div class="pr mt-2" style="height:4px;"><div class="pf" [style.width.%]="passStrength" [style.background]="passStrengthColor" style="transition:all .3s;"></div></div>
+            <div style="font-size:10px;" [style.color]="passStrengthColor">{{ passStrengthLabel }}</div>
+          </div>
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:13px;">Confirm Password</label><input type="password" class="form-control" style="border-radius:12px;" placeholder="••••••••" [(ngModel)]="changePass.confirm"></div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('changePass')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="savePassword()"><i class="fas fa-save me-1"></i> Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Change PIN -->
+@if (showChangePin) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-th me-2" style="color:var(--pri);"></i>Change Transaction PIN</h5>
+          <button type="button" class="btn-close" (click)="closeModal('changePin')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:13px;">Current PIN</label><input type="password" class="form-control text-center pin-input" maxlength="4" placeholder="••••" [(ngModel)]="changePin.current"></div>
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:13px;">New PIN</label><input type="password" class="form-control text-center pin-input" maxlength="4" placeholder="••••" [(ngModel)]="changePin.newPin"></div>
+          <div class="mb-3"><label class="form-label fw-semibold" style="font-size:13px;">Confirm New PIN</label><input type="password" class="form-control text-center pin-input" maxlength="4" placeholder="••••" [(ngModel)]="changePin.confirm"></div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('changePin')">Cancel</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="savePin()"><i class="fas fa-save me-1"></i> Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Missing Items -->
+@if (showMissingItems) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent-ylw"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle me-2" style="color:var(--ylw);"></i>Missing Items</h5>
+          <button type="button" class="btn-close" (click)="closeModal('missingItems')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="alert border-0 mb-3" style="background:rgba(249,168,37,0.06);border-radius:12px;font-size:12px;color:var(--ylw);"><i class="fas fa-info-circle me-1"></i> Completing these items increases your loan eligibility and profile score. Admin requires these for full membership access.</div>
+          <div class="d-flex flex-column gap-2">
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:var(--inp);">
+              <div class="d-flex align-items-center gap-2"><i class="fas fa-file-invoice" style="color:var(--ylw);"></i><div><div style="font-size:13px;font-weight:600;">KRA PIN Certificate</div><div style="font-size:11px;color:var(--txm);">Tax compliance document</div></div></div>
+              <button class="btn btn-sm text-white rounded-3 upload-btn" style="font-size:11px;" (click)="triggerDocUpload('kra')">Upload</button>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:var(--inp);">
+              <div class="d-flex align-items-center gap-2"><i class="fas fa-file-invoice-dollar" style="color:var(--ylw);"></i><div><div style="font-size:13px;font-weight:600;">Bank Statement (3 months)</div><div style="font-size:11px;color:var(--txm);">For loan eligibility verification</div></div></div>
+              <button class="btn btn-sm text-white rounded-3 upload-btn" style="font-size:11px;" (click)="triggerDocUpload('bankStmt')">Upload</button>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:var(--inp);">
+              <div class="d-flex align-items-center gap-2"><i class="fas fa-envelope-open-text" style="color:var(--ylw);"></i><div><div style="font-size:13px;font-weight:600;">Employment Confirmation Letter</div><div style="font-size:11px;color:var(--txm);">From your employer HR</div></div></div>
+              <button class="btn btn-sm text-white rounded-3 upload-btn" style="font-size:11px;" (click)="triggerDocUpload('empLetter')">Upload</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('missingItems')">Later</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Health Score -->
+@if (showHealth) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent-grn"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-heartbeat me-2" style="color:var(--grn);"></i>Account Health</h5>
+          <button type="button" class="btn-close" (click)="closeModal('health')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="text-center mb-4">
+            <div class="health-ring-container">
+              <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(26,29,46,0.06)" stroke-width="8"/>
+                <circle cx="50" cy="50" r="42" fill="none" [attr.stroke]="healthColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" [attr.stroke-dashoffset]="healthDashOffset"/>
+              </svg>
+              <div class="health-ring-score">{{ healthScore }}</div>
+            </div>
+            <div class="mt-2"><span class="b" [style.background]="healthColor.replace('var(--', 'rgba(').replace(')', ',0.08)')" [style.color]="healthColor" [style.border]="'1px solid ' + healthColor.replace('var(--', 'rgba(').replace(')', ',0.2)')"><i class="fas fa-star"></i> {{ healthLabel }}</span></div>
+          </div>
+          <div class="d-flex flex-column gap-3">
+            @for (metric of healthMetrics; track metric.label) {
+              <div>
+                <div class="d-flex justify-content-between mb-1" style="font-size:12px;"><span>{{ metric.label }}</span><span class="fw-bold" [style.color]="metric.color">{{ metric.score }}/{{ metric.maxScore }}</span></div>
+                <div class="pr"><div class="pf" [style.width.%]="(metric.score / metric.maxScore) * 100" [style.background]="metric.color"></div></div>
+                <div style="font-size:10px;margin-top:2px;" [style.color]="metric.color">{{ metric.detail }}</div>
+              </div>
+            }
+          </div>
+          <div class="dv my-3"></div>
+          <div class="fw-semibold mb-2" style="font-size:13px;"><i class="fas fa-lightbulb me-2" style="color:var(--ylw);"></i>Tips to Improve</div>
+          <div class="d-flex flex-column gap-1" style="font-size:12px;color:var(--tx2);">
+            @for (tip of healthTips; track tip) {
+              <div><i class="fas fa-arrow-right me-2" style="color:var(--pri);font-size:10px;"></i>{{ tip }}</div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('health')">Close</button>
+          <button class="btn text-white rounded-3 fw-semibold save-btn" (click)="goToDocsFromHealth()"><i class="fas fa-file-alt me-1"></i> Complete Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Activity Log -->
+@if (showActivity) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-accent"></div>
+        <div class="modal-header border-0 px-4 pt-4 pb-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-history me-2" style="color:var(--pri);"></i>Activity Log</h5>
+          <button type="button" class="btn-close" (click)="closeModal('activity')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4" style="max-height:400px;">
+          <div class="d-flex flex-column gap-2">
+            @for (act of activities; track act.title + act.detail) {
+              <div class="d-flex gap-3 p-2 rounded-3" style="background:var(--inp);font-size:12px;">
+                <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;" [style.background]="act.iconBg" [style.color]="act.iconColor"><i class="fas {{ act.icon }}"></i></div>
+                <div><div class="fw-semibold">{{ act.title }}</div><div style="color:var(--txm);">{{ act.detail }}</div></div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <button class="btn btn-outline-secondary rounded-3" (click)="closeModal('activity')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Notifications -->
+@if (showNotif) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 px-4 pt-4 pb-2">
+          <h5 class="modal-title fw-bold"><i class="fas fa-bell me-2" style="color:var(--pri);"></i>Notifications</h5>
+          <button type="button" class="btn-close" (click)="closeModal('notif')"></button>
+        </div>
+        <div class="modal-body px-4 pb-4" style="max-height:300px;overflow:auto;">
+          <div class="d-flex align-items-start gap-3 p-2 rounded-3 mb-1 notif-item" style="cursor:pointer;background:rgba(255,107,0,0.03);" (click)="closeModal('notif'); openModal('missingItems'); showToast('Complete your profile to increase loan eligibility!','warning')">
+            <div style="width:32px;height:32px;background:rgba(249,168,37,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ylw);flex-shrink:0;font-size:12px;"><i class="fas fa-exclamation-triangle"></i></div>
+            <div><div style="font-size:13px;font-weight:600;">Profile Incomplete</div><div style="font-size:11px;color:var(--txm);">3 documents missing • 2h ago</div></div>
+            <div style="width:6px;height:6px;background:var(--pri);border-radius:50%;margin-top:8px;flex-shrink:0;"></div>
+          </div>
+          <div class="d-flex align-items-start gap-3 p-2 rounded-3 notif-item" style="cursor:pointer;" (click)="closeModal('notif'); showToast('Your pay slip has been verified by admin!','success')">
+            <div style="width:32px;height:32px;background:rgba(0,200,83,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--grn);flex-shrink:0;font-size:12px;"><i class="fas fa-check-circle"></i></div>
+            <div><div style="font-size:13px;font-weight:600;">Document Verified</div><div style="font-size:11px;color:var(--txm);">Pay slip approved by admin • 3d ago</div></div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4 pt-0">
+          <a routerLink="/notifications" class="btn btn-outline-secondary rounded-3 w-100"><i class="fas fa-external-link-alt me-1"></i> All Notifications</a>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Logout -->
+@if (showLogout) {
+  <div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm" (click)="stopPropagation($event)">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-body p-4 text-center">
+          <div style="width:56px;height:56px;background:rgba(229,57,53,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--red);font-size:24px;"><i class="fas fa-sign-out-alt"></i></div>
+          <h5 class="fw-bold">Logout?</h5>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-secondary rounded-3 flex-fill" (click)="closeModal('logout')">Stay</button>
+            <a routerLink="/login" class="btn btn-danger rounded-3 flex-fill"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

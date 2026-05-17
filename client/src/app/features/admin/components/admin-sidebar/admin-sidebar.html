@@ -1,0 +1,56 @@
+<aside class="admin-sidebar" [class.show]="isOpen" [class.minimized]="isMinimized" id="adminSidebar">
+  <!-- Brand Header -->
+  <a routerLink="/admin/dashboard" class="sidebar-brand">
+    <div class="sidebar-brand-logo">SP</div>
+    <div class="sidebar-brand-text" [class.d-none]="isMinimized">
+      <h1>SACCOPay</h1>
+      <p>Admin Panel v6.1</p>
+    </div>
+    <button class="minimize-btn d-none d-lg-flex" 
+            (click)="toggleMinimize(); $event.preventDefault(); $event.stopPropagation();"
+            title="{{ isMinimized ? 'Expand' : 'Minimize' }}">
+      <i class="bi" [class.bi-chevron-left]="!isMinimized" [class.bi-chevron-right]="isMinimized"></i>
+    </button>
+  </a>
+
+  <!-- User Badge -->
+  <div class="user-badge" [class.justify-content-center]="isMinimized">
+    <div class="user-avatar">{{ userInitials }}</div>
+    <div class="user-info" [class.d-none]="isMinimized">
+      <div class="user-name">{{ userName }}</div>
+      <div class="user-role">{{ userRole }}</div>
+      <div class="user-status">
+        <span class="status-dot"></span>
+        Online
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <div class="nav-section" *ngFor="let section of navSections">
+      <div class="nav-section-title" [class.d-none]="isMinimized">{{ section.title }}</div>
+      <ul>
+        <li class="nav-item" *ngFor="let item of section.items">
+          <a [routerLink]="item.route" 
+             routerLinkActive="active" 
+             class="nav-link" 
+             (click)="onNavLinkClick()"
+             [title]="isMinimized ? item.label : ''">
+            <span class="nav-icon"><i class="bi" [class]="item.icon"></i></span>
+            <span class="nav-label" [class.d-none]="isMinimized">{{ item.label }}</span>
+            <span class="nav-badge" *ngIf="item.badge && !isMinimized">{{ item.badge }}</span>
+            <span class="nav-badge-dot" *ngIf="item.badge && isMinimized"></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text" [class.d-none]="isMinimized">
+      SACCOPay © 2026
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,32 @@
+<div class="admin-layout-wrapper" 
+     [class.sidebar-minimized]="isSidebarMinimized" 
+     [class.sidebar-open]="isSidebarOpen">
+
+  <!-- Mobile Backdrop -->
+  <div class="sidebar-backdrop" 
+       [class.show]="isSidebarOpen" 
+       (click)="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <app-admin-sidebar 
+       [isOpen]="isSidebarOpen" 
+       [isMinimized]="isSidebarMinimized"
+       (closeMenu)="closeSidebar()"
+       (toggleMinimizeEvent)="toggleMinimize()">
+  </app-admin-sidebar>
+
+  <!-- Main Content -->
+  <div class="admin-main">
+    <!-- Header -->
+    <app-admin-header 
+        (toggleMenu)="toggleSidebar()"
+        [isSidebarMinimized]="isSidebarMinimized"
+        (toggleMinimize)="toggleMinimize()">
+    </app-admin-header>
+
+    <!-- Page Body -->
+    <main class="admin-page-body">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
