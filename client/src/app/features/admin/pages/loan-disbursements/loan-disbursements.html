@@ -1,1 +1,966 @@
-<p>loan-disbursements works!</p>
+<!-- ===================== TOAST NOTIFICATIONS ===================== -->
+<div class="toast-container">
+  @for (toast of toasts; track toast.id) {
+    <div class="toast-item" [class]="'toast-' + toast.type" (click)="removeToast(toast.id)">
+      <i class="bi" [class.bi-check-circle-fill]="toast.type === 'success'" [class.bi-x-circle-fill]="toast.type === 'danger'" [class.bi-exclamation-triangle-fill]="toast.type === 'warning'" [class.bi-info-circle-fill]="toast.type === 'info'"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+  }
+</div>
+
+<!-- ===================== HERO METRICS ===================== -->
+<div class="hero-metrics">
+  <div class="metric-card">
+    <div class="metric-icon green"><i class="bi bi-cash-stack"></i></div>
+    <div class="metric-value">{{ formatKES(totalDisbursed) }}</div>
+    <div class="metric-label">Total Disbursed</div>
+    <div class="metric-trend up"><i class="bi bi-arrow-up-short"></i> 15.1%</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon blue"><i class="bi bi-check-circle"></i></div>
+    <div class="metric-value">{{ tabCounts.approved }}</div>
+    <div class="metric-label">Approved Loans</div>
+    <div class="metric-trend up"><i class="bi bi-arrow-up-short"></i> 8.3%</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon orange"><i class="bi bi-hourglass-split"></i></div>
+    <div class="metric-value">{{ tabCounts.pending }}</div>
+    <div class="metric-label">Pending Review</div>
+    <div class="metric-trend down"><i class="bi bi-arrow-down-short"></i> 3.2%</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+    <div class="metric-value">{{ overdueCount }}</div>
+    <div class="metric-label">Overdue Loans</div>
+    <div class="metric-trend up"><i class="bi bi-arrow-up-short"></i> 2.4%</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon purple"><i class="bi bi-calendar-event"></i></div>
+    <div class="metric-value">{{ paymentsDueCount }}</div>
+    <div class="metric-label">Payments Due (7d)</div>
+    <div class="metric-trend up"><i class="bi bi-arrow-up-short"></i> 5.7%</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-icon teal"><i class="bi bi-percent"></i></div>
+    <div class="metric-value">94.2%</div>
+    <div class="metric-label">Repayment Rate</div>
+    <div class="metric-trend up"><i class="bi bi-arrow-up-short"></i> 1.8%</div>
+  </div>
+</div>
+
+<!-- ===================== LOAN SUMMARY CARDS ===================== -->
+<div class="loan-summary-grid">
+  @for (card of summaryCards; track card.type) {
+    <div class="loan-summary-card" [class]="card.type">
+      <div class="loan-summary-icon" [class]="card.type"><i class="bi {{ card.icon }}"></i></div>
+      <div class="loan-summary-value">{{ card.value }}</div>
+      <div class="loan-summary-label">{{ card.label }}</div>
+      <div class="loan-summary-trend" [class]="card.trendDir">
+        <i class="bi" [class.bi-arrow-up-short]="card.trendDir === 'up'" [class.bi-arrow-down-short]="card.trendDir === 'down'"></i>
+        {{ card.trend }}%
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ===================== DISBURSEMENT PIPELINE ===================== -->
+<div class="pipeline-container">
+  <div class="section-header">
+    <h3><i class="bi bi-diagram-3"></i> Disbursement Pipeline</h3>
+    <button class="btn-icon" (click)="openOverview('pipeline')"><i class="bi bi-box-arrow-up-right"></i></button>
+  </div>
+  <div class="pipeline-steps">
+    @for (step of pipelineSteps; track step.label) {
+      <div class="pipeline-step" [class.completed]="step.status === 'completed'" [class.active]="step.status === 'active'" [class.pending]="step.status === 'pending'">
+        <div class="pipeline-step-circle"><i class="bi {{ step.icon }}"></i></div>
+        <div class="pipeline-step-label">{{ step.label }}</div>
+        <div class="pipeline-step-count">{{ step.count }}</div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ===================== FILTER TABS ===================== -->
+<div class="filter-tabs">
+  <button class="filter-tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+    <i class="bi bi-grid"></i> All <span class="count">{{ tabCounts.all }}</span>
+  </button>
+  <button class="filter-tab" [class.active]="activeTab === 'approved'" (click)="setTab('approved')">
+    <i class="bi bi-check-circle"></i> Approved <span class="count">{{ tabCounts.approved }}</span>
+  </button>
+  <button class="filter-tab" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
+    <i class="bi bi-hourglass-split"></i> Pending <span class="count">{{ tabCounts.pending }}</span>
+  </button>
+  <button class="filter-tab" [class.active]="activeTab === 'disbursed'" (click)="setTab('disbursed')">
+    <i class="bi bi-send-check"></i> Disbursed <span class="count">{{ tabCounts.disbursed }}</span>
+  </button>
+  <button class="filter-tab" [class.active]="activeTab === 'overdue'" (click)="setTab('overdue')">
+    <i class="bi bi-exclamation-triangle"></i> Overdue <span class="count">{{ tabCounts.overdue }}</span>
+  </button>
+</div>
+
+<!-- ===================== SEARCH & FILTERS ===================== -->
+<div class="search-filter-bar">
+  <div class="search-box">
+    <i class="bi bi-search"></i>
+    <input type="text" class="form-control-custom" placeholder="Search by member, reference, or purpose..." [(ngModel)]="searchQuery">
+  </div>
+  <select class="form-select-custom" [(ngModel)]="filterType">
+    <option value="all">All Types</option>
+    <option value="personal">Personal</option>
+    <option value="business">Business</option>
+    <option value="emergency">Emergency</option>
+    <option value="education">Education</option>
+    <option value="agriculture">Agriculture</option>
+    <option value="asset">Asset</option>
+  </select>
+  <select class="form-select-custom" [(ngModel)]="filterStatus">
+    <option value="all">All Status</option>
+    <option value="approved">Approved</option>
+    <option value="pending">Pending</option>
+    <option value="disbursed">Disbursed</option>
+    <option value="overdue">Overdue</option>
+    <option value="rejected">Rejected</option>
+  </select>
+  <button class="btn-primary" (click)="openNewLoan()"><i class="bi bi-plus-lg"></i> New Application</button>
+  <button class="btn-secondary" (click)="openExport()"><i class="bi bi-download"></i> Export</button>
+</div>
+
+<!-- ===================== LOANS TABLE ===================== -->
+<div class="table-card">
+  <div class="section-header">
+    <h3><i class="bi bi-table"></i> Loan Portfolio</h3>
+    <button class="btn-icon" (click)="openOverview('loans')"><i class="bi bi-box-arrow-up-right"></i></button>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Reference</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Interest</th>
+          <th>Term</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Officer</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (loan of filteredLoans; track loan.id) {
+          <tr (click)="openLoanDetail(loan)">
+            <td>
+              <div class="member-cell">
+                <div class="member-avatar-sm {{ loan.member.color }}">{{ loan.member.initials }}</div>
+                <div>
+                  <div class="member-name">{{ loan.member.name }}</div>
+                  <div class="member-id">{{ loan.member.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td><code>{{ loan.ref }}</code></td>
+            <td>
+              <span class="loan-type-badge {{ loan.type }}">
+                <i class="bi" [class.bi-person]="loan.type === 'personal'" [class.bi-briefcase]="loan.type === 'business'" [class.bi-heart-pulse]="loan.type === 'emergency'" [class.bi-book]="loan.type === 'education'" [class.bi-tree]="loan.type === 'agriculture'" [class.bi-truck]="loan.type === 'asset'"></i>
+                {{ loan.type | titlecase }}
+              </span>
+            </td>
+            <td class="fw-semibold">{{ formatKES(loan.amount) }}</td>
+            <td>{{ loan.interestRate }}%</td>
+            <td>{{ loan.term }} mo</td>
+            <td><span class="badge" [class]="getStatusBadgeClass(loan.status)">{{ loan.status | titlecase }}</span></td>
+            <td>
+              <div class="repayment-progress">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill {{ getProgressClass(loan.repaymentProgress) }}" [style.width.%]="loan.repaymentProgress"></div>
+                </div>
+                <div class="progress-label"><span>{{ loan.repaymentProgress }}%</span><span>{{ loan.installment }}</span></div>
+              </div>
+            </td>
+            <td>{{ loan.officer }}</td>
+            <td>
+              <div class="action-btns">
+                @if (loan.status === 'approved') {
+                  <button class="btn-icon-sm green" (click)="openDisburseModal(loan); $event.stopPropagation()" title="Disburse"><i class="bi bi-cash-coin"></i></button>
+                }
+                @if (loan.status === 'pending') {
+                  <button class="btn-icon-sm green" (click)="approveLoan(loan); $event.stopPropagation()" title="Approve"><i class="bi bi-check-lg"></i></button>
+                  <button class="btn-icon-sm red" (click)="rejectLoan(loan); $event.stopPropagation()" title="Reject"><i class="bi bi-x-lg"></i></button>
+                }
+                @if (loan.status === 'overdue') {
+                  <button class="btn-icon-sm orange" (click)="openRepaymentSchedule(loan); $event.stopPropagation()" title="Schedule"><i class="bi bi-calendar-week"></i></button>
+                }
+                <button class="btn-icon-sm blue" (click)="openLoanDetail(loan); $event.stopPropagation()" title="View"><i class="bi bi-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (filteredLoans.length === 0) {
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <p>No loans found matching your criteria.</p>
+    </div>
+  }
+</div>
+
+<!-- ===================== OVERDUE ALERT ===================== -->
+@if (overdueLoans.length > 0) {
+  <div class="alert-banner danger">
+    <div class="alert-content">
+      <i class="bi bi-exclamation-octagon-fill"></i>
+      <div>
+        <strong>{{ overdueCount }} loans overdue</strong> with a total outstanding of <strong>{{ formatKES(totalOverdue) }}</strong>. Immediate action recommended.
+      </div>
+    </div>
+    <button class="btn-sm" (click)="openOverview('overdue')">View All</button>
+  </div>
+}
+
+<!-- ===================== OVERDUE LOANS TABLE ===================== -->
+<div class="table-card">
+  <div class="section-header">
+    <h3><i class="bi bi-exclamation-triangle"></i> Overdue Loans</h3>
+    <button class="btn-icon" (click)="openOverview('overdue')"><i class="bi bi-box-arrow-up-right"></i></button>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Loan Ref</th>
+          <th>Amount Due</th>
+          <th>Days Overdue</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (overdue of overdueLoans; track overdue.ref) {
+          <tr (click)="openOverdueDetail(overdue)">
+            <td>
+              <div class="member-cell">
+                <div class="member-avatar-sm {{ overdue.member.color }}">{{ overdue.member.initials }}</div>
+                <div>
+                  <div class="member-name">{{ overdue.member.name }}</div>
+                  <div class="member-id">{{ overdue.member.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td><code>{{ overdue.ref }}</code></td>
+            <td class="fw-semibold text-danger">{{ formatKES(overdue.amountDue) }}</td>
+            <td><span class="badge bg-danger-subtle text-danger">{{ overdue.daysOverdue }} days</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon-sm orange" (click)="sendReminder(overdue); $event.stopPropagation()" title="Send Reminder"><i class="bi bi-bell"></i></button>
+                <button class="btn-icon-sm blue" (click)="openOverdueDetail(overdue); $event.stopPropagation()" title="View"><i class="bi bi-eye"></i></button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== PAYMENTS DUE TABLE ===================== -->
+<div class="table-card">
+  <div class="section-header">
+    <h3><i class="bi bi-calendar-event"></i> Payments Due (Next 7 Days)</h3>
+    <button class="btn-icon" (click)="openOverview('payments')"><i class="bi bi-box-arrow-up-right"></i></button>
+  </div>
+  <div class="alert-banner info">
+    <div class="alert-content">
+      <i class="bi bi-info-circle-fill"></i>
+      <div><strong>{{ paymentsDueCount }} payments due</strong> in the next 7 days totaling <strong>{{ formatKES(totalPaymentsDue) }}</strong>.</div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Due Date</th>
+          <th>Amount</th>
+          <th>Installment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (payment of paymentsDue; track payment.member.id + payment.dueDate) {
+          <tr>
+            <td>
+              <div class="member-cell">
+                <div class="member-avatar-sm {{ payment.member.color }}">{{ payment.member.initials }}</div>
+                <div>
+                  <div class="member-name">{{ payment.member.name }}</div>
+                  <div class="member-id">{{ payment.member.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ payment.dueDate }}</td>
+            <td class="fw-semibold">{{ formatKES(payment.amount) }}</td>
+            <td><span class="badge bg-info-subtle text-info">{{ payment.installment }}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon-sm green" title="Record Payment"><i class="bi bi-check-lg"></i></button>
+                <button class="btn-icon-sm orange" (click)="sendReminder({member: payment.member, ref: '', amountDue: payment.amount, daysOverdue: 0}); $event.stopPropagation()" title="Remind"><i class="bi bi-bell"></i></button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== TWO COLUMN: DONUT + ACTIVITY ===================== -->
+<div class="two-column-grid">
+  <!-- Donut Chart -->
+  <div class="glass-card">
+    <div class="section-header">
+      <h3><i class="bi bi-pie-chart"></i> Loan Distribution</h3>
+    </div>
+    <div class="donut-chart-container">
+      <div class="donut-chart" [style.background]="donutConic">
+        <div class="donut-center">
+          <div class="value">{{ loans.length }}</div>
+          <div class="label">Total Loans</div>
+        </div>
+      </div>
+      <div class="donut-legend">
+        @for (slice of donutData; track slice.label) {
+          <div class="donut-legend-item">
+            <div class="legend-dot" [style.background]="slice.color"></div>
+            <span>{{ slice.label }} ({{ slice.value }}%)</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Timeline -->
+  <div class="glass-card">
+    <div class="section-header">
+      <h3><i class="bi bi-clock-history"></i> Recent Activity</h3>
+      <button class="btn-icon" (click)="openOverview('activity')"><i class="bi bi-box-arrow-up-right"></i></button>
+    </div>
+    <div class="disbursement-timeline">
+      @for (item of activities; track item.title) {
+        <div class="timeline-item" [class.completed]="item.completed">
+          <div class="timeline-item-content">
+            <div class="timeline-item-time"><i class="bi {{ item.icon }}" [style.color]="'var(--accent-' + item.iconColor + ')'"></i> {{ item.time }}</div>
+            <div class="fw-semibold">{{ item.title }}</div>
+            <div class="text-muted">{{ item.description }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ===================== QUICK ACTIONS ===================== -->
+<div class="glass-card">
+  <div class="section-header">
+    <h3><i class="bi bi-lightning"></i> Quick Actions</h3>
+  </div>
+  <div class="quick-actions-grid">
+    @for (action of quickActions; track action.action) {
+      <div class="quick-action-card" (click)="handleQuickAction(action.action)">
+        <div class="quick-action-icon" [style.background]="'rgba(var(--' + action.color + '-rgb), 0.12)'" [style.color]="'var(--' + action.color + ')'">
+          <i class="bi {{ action.icon }}"></i>
+        </div>
+        <h5>{{ action.title }}</h5>
+        <p>{{ action.description }}</p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- LOAN DETAIL MODAL -->
+@if (showLoanDetail && selectedLoan) {
+  <div class="modal-backdrop" (click)="closeLoanDetail()">
+    <div class="modal-content modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-header-custom green">
+        <h4><i class="bi bi-file-text"></i> Loan Detail — {{ selectedLoan.ref }}</h4>
+        <button class="btn-close" (click)="closeLoanDetail()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="detail-panel-section">
+              <div class="detail-label">Member</div>
+              <div class="member-cell">
+                <div class="member-avatar-sm {{ selectedLoan.member.color }}">{{ selectedLoan.member.initials }}</div>
+                <div>
+                  <div class="detail-value">{{ selectedLoan.member.name }}</div>
+                  <div class="member-id">{{ selectedLoan.member.id }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Loan Type</div>
+              <span class="loan-type-badge {{ selectedLoan.type }}">{{ selectedLoan.type | titlecase }}</span>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Amount</div>
+              <div class="detail-value">{{ formatKES(selectedLoan.amount) }}</div>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Interest Rate</div>
+              <div class="detail-value">{{ selectedLoan.interestRate }}% per annum</div>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Term</div>
+              <div class="detail-value">{{ selectedLoan.term }} months</div>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Purpose</div>
+              <div class="detail-value">{{ selectedLoan.purpose }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="detail-panel-section">
+              <div class="detail-label">Status</div>
+              <span class="badge" [class]="getStatusBadgeClass(selectedLoan.status)">{{ selectedLoan.status | titlecase }}</span>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Applied</div>
+              <div class="detail-value">{{ selectedLoan.appliedDate }}</div>
+            </div>
+            @if (selectedLoan.approvedDate) {
+              <div class="detail-panel-section">
+                <div class="detail-label">Approved</div>
+                <div class="detail-value">{{ selectedLoan.approvedDate }}</div>
+              </div>
+            }
+            @if (selectedLoan.disbursedDate) {
+              <div class="detail-panel-section">
+                <div class="detail-label">Disbursed</div>
+                <div class="detail-value">{{ selectedLoan.disbursedDate }}</div>
+              </div>
+            }
+            @if (selectedLoan.dueDate) {
+              <div class="detail-panel-section">
+                <div class="detail-label">Maturity Date</div>
+                <div class="detail-value">{{ selectedLoan.dueDate }}</div>
+              </div>
+            }
+            <div class="detail-panel-section">
+              <div class="detail-label">Collateral</div>
+              <div>
+                @for (col of selectedLoan.collateral; track col) {
+                  <span class="collateral-tag"><i class="bi bi-paperclip"></i> {{ col }}</span>
+                }
+              </div>
+            </div>
+            <div class="detail-panel-section">
+              <div class="detail-label">Loan Officer</div>
+              <div class="detail-value">{{ selectedLoan.officer }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approval Flow -->
+        <div class="detail-panel-section">
+          <div class="detail-label">Approval Flow</div>
+          @for (step of approvalSteps; track step.title) {
+            <div class="approval-step">
+              <div class="approval-step-icon {{ step.status }}">
+                <i class="bi" [class.bi-check-lg]="step.status === 'done'" [class.bi-hourglass-split]="step.status === 'pending-step'" [class.bi-x-lg]="step.status === 'rejected'"></i>
+              </div>
+              <div class="approval-step-info">
+                <h6>{{ step.title }}</h6>
+                <p>{{ step.officer }} • {{ step.date }}</p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Repayment Progress -->
+        <div class="detail-panel-section">
+          <div class="detail-label">Repayment Progress</div>
+          <div class="repayment-progress" style="max-width: 100%;">
+            <div class="progress-bar-track" style="height: 10px;">
+              <div class="progress-bar-fill {{ getProgressClass(selectedLoan.repaymentProgress) }}" [style.width.%]="selectedLoan.repaymentProgress"></div>
+            </div>
+            <div class="progress-label"><span>{{ selectedLoan.repaymentProgress }}% Complete</span><span>{{ selectedLoan.installment }}</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        @if (selectedLoan.status === 'approved') {
+          <button class="btn-primary" (click)="openDisburseModal(selectedLoan); closeLoanDetail()"><i class="bi bi-cash-coin"></i> Disburse</button>
+        }
+        @if (selectedLoan.status === 'pending') {
+          <button class="btn-primary" (click)="approveLoan(selectedLoan); closeLoanDetail()"><i class="bi bi-check-lg"></i> Approve</button>
+          <button class="btn-warning" (click)="returnLoan(selectedLoan); closeLoanDetail()"><i class="bi bi-arrow-return-left"></i> Return</button>
+          <button class="btn-danger" (click)="rejectLoan(selectedLoan); closeLoanDetail()"><i class="bi bi-x-lg"></i> Reject</button>
+        }
+        @if (selectedLoan.status === 'disbursed' || selectedLoan.status === 'overdue') {
+          <button class="btn-primary" (click)="openRepaymentSchedule(selectedLoan); closeLoanDetail()"><i class="bi bi-calendar-week"></i> Schedule</button>
+        }
+        <button class="btn-secondary" (click)="closeLoanDetail()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- NEW LOAN MODAL -->
+@if (showNewLoan) {
+  <div class="modal-backdrop" (click)="closeNewLoan()">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom green">
+        <h4><i class="bi bi-file-earmark-plus"></i> New Loan Application</h4>
+        <button class="btn-close" (click)="closeNewLoan()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label-custom">Member Name</label>
+            <input type="text" class="form-control-custom" [(ngModel)]="newLoan.memberName" placeholder="e.g. John Kamau">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Member ID</label>
+            <input type="text" class="form-control-custom" [(ngModel)]="newLoan.memberId" placeholder="e.g. SP-10015">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Loan Type</label>
+            <select class="form-select-custom" [(ngModel)]="newLoan.type">
+              <option value="personal">Personal</option>
+              <option value="business">Business</option>
+              <option value="emergency">Emergency</option>
+              <option value="education">Education</option>
+              <option value="agriculture">Agriculture</option>
+              <option value="asset">Asset</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Amount (KES)</label>
+            <input type="number" class="form-control-custom" [(ngModel)]="newLoan.amount" placeholder="e.g. 100000">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Interest Rate (%)</label>
+            <input type="number" class="form-control-custom" [(ngModel)]="newLoan.interestRate" placeholder="e.g. 12">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Term (Months)</label>
+            <input type="number" class="form-control-custom" [(ngModel)]="newLoan.term" placeholder="e.g. 12">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label-custom">Purpose</label>
+            <textarea class="form-control-custom" [(ngModel)]="newLoan.purpose" rows="2" placeholder="Describe the loan purpose..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Collateral (comma separated)</label>
+            <input type="text" class="form-control-custom" [(ngModel)]="newLoan.collateral" placeholder="e.g. Payslip, Logbook">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Loan Officer</label>
+            <input type="text" class="form-control-custom" [(ngModel)]="newLoan.officer" placeholder="e.g. David Otieno">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeNewLoan()">Cancel</button>
+        <button class="btn-primary" (click)="submitNewLoan()"><i class="bi bi-check-lg"></i> Submit Application</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- DISBURSE MODAL -->
+@if (showDisburseModal && selectedLoan) {
+  <div class="modal-backdrop" (click)="closeDisburseModal()">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom blue">
+        <h4><i class="bi bi-cash-coin"></i> Disburse Loan — {{ selectedLoan.ref }}</h4>
+        <button class="btn-close" (click)="closeDisburseModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-panel-section">
+          <div class="detail-label">Member</div>
+          <div class="detail-value">{{ selectedLoan.member.name }} ({{ selectedLoan.member.id }})</div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Amount to Disburse</div>
+          <div class="detail-value fs-4 fw-bold text-primary">{{ formatKES(selectedLoan.amount) }}</div>
+        </div>
+        <div class="detail-panel-section">
+          <label class="form-label-custom">Disbursement Method</label>
+          <select class="form-select-custom" [(ngModel)]="disburseData.method">
+            <option value="mpesa">M-Pesa</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="cash">Cash</option>
+            <option value="cheque">Cheque</option>
+          </select>
+        </div>
+        <div class="detail-panel-section">
+          <label class="form-label-custom">Account / Phone Number</label>
+          <input type="text" class="form-control-custom" [(ngModel)]="disburseData.account" placeholder="e.g. 254712345678">
+        </div>
+        <div class="detail-panel-section">
+          <label class="form-label-custom">Notes</label>
+          <textarea class="form-control-custom" [(ngModel)]="disburseData.notes" rows="2" placeholder="Optional notes..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeDisburseModal()">Cancel</button>
+        <button class="btn-primary" (click)="confirmDisburse()"><i class="bi bi-check-lg"></i> Confirm Disbursement</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- REPAYMENT SCHEDULE MODAL -->
+@if (showRepaymentSchedule && scheduleLoan) {
+  <div class="modal-backdrop" (click)="closeRepaymentSchedule()">
+    <div class="modal-content modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-header-custom teal">
+        <h4><i class="bi bi-calendar-week"></i> Repayment Schedule — {{ scheduleLoan.ref }}</h4>
+        <button class="btn-close" (click)="closeRepaymentSchedule()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-panel-section">
+          <div class="detail-label">Member</div>
+          <div class="detail-value">{{ scheduleLoan.member.name }} ({{ scheduleLoan.member.id }})</div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Loan Amount</div>
+          <div class="detail-value">{{ formatKES(scheduleLoan.amount) }} @ {{ scheduleLoan.interestRate }}% for {{ scheduleLoan.term }} months</div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table schedule-mini-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Principal</th>
+                <th>Interest</th>
+                <th>Total</th>
+                <th>Balance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of amortizationSchedule; track row.period) {
+                <tr>
+                  <td>{{ row.period }}</td>
+                  <td>{{ row.paymentDate }}</td>
+                  <td>{{ formatKES(row.principal) }}</td>
+                  <td>{{ formatKES(row.interest) }}</td>
+                  <td class="fw-semibold">{{ formatKES(row.total) }}</td>
+                  <td>{{ formatKES(row.balance) }}</td>
+                  <td>
+                    <span class="badge" [class.bg-success-subtle]="row.status === 'paid'" [class.text-success]="row.status === 'paid'" [class.bg-warning-subtle]="row.status === 'pending'" [class.text-warning]="row.status === 'pending'" [class.bg-danger-subtle]="row.status === 'overdue'" [class.text-danger]="row.status === 'overdue'">
+                      {{ row.status | titlecase }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeRepaymentSchedule()">Close</button>
+        <button class="btn-primary"><i class="bi bi-download"></i> Download Schedule</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- OVERDUE DETAIL MODAL -->
+@if (showOverdueDetail && selectedOverdue) {
+  <div class="modal-backdrop" (click)="closeOverdueDetail()">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom red">
+        <h4><i class="bi bi-exclamation-triangle"></i> Overdue Loan Detail</h4>
+        <button class="btn-close" (click)="closeOverdueDetail()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-panel-section">
+          <div class="detail-label">Member</div>
+          <div class="member-cell">
+            <div class="member-avatar-sm {{ selectedOverdue.member.color }}">{{ selectedOverdue.member.initials }}</div>
+            <div>
+              <div class="detail-value">{{ selectedOverdue.member.name }}</div>
+              <div class="member-id">{{ selectedOverdue.member.id }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Loan Reference</div>
+          <div class="detail-value"><code>{{ selectedOverdue.ref }}</code></div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Amount Due</div>
+          <div class="detail-value text-danger fs-4 fw-bold">{{ formatKES(selectedOverdue.amountDue) }}</div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Days Overdue</div>
+          <div class="detail-value text-danger">{{ selectedOverdue.daysOverdue }} days</div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Penalty Accrued</div>
+          <div class="detail-value text-warning">{{ formatKES(selectedOverdue.amountDue * 0.02) }} (2% penalty)</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeOverdueDetail()">Close</button>
+        <button class="btn-warning" (click)="sendReminder(selectedOverdue); closeOverdueDetail()"><i class="bi bi-bell"></i> Send Reminder</button>
+        <button class="btn-primary"><i class="bi bi-check-lg"></i> Record Payment</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MEMBER DETAIL MODAL -->
+@if (showMemberDetail && selectedMember) {
+  <div class="modal-backdrop" (click)="closeMemberDetail()">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom purple">
+        <h4><i class="bi bi-person"></i> Member Profile</h4>
+        <button class="btn-close" (click)="closeMemberDetail()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <div class="member-avatar-sm {{ selectedMember.color }}" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto;">{{ selectedMember.initials }}</div>
+          <h5 class="mt-2">{{ selectedMember.name }}</h5>
+          <p class="text-muted">{{ selectedMember.id }}</p>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Active Loans</div>
+          <div class="detail-value">{{ memberActiveLoans }}</div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Total Borrowed</div>
+          <div class="detail-value">{{ formatKES(loans.filter(l => l.member.id === selectedMember.id).reduce((s, l) => s + l.amount, 0)) }}</div>
+        </div>
+        <div class="detail-panel-section">
+          <div class="detail-label">Repayment History</div>
+          <div class="detail-value">Good Standing</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeMemberDetail()">Close</button>
+        <button class="btn-primary"><i class="bi bi-file-earmark-text"></i> View Full Profile</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- EXPORT MODAL -->
+@if (showExportModal) {
+  <div class="modal-backdrop" (click)="closeExport()">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom dark">
+        <h4><i class="bi bi-download"></i> Export Loan Report</h4>
+        <button class="btn-close" (click)="closeExport()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-panel-section">
+          <label class="form-label-custom">Export Format</label>
+          <select class="form-select-custom" [(ngModel)]="exportFormat">
+            <option value="excel">Excel (.xlsx)</option>
+            <option value="csv">CSV (.csv)</option>
+            <option value="pdf">PDF (.pdf)</option>
+          </select>
+        </div>
+        <div class="detail-panel-section">
+          <label class="form-label-custom">Date Range</label>
+          <select class="form-select-custom" [(ngModel)]="exportRange">
+            <option value="all">All Time</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeExport()">Cancel</button>
+        <button class="btn-primary" (click)="confirmExport()"><i class="bi bi-download"></i> Download Report</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- LOAN OVERVIEW MODAL -->
+@if (showLoanOverview) {
+  <div class="modal-backdrop" (click)="closeOverview('loans')">
+    <div class="modal-content modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-header-custom green">
+        <h4><i class="bi bi-table"></i> Loan Portfolio Overview</h4>
+        <button class="btn-close" (click)="closeOverview('loans')"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-3"><div class="glass-card text-center p-3"><div class="fs-4 fw-bold">{{ loans.length }}</div><div class="text-muted">Total Loans</div></div></div>
+          <div class="col-md-3"><div class="glass-card text-center p-3"><div class="fs-4 fw-bold text-success">{{ tabCounts.approved }}</div><div class="text-muted">Approved</div></div></div>
+          <div class="col-md-3"><div class="glass-card text-center p-3"><div class="fs-4 fw-bold text-warning">{{ tabCounts.pending }}</div><div class="text-muted">Pending</div></div></div>
+          <div class="col-md-3"><div class="glass-card text-center p-3"><div class="fs-4 fw-bold text-danger">{{ tabCounts.overdue }}</div><div class="text-muted">Overdue</div></div></div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>Ref</th><th>Member</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              @for (loan of loans; track loan.id) {
+                <tr>
+                  <td><code>{{ loan.ref }}</code></td>
+                  <td>{{ loan.member.name }}</td>
+                  <td><span class="loan-type-badge {{ loan.type }}">{{ loan.type | titlecase }}</span></td>
+                  <td>{{ formatKES(loan.amount) }}</td>
+                  <td><span class="badge" [class]="getStatusBadgeClass(loan.status)">{{ loan.status | titlecase }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeOverview('loans')">Close</button>
+        <button class="btn-primary" (click)="openExport(); closeOverview('loans')"><i class="bi bi-download"></i> Export</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- PIPELINE OVERVIEW MODAL -->
+@if (showPipelineOverview) {
+  <div class="modal-backdrop" (click)="closeOverview('pipeline')">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom blue">
+        <h4><i class="bi bi-diagram-3"></i> Pipeline Overview</h4>
+        <button class="btn-close" (click)="closeOverview('pipeline')"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="pipeline-steps" style="flex-direction: column; gap: 1rem;">
+          @for (step of pipelineSteps; track step.label) {
+            <div class="pipeline-step" [class.completed]="step.status === 'completed'" [class.active]="step.status === 'active'" [class.pending]="step.status === 'pending'" style="flex-direction: row; width: 100%; justify-content: flex-start; gap: 1rem;">
+              <div class="pipeline-step-circle"><i class="bi {{ step.icon }}"></i></div>
+              <div style="text-align: left;">
+                <div class="pipeline-step-label">{{ step.label }}</div>
+                <div class="pipeline-step-count">{{ step.count }} items</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeOverview('pipeline')">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- OVERDUE OVERVIEW MODAL -->
+@if (showOverdueOverview) {
+  <div class="modal-backdrop" (click)="closeOverview('overdue')">
+    <div class="modal-content modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-header-custom red">
+        <h4><i class="bi bi-exclamation-triangle"></i> Overdue Loans Overview</h4>
+        <button class="btn-close" (click)="closeOverview('overdue')"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert-banner danger mb-3">
+          <div class="alert-content">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+            <div><strong>{{ overdueCount }} loans overdue</strong> totaling <strong>{{ formatKES(totalOverdue) }}</strong></div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>Member</th><th>Ref</th><th>Amount Due</th><th>Days</th><th>Penalty</th></tr></thead>
+            <tbody>
+              @for (o of overdueLoans; track o.ref) {
+                <tr>
+                  <td>{{ o.member.name }} ({{ o.member.id }})</td>
+                  <td><code>{{ o.ref }}</code></td>
+                  <td class="text-danger fw-semibold">{{ formatKES(o.amountDue) }}</td>
+                  <td><span class="badge bg-danger-subtle text-danger">{{ o.daysOverdue }} days</span></td>
+                  <td>{{ formatKES(o.amountDue * 0.02) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeOverview('overdue')">Close</button>
+        <button class="btn-warning"><i class="bi bi-bell"></i> Send Bulk Reminders</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- PAYMENTS OVERVIEW MODAL -->
+@if (showPaymentsOverview) {
+  <div class="modal-backdrop" (click)="closeOverview('payments')">
+    <div class="modal-content modal-lg" (click)="stopPropagation($event)">
+      <div class="modal-header-custom teal">
+        <h4><i class="bi bi-calendar-event"></i> Payments Due Overview</h4>
+        <button class="btn-close" (click)="closeOverview('payments')"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert-banner info mb-3">
+          <div class="alert-content">
+            <i class="bi bi-info-circle-fill"></i>
+            <div><strong>{{ paymentsDueCount }} payments</strong> due totaling <strong>{{ formatKES(totalPaymentsDue) }}</strong></div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>Member</th><th>Due Date</th><th>Amount</th><th>Installment</th></tr></thead>
+            <tbody>
+              @for (p of paymentsDue; track p.member.id + p.dueDate) {
+                <tr>
+                  <td>{{ p.member.name }} ({{ p.member.id }})</td>
+                  <td>{{ p.dueDate }}</td>
+                  <td class="fw-semibold">{{ formatKES(p.amount) }}</td>
+                  <td><span class="badge bg-info-subtle text-info">{{ p.installment }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeOverview('payments')">Close</button>
+        <button class="btn-primary"><i class="bi bi-download"></i> Export List</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ACTIVITY OVERVIEW MODAL -->
+@if (showActivityOverview) {
+  <div class="modal-backdrop" (click)="closeOverview('activity')">
+    <div class="modal-content" (click)="stopPropagation($event)">
+      <div class="modal-header-custom purple">
+        <h4><i class="bi bi-clock-history"></i> Activity Log</h4>
+        <button class="btn-close" (click)="closeOverview('activity')"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="disbursement-timeline">
+          @for (item of activities; track item.title) {
+            <div class="timeline-item" [class.completed]="item.completed">
+              <div class="timeline-item-content">
+                <div class="timeline-item-time"><i class="bi {{ item.icon }}"></i> {{ item.time }}</div>
+                <div class="fw-semibold">{{ item.title }}</div>
+                <div class="text-muted">{{ item.description }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeOverview('activity')">Close</button>
+      </div>
+    </div>
+  </div>
+}

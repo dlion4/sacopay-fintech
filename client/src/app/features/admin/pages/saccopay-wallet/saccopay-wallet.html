@@ -1,1 +1,1038 @@
-<p>saccopay-wallet works!</p>
+<!-- Toast Notification -->
+<div class="tw-toast" [class.show]="toast.show" [class]="'tw-toast ' + 'tw-toast--' + toast.type" *ngIf="toast.show">
+  <span class="tw-toast-icon">
+    <svg *ngIf="toast.type==='success'" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#4caf50"/><path d="M7 12l3 3 7-7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg *ngIf="toast.type==='danger'" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f44336"/><path d="M9 9l6 6M15 9l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg *ngIf="toast.type==='info'" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2196f3"/><path d="M12 8v4m0 4h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg *ngIf="toast.type==='warning'" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 3l9 16H3L12 3z" fill="#ffc107"/><path d="M12 10v4m0 3h.01" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </span>
+  <span class="tw-toast-message">{{ toast.message }}</span>
+  <button class="tw-toast-close" (click)="closeToast()">✕</button>
+</div>
+
+<!-- Page Wrapper -->
+<div class="tw-page">
+
+  <!-- Page Header -->
+  <div class="tw-page-header">
+    <div class="tw-page-header-left">
+      <div class="tw-breadcrumb">
+        <span class="tw-breadcrumb-item">Dashboard</span>
+        <span class="tw-breadcrumb-sep">›</span>
+        <span class="tw-breadcrumb-item tw-breadcrumb-active">SACCOPay Wallet</span>
+      </div>
+      <div class="tw-page-title-row">
+        <span class="tw-page-title-icon">
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="#1a2332" stroke-width="1.8"/><path d="M2 9h20" stroke="#1a2332" stroke-width="1.8"/><rect x="5" y="13" width="4" height="2" rx="1" fill="#1a2332"/></svg>
+        </span>
+        <h1 class="tw-page-title">SACCOPay Wallet</h1>
+      </div>
+      <p class="tw-page-subtitle">Manage wallet accounts, transfers, limits &amp; permissions</p>
+    </div>
+    <div class="tw-page-header-right">
+      <button class="tw-btn tw-btn-outline" (click)="openSettingsModal()">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Settings
+      </button>
+      <button class="tw-btn tw-btn-primary" (click)="openCreateWalletModal()">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Create Wallet
+      </button>
+    </div>
+  </div>
+
+  <!-- Wallet Card -->
+  <div class="tw-wallet-card">
+    <div class="tw-wallet-card-top">
+      <div class="tw-wallet-card-chip">
+        <svg width="32" height="24" fill="none" viewBox="0 0 32 24"><rect x="1" y="1" width="30" height="22" rx="4" fill="#f5c842" stroke="#d4a910" stroke-width="1"/><rect x="4" y="4" width="11" height="16" rx="2" fill="#d4a910" opacity="0.6"/><line x1="15" y1="4" x2="15" y2="20" stroke="#d4a910" stroke-width="1"/><line x1="4" y1="9" x2="15" y2="9" stroke="#d4a910" stroke-width="1"/><line x1="4" y1="14" x2="15" y2="14" stroke="#d4a910" stroke-width="1"/></svg>
+      </div>
+      <div class="tw-wallet-card-badges">
+        <span class="tw-badge-active">● Active</span>
+        <span class="tw-badge-brand">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/></svg>
+          SACCOPay
+        </span>
+      </div>
+    </div>
+    <div class="tw-wallet-card-body">
+      <div class="tw-wallet-balance-label">Available Balance</div>
+      <div class="tw-wallet-balance">
+        <span class="tw-wallet-currency">KES</span>
+        <span class="tw-wallet-amount">247,580</span>
+        <span class="tw-wallet-cents">.00</span>
+      </div>
+      <div class="tw-wallet-id-row">
+        <span class="tw-wallet-id">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/></svg>
+          SP-WAL-2024-00158
+        </span>
+        <button class="tw-copy-btn" (click)="copyWalletId()" title="Copy Wallet ID">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="tw-wallet-card-footer">
+      <div class="tw-wallet-owner">JAMES KARIUKI • ADMIN</div>
+      <div class="tw-wallet-actions-row">
+        <button class="tw-wallet-action-btn" (click)="openShareModal()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.8"/></svg>
+          Share
+        </button>
+        <button class="tw-wallet-action-btn" (click)="openQRModal()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="5" y="5" width="3" height="3" fill="currentColor"/><rect x="16" y="5" width="3" height="3" fill="currentColor"/><rect x="5" y="16" width="3" height="3" fill="currentColor"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3" stroke="currentColor" stroke-width="1.5"/></svg>
+          QR Code
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="tw-quick-actions">
+    <div class="tw-quick-action-card" (click)="openAddMoneyModal()">
+      <div class="tw-qa-icon tw-qa-icon--green">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#00d084" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="18" width="16" height="2" rx="1" fill="#00d084"/></svg>
+      </div>
+      <div class="tw-qa-label">Add Money</div>
+      <div class="tw-qa-sub">Top up wallet</div>
+    </div>
+    <div class="tw-quick-action-card" (click)="openSendModal()">
+      <div class="tw-qa-icon tw-qa-icon--blue">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#2196f3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="tw-qa-label">Send</div>
+      <div class="tw-qa-sub">To wallet or phone</div>
+    </div>
+    <div class="tw-quick-action-card" (click)="openWithdrawModal()">
+      <div class="tw-qa-icon tw-qa-icon--red">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 20V4M6 14l6 6 6-6" stroke="#f44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="4" width="16" height="2" rx="1" fill="#f44336"/></svg>
+      </div>
+      <div class="tw-qa-label">Withdraw</div>
+      <div class="tw-qa-sub">To M-Pesa or bank</div>
+    </div>
+    <div class="tw-quick-action-card" (click)="openSavingsModal()">
+      <div class="tw-qa-icon tw-qa-icon--purple">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#9c27b0" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="#9c27b0" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="tw-qa-label">To Savings</div>
+      <div class="tw-qa-sub">Move to SACCO</div>
+    </div>
+    <div class="tw-quick-action-card" (click)="openScheduledModal()">
+      <div class="tw-qa-icon tw-qa-icon--orange">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#ff9800" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#ff9800" stroke-width="1.8" stroke-linecap="round"/><path d="M8 14h2v2H8z" fill="#ff9800"/></svg>
+      </div>
+      <div class="tw-qa-label">Scheduled</div>
+      <div class="tw-qa-sub">Auto-send setup</div>
+    </div>
+    <div class="tw-quick-action-card" (click)="switchTab('controls')">
+      <div class="tw-qa-icon tw-qa-icon--teal">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#00bcd4" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="tw-qa-label">Controls</div>
+      <div class="tw-qa-sub">Limits &amp; security</div>
+    </div>
+  </div>
+
+  <!-- Tab Panel -->
+  <div class="tw-panel">
+    <!-- Tab Nav -->
+    <div class="tw-tabs">
+      <button class="tw-tab" [class.tw-tab--active]="activeTab==='transactions'" (click)="switchTab('transactions')">Transactions</button>
+      <button class="tw-tab" [class.tw-tab--active]="activeTab==='limits'" (click)="switchTab('limits')">Limits &amp; Alerts</button>
+      <button class="tw-tab" [class.tw-tab--active]="activeTab==='controls'" (click)="switchTab('controls')">Account Controls</button>
+      <button class="tw-tab" [class.tw-tab--active]="activeTab==='members'" (click)="switchTab('members')">Member Wallets</button>
+    </div>
+
+    <!-- TRANSACTIONS TAB -->
+    <div class="tw-tab-content" *ngIf="activeTab==='transactions'">
+      <!-- Sub filters -->
+      <div class="tw-txn-filters">
+        <div class="tw-txn-sub-tabs">
+          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='all'" (click)="setTxnFilter('all')">All <span class="tw-count">142</span></button>
+          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='received'" (click)="setTxnFilter('received')">Received <span class="tw-count">68</span></button>
+          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='sent'" (click)="setTxnFilter('sent')">Sent <span class="tw-count">45</span></button>
+          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='transfers'" (click)="setTxnFilter('transfers')">Transfers <span class="tw-count">29</span></button>
+        </div>
+        <button class="tw-btn tw-btn-outline tw-btn-sm" (click)="exportTransactions()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 15V3M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Export
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="tw-table-wrap">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>REF</th>
+              <th>TYPE</th>
+              <th>FROM / TO</th>
+              <th>AMOUNT</th>
+              <th>BALANCE</th>
+              <th>DATE</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let txn of filteredTransactions(); trackBy: trackById">
+              <td><span class="tw-ref-link" (click)="openTxnDetail(txn)">{{ txn.ref }}</span></td>
+              <td><span class="tw-badge-type" [class]="'tw-badge-type--' + txn.type">{{ txn.typeLabel }}</span></td>
+              <td>
+                <div class="tw-from-to">
+                  <span class="tw-avatar" [style.background]="txn.avatarColor">{{ txn.initials }}</span>
+                  <div>
+                    <div class="tw-from-name">{{ txn.name }}</div>
+                    <div class="tw-from-id">{{ txn.walletId }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="tw-amount" [class.tw-amount--pos]="txn.amount > 0" [class.tw-amount--neg]="txn.amount < 0">
+                  {{ txn.amount > 0 ? '+' : '' }}KES {{ formatAmount(txn.amount) }}
+                </span>
+              </td>
+              <td class="tw-balance-cell">KES {{ formatAmount(txn.balance) }}</td>
+              <td class="tw-date-cell">{{ txn.date }}</td>
+              <td>
+                <button class="tw-action-icon-btn" (click)="openTxnDetail(txn)" title="View Details">
+                  <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 4.5C7.5 4.5 3.73 7.61 2.46 12c1.27 4.39 5.04 7.5 9.54 7.5s8.27-3.11 9.54-7.5C20.27 7.61 16.5 4.5 12 4.5z" stroke="currentColor" stroke-width="1.8"/></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="tw-pagination-row">
+        <span class="tw-pagination-info">Showing 1-5 of 142</span>
+        <div class="tw-pagination">
+          <button class="tw-page-btn tw-page-btn--active">1</button>
+          <button class="tw-page-btn" (click)="goToPage(2)">2</button>
+          <button class="tw-page-btn" (click)="goToPage(3)">3</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIMITS & ALERTS TAB -->
+    <div class="tw-tab-content" *ngIf="activeTab==='limits'">
+      <div class="tw-limits-grid">
+        <!-- Transaction Limits -->
+        <div class="tw-limits-section">
+          <h3 class="tw-section-title">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#ff9800" stroke-width="1.8" fill="none"/></svg>
+            Transaction Limits
+          </h3>
+          <div class="tw-limit-list">
+            <div class="tw-limit-item" *ngFor="let limit of transactionLimits; trackBy: trackByIndex">
+              <div class="tw-limit-header">
+                <span class="tw-limit-label">{{ limit.label }}</span>
+                <span class="tw-limit-value">{{ limit.current }}</span>
+              </div>
+              <div class="tw-progress-bar" *ngIf="limit.percent !== null">
+                <div class="tw-progress-fill" [style.width]="limit.percent + '%'"></div>
+              </div>
+              <div class="tw-limit-remaining">{{ limit.remaining }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="tw-limits-section">
+          <h3 class="tw-section-title">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#2196f3" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Balance &amp; Activity Alerts
+          </h3>
+          <div class="tw-alert-list">
+            <div class="tw-alert-row" *ngFor="let alert of balanceAlerts; trackBy: trackByIndex">
+              <div class="tw-alert-info">
+                <div class="tw-alert-label">{{ alert.label }}</div>
+                <div class="tw-alert-desc">{{ alert.desc }}</div>
+              </div>
+              <div class="tw-alert-control">
+                <input *ngIf="alert.inputType === 'number'" type="number" class="tw-inline-input" [(ngModel)]="alert.value" />
+                <label *ngIf="alert.inputType === 'toggle'" class="tw-toggle">
+                  <input type="checkbox" [(ngModel)]="alert.enabled" />
+                  <span class="tw-toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="tw-limits-actions">
+            <button class="tw-btn tw-btn-primary" (click)="saveLimits()">Save Limits &amp; Alerts</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT CONTROLS TAB -->
+    <div class="tw-tab-content" *ngIf="activeTab==='controls'">
+      <div class="tw-controls-grid">
+        <!-- Account Permissions -->
+        <div class="tw-controls-section">
+          <h3 class="tw-section-title">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#00d084" stroke-width="1.8" fill="none"/></svg>
+            Account Permissions
+          </h3>
+          <div class="tw-permission-list">
+            <div class="tw-permission-row" *ngFor="let perm of permissions; trackBy: trackByIndex">
+              <div class="tw-perm-info">
+                <div class="tw-perm-icon-wrap" [style.color]="perm.color">
+                  <span [innerHTML]="perm.icon"></span>
+                </div>
+                <div>
+                  <div class="tw-perm-label">{{ perm.label }}</div>
+                  <div class="tw-perm-desc">{{ perm.desc }}</div>
+                </div>
+              </div>
+              <label class="tw-toggle">
+                <input type="checkbox" [(ngModel)]="perm.enabled" (change)="onPermissionChange(perm)" />
+                <span class="tw-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="tw-controls-section">
+          <h3 class="tw-section-title">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#ff9800" stroke-width="1.8" fill="none"/><path d="M12 9v4M12 17h.01" stroke="#ff9800" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Account Actions
+          </h3>
+          <div class="tw-action-list">
+            <div class="tw-action-row" *ngFor="let action of accountActions; trackBy: trackByIndex" (click)="handleAccountAction(action)">
+              <div class="tw-action-info">
+                <div class="tw-action-label" [style.color]="action.color">
+                  <span [innerHTML]="action.icon"></span>
+                  {{ action.label }}
+                </div>
+                <div class="tw-action-desc">{{ action.desc }}</div>
+              </div>
+              <svg class="tw-chevron" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER WALLETS TAB -->
+    <div class="tw-tab-content" *ngIf="activeTab==='members'">
+      <div class="tw-member-toolbar">
+        <input type="text" class="tw-search-input" placeholder="Search member wallets..." [(ngModel)]="memberSearch" />
+        <button class="tw-btn tw-btn-primary" (click)="openCreateWalletModal()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          Create Wallet
+        </button>
+      </div>
+
+      <div class="tw-table-wrap">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>MEMBER</th>
+              <th>WALLET ID</th>
+              <th>BALANCE</th>
+              <th>STATUS</th>
+              <th>LAST ACTIVITY</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let member of filteredMembers(); trackBy: trackById">
+              <td>
+                <div class="tw-member-cell">
+                  <span class="tw-avatar" [style.background]="member.avatarColor">{{ member.initials }}</span>
+                  <div>
+                    <div class="tw-member-name">{{ member.name }}</div>
+                    <div class="tw-member-id">{{ member.memberId }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tw-wallet-id-link">{{ member.walletId }}</span></td>
+              <td>KES {{ formatAmount(member.balance) }}</td>
+              <td>
+                <span class="tw-status-badge" [class]="'tw-status-badge--' + member.status.toLowerCase()">
+                  ● {{ member.status }}
+                </span>
+              </td>
+              <td class="tw-date-cell">{{ member.lastActivity }}</td>
+              <td>
+                <button class="tw-manage-btn" (click)="openManageWalletModal(member)">
+                  <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 4.5C7.5 4.5 3.73 7.61 2.46 12c1.27 4.39 5.04 7.5 9.54 7.5s8.27-3.11 9.54-7.5C20.27 7.61 16.5 4.5 12 4.5z" stroke="currentColor" stroke-width="1.8"/></svg>
+                  Manage
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- Add Money Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.addMoney" (click)="closeAllModals()">
+  <div class="tw-modal" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--green">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        Add Money
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-form-group">
+        <label class="tw-label">Source</label>
+        <select class="tw-select" [(ngModel)]="addMoneyForm.source">
+          <option value="mpesa">M-Pesa</option>
+          <option value="bank">Bank Transfer</option>
+          <option value="agent">SACCO Agent</option>
+        </select>
+      </div>
+      <div class="tw-form-group" *ngIf="addMoneyForm.source === 'mpesa'">
+        <label class="tw-label">M-Pesa Phone Number</label>
+        <input type="tel" class="tw-input" [(ngModel)]="addMoneyForm.phone" placeholder="07XX XXX XXX" />
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Amount (KES)</label>
+        <div class="tw-input-group">
+          <span class="tw-input-prefix">KES</span>
+          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="addMoneyForm.amount" placeholder="0.00" min="100" />
+        </div>
+        <div class="tw-quick-amounts">
+          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 500">500</button>
+          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 1000">1,000</button>
+          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 5000">5,000</button>
+          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 10000">10,000</button>
+        </div>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Reference (Optional)</label>
+        <input type="text" class="tw-input" [(ngModel)]="addMoneyForm.reference" placeholder="Payment reference" />
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-primary" (click)="submitAddMoney()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Top Up Wallet
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Send Money Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.send" (click)="closeAllModals()">
+  <div class="tw-modal" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--blue">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        Send Money
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-form-group">
+        <label class="tw-label">Send To</label>
+        <select class="tw-select" [(ngModel)]="sendForm.sendTo">
+          <option value="wallet">Wallet ID</option>
+          <option value="phone">Phone Number</option>
+          <option value="member">SACCO Member</option>
+        </select>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">{{ sendForm.sendTo === 'wallet' ? 'Wallet ID' : sendForm.sendTo === 'phone' ? 'Phone Number' : 'Member Name / ID' }}</label>
+        <input type="text" class="tw-input" [(ngModel)]="sendForm.recipient"
+          [placeholder]="sendForm.sendTo === 'wallet' ? 'SP-WAL-XXXXXX' : sendForm.sendTo === 'phone' ? '07XX XXX XXX' : 'Search member...'" />
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Amount (KES)</label>
+        <div class="tw-input-group">
+          <span class="tw-input-prefix">KES</span>
+          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="sendForm.amount" placeholder="0.00" min="1" />
+        </div>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Note (Optional)</label>
+        <textarea class="tw-textarea" [(ngModel)]="sendForm.note" placeholder="Add a note..." rows="2"></textarea>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Transaction PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="sendForm.pin" placeholder="Enter your 4-digit PIN" maxlength="4" />
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-primary tw-btn--blue" (click)="submitSend()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Send Money
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.withdraw" (click)="closeAllModals()">
+  <div class="tw-modal" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--red">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 20V4M6 14l6 6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        Withdraw Funds
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-form-group">
+        <label class="tw-label">Withdraw To</label>
+        <select class="tw-select" [(ngModel)]="withdrawForm.method">
+          <option value="mpesa">M-Pesa</option>
+          <option value="bank">Bank Account</option>
+        </select>
+      </div>
+      <div class="tw-form-group" *ngIf="withdrawForm.method === 'mpesa'">
+        <label class="tw-label">M-Pesa Phone Number</label>
+        <input type="tel" class="tw-input" [(ngModel)]="withdrawForm.phone" placeholder="07XX XXX XXX" />
+      </div>
+      <div class="tw-form-group" *ngIf="withdrawForm.method === 'bank'">
+        <label class="tw-label">Bank Account Number</label>
+        <input type="text" class="tw-input" [(ngModel)]="withdrawForm.bankAccount" placeholder="XXXX-XXXX-1234" />
+        <label class="tw-label" style="margin-top:10px">Bank Name</label>
+        <select class="tw-select" [(ngModel)]="withdrawForm.bankName">
+          <option value="kcb">KCB Bank</option>
+          <option value="equity">Equity Bank</option>
+          <option value="coop">Co-operative Bank</option>
+          <option value="absa">ABSA Bank</option>
+        </select>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Amount (KES)</label>
+        <div class="tw-input-group">
+          <span class="tw-input-prefix">KES</span>
+          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="withdrawForm.amount" placeholder="0.00" min="100" />
+        </div>
+        <div class="tw-fee-note">Withdrawal fee: <strong>KES 33</strong> • You receive: <strong>KES {{ getWithdrawNet() }}</strong></div>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Transaction PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="withdrawForm.pin" placeholder="Enter your 4-digit PIN" maxlength="4" />
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-danger" (click)="submitWithdraw()">Withdraw</button>
+    </div>
+  </div>
+</div>
+
+<!-- To Savings Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.savings" (click)="closeAllModals()">
+  <div class="tw-modal" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--purple">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#fff" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        Move to Savings
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-form-group">
+        <label class="tw-label">Savings Account</label>
+        <select class="tw-select" [(ngModel)]="savingsForm.account">
+          <option value="regular">Regular Savings — SACCO Account</option>
+          <option value="fixed">Fixed Deposit Account</option>
+          <option value="shares">Share Capital Account</option>
+        </select>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Amount (KES)</label>
+        <div class="tw-input-group">
+          <span class="tw-input-prefix">KES</span>
+          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="savingsForm.amount" placeholder="0.00" min="500" />
+        </div>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Frequency</label>
+        <select class="tw-select" [(ngModel)]="savingsForm.frequency">
+          <option value="once">One Time</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      <div class="tw-info-box">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#2196f3" stroke-width="1.8"/><path d="M12 8v4m0 4h.01" stroke="#2196f3" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Funds will be moved to your SACCO savings account and earn interest as per the current rate.
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-purple" (click)="submitSavings()">Move to Savings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scheduled Payments Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.scheduled" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--lg" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--orange">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        Scheduled Payments
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body tw-modal-body--scroll">
+      <div class="tw-scheduled-list">
+        <div class="tw-scheduled-item" *ngFor="let sched of scheduledPayments; trackBy: trackByIndex">
+          <div class="tw-sched-info">
+            <div class="tw-sched-label">{{ sched.label }}</div>
+            <div class="tw-sched-detail">{{ sched.recipient }} • {{ sched.frequency }}</div>
+          </div>
+          <div class="tw-sched-amount">KES {{ formatAmount(sched.amount) }}</div>
+          <div class="tw-sched-next">Next: {{ sched.nextDate }}</div>
+          <div class="tw-sched-actions">
+            <label class="tw-toggle tw-toggle--sm">
+              <input type="checkbox" [(ngModel)]="sched.active" />
+              <span class="tw-toggle-slider"></span>
+            </label>
+            <button class="tw-icon-btn" (click)="deleteScheduled(sched)">
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#f44336" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="tw-section-divider">New Scheduled Payment</div>
+      <div class="tw-form-group">
+        <label class="tw-label">Payment Label</label>
+        <input type="text" class="tw-input" [(ngModel)]="newScheduled.label" placeholder="e.g. Monthly Savings" />
+      </div>
+      <div class="tw-form-row">
+        <div class="tw-form-group">
+          <label class="tw-label">Recipient (Wallet/Phone)</label>
+          <input type="text" class="tw-input" [(ngModel)]="newScheduled.recipient" placeholder="SP-WAL-XXXXX" />
+        </div>
+        <div class="tw-form-group">
+          <label class="tw-label">Amount (KES)</label>
+          <input type="number" class="tw-input" [(ngModel)]="newScheduled.amount" placeholder="0.00" />
+        </div>
+      </div>
+      <div class="tw-form-row">
+        <div class="tw-form-group">
+          <label class="tw-label">Frequency</label>
+          <select class="tw-select" [(ngModel)]="newScheduled.frequency">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="tw-form-group">
+          <label class="tw-label">Start Date</label>
+          <input type="date" class="tw-input" [(ngModel)]="newScheduled.startDate" />
+        </div>
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-orange" (click)="addScheduled()">Add Scheduled Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.qr" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">Wallet QR Code</h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body tw-modal-body--center">
+      <div class="tw-qr-display">
+        <div class="tw-qr-placeholder">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+            <rect x="5" y="5" width="110" height="110" rx="8" fill="#f8fafb" stroke="#e2e8f0" stroke-width="2"/>
+            <!-- QR pattern -->
+            <rect x="15" y="15" width="35" height="35" rx="3" fill="none" stroke="#1a2332" stroke-width="3"/>
+            <rect x="22" y="22" width="21" height="21" rx="1" fill="#1a2332"/>
+            <rect x="70" y="15" width="35" height="35" rx="3" fill="none" stroke="#1a2332" stroke-width="3"/>
+            <rect x="77" y="22" width="21" height="21" rx="1" fill="#1a2332"/>
+            <rect x="15" y="70" width="35" height="35" rx="3" fill="none" stroke="#1a2332" stroke-width="3"/>
+            <rect x="22" y="77" width="21" height="21" rx="1" fill="#1a2332"/>
+            <rect x="55" y="55" width="8" height="8" fill="#1a2332"/>
+            <rect x="67" y="55" width="8" height="8" fill="#1a2332"/>
+            <rect x="79" y="55" width="8" height="8" fill="#1a2332"/>
+            <rect x="91" y="55" width="8" height="8" fill="#1a2332"/>
+            <rect x="55" y="67" width="8" height="8" fill="#1a2332"/>
+            <rect x="55" y="79" width="8" height="8" fill="#1a2332"/>
+            <rect x="55" y="91" width="8" height="8" fill="#1a2332"/>
+            <rect x="67" y="79" width="8" height="8" fill="#1a2332"/>
+            <rect x="79" y="79" width="8" height="8" fill="#1a2332"/>
+            <rect x="91" y="67" width="8" height="8" fill="#1a2332"/>
+            <rect x="91" y="91" width="8" height="8" fill="#1a2332"/>
+          </svg>
+        </div>
+        <div class="tw-qr-label">SP-WAL-2024-00158</div>
+        <div class="tw-qr-name">JAMES KARIUKI</div>
+      </div>
+      <p class="tw-qr-instructions">Scan this QR code to send money to this wallet</p>
+    </div>
+    <div class="tw-modal-footer tw-modal-footer--center">
+      <button class="tw-btn tw-btn-outline" (click)="downloadQR()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 15V3M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8"/></svg>
+        Download
+      </button>
+      <button class="tw-btn tw-btn-primary" (click)="shareQR()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" stroke="#fff" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="#fff" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="#fff" stroke-width="1.8"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" stroke="#fff" stroke-width="1.8"/></svg>
+        Share QR
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Wallet Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.share" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">Share Wallet Details</h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-share-info">
+        <div class="tw-share-label">Wallet ID</div>
+        <div class="tw-share-value tw-share-value--green">SP-WAL-2024-00158</div>
+      </div>
+      <div class="tw-share-info">
+        <div class="tw-share-label">Account Name</div>
+        <div class="tw-share-value">JAMES KARIUKI</div>
+      </div>
+      <div class="tw-share-info">
+        <div class="tw-share-label">SACCO</div>
+        <div class="tw-share-value">SACCOPay</div>
+      </div>
+      <div class="tw-share-methods">
+        <button class="tw-share-method-btn" (click)="shareVia('copy')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8"/></svg>
+          Copy Link
+        </button>
+        <button class="tw-share-method-btn" (click)="shareVia('sms')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8"/></svg>
+          SMS
+        </button>
+        <button class="tw-share-method-btn" (click)="shareVia('email')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 7l10 7 10-7" stroke="currentColor" stroke-width="1.8"/></svg>
+          Email
+        </button>
+        <button class="tw-share-method-btn" (click)="shareVia('whatsapp')">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#25D366" stroke-width="1.8"/><path d="M8 12s1 2 4 3 4-1 4-1" stroke="#25D366" stroke-width="1.5" stroke-linecap="round"/></svg>
+          WhatsApp
+        </button>
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction Detail Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.txnDetail && selectedTxn" (click)="closeAllModals()">
+  <div class="tw-modal" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">Transaction Details</h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-txn-detail-header">
+        <div class="tw-txn-detail-amount" [class.tw-amount--pos]="selectedTxn.amount > 0" [class.tw-amount--neg]="selectedTxn.amount < 0">
+          {{ selectedTxn.amount > 0 ? '+' : '' }}KES {{ formatAmount(selectedTxn.amount) }}
+        </div>
+        <span class="tw-badge-type" [class]="'tw-badge-type--' + selectedTxn.type">{{ selectedTxn.typeLabel }}</span>
+      </div>
+      <div class="tw-detail-rows">
+        <div class="tw-detail-row"><span class="tw-dr-label">Reference</span><span class="tw-dr-value tw-dr-value--green">{{ selectedTxn.ref }}</span></div>
+        <div class="tw-detail-row"><span class="tw-dr-label">From / To</span><span class="tw-dr-value">{{ selectedTxn.name }}</span></div>
+        <div class="tw-detail-row"><span class="tw-dr-label">Wallet ID</span><span class="tw-dr-value">{{ selectedTxn.walletId }}</span></div>
+        <div class="tw-detail-row"><span class="tw-dr-label">Balance After</span><span class="tw-dr-value">KES {{ formatAmount(selectedTxn.balance) }}</span></div>
+        <div class="tw-detail-row"><span class="tw-dr-label">Date</span><span class="tw-dr-value">{{ selectedTxn.date }}</span></div>
+        <div class="tw-detail-row"><span class="tw-dr-label">Status</span><span class="tw-dr-value tw-status-success">● Completed</span></div>
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Close</button>
+      <button class="tw-btn tw-btn-outline" (click)="downloadReceipt()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 15V3M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8"/></svg>
+        Download Receipt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Wallet Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.createWallet" (click)="closeAllModals()">
+  <div class="tw-modal" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--green">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="#fff" stroke-width="1.8"/><path d="M12 9v6M9 12h6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        Create New Wallet
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-form-group">
+        <label class="tw-label">Member Name</label>
+        <input type="text" class="tw-input" [(ngModel)]="createWalletForm.memberName" placeholder="Full name" />
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Member ID</label>
+        <input type="text" class="tw-input" [(ngModel)]="createWalletForm.memberId" placeholder="SP-XXXXX" />
+      </div>
+      <div class="tw-form-row">
+        <div class="tw-form-group">
+          <label class="tw-label">Phone Number</label>
+          <input type="tel" class="tw-input" [(ngModel)]="createWalletForm.phone" placeholder="07XX XXX XXX" />
+        </div>
+        <div class="tw-form-group">
+          <label class="tw-label">Email Address</label>
+          <input type="email" class="tw-input" [(ngModel)]="createWalletForm.email" placeholder="member@email.com" />
+        </div>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Initial Deposit (KES)</label>
+        <div class="tw-input-group">
+          <span class="tw-input-prefix">KES</span>
+          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="createWalletForm.initialDeposit" placeholder="0.00" min="0" />
+        </div>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Wallet Type</label>
+        <select class="tw-select" [(ngModel)]="createWalletForm.walletType">
+          <option value="standard">Standard Member Wallet</option>
+          <option value="savings">Savings Wallet</option>
+          <option value="business">Business Wallet</option>
+        </select>
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-primary" (click)="submitCreateWallet()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Create Wallet
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage Wallet Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.manageWallet && selectedMember" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--lg" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="tw-avatar" [style.background]="selectedMember.avatarColor">{{ selectedMember.initials }}</span>
+        <div>
+          <h3 class="tw-modal-title" style="margin:0">{{ selectedMember.name }}</h3>
+          <div class="tw-modal-subtitle">{{ selectedMember.memberId }} • {{ selectedMember.walletId }}</div>
+        </div>
+      </div>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body tw-modal-body--scroll">
+      <div class="tw-manage-stats">
+        <div class="tw-manage-stat">
+          <div class="tw-manage-stat-label">Balance</div>
+          <div class="tw-manage-stat-value">KES {{ formatAmount(selectedMember.balance) }}</div>
+        </div>
+        <div class="tw-manage-stat">
+          <div class="tw-manage-stat-label">Status</div>
+          <div>
+            <span class="tw-status-badge" [class]="'tw-status-badge--' + selectedMember.status.toLowerCase()">● {{ selectedMember.status }}</span>
+          </div>
+        </div>
+        <div class="tw-manage-stat">
+          <div class="tw-manage-stat-label">Last Activity</div>
+          <div class="tw-manage-stat-value">{{ selectedMember.lastActivity }}</div>
+        </div>
+      </div>
+      <div class="tw-manage-actions-grid">
+        <button class="tw-manage-action-btn" (click)="manageMemberAction('topup')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#00d084" stroke-width="2" stroke-linecap="round"/></svg>
+          Top Up
+        </button>
+        <button class="tw-manage-action-btn" (click)="manageMemberAction('freeze')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" stroke="#2196f3" stroke-width="2" stroke-linecap="round"/></svg>
+          {{ selectedMember.status === 'Frozen' ? 'Unfreeze' : 'Freeze' }}
+        </button>
+        <button class="tw-manage-action-btn" (click)="manageMemberAction('limit')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#ff9800" stroke-width="1.8"/><path d="M12 8v4m0 4h.01" stroke="#ff9800" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Set Limits
+        </button>
+        <button class="tw-manage-action-btn tw-manage-action-btn--danger" (click)="manageMemberAction('close')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#f44336" stroke-width="1.8"/><path d="M15 9l-6 6M9 9l6 6" stroke="#f44336" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Close Wallet
+        </button>
+      </div>
+      <div class="tw-section-divider">Wallet Settings</div>
+      <div class="tw-form-row">
+        <div class="tw-form-group">
+          <label class="tw-label">Daily Send Limit (KES)</label>
+          <input type="number" class="tw-input" [(ngModel)]="selectedMember.dailyLimit" placeholder="100,000" />
+        </div>
+        <div class="tw-form-group">
+          <label class="tw-label">Max Balance (KES)</label>
+          <input type="number" class="tw-input" [(ngModel)]="selectedMember.maxBalance" placeholder="1,000,000" />
+        </div>
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-primary" (click)="saveMemberWallet()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wallet Settings Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.settings" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--lg" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--teal">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        Wallet Settings
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body tw-modal-body--scroll">
+      <div class="tw-form-group">
+        <label class="tw-label">Wallet Display Name</label>
+        <input type="text" class="tw-input" [(ngModel)]="walletSettings.displayName" />
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Default Currency</label>
+        <select class="tw-select" [(ngModel)]="walletSettings.currency">
+          <option value="KES">KES — Kenyan Shilling</option>
+          <option value="USD">USD — US Dollar</option>
+          <option value="EUR">EUR — Euro</option>
+        </select>
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Transaction PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="walletSettings.pin" placeholder="Change PIN (4 digits)" maxlength="4" />
+      </div>
+      <div class="tw-settings-toggles">
+        <div class="tw-setting-toggle-row">
+          <div>
+            <div class="tw-setting-toggle-label">Auto-generate Statement</div>
+            <div class="tw-setting-toggle-desc">Monthly email statement</div>
+          </div>
+          <label class="tw-toggle">
+            <input type="checkbox" [(ngModel)]="walletSettings.autoStatement" />
+            <span class="tw-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="tw-setting-toggle-row">
+          <div>
+            <div class="tw-setting-toggle-label">SMS Notifications</div>
+            <div class="tw-setting-toggle-desc">Get SMS on every transaction</div>
+          </div>
+          <label class="tw-toggle">
+            <input type="checkbox" [(ngModel)]="walletSettings.smsNotif" />
+            <span class="tw-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="tw-setting-toggle-row">
+          <div>
+            <div class="tw-setting-toggle-label">Email Notifications</div>
+            <div class="tw-setting-toggle-desc">Get email on large transactions</div>
+          </div>
+          <label class="tw-toggle">
+            <input type="checkbox" [(ngModel)]="walletSettings.emailNotif" />
+            <span class="tw-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="tw-setting-toggle-row">
+          <div>
+            <div class="tw-setting-toggle-label">Two-Factor Auth (2FA)</div>
+            <div class="tw-setting-toggle-desc">Require OTP for transactions</div>
+          </div>
+          <label class="tw-toggle">
+            <input type="checkbox" [(ngModel)]="walletSettings.twoFA" />
+            <span class="tw-toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-primary" (click)="saveWalletSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Account Action Confirm Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.actionConfirm && pendingAction" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">{{ pendingAction.label }}</h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-confirm-icon" [style.color]="pendingAction.color">
+        <span [innerHTML]="pendingAction.icon"></span>
+      </div>
+      <p class="tw-confirm-text">{{ pendingAction.confirmMsg }}</p>
+      <div class="tw-form-group" *ngIf="pendingAction.requiresPin">
+        <label class="tw-label">Transaction PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="confirmPin" placeholder="Enter 4-digit PIN" maxlength="4" />
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn" [class]="pendingAction.btnClass" (click)="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div class="tw-modal-backdrop" *ngIf="modals.changePin" (click)="closeAllModals()">
+  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
+    <div class="tw-modal-header">
+      <h3 class="tw-modal-title">
+        <span class="tw-modal-icon tw-modal-icon--teal">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="#fff" stroke-width="1.8"/></svg>
+        </span>
+        Change Wallet PIN
+      </h3>
+      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="tw-modal-body">
+      <div class="tw-form-group">
+        <label class="tw-label">Current PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="pinForm.current" placeholder="Current 4-digit PIN" maxlength="4" />
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">New PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="pinForm.newPin" placeholder="New 4-digit PIN" maxlength="4" />
+      </div>
+      <div class="tw-form-group">
+        <label class="tw-label">Confirm New PIN</label>
+        <input type="password" class="tw-input" [(ngModel)]="pinForm.confirm" placeholder="Repeat new PIN" maxlength="4" />
+      </div>
+    </div>
+    <div class="tw-modal-footer">
+      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
+      <button class="tw-btn tw-btn-primary" (click)="submitChangePin()">Update PIN</button>
+    </div>
+  </div>
+</div>

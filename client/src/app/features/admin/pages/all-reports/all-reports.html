@@ -1,1 +1,1216 @@
-<p>all-reports works!</p>
+<!-- ══════════════════════════════════════════════════════════════════════════
+  SACCO REPORTS - MAIN BODY CONTENT ONLY
+  Original Theme Preserved with Full Functionality
+══════════════════════════════════════════════════════════════════════════ -->
+
+<div class="reports-wrapper">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    PAGE HEADER WITH ACTIONS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="page-header-section">
+    <div class="page-header-content">
+      <div class="header-left">
+        <div class="page-icon-badge">
+          <i class="bi bi-file-earmark-bar-graph"></i>
+        </div>
+        <div class="page-title-group">
+          <h1 class="page-title">Reports Center</h1>
+          <p class="page-subtitle">Generate, schedule, and download comprehensive SACCO reports</p>
+        </div>
+      </div>
+      
+      <div class="header-right-actions">
+        <button class="btn-secondary" (click)="openScheduledReports()">
+          <i class="bi bi-calendar-check"></i>
+          <span>Scheduled Reports</span>
+        </button>
+        <button class="btn-primary" (click)="openGenerateReportModal()">
+          <i class="bi bi-plus-circle"></i>
+          <span>Generate New Report</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    QUICK STATS OVERVIEW
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="quick-stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon reports-icon">
+        <i class="bi bi-file-earmark-text"></i>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{totalReportsGenerated}}</h3>
+        <p class="stat-label">Total Reports Generated</p>
+        <span class="stat-period">This Month</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon scheduled-icon">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{scheduledReportsCount}}</h3>
+        <p class="stat-label">Scheduled Reports</p>
+        <span class="stat-period">Active Schedules</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon downloads-icon">
+        <i class="bi bi-download"></i>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{totalDownloads}}</h3>
+        <p class="stat-label">Total Downloads</p>
+        <span class="stat-period">Last 30 Days</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon storage-icon">
+        <i class="bi bi-hdd"></i>
+      </div>
+      <div class="stat-content">
+        <h3 class="stat-value">{{storageUsed}}</h3>
+        <p class="stat-label">Storage Used</p>
+        <span class="stat-period">of {{storageTotal}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    REPORT CATEGORIES TABS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="reports-tabs-section">
+    <div class="tabs-nav">
+      <button class="tab-nav-btn" 
+              [class.active]="activeReportTab === 'all'"
+              (click)="activeReportTab = 'all'">
+        <i class="bi bi-grid"></i>
+        All Reports
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeReportTab === 'financial'"
+              (click)="activeReportTab = 'financial'">
+        <i class="bi bi-cash-stack"></i>
+        Financial Reports
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeReportTab === 'loans'"
+              (click)="activeReportTab = 'loans'">
+        <i class="bi bi-wallet2"></i>
+        Loans Reports
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeReportTab === 'members'"
+              (click)="activeReportTab = 'members'">
+        <i class="bi bi-people"></i>
+        Members Reports
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeReportTab === 'regulatory'"
+              (click)="activeReportTab = 'regulatory'">
+        <i class="bi bi-shield-check"></i>
+        Regulatory Reports
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeReportTab === 'custom'"
+              (click)="activeReportTab = 'custom'">
+        <i class="bi bi-sliders"></i>
+        Custom Reports
+      </button>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: ALL REPORTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeReportTab === 'all'">
+      <div class="content-grid-full">
+        
+        <!-- Search and Filter Bar -->
+        <div class="search-filter-bar">
+          <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" 
+                   class="search-input" 
+                   [(ngModel)]="searchQuery"
+                   placeholder="Search reports by name, category, or date...">
+          </div>
+          <div class="filter-buttons">
+            <select class="filter-select" [(ngModel)]="filterCategory">
+              <option value="all">All Categories</option>
+              <option value="financial">Financial</option>
+              <option value="loans">Loans</option>
+              <option value="members">Members</option>
+              <option value="regulatory">Regulatory</option>
+            </select>
+            <select class="filter-select" [(ngModel)]="filterPeriod">
+              <option value="all">All Periods</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="quarter">This Quarter</option>
+              <option value="year">This Year</option>
+            </select>
+            <button class="btn-icon" (click)="applyFilters()" title="Apply Filters">
+              <i class="bi bi-funnel"></i>
+            </button>
+            <button class="btn-icon" (click)="resetFilters()" title="Reset Filters">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Report Templates Grid -->
+        <div class="report-templates-grid">
+          <div class="report-template-card" *ngFor="let report of filteredReportTemplates">
+            <div class="template-header">
+              <div class="template-icon" [style.background]="report.iconColor">
+                <i class="{{report.icon}}"></i>
+              </div>
+              <div class="template-badge" [ngClass]="'badge-' + report.category">
+                {{report.category}}
+              </div>
+            </div>
+            <div class="template-body">
+              <h3 class="template-title">{{report.title}}</h3>
+              <p class="template-description">{{report.description}}</p>
+              <div class="template-meta">
+                <span class="meta-item">
+                  <i class="bi bi-clock"></i>
+                  {{report.lastGenerated}}
+                </span>
+                <span class="meta-item">
+                  <i class="bi bi-download"></i>
+                  {{report.downloadCount}} downloads
+                </span>
+              </div>
+            </div>
+            <div class="template-footer">
+              <button class="btn-secondary-sm" (click)="previewReport(report)">
+                <i class="bi bi-eye"></i>
+                Preview
+              </button>
+              <button class="btn-primary-sm" (click)="generateReport(report)">
+                <i class="bi bi-play-circle"></i>
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: FINANCIAL REPORTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeReportTab === 'financial'">
+      <div class="content-grid-2col">
+        
+        <!-- Financial Reports List -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-cash-stack"></i>
+              Financial Reports
+            </h3>
+            <button class="icon-btn-sm" (click)="openBulkGenerate('financial')">
+              <i class="bi bi-stack"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="report-list">
+              <div class="report-list-item" *ngFor="let report of financialReports">
+                <div class="report-item-icon" [style.background]="report.color">
+                  <i class="{{report.icon}}"></i>
+                </div>
+                <div class="report-item-content">
+                  <h4 class="report-item-title">{{report.name}}</h4>
+                  <p class="report-item-description">{{report.description}}</p>
+                  <div class="report-item-meta">
+                    <span class="meta-tag">{{report.format}}</span>
+                    <span class="meta-tag">{{report.frequency}}</span>
+                  </div>
+                </div>
+                <div class="report-item-actions">
+                  <button class="action-btn" (click)="quickGenerate(report)" title="Quick Generate">
+                    <i class="bi bi-lightning-charge"></i>
+                  </button>
+                  <button class="action-btn" (click)="scheduleReport(report)" title="Schedule">
+                    <i class="bi bi-calendar-plus"></i>
+                  </button>
+                  <button class="action-btn" (click)="configureReport(report)" title="Configure">
+                    <i class="bi bi-gear"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Summary Widget -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-graph-up"></i>
+              Financial Overview
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="financial-summary">
+              <div class="summary-item">
+                <div class="summary-label">Total Assets</div>
+                <div class="summary-value">KES 156.8M</div>
+                <div class="summary-trend positive">
+                  <i class="bi bi-arrow-up"></i> 8.5% vs last period
+                </div>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-item">
+                <div class="summary-label">Total Liabilities</div>
+                <div class="summary-value">KES 42.3M</div>
+                <div class="summary-trend">
+                  <i class="bi bi-dash"></i> No change
+                </div>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-item">
+                <div class="summary-label">Net Worth</div>
+                <div class="summary-value">KES 114.5M</div>
+                <div class="summary-trend positive">
+                  <i class="bi bi-arrow-up"></i> 12.3% vs last period
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-report-actions">
+              <button class="quick-action-btn" (click)="generateBalanceSheet()">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                <span>Balance Sheet</span>
+              </button>
+              <button class="quick-action-btn" (click)="generateIncomeStatement()">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Income Statement</span>
+              </button>
+              <button class="quick-action-btn" (click)="generateCashFlow()">
+                <i class="bi bi-cash-coin"></i>
+                <span>Cash Flow</span>
+              </button>
+              <button class="quick-action-btn" (click)="generateTrialBalance()">
+                <i class="bi bi-calculator"></i>
+                <span>Trial Balance</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: LOANS REPORTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeReportTab === 'loans'">
+      <div class="content-grid-full">
+        
+        <!-- Loans Portfolio Summary -->
+        <div class="portfolio-summary-grid">
+          <div class="portfolio-summary-card outstanding">
+            <div class="summary-icon">
+              <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="summary-content">
+              <h4 class="summary-value">KES 45.2M</h4>
+              <p class="summary-label">Outstanding Portfolio</p>
+            </div>
+            <button class="summary-action" (click)="generatePortfolioReport()">
+              <i class="bi bi-file-earmark"></i>
+            </button>
+          </div>
+
+          <div class="portfolio-summary-card performing">
+            <div class="summary-icon">
+              <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="summary-content">
+              <h4 class="summary-value">98.7%</h4>
+              <p class="summary-label">Performing Loans</p>
+            </div>
+            <button class="summary-action" (click)="generatePerformanceReport()">
+              <i class="bi bi-file-earmark"></i>
+            </button>
+          </div>
+
+          <div class="portfolio-summary-card arrears">
+            <div class="summary-icon">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="summary-content">
+              <h4 class="summary-value">KES 467K</h4>
+              <p class="summary-label">In Arrears</p>
+            </div>
+            <button class="summary-action" (click)="generateArrearsReport()">
+              <i class="bi bi-file-earmark"></i>
+            </button>
+          </div>
+
+          <div class="portfolio-summary-card disbursed">
+            <div class="summary-icon">
+              <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="summary-content">
+              <h4 class="summary-value">KES 8.3M</h4>
+              <p class="summary-label">Disbursed This Month</p>
+            </div>
+            <button class="summary-action" (click)="generateDisbursementReport()">
+              <i class="bi bi-file-earmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Loan Reports Table -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-list-check"></i>
+              Available Loan Reports
+            </h3>
+            <div class="card-header-actions">
+              <button class="btn-secondary-sm" (click)="exportLoanReports()">
+                <i class="bi bi-download"></i>
+                Export All
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="reports-table-wrapper">
+              <table class="reports-table">
+                <thead>
+                  <tr>
+                    <th>Report Name</th>
+                    <th>Description</th>
+                    <th>Period</th>
+                    <th>Format</th>
+                    <th>Last Generated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let report of loanReports">
+                    <td class="report-name-cell">
+                      <i class="{{report.icon}}" [style.color]="report.color"></i>
+                      <strong>{{report.name}}</strong>
+                    </td>
+                    <td class="description-cell">{{report.description}}</td>
+                    <td>
+                      <select class="period-select-inline" [(ngModel)]="report.selectedPeriod">
+                        <option *ngFor="let period of periodOptions" [value]="period">{{period}}</option>
+                      </select>
+                    </td>
+                    <td>
+                      <div class="format-badges">
+                        <span class="format-badge" *ngFor="let format of report.formats">{{format}}</span>
+                      </div>
+                    </td>
+                    <td class="last-generated-cell">{{report.lastGenerated}}</td>
+                    <td class="actions-cell">
+                      <button class="action-btn" (click)="generateLoanReport(report)" title="Generate">
+                        <i class="bi bi-play-circle"></i>
+                      </button>
+                      <button class="action-btn" (click)="downloadLoanReport(report)" title="Download">
+                        <i class="bi bi-download"></i>
+                      </button>
+                      <button class="action-btn" (click)="scheduleLoanReport(report)" title="Schedule">
+                        <i class="bi bi-calendar-plus"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: MEMBERS REPORTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeReportTab === 'members'">
+      <div class="content-grid-2col">
+        
+        <!-- Member Statistics -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-person-badge"></i>
+              Member Statistics
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="member-stats-grid">
+              <div class="member-stat-item">
+                <div class="stat-icon-mini active-members">
+                  <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-info-mini">
+                  <h5 class="stat-number">1,248</h5>
+                  <p class="stat-label-mini">Active Members</p>
+                </div>
+                <button class="stat-report-btn" (click)="generateMemberListReport()">
+                  <i class="bi bi-file-earmark-text"></i>
+                </button>
+              </div>
+
+              <div class="member-stat-item">
+                <div class="stat-icon-mini new-members">
+                  <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div class="stat-info-mini">
+                  <h5 class="stat-number">76</h5>
+                  <p class="stat-label-mini">New This Month</p>
+                </div>
+                <button class="stat-report-btn" (click)="generateNewMembersReport()">
+                  <i class="bi bi-file-earmark-text"></i>
+                </button>
+              </div>
+
+              <div class="member-stat-item">
+                <div class="stat-icon-mini dormant-members">
+                  <i class="bi bi-person-dash-fill"></i>
+                </div>
+                <div class="stat-info-mini">
+                  <h5 class="stat-number">23</h5>
+                  <p class="stat-label-mini">Dormant Accounts</p>
+                </div>
+                <button class="stat-report-btn" (click)="generateDormantReport()">
+                  <i class="bi bi-file-earmark-text"></i>
+                </button>
+              </div>
+
+              <div class="member-stat-item">
+                <div class="stat-icon-mini vip-members">
+                  <i class="bi bi-star-fill"></i>
+                </div>
+                <div class="stat-info-mini">
+                  <h5 class="stat-number">87</h5>
+                  <p class="stat-label-mini">VIP Members</p>
+                </div>
+                <button class="stat-report-btn" (click)="generateVIPReport()">
+                  <i class="bi bi-file-earmark-text"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="member-reports-quick-actions">
+              <button class="member-action-btn" (click)="generateMemberStatement()">
+                <i class="bi bi-receipt"></i>
+                <span>Member Statement</span>
+              </button>
+              <button class="member-action-btn" (click)="generateAgeAnalysis()">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Age Analysis</span>
+              </button>
+              <button class="member-action-btn" (click)="generateContributionReport()">
+                <i class="bi bi-piggy-bank"></i>
+                <span>Contributions</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Member Reports Categories -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-folder"></i>
+              Member Report Categories
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="category-list">
+              <div class="category-item" *ngFor="let category of memberReportCategories" (click)="openCategoryReports(category)">
+                <div class="category-icon" [style.background]="category.color">
+                  <i class="{{category.icon}}"></i>
+                </div>
+                <div class="category-content">
+                  <h4 class="category-name">{{category.name}}</h4>
+                  <p class="category-description">{{category.description}}</p>
+                  <span class="category-count">{{category.reportCount}} reports available</span>
+                </div>
+                <div class="category-arrow">
+                  <i class="bi bi-chevron-right"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: REGULATORY REPORTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeReportTab === 'regulatory'">
+      <div class="content-grid-full">
+        
+        <!-- Compliance Status Banner -->
+        <div class="compliance-banner">
+          <div class="compliance-status">
+            <div class="status-icon compliant">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="status-content">
+              <h3 class="status-title">Compliance Status: Up to Date</h3>
+              <p class="status-description">All regulatory reports are current. Next submission due: December 31, 2024</p>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="openComplianceCenter()">
+            <i class="bi bi-clipboard-check"></i>
+            View Compliance Center
+          </button>
+        </div>
+
+        <!-- Regulatory Reports Grid -->
+        <div class="regulatory-reports-grid">
+          <div class="regulatory-card" *ngFor="let report of regulatoryReports">
+            <div class="regulatory-header">
+              <div class="regulatory-badge" [ngClass]="report.urgencyClass">
+                {{report.urgency}}
+              </div>
+              <div class="regulatory-icon" [style.background]="report.color">
+                <i class="{{report.icon}}"></i>
+              </div>
+            </div>
+            <div class="regulatory-body">
+              <h3 class="regulatory-title">{{report.name}}</h3>
+              <p class="regulatory-description">{{report.description}}</p>
+              <div class="regulatory-details">
+                <div class="detail-row">
+                  <span class="detail-label">Authority:</span>
+                  <span class="detail-value">{{report.authority}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Frequency:</span>
+                  <span class="detail-value">{{report.frequency}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Due Date:</span>
+                  <span class="detail-value" [class.urgent]="report.isDuesSoon">{{report.dueDate}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Last Submitted:</span>
+                  <span class="detail-value">{{report.lastSubmitted}}</span>
+                </div>
+              </div>
+            </div>
+            <div class="regulatory-footer">
+              <button class="btn-secondary-sm" (click)="viewGuidelines(report)">
+                <i class="bi bi-book"></i>
+                Guidelines
+              </button>
+              <button class="btn-primary-sm" (click)="generateRegulatoryReport(report)">
+                <i class="bi bi-file-earmark-check"></i>
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: CUSTOM REPORTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeReportTab === 'custom'">
+      <div class="content-grid-full">
+        
+        <!-- Custom Report Builder -->
+        <div class="content-card custom-builder-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-gear"></i>
+              Custom Report Builder
+            </h3>
+            <button class="btn-primary-sm" (click)="saveCustomReport()">
+              <i class="bi bi-save"></i>
+              Save Template
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="builder-grid">
+              
+              <!-- Step 1: Report Type -->
+              <div class="builder-section">
+                <h4 class="builder-section-title">
+                  <span class="step-number">1</span>
+                  Select Report Type
+                </h4>
+                <div class="report-type-options">
+                  <label class="report-type-option" *ngFor="let type of customReportTypes">
+                    <input type="radio" 
+                           name="reportType" 
+                           [value]="type.value" 
+                           [(ngModel)]="customReportConfig.type">
+                    <div class="option-card">
+                      <i class="{{type.icon}}"></i>
+                      <span>{{type.label}}</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Step 2: Data Sources -->
+              <div class="builder-section">
+                <h4 class="builder-section-title">
+                  <span class="step-number">2</span>
+                  Select Data Sources
+                </h4>
+                <div class="data-sources-grid">
+                  <label class="data-source-checkbox" *ngFor="let source of dataSources">
+                    <input type="checkbox" 
+                           [value]="source.value" 
+                           [(ngModel)]="source.selected"
+                           (change)="updateSelectedSources()">
+                    <div class="checkbox-card">
+                      <i class="{{source.icon}}"></i>
+                      <span>{{source.label}}</span>
+                      <small>{{source.description}}</small>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Step 3: Fields Selection -->
+              <div class="builder-section">
+                <h4 class="builder-section-title">
+                  <span class="step-number">3</span>
+                  Choose Fields to Include
+                </h4>
+                <div class="fields-selection">
+                  <div class="fields-column available-fields">
+                    <h5 class="fields-column-title">Available Fields</h5>
+                    <div class="fields-list">
+                      <div class="field-item" 
+                           *ngFor="let field of availableFields"
+                           (click)="addField(field)">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>{{field.label}}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fields-column selected-fields">
+                    <h5 class="fields-column-title">Selected Fields ({{selectedFields.length}})</h5>
+                    <div class="fields-list">
+                      <div class="field-item selected" 
+                           *ngFor="let field of selectedFields; let i = index">
+                        <i class="bi bi-grip-vertical"></i>
+                        <span>{{field.label}}</span>
+                        <button class="remove-field-btn" (click)="removeField(i)">
+                          <i class="bi bi-x"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 4: Filters & Parameters -->
+              <div class="builder-section">
+                <h4 class="builder-section-title">
+                  <span class="step-number">4</span>
+                  Set Filters & Parameters
+                </h4>
+                <div class="filters-grid">
+                  <div class="filter-group">
+                    <label class="filter-label">Date Range</label>
+                    <div class="date-range-inputs">
+                      <input type="date" class="filter-input" [(ngModel)]="customReportConfig.dateFrom">
+                      <span>to</span>
+                      <input type="date" class="filter-input" [(ngModel)]="customReportConfig.dateTo">
+                    </div>
+                  </div>
+                  <div class="filter-group">
+                    <label class="filter-label">Member Category</label>
+                    <select class="filter-input" [(ngModel)]="customReportConfig.memberCategory">
+                      <option value="all">All Members</option>
+                      <option value="vip">VIP Members</option>
+                      <option value="regular">Regular Members</option>
+                      <option value="new">New Members</option>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <label class="filter-label">Transaction Type</label>
+                    <select class="filter-input" [(ngModel)]="customReportConfig.transactionType">
+                      <option value="all">All Transactions</option>
+                      <option value="deposits">Deposits</option>
+                      <option value="withdrawals">Withdrawals</option>
+                      <option value="loans">Loans</option>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <label class="filter-label">Amount Range</label>
+                    <div class="amount-range-inputs">
+                      <input type="number" class="filter-input" [(ngModel)]="customReportConfig.amountMin" placeholder="Min">
+                      <span>to</span>
+                      <input type="number" class="filter-input" [(ngModel)]="customReportConfig.amountMax" placeholder="Max">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 5: Output Settings -->
+              <div class="builder-section">
+                <h4 class="builder-section-title">
+                  <span class="step-number">5</span>
+                  Configure Output
+                </h4>
+                <div class="output-settings-grid">
+                  <div class="setting-group">
+                    <label class="setting-label">Report Name</label>
+                    <input type="text" class="setting-input" [(ngModel)]="customReportConfig.name" placeholder="Enter report name">
+                  </div>
+                  <div class="setting-group">
+                    <label class="setting-label">Output Format</label>
+                    <div class="format-checkboxes">
+                      <label class="format-checkbox">
+                        <input type="checkbox" value="PDF" [(ngModel)]="customReportConfig.formatPDF">
+                        <span>PDF</span>
+                      </label>
+                      <label class="format-checkbox">
+                        <input type="checkbox" value="Excel" [(ngModel)]="customReportConfig.formatExcel">
+                        <span>Excel</span>
+                      </label>
+                      <label class="format-checkbox">
+                        <input type="checkbox" value="CSV" [(ngModel)]="customReportConfig.formatCSV">
+                        <span>CSV</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="setting-group">
+                    <label class="setting-label">Group By</label>
+                    <select class="setting-input" [(ngModel)]="customReportConfig.groupBy">
+                      <option value="">None</option>
+                      <option value="date">Date</option>
+                      <option value="member">Member</option>
+                      <option value="category">Category</option>
+                      <option value="branch">Branch</option>
+                    </select>
+                  </div>
+                  <div class="setting-group">
+                    <label class="setting-label">Sort By</label>
+                    <select class="setting-input" [(ngModel)]="customReportConfig.sortBy">
+                      <option value="date_desc">Date (Newest First)</option>
+                      <option value="date_asc">Date (Oldest First)</option>
+                      <option value="amount_desc">Amount (High to Low)</option>
+                      <option value="amount_asc">Amount (Low to High)</option>
+                      <option value="name">Name (A-Z)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Builder Actions -->
+            <div class="builder-actions">
+              <button class="btn-secondary" (click)="resetBuilder()">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Reset
+              </button>
+              <button class="btn-secondary" (click)="previewCustomReport()">
+                <i class="bi bi-eye"></i>
+                Preview
+              </button>
+              <button class="btn-primary" (click)="generateCustomReport()">
+                <i class="bi bi-play-circle"></i>
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Custom Reports -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-bookmarks"></i>
+              Saved Custom Reports ({{savedCustomReports.length}})
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="saved-reports-grid">
+              <div class="saved-report-card" *ngFor="let report of savedCustomReports">
+                <div class="saved-report-header">
+                  <h4 class="saved-report-title">{{report.name}}</h4>
+                  <div class="saved-report-actions">
+                    <button class="icon-btn-xs" (click)="editCustomReport(report)" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="icon-btn-xs" (click)="deleteCustomReport(report)" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="saved-report-info">
+                  <span class="info-item">
+                    <i class="bi bi-calendar"></i>
+                    {{report.lastGenerated}}
+                  </span>
+                  <span class="info-item">
+                    <i class="bi bi-file-earmark"></i>
+                    {{report.format}}
+                  </span>
+                </div>
+                <button class="btn-primary-sm full-width" (click)="runCustomReport(report)">
+                  <i class="bi bi-play-circle"></i>
+                  Run Report
+                </button>
+              </div>
+
+              <!-- Empty State -->
+              <div class="empty-state-custom" *ngIf="savedCustomReports.length === 0">
+                <i class="bi bi-folder2-open"></i>
+                <p>No saved custom reports</p>
+                <span>Create your first custom report using the builder above</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    RECENT REPORTS HISTORY
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="recent-reports-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="bi bi-clock-history"></i>
+        Recent Reports
+      </h2>
+      <button class="btn-text" (click)="viewAllReports()">
+        View All
+        <i class="bi bi-arrow-right"></i>
+      </button>
+    </div>
+
+    <div class="content-card">
+      <div class="card-body no-padding">
+        <div class="reports-history-table-wrapper">
+          <table class="reports-history-table">
+            <thead>
+              <tr>
+                <th>Report Name</th>
+                <th>Category</th>
+                <th>Generated By</th>
+                <th>Date & Time</th>
+                <th>Format</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let report of recentReports">
+                <td class="report-name-cell">
+                  <i class="{{report.icon}}" [style.color]="report.iconColor"></i>
+                  <strong>{{report.name}}</strong>
+                </td>
+                <td>
+                  <span class="category-badge" [ngClass]="'badge-' + report.category">
+                    {{report.category}}
+                  </span>
+                </td>
+                <td class="user-cell">
+                  <div class="user-avatar-sm">{{report.generatedByInitials}}</div>
+                  <span>{{report.generatedBy}}</span>
+                </td>
+                <td class="datetime-cell">{{report.generatedAt}}</td>
+                <td>
+                  <span class="format-badge">{{report.format}}</span>
+                </td>
+                <td class="size-cell">{{report.size}}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="'status-' + report.status">
+                    {{report.statusLabel}}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button class="action-btn" (click)="downloadReport(report)" title="Download">
+                    <i class="bi bi-download"></i>
+                  </button>
+                  <button class="action-btn" (click)="shareReport(report)" title="Share">
+                    <i class="bi bi-share"></i>
+                  </button>
+                  <button class="action-btn" (click)="deleteReport(report)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+  MODALS
+══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Generate Report Modal -->
+<div class="modal-backdrop" [class.show]="showGenerateReportModal" (click)="closeGenerateReportModal()">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-file-earmark-plus"></i>
+          Generate New Report
+        </h3>
+        <button class="modal-close-btn" (click)="closeGenerateReportModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Select Report Template</label>
+          <select class="form-select" [(ngModel)]="selectedReportTemplate">
+            <option value="">Choose a template...</option>
+            <optgroup label="Financial Reports">
+              <option value="balance-sheet">Balance Sheet</option>
+              <option value="income-statement">Income Statement</option>
+              <option value="cash-flow">Cash Flow Statement</option>
+              <option value="trial-balance">Trial Balance</option>
+            </optgroup>
+            <optgroup label="Loan Reports">
+              <option value="portfolio-summary">Portfolio Summary</option>
+              <option value="disbursement-report">Disbursement Report</option>
+              <option value="arrears-report">Arrears Report</option>
+              <option value="aging-analysis">Aging Analysis</option>
+            </optgroup>
+            <optgroup label="Member Reports">
+              <option value="member-list">Member List</option>
+              <option value="member-statement">Member Statement</option>
+              <option value="contribution-summary">Contribution Summary</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Report Period</label>
+          <div class="period-selection-grid">
+            <label class="period-option">
+              <input type="radio" name="period" value="today" [(ngModel)]="reportPeriod">
+              <div class="period-card">
+                <i class="bi bi-calendar-day"></i>
+                <span>Today</span>
+              </div>
+            </label>
+            <label class="period-option">
+              <input type="radio" name="period" value="week" [(ngModel)]="reportPeriod">
+              <div class="period-card">
+                <i class="bi bi-calendar-week"></i>
+                <span>This Week</span>
+              </div>
+            </label>
+            <label class="period-option">
+              <input type="radio" name="period" value="month" [(ngModel)]="reportPeriod">
+              <div class="period-card">
+                <i class="bi bi-calendar-month"></i>
+                <span>This Month</span>
+              </div>
+            </label>
+            <label class="period-option">
+              <input type="radio" name="period" value="quarter" [(ngModel)]="reportPeriod">
+              <div class="period-card">
+                <i class="bi bi-calendar-range"></i>
+                <span>This Quarter</span>
+              </div>
+            </label>
+            <label class="period-option">
+              <input type="radio" name="period" value="year" [(ngModel)]="reportPeriod">
+              <div class="period-card">
+                <i class="bi bi-calendar"></i>
+                <span>This Year</span>
+              </div>
+            </label>
+            <label class="period-option">
+              <input type="radio" name="period" value="custom" [(ngModel)]="reportPeriod">
+              <div class="period-card">
+                <i class="bi bi-sliders"></i>
+                <span>Custom</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reportPeriod === 'custom'">
+          <label class="form-label">Custom Date Range</label>
+          <div class="date-range-row">
+            <input type="date" class="form-control" [(ngModel)]="customReportDateFrom" placeholder="From">
+            <span class="date-separator">to</span>
+            <input type="date" class="form-control" [(ngModel)]="customReportDateTo" placeholder="To">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Output Format</label>
+          <div class="format-selection">
+            <label class="format-checkbox-lg">
+              <input type="checkbox" [(ngModel)]="outputFormatPDF">
+              <div class="format-card">
+                <i class="bi bi-file-pdf"></i>
+                <span>PDF</span>
+                <small>Print-ready format</small>
+              </div>
+            </label>
+            <label class="format-checkbox-lg">
+              <input type="checkbox" [(ngModel)]="outputFormatExcel">
+              <div class="format-card">
+                <i class="bi bi-file-excel"></i>
+                <span>Excel</span>
+                <small>Editable spreadsheet</small>
+              </div>
+            </label>
+            <label class="format-checkbox-lg">
+              <input type="checkbox" [(ngModel)]="outputFormatCSV">
+              <div class="format-card">
+                <i class="bi bi-filetype-csv"></i>
+                <span>CSV</span>
+                <small>Data export</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-option-lg">
+            <input type="checkbox" [(ngModel)]="emailReportAfterGeneration">
+            <span>Email report after generation</span>
+          </label>
+        </div>
+
+        <div class="form-group" *ngIf="emailReportAfterGeneration">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" [(ngModel)]="reportEmailAddress" placeholder="email@example.com">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeGenerateReportModal()">Cancel</button>
+        <button class="btn-primary" (click)="confirmGenerateReport()">
+          <i class="bi bi-play-circle"></i>
+          Generate Report
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scheduled Reports Modal -->
+<div class="modal-backdrop" [class.show]="showScheduledReportsModal" (click)="closeScheduledReportsModal()">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-calendar-check"></i>
+          Scheduled Reports
+        </h3>
+        <button class="modal-close-btn" (click)="closeScheduledReportsModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="scheduled-reports-list">
+          <div class="scheduled-report-item" *ngFor="let schedule of scheduledReportsList">
+            <div class="schedule-header">
+              <div class="schedule-icon" [style.background]="schedule.color">
+                <i class="{{schedule.icon}}"></i>
+              </div>
+              <div class="schedule-info">
+                <h4 class="schedule-name">{{schedule.name}}</h4>
+                <p class="schedule-description">{{schedule.description}}</p>
+              </div>
+              <div class="schedule-toggle">
+                <label class="toggle-switch">
+                  <input type="checkbox" [(ngModel)]="schedule.active">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="schedule-details">
+              <div class="detail-item">
+                <i class="bi bi-clock"></i>
+                <span>{{schedule.frequency}}</span>
+              </div>
+              <div class="detail-item">
+                <i class="bi bi-calendar"></i>
+                <span>Next Run: {{schedule.nextRun}}</span>
+              </div>
+              <div class="detail-item">
+                <i class="bi bi-envelope"></i>
+                <span>{{schedule.recipients}}</span>
+              </div>
+            </div>
+            <div class="schedule-actions">
+              <button class="btn-secondary-xs" (click)="editSchedule(schedule)">
+                <i class="bi bi-pencil"></i>
+                Edit
+              </button>
+              <button class="btn-secondary-xs" (click)="runScheduleNow(schedule)">
+                <i class="bi bi-play"></i>
+                Run Now
+              </button>
+              <button class="btn-danger-xs" (click)="deleteSchedule(schedule)">
+                <i class="bi bi-trash"></i>
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state-scheduled" *ngIf="scheduledReportsList.length === 0">
+            <i class="bi bi-calendar-x"></i>
+            <p>No scheduled reports</p>
+            <span>Create a schedule to automate report generation</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="createNewSchedule()">
+          <i class="bi bi-plus-circle"></i>
+          Create New Schedule
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-notification" [class.show]="toastVisible" [attr.data-type]="toastType">
+  <div class="toast-icon">
+    <i class="bi bi-check-circle-fill" *ngIf="toastType === 'success'"></i>
+    <i class="bi bi-info-circle-fill" *ngIf="toastType === 'info'"></i>
+    <i class="bi bi-exclamation-triangle-fill" *ngIf="toastType === 'warning'"></i>
+    <i class="bi bi-x-circle-fill" *ngIf="toastType === 'danger'"></i>
+  </div>
+  <div class="toast-content">
+    <span class="toast-message">{{toastMessage}}</span>
+  </div>
+  <button class="toast-close" (click)="hideToast()">
+    <i class="bi bi-x"></i>
+  </button>
+</div>

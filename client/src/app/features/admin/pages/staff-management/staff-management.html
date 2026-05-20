@@ -1,1 +1,494 @@
-<p>staff-management works!</p>
+<main class="staff-page">
+  <section class="staff-shell">
+    <div class="page-heading">
+      <div>
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <span>Dashboard</span>
+          <span>Settings</span>
+          <strong>Staff Management</strong>
+        </nav>
+        <h1><span class="title-icon">SP</span> Staff &amp; Management</h1>
+        <p>Assign roles, manage permissions, and configure access for Rongo SACCO officials</p>
+      </div>
+      <div class="heading-actions">
+        <button class="btn btn-outline-success" type="button" (click)="openModal('manageRoles')">Manage Roles</button>
+        <button class="btn btn-primary" type="button" (click)="openModal('addStaff')">+ Add Staff Member</button>
+      </div>
+    </div>
+
+    <section class="summary-grid" aria-label="Staff summary">
+      @for (card of summaryCards; track card.label; let i = $index) {
+        <article class="summary-card" [class]="'summary-card tone-' + card.tone" [style.--delay]="(i * 60) + 'ms'">
+          <span class="summary-icon" [class]="'summary-icon tone-' + card.tone">{{ card.icon | uppercase }}</span>
+          <small>{{ card.label }}</small>
+          <strong>{{ card.value }}</strong>
+        </article>
+      }
+    </section>
+
+    <section class="glass-card primary-card">
+      <div class="primary-tabs" role="tablist">
+        @for (tab of mainTabs; track tab.key) {
+          <button type="button" [class.active]="activeTab === tab.key" (click)="activeTab = tab.key" role="tab" [attr.aria-selected]="activeTab === tab.key">
+            {{ tab.label }}
+            @if (tab.count) { <span>{{ tab.count }}</span> }
+          </button>
+        }
+      </div>
+
+      @if (activeTab === 'directory') {
+        <div class="tab-panel">
+          <div class="panel-toolbar">
+            <div class="sub-tabs" role="tablist">
+              @for (tab of subTabs; track tab.key) {
+                <button type="button" [class.active]="staffFilter === tab.key" (click)="staffFilter = tab.key">{{ tab.label }}<span>{{ tab.count }}</span></button>
+              }
+            </div>
+            <label class="search-field"><span class="search-icon">SR</span><input [(ngModel)]="staffSearch" placeholder="Search..." /></label>
+          </div>
+
+          <div class="table-responsive">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th>Staff Member</th>
+                  <th>Role</th>
+                  <th>Member ID</th>
+                  <th>Permissions</th>
+                  <th>Status</th>
+                  <th>Last Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (s of filteredStaff; track s.id) {
+                  <tr [class.row-highlight]="s.role === 'Super Admin'">
+                    <td data-label="Staff Member">
+                      <div class="member-cell">
+                        <span class="s-avatar" [class]="'s-avatar ' + s.avatar">{{ s.initials }}<i class="presence" [class]="'presence ' + s.status"></i></span>
+                        <span><strong>{{ s.name }}</strong><small>{{ s.title }}</small></span>
+                      </div>
+                    </td>
+                    <td data-label="Role"><span class="role-badge" [class]="'role-badge tone-' + s.roleTone">{{ s.role }}</span></td>
+                    <td data-label="Member ID"><code>{{ s.memberId }}</code></td>
+                    <td data-label="Permissions"><span class="perm-text" [class]="'perm-text ' + s.permissionTone">{{ s.permissions }}</span></td>
+                    <td data-label="Status"><span class="status-pill" [class]="'status-pill ' + s.status">{{ statusLabel(s.status) }}</span></td>
+                    <td data-label="Last Active">{{ s.lastActive }}</td>
+                    <td data-label="Actions">
+                      @if (s.role === 'Super Admin') {
+                        <button class="link-btn" type="button" (click)="openModal('viewStaff', s)">View</button>
+                      } @else {
+                        <div class="row-actions">
+                          <button class="icon-button" type="button" aria-label="View" (click)="openModal('viewStaff', s)">view</button>
+                          <button class="icon-button" type="button" aria-label="Edit" (click)="openModal('editPermissions', s)">edit</button>
+                          <button class="icon-button" type="button" aria-label="More" (click)="openModal('viewStaff', s)">more</button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="7" class="empty-row">No staff match the current filters.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'org') {
+        <div class="tab-panel">
+          <div class="org-chart">
+            <div class="org-level">
+              <article class="org-node lead" (click)="openModal('viewStaff', staffMembers[1])">
+                <span class="s-avatar c3">WO</span>
+                <strong>William Ochieng</strong>
+                <span class="role-badge tone-navy">Chairman</span>
+              </article>
+            </div>
+            <div class="org-connector"></div>
+            <div class="org-level row">
+              <article class="org-node highlighted" (click)="openModal('viewStaff', staffMembers[0])">
+                <span class="s-avatar c1">JK</span>
+                <strong>James Kariuki</strong>
+                <span class="role-badge tone-green">Super Admin</span>
+              </article>
+              <article class="org-node" (click)="openModal('viewStaff', staffMembers[3])">
+                <span class="s-avatar c4">MA</span>
+                <strong>Mary Achieng</strong>
+                <span class="role-badge tone-purple">Secretary</span>
+              </article>
+              <article class="org-node" (click)="openModal('viewStaff', staffMembers[2])">
+                <span class="s-avatar c1">AN</span>
+                <strong>Agnes Nyaboke</strong>
+                <span class="role-badge tone-teal">Treasurer</span>
+              </article>
+            </div>
+            <div class="org-connector small"></div>
+            <div class="org-level row tight">
+              <article class="org-node" (click)="openModal('viewStaff', staffMembers[4])">
+                <span class="s-avatar c5">DO</span>
+                <strong>David Otieno</strong>
+                <span class="role-badge tone-blue">Credit Officer</span>
+              </article>
+              <article class="org-node" (click)="openModal('viewStaff', staffMembers[5])">
+                <span class="s-avatar c6">FK</span>
+                <strong>Florence K.</strong>
+                <span class="role-badge tone-orange">Accountant</span>
+              </article>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'roles') {
+        <div class="tab-panel">
+          <div class="panel-toolbar split">
+            <div>
+              <h3>Defined Roles &amp; Assigned Permissions</h3>
+              <p>Six roles configured for Rongo SACCO operations</p>
+            </div>
+            <button class="btn btn-primary" type="button" (click)="openModal('createRole')">+ Create Role</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="staff-table roles-table">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Badge</th>
+                  <th>Staff Assigned</th>
+                  <th>Permissions</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (role of roleDefinitions; track role.name) {
+                  <tr [class.row-highlight-soft]="role.tone === 'teal'">
+                    <td data-label="Role"><strong>{{ role.name }}</strong></td>
+                    <td data-label="Badge"><span class="role-badge" [class]="'role-badge tone-' + role.tone">{{ role.name }}</span></td>
+                    <td data-label="Assigned">{{ role.assigned }}{{ role.assignedNames ? ' (' + role.assignedNames + ')' : '' }}</td>
+                    <td data-label="Permissions"><span class="perm-text" [class.success]="role.immutable" [class.neutral]="!role.immutable">{{ role.permissions }}</span></td>
+                    <td data-label="Created">{{ role.created }}</td>
+                    <td data-label="Actions">
+                      @if (role.immutable) {
+                        <button class="link-btn" type="button" (click)="openModal('viewRole', undefined, role)">View</button>
+                      } @else {
+                        <div class="row-actions">
+                          <button class="icon-button" type="button" aria-label="View" (click)="openModal('viewRole', undefined, role)">view</button>
+                          <button class="icon-button" type="button" aria-label="Edit" (click)="openModal('editRole', undefined, role)">edit</button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'log') {
+        <div class="tab-panel">
+          <div class="log-filters">
+            <label>
+              <select [(ngModel)]="logFilter">
+                <option value="all">All Events</option>
+                <option value="permissions">Permission Changes</option>
+                <option value="login">Login Events</option>
+                <option value="invites">Invitations</option>
+                <option value="roles">Role Updates</option>
+              </select>
+            </label>
+            <label class="date-field"><input type="date" [(ngModel)]="logDate" /></label>
+            <label class="search-field"><span class="search-icon">SR</span><input [(ngModel)]="logSearch" placeholder="Search..." /></label>
+          </div>
+
+          <div class="activity-timeline">
+            @for (entry of filteredActivity; track entry.time + entry.actor) {
+              <div class="activity-entry">
+                <span class="activity-dot"></span>
+                <div class="activity-meta">{{ entry.time }}</div>
+                <div class="activity-body">
+                  <p>
+                    <strong>{{ entry.actor }}</strong> {{ entry.action }}
+                    @if (entry.badge) { <span class="role-badge" [class]="'role-badge tone-' + entry.badge.tone">{{ entry.badge.label }}</span> }
+                    {{ entry.target }}
+                  </p>
+                  @if (entry.detail) { <small>{{ entry.detail }}</small> }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-row">No activity matches the current filters.</div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+  </section>
+
+  @if (toast) {
+    <div class="admin-toast" [class]="'admin-toast ' + toast.tone"><span></span>{{ toast.message }}</div>
+  }
+
+  @if (modal === 'addStaff') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Add Staff Member" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header tone-green"><h2>+ Add Staff / Management Member</h2><button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button></div>
+        <div class="modal-body">
+          <div class="mode-tabs">
+            <button type="button" [class.active]="inviteMode === 'select'" (click)="inviteMode = 'select'">Select from Members</button>
+            <button type="button" [class.active]="inviteMode === 'manual'" (click)="inviteMode = 'manual'">Add Manually</button>
+          </div>
+
+          @if (inviteMode === 'select') {
+            <div class="form-grid">
+              <label class="full">Search Member<input [(ngModel)]="inviteForm.search" placeholder="Search by name, member ID, phone..." /></label>
+            </div>
+          } @else {
+            <div class="form-grid two">
+              <label>Full Name<input [(ngModel)]="inviteForm.name" placeholder="e.g. Jane Wairimu" /></label>
+              <label>Member ID (optional)<input [(ngModel)]="inviteForm.memberId" placeholder="SP-XXXX" /></label>
+              <label>Email<input type="email" [(ngModel)]="inviteForm.email" placeholder="jane@rongosacco.co.ke" /></label>
+              <label>Phone<input [(ngModel)]="inviteForm.phone" placeholder="0722 000 000" /></label>
+            </div>
+          }
+
+          <div class="section-divider"><h3>Assign Role &amp; Badge</h3></div>
+          <div class="form-grid two">
+            <label>Role
+              <select [(ngModel)]="inviteForm.role">
+                <option value="">Select role...</option>
+                @for (r of roleDefinitions; track r.name) { <option [value]="r.name">{{ r.name }}</option> }
+              </select>
+            </label>
+            <label>Custom Title (optional)<input [(ngModel)]="inviteForm.title" placeholder="e.g. Assistant Treasurer" /></label>
+            <label>Department
+              <select [(ngModel)]="inviteForm.department">
+                <option>Board of Directors</option>
+                <option>Administration</option>
+                <option>Finance Department</option>
+                <option>Credit Department</option>
+                <option>Operations</option>
+                <option>Compliance</option>
+              </select>
+            </label>
+            <label>Access Level
+              <select [(ngModel)]="inviteForm.access">
+                <option value="standard">Standard - Based on role permissions</option>
+                <option value="elevated">Elevated - Custom overrides</option>
+                <option value="restricted">Restricted - Limited subset</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="section-divider"><h3>Quick Permissions</h3></div>
+          <div class="perm-grid">
+            @for (perm of invitePerms; track perm.key) {
+              <button type="button" class="perm-toggle" [class.on]="perm.enabled" (click)="togglePerm(invitePerms, perm.key)">
+                <span class="switch"><i></i></span> {{ perm.label }}
+              </button>
+            }
+          </div>
+
+          <div class="info-callout">
+            <span class="info-dot"></span>
+            <p>The member will receive an <strong>email/SMS invitation</strong> with login credentials. You remain the <strong>default admin</strong>, regardless of roles assigned.</p>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Cancel</button>
+            <button class="btn btn-primary" type="button" (click)="confirmAndClose('Staff invitation queued successfully.')">+ Add &amp; Send Invitation</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (modal === 'manageRoles') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Manage Roles" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header tone-purple"><h2>Manage Roles - Rongo SACCO</h2><button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button></div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="staff-table">
+              <thead>
+                <tr><th>Role</th><th>Badge</th><th>Assigned</th><th>Permissions</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @for (role of roleDefinitions; track role.name) {
+                  <tr>
+                    <td data-label="Role"><strong>{{ role.name }}</strong></td>
+                    <td data-label="Badge"><span class="role-badge" [class]="'role-badge tone-' + role.tone">{{ role.name }}</span></td>
+                    <td data-label="Assigned">{{ role.assigned }}</td>
+                    <td data-label="Permissions">{{ role.immutable ? 'All (immutable)' : role.permCount + ' permissions' }}</td>
+                    <td data-label="Actions">
+                      @if (role.immutable) {
+                        <span class="muted-text">System default</span>
+                      } @else {
+                        <div class="row-actions">
+                          <button class="link-btn" type="button" (click)="openModal('editRole', undefined, role)">Edit</button>
+                          <button class="icon-button" type="button" aria-label="Duplicate" (click)="openModal('duplicateRole', undefined, role)">copy</button>
+                          @if (role.assigned === 3) { <button class="icon-button danger" type="button" aria-label="Delete" (click)="openModal('deleteRole', undefined, role)">del</button> }
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary tone-purple" type="button" (click)="openManageRolesCreate()">+ Create Role</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (modal === 'viewStaff' && selectedStaff) {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Staff Profile" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header tone-green"><h2>Staff Profile - {{ selectedStaff.name }}</h2><button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button></div>
+        <div class="modal-body">
+          <div class="profile-header">
+            <span class="s-avatar" [class]="'s-avatar ' + selectedStaff.avatar">{{ selectedStaff.initials }}<i class="presence" [class]="'presence ' + selectedStaff.status"></i></span>
+            <div>
+              <h3>{{ selectedStaff.name }}</h3>
+              <p>{{ selectedStaff.title }} - {{ selectedStaff.department }}</p>
+              <div class="profile-meta">
+                <span class="role-badge" [class]="'role-badge tone-' + selectedStaff.roleTone">{{ selectedStaff.role }}</span>
+                <span class="status-pill" [class]="'status-pill ' + selectedStaff.status">{{ statusLabel(selectedStaff.status) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <p><span>Member ID</span><strong>{{ selectedStaff.memberId }}</strong></p>
+            <p><span>Permissions</span><strong>{{ selectedStaff.permissions }}</strong></p>
+            <p><span>Department</span><strong>{{ selectedStaff.department }}</strong></p>
+            <p><span>Last Active</span><strong>{{ selectedStaff.lastActive }}</strong></p>
+            <p><span>Custom Title</span><strong>{{ selectedStaff.title }}</strong></p>
+            <p><span>Status</span><strong>{{ selectedStaff.status === 'online' ? 'Active session' : 'Last seen ' + selectedStaff.lastActive }}</strong></p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" type="button" (click)="openEditFromProfile()">Edit Permissions</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (modal === 'editPermissions' && selectedStaff) {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Edit Permissions" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header tone-green"><h2>Edit Permissions - {{ selectedStaff.name }}</h2><button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button></div>
+        <div class="modal-body">
+          <div class="profile-header compact">
+            <span class="s-avatar" [class]="'s-avatar ' + selectedStaff.avatar">{{ selectedStaff.initials }}</span>
+            <div><h3>{{ selectedStaff.name }}</h3><p>{{ selectedStaff.title }}</p></div>
+            <span class="role-badge" [class]="'role-badge tone-' + selectedStaff.roleTone">{{ selectedStaff.role }}</span>
+          </div>
+          <div class="section-divider"><h3>Quick Permissions</h3></div>
+          <div class="perm-grid">
+            @for (perm of editPerms; track perm.key) {
+              <button type="button" class="perm-toggle" [class.on]="perm.enabled" (click)="togglePerm(editPerms, perm.key)">
+                <span class="switch"><i></i></span> {{ perm.label }}
+              </button>
+            }
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Cancel</button>
+            <button class="btn btn-primary" type="button" (click)="confirmAndClose('Permissions updated.')">Save Permissions</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (modal === 'viewRole' && selectedRole) {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Role Detail" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header" [class.tone-green]="selectedRole.tone === 'green'" [class.tone-purple]="selectedRole.tone !== 'green'"><h2>{{ selectedRole.name }} - Role Detail</h2><button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button></div>
+        <div class="modal-body">
+          <div class="profile-header compact">
+            <span class="role-badge" [class]="'role-badge tone-' + selectedRole.tone">{{ selectedRole.name }}</span>
+            <span class="muted-text">{{ selectedRole.assigned }} staff assigned - Created {{ selectedRole.created }}</span>
+          </div>
+          <div class="section-divider"><h3>Permissions Included</h3></div>
+          <ul class="perm-list">
+            @for (perm of selectedRole.permissionsList; track perm) { <li>{{ perm }}</li> }
+          </ul>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Close</button>
+            @if (!selectedRole.immutable) { <button class="btn btn-primary tone-purple" type="button" (click)="openEditFromView()">Edit Role</button> }
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (modal === 'createRole' || modal === 'editRole' || modal === 'duplicateRole') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Role Form" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header tone-purple">
+          <h2>
+            @if (modal === 'editRole') { Edit Role - {{ selectedRole?.name }} }
+            @else if (modal === 'duplicateRole') { Duplicate Role - {{ selectedRole?.name }} }
+            @else { Create New Role }
+          </h2>
+          <button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid two">
+            <label>Role Name<input [(ngModel)]="roleForm.name" placeholder="e.g. Branch Supervisor" /></label>
+            <label>Badge Tone
+              <select [(ngModel)]="roleForm.tone">
+                <option value="green">Green</option>
+                <option value="navy">Navy</option>
+                <option value="teal">Teal</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+                <option value="orange">Orange</option>
+                <option value="gray">Gray</option>
+              </select>
+            </label>
+            <label class="full">Description<textarea [(ngModel)]="roleForm.description" placeholder="Short summary of role responsibilities"></textarea></label>
+          </div>
+
+          <div class="section-divider"><h3>Assign Permissions</h3></div>
+          <div class="perm-grid">
+            @for (perm of basePermissions; track perm.key) {
+              <button type="button" class="perm-toggle" [class.on]="isPermInRole(perm.label)" (click)="togglePermissionInRole(perm.label)">
+                <span class="switch"><i></i></span> {{ perm.label }}
+              </button>
+            }
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Cancel</button>
+            <button class="btn btn-primary tone-purple" type="button" (click)="confirmAndClose(modal === 'editRole' ? 'Role updated successfully.' : modal === 'duplicateRole' ? 'Role duplicated.' : 'Role created.')">
+              {{ modal === 'editRole' ? 'Save Role' : 'Create Role' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  @if (modal === 'deleteRole' && selectedRole) {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+      <section class="admin-modal" role="dialog" aria-modal="true" aria-label="Delete Role" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header tone-red"><h2>Delete Role</h2><button class="modal-close" type="button" aria-label="Close" (click)="closeModal()">x</button></div>
+        <div class="modal-body">
+          <div class="confirm-body"><p>Are you sure you want to delete <strong>{{ selectedRole.name }}</strong>? Staff currently assigned to this role will need to be reassigned.</p></div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Cancel</button>
+            <button class="btn btn-primary tone-red" type="button" (click)="confirmAndClose('Role deleted.')">Delete Role</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</main>

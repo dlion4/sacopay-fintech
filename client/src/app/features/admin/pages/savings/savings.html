@@ -1,1 +1,703 @@
-<p>savings works!</p>
+<main class="treasury-page">
+    <section class="treasury-shell">
+        <div class="page-heading">
+            <div>
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <span>Dashboard</span>
+                    <span>Financial Operations</span>
+                    <strong>Savings Management</strong>
+                </nav>
+                <h1><span class="title-icon">SP</span> Savings Management</h1>
+                <p>Manage member savings accounts, share capital, deposits, withdrawals and interest.</p>
+            </div>
+
+            <div class="heading-actions">
+                <button class="btn btn-outline-success" type="button" (click)="openModal('interest')"><span
+                        class="btn-icon">%</span> Interest Config</button>
+                <button class="btn btn-outline-success" type="button" (click)="openModal('reports')"><span
+                        class="btn-icon">RP</span> Reports</button>
+                <button class="btn btn-primary" type="button" (click)="openModal('deposit')"><span>+</span> New
+                    Deposit</button>
+            </div>
+        </div>
+
+        <section class="savings-accounts-grid" aria-label="Savings account overview">
+            @for (card of accountCards; track card.id; let i = $index) {
+            <article class="savings-account-card" [style.--delay]="(i * 55) + 'ms'">
+                <div class="sac-header" [class]="'sac-header ' + card.tone">
+                    <span class="lock-indicator" [class.locked]="card.lockState === 'locked'"
+                        [class.unlocked]="card.lockState === 'unlocked'"
+                        [class.warning]="card.lockState === 'warning'">{{ card.lockLabel }}</span>
+                    <div class="sac-type-icon"><span>{{ card.iconLabel }}</span></div>
+                    <div class="sac-type-label">{{ card.title }}</div>
+                    <div class="sac-balance">{{ card.balance }}</div>
+                    <div class="sac-sub">{{ card.sub }}</div>
+                </div>
+
+                <div class="sac-body">
+                    @for (stat of card.stats; track stat.label) {
+                    <div class="sac-stat-row">
+                        <span class="label">{{ stat.label }}</span>
+                        <span class="value" [class.positive]="stat.state === 'positive'"
+                            [class.negative]="stat.state === 'negative'" [class.warning]="stat.state === 'warning'"
+                            [class.badge]="stat.state === 'badge'">{{ stat.value }}</span>
+                    </div>
+                    }
+
+                    <div class="sac-actions">
+                        @for (action of card.actions; track action.label) {
+                        <button class="btn btn-sm" [class]="'btn btn-sm btn-' + action.variant" type="button"
+                            (click)="openModal(action.modal, card)">
+                            @if (action.label !== 'Details') { <span>+</span> }
+                            {{ action.label }}
+                        </button>
+                        }
+                    </div>
+                </div>
+            </article>
+            }
+        </section>
+
+        <section class="glass-card quick-actions-card">
+            <div class="section-title"><span class="title-icon small">QA</span> Quick Actions</div>
+            <div class="quick-actions-grid">
+                @for (action of quickActions; track action.label) {
+                <button class="quick-action" type="button" (click)="openModal(action.modal)">
+                    <span class="quick-icon" [class]="'quick-icon ' + action.tone">{{ action.iconLabel }}</span>
+                    <strong>{{ action.label }}</strong>
+                    <small>{{ action.helper }}</small>
+                </button>
+                }
+            </div>
+        </section>
+
+        <section class="analytics-grid">
+            <article class="glass-card activity-panel">
+                <div class="card-heading">
+                    <div class="section-title"><span class="title-icon small">TM</span> Recent Activity</div>
+                    <button class="link-button" type="button" (click)="openModal('fullLog')">Full Log</button>
+                </div>
+                <div class="timeline-scroll">
+                    <div class="timeline-line"></div>
+                    @for (item of activityItems; track item.title) {
+                    <div class="activity-item" [class.green]="item.tone === 'green'" [class.red]="item.tone === 'red'"
+                        [class.navy]="item.tone === 'navy'" [class.orange]="item.tone === 'orange'">
+                        <span class="activity-dot"></span>
+                        <span class="activity-time">{{ item.time }}</span>
+                        <div class="activity-content">
+                            <p><span class="mini-badge" [class]="'mini-badge ' + item.tone">{{ item.tag }}</span> {{
+                                item.title }}</p>
+                            <small>{{ item.detail }}</small>
+                            <button type="button"
+                                (click)="openModal('txDetail', undefined, transactions[0])">View</button>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </article>
+
+            <article class="glass-card distribution-panel">
+                <div class="card-heading">
+                    <div class="section-title">Savings Distribution</div>
+                    <button class="icon-button" type="button" aria-label="Open reports"
+                        (click)="openModal('reports')">RP</button>
+                </div>
+
+                <div class="distribution-body">
+                    <div class="donut-wrap">
+                        <div class="donut-chart"><span>KES 156M<small>Total Savings</small></span></div>
+                    </div>
+                    <div class="legend-list">
+                        <span><i class="legend-dot d0"></i>Shares 18%</span>
+                        <span><i class="legend-dot d1"></i>Regular 43%</span>
+                        <span><i class="legend-dot d2"></i>Fixed 27%</span>
+                        <span><i class="legend-dot d3"></i>Holiday 4%</span>
+                        <span><i class="legend-dot d4"></i>Junior 2%</span>
+                        <span><i class="legend-dot d5"></i>Emergency 6%</span>
+                    </div>
+                </div>
+
+                <div class="growth-block">
+                    <h3>Net Savings Growth (6 months)</h3>
+                    <div class="bar-chart" aria-label="Net savings growth bar chart">
+                        <span style="height: 38%"></span>
+                        <span style="height: 46%"></span>
+                        <span style="height: 55%"></span>
+                        <span style="height: 42%"></span>
+                        <span style="height: 67%"></span>
+                        <span style="height: 82%"></span>
+                    </div>
+                    <div class="bar-labels">
+                        <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                    </div>
+                </div>
+
+                <div class="pending-callout">
+                    <div><strong>3 Pending Withdrawals</strong><span>KES 185,000 awaiting OTP verification</span></div>
+                    <button class="btn btn-sm btn-orange-outline" type="button"
+                        (click)="openModal('otp')">Review</button>
+                </div>
+            </article>
+        </section>
+
+        <section class="glass-card transactions-card">
+            <div class="transactions-head">
+                <div>
+                    <h2>Savings Transactions</h2>
+                    <p>Showing 2,847 records</p>
+                </div>
+                <div class="transaction-tools">
+                    <label class="search-field"><span>SR</span><input [(ngModel)]="search"
+                            placeholder="Search..." /></label>
+                    <div class="filter-row">
+                        <select [(ngModel)]="typeFilter" aria-label="Filter by type">
+                            <option value="all">All Types</option>
+                            <option>Deposit</option>
+                            <option>Withdrawal</option>
+                            <option>Share Purchase</option>
+                            <option>Fixed Deposit</option>
+                            <option>Transfer</option>
+                        </select>
+                        <select [(ngModel)]="accountFilter" aria-label="Filter by account">
+                            <option value="all">All Accounts</option>
+                            <option>Regular Savings</option>
+                            <option>Emergency Fund</option>
+                            <option>Share Capital</option>
+                            <option>Fixed Deposit</option>
+                        </select>
+                        <button class="link-button" type="button" (click)="exportTransactions()">Export</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tx-tabs" role="tablist">
+                @for (tab of tabs; track tab.key) {
+                <button type="button" [class.active]="activeTab === tab.key" (click)="activeTab = tab.key">{{ tab.label
+                    }}<span>{{ tab.count }}</span></button>
+                }
+            </div>
+
+            <div class="table-responsive">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" aria-label="Select all rows" /></th>
+                            <th>Ref</th>
+                            <th>Member</th>
+                            <th>Type</th>
+                            <th>Account</th>
+                            <th>Amount</th>
+                            <th>Channel</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (tx of filteredTransactions; track tx.ref) {
+                        <tr>
+                            <td data-label="Select"><input type="checkbox" [attr.aria-label]="'Select ' + tx.ref" />
+                            </td>
+                            <td data-label="Ref"><code
+                                    [class.danger-code]="tx.amountState === 'negative'">{{ tx.ref }}</code></td>
+                            <td data-label="Member">
+                                <div class="member-cell"><span class="m-avatar" [class]="'m-avatar ' + tx.avatar">{{
+                                        tx.initials }}</span><span><strong>{{ tx.member }}</strong><small>{{ tx.id
+                                            }}</small></span></div>
+                            </td>
+                            <td data-label="Type"><span class="type-badge"
+                                    [class]="'type-badge ' + typeClass(tx.type)">{{ tx.type }}</span></td>
+                            <td data-label="Account">{{ tx.account }}</td>
+                            <td data-label="Amount"><strong [class]="tx.amountState">{{ tx.amount }}</strong></td>
+                            <td data-label="Channel"><span class="channel-text">{{ tx.channel }}</span></td>
+                            <td data-label="Status"><span class="status-badge"
+                                    [class]="'status-badge ' + tx.statusState">{{ tx.status }}</span></td>
+                            <td data-label="Date">{{ tx.date }}</td>
+                            <td data-label="Actions">
+                                <div class="row-actions">
+                                    @if (tx.statusState === 'pending') {
+                                    <button class="btn btn-sm btn-outline-success" type="button"
+                                        (click)="openModal('otp', undefined, tx)">OTP</button>
+                                    }
+                                    <button class="icon-button" type="button" [attr.aria-label]="'View ' + tx.ref"
+                                        (click)="openModal('txDetail', undefined, tx)">View</button>
+                                    <button class="icon-button" type="button" [attr.aria-label]="'More ' + tx.ref"
+                                        (click)="openModal('txDetail', undefined, tx)">More</button>
+                                </div>
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td colspan="10" class="empty-row">No transactions match the current filters.</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <span>Showing 1-{{ filteredTransactions.length || 1 }} of 2,847</span>
+                <div class="pagination"><button type="button">&lt;</button><button class="active"
+                        type="button">1</button><button type="button">2</button><button type="button">3</button><button
+                        type="button">...</button><button type="button">&gt;</button></div>
+            </div>
+        </section>
+    </section>
+
+    @if (toast) {
+    <div class="admin-toast" [class]="'admin-toast ' + toast.type"><span></span>{{ toast.message }}</div>
+    }
+
+    @if (modal === 'deposit') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Process Deposit"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">IN</span> Process Deposit</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-steps">
+                    @for (step of depositSteps; track step; let i = $index) {
+                    <div class="step" [class.active]="depositStep === i + 1" [class.done]="depositStep > i + 1"><span>{{
+                            i + 1 }}</span><small>{{ step }}</small></div>
+                    }
+                </div>
+
+                @if (depositStep === 1) {
+                <div class="modal-section">
+                    <h3>Select Member</h3>
+                    <div class="form-grid two">
+                        <label>Member ID / Name<input [(ngModel)]="depositForm.member" /></label>
+                        <label>SACCO<select [(ngModel)]="depositForm.sacco">
+                                <option>Uklima SACCO</option>
+                                <option>All SACCOs</option>
+                                <option>Biashara SACCO</option>
+                            </select></label>
+                    </div>
+                    <div class="member-preview"><span class="m-avatar c1">MW</span>
+                        <div><strong>Mary Wanjiku</strong><small>SP-10023 - Uklima SACCO - KYC: Verified</small></div>
+                        <div class="preview-stats"><span>Regular <b>KES 125K</b></span><span>Shares
+                                <b>35</b></span><span>Emergency <b class="negative">KES 18K</b></span></div>
+                    </div>
+                </div>
+                }
+
+                @if (depositStep === 2) {
+                <div class="modal-section">
+                    <h3>Deposit Details</h3>
+                    <div class="form-grid two">
+                        <label>Account<select [(ngModel)]="depositForm.account">
+                                <option>Regular Savings</option>
+                                <option>Holiday / Merry-Go-Round</option>
+                                <option>Junior Savings</option>
+                                <option>Emergency Fund</option>
+                            </select></label>
+                        <label>Amount (KES)<input type="number" [(ngModel)]="depositForm.amount" /></label>
+                        <label class="full">Narration<textarea [(ngModel)]="depositForm.note"></textarea></label>
+                    </div>
+                </div>
+                }
+
+                @if (depositStep === 3) {
+                <div class="modal-section">
+                    <h3>Deposit Channel</h3>
+                    <div class="choice-grid">
+                        @for (channel of ['M-Pesa', 'KCB Bank', 'Cash Office', 'Internal Transfer']; track channel) {
+                        <button type="button" [class.selected]="depositForm.channel === channel"
+                            (click)="depositForm.channel = channel">{{ channel }}</button>
+                        }
+                    </div>
+                    <label>Reference<input [(ngModel)]="depositForm.reference" /></label>
+                </div>
+                }
+
+                @if (depositStep === 4) {
+                <div class="summary-card">
+                    <p><span>Member</span><strong>{{ depositForm.member }}</strong></p>
+                    <p><span>Account</span><strong>{{ depositForm.account }}</strong></p>
+                    <p><span>Amount</span><strong>{{ currency(depositForm.amount) }}</strong></p>
+                    <p><span>Channel</span><strong>{{ depositForm.channel }}</strong></p>
+                    <p><span>Reference</span><strong>{{ depositForm.reference }}</strong></p>
+                </div>
+                }
+
+                <div class="modal-footer">
+                    <button class="btn btn-ghost" type="button" (click)="closeModal()">Cancel</button>
+                    @if (depositStep > 1) { <button class="btn btn-outline" type="button"
+                        (click)="backDeposit()">Back</button> }
+                    @if (depositStep < depositSteps.length) { <button class="btn btn-primary" type="button"
+                        (click)="nextDeposit()">Next -&gt;</button> }
+                        @if (depositStep === depositSteps.length) { <button class="btn btn-primary" type="button"
+                            (click)="confirmAndClose('Deposit processed successfully.')">Confirm</button> }
+                </div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'withdrawal') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Process Withdrawal"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header withdrawal">
+                <h2><span class="btn-icon">OUT</span> Process Withdrawal</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-steps">
+                    @for (step of withdrawSteps; track step; let i = $index) {
+                    <div class="step" [class.active]="withdrawStep === i + 1" [class.done]="withdrawStep > i + 1">
+                        <span>{{ i + 1 }}</span><small>{{ step }}</small></div>
+                    }
+                </div>
+
+                @if (withdrawStep === 1) {
+                <div class="modal-section">
+                    <h3>Select Member</h3>
+                    <div class="form-grid two"><label>Member ID / Name<input
+                                [(ngModel)]="withdrawForm.member" /></label><label>SACCO<select
+                                [(ngModel)]="withdrawForm.sacco">
+                                <option>All SACCOs</option>
+                                <option>Uklima SACCO</option>
+                            </select></label></div>
+                    <div class="member-preview"><span class="m-avatar c2">PO</span>
+                        <div><strong>Peter Omondi</strong><small>SP-10145 - Uklima SACCO - Phone: 0722-XXX-789</small>
+                        </div>
+                        <div class="preview-stats"><span>Regular <b>KES 185K</b></span><span>Emergency <b
+                                    class="negative">KES 62K</b></span><span>Shares <b>28</b></span></div>
+                    </div>
+                </div>
+                }
+
+                @if (withdrawStep === 2) {
+                <div class="modal-section">
+                    <h3>Withdrawal Details</h3>
+                    <div class="form-grid two"><label>Account<select [(ngModel)]="withdrawForm.account">
+                                <option>Emergency Fund</option>
+                                <option>Regular Savings</option>
+                                <option>Holiday / Merry-Go-Round</option>
+                            </select></label><label>Amount (KES)<input type="number"
+                                [(ngModel)]="withdrawForm.amount" /></label><label class="full">Reason<textarea
+                                [(ngModel)]="withdrawForm.reason"></textarea></label></div>
+                </div>
+                }
+
+                @if (withdrawStep === 3) {
+                <div class="modal-section">
+                    <h3>Destination</h3>
+                    <div class="choice-grid">@for (destination of ['M-Pesa Wallet', 'KCB Bank', 'Equity Bank', 'SACCO
+                        Wallet']; track destination) { <button type="button"
+                            [class.selected]="withdrawForm.destination === destination"
+                            (click)="withdrawForm.destination = destination">{{ destination }}</button> }</div>
+                </div>
+                }
+
+                @if (withdrawStep === 4) {
+                <div class="modal-section narrow">
+                    <h3>OTP Verification</h3>
+                    <p class="muted">Enter the member OTP before confirming this withdrawal.</p><input class="otp-input"
+                        maxlength="6" [(ngModel)]="withdrawForm.otp" placeholder="000000" />
+                </div>
+                }
+
+                @if (withdrawStep === 5) {
+                <div class="summary-card">
+                    <p><span>Member</span><strong>{{ withdrawForm.member }}</strong></p>
+                    <p><span>Account</span><strong>{{ withdrawForm.account }}</strong></p>
+                    <p><span>Amount</span><strong>{{ currency(withdrawForm.amount) }}</strong></p>
+                    <p><span>Destination</span><strong>{{ withdrawForm.destination }}</strong></p>
+                    <p><span>OTP</span><strong>{{ withdrawForm.otp || 'Pending entry' }}</strong></p>
+                </div>
+                }
+
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button>@if (withdrawStep > 1) { <button class="btn btn-outline"
+                        type="button" (click)="backWithdrawal()">Back</button> }@if (withdrawStep <
+                        withdrawSteps.length) { <button class="btn btn-primary" type="button"
+                        (click)="nextWithdrawal()">Next -&gt;</button> }@if (withdrawStep === withdrawSteps.length) {
+                        <button class="btn btn-primary" type="button"
+                            (click)="confirmAndClose('Withdrawal processed and queued for payout.')">Confirm</button> }
+                </div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'interest') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Interest Rate Configuration"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header interest">
+                <h2><span class="btn-icon">%</span> Interest Rate Configuration</h2><button class="modal-close"
+                    type="button" aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="interest-table-wrap">
+                    <table class="interest-table">
+                        <thead>
+                            <tr>
+                                <th>Account Type</th>
+                                <th>Current Rate</th>
+                                <th>New Rate</th>
+                                <th>Calc Method</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>@for (row of interestRows; track row.account) { <tr>
+                                <td><span class="mini-badge" [class]="'mini-badge ' + row.tone">{{ row.account }}</span>
+                                </td>
+                                <td><strong class="positive">{{ row.current }}</strong></td>
+                                <td>
+                                    <div class="rate-input"><input [(ngModel)]="row.newRate" /><span>{{ row.account ===
+                                            'Share Capital' ? '' : '%' }}</span></div>
+                                </td>
+                                <td>{{ row.method }}</td>
+                                <td>{{ row.updated }}</td>
+                            </tr> }</tbody>
+                    </table>
+                </div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('Interest rates saved.')">Save Changes</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'reports') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Savings Reports"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">RP</span> Savings Reports</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="form-grid two"><label>Report Type<select [(ngModel)]="reportForm.type">
+                                <option>Savings Transactions</option>
+                                <option>Interest Earned</option>
+                                <option>Withdrawals Summary</option>
+                                <option>Account Balances</option>
+                            </select></label><label>Period<select [(ngModel)]="reportForm.period">
+                                <option>This Month</option>
+                                <option>Last Month</option>
+                                <option>This Quarter</option>
+                                <option>This Year</option>
+                            </select></label><label>Format<select [(ngModel)]="reportForm.format">
+                                <option>PDF</option>
+                                <option>Excel</option>
+                                <option>CSV</option>
+                            </select></label></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('Savings report generated.')">Generate Report</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'shares') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Buy Shares"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header navy">
+                <h2><span class="btn-icon">SC</span> Buy Shares</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid two"><label>Member<input [(ngModel)]="shareForm.member" /></label><label>Number of
+                        Shares<input type="number" [(ngModel)]="shareForm.shares" /></label><label>Funding Source<select
+                            [(ngModel)]="shareForm.source">
+                            <option>Regular Savings</option>
+                            <option>Cash Office</option>
+                            <option>M-Pesa</option>
+                        </select></label><label>Total Value<input [value]="currency(shareValue + '')"
+                            readonly /></label></div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('Share purchase recorded.')">Buy Shares</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'transfer') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Transfer Savings"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">TR</span> Transfer Savings</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid two"><label>Member<input [(ngModel)]="transferForm.member" /></label><label>Amount
+                        (KES)<input type="number" [(ngModel)]="transferForm.amount" /></label><label>From<select
+                            [(ngModel)]="transferForm.from">
+                            <option>Regular Savings</option>
+                            <option>Emergency Fund</option>
+                        </select></label><label>To<select [(ngModel)]="transferForm.to">
+                            <option>Holiday / Merry-Go-Round</option>
+                            <option>Share Capital</option>
+                            <option>Junior Savings</option>
+                        </select></label><label class="full">Narration<textarea
+                            [(ngModel)]="transferForm.note"></textarea></label></div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('Transfer completed.')">Transfer Funds</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'fixed') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="New Fixed Deposit"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">FD</span> New Fixed Deposit</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid two"><label>Member<input [(ngModel)]="fixedForm.member" /></label><label>Amount
+                        (KES)<input type="number" [(ngModel)]="fixedForm.amount" /></label><label>Term<select
+                            [(ngModel)]="fixedForm.term">
+                            <option>3 Months</option>
+                            <option>6 Months</option>
+                            <option>12 Months</option>
+                        </select></label><label>Rate (%)<input [(ngModel)]="fixedForm.rate" /></label><label>Funding
+                        Source<select [(ngModel)]="fixedForm.source">
+                            <option>Regular Savings</option>
+                            <option>M-Pesa</option>
+                            <option>Bank Transfer</option>
+                        </select></label></div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('Fixed deposit created.')">Create Fixed Deposit</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'dividends') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Dividend Distribution"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header interest">
+                <h2><span class="btn-icon">DV</span> Dividend Distribution</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="summary-card">
+                    <p><span>Available Share Capital</span><strong>KES 28.5M</strong></p>
+                    <p><span>Eligible Shareholders</span><strong>1,247</strong></p>
+                    <p><span>Projected Dividend</span><strong>KES 2.8M at 10%</strong></p>
+                </div>
+                <div class="form-grid two"><label>Period<select [(ngModel)]="dividendForm.period">
+                            <option>FY 2024</option>
+                            <option>FY 2023</option>
+                        </select></label><label>Payout Destination<select [(ngModel)]="dividendForm.destination">
+                            <option>Regular Savings</option>
+                            <option>SACCO Wallet</option>
+                            <option>M-Pesa</option>
+                        </select></label></div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('Dividend batch prepared.')">Prepare Batch</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'txDetail' && selectedTx) {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Transaction Detail"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">TX</span> Transaction Detail</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="summary-card">
+                    <p><span>Reference</span><strong>{{ selectedTx.ref }}</strong></p>
+                    <p><span>Member</span><strong>{{ selectedTx.member }} ({{ selectedTx.id }})</strong></p>
+                    <p><span>Account</span><strong>{{ selectedTx.account }}</strong></p>
+                    <p><span>Type</span><strong>{{ selectedTx.type }}</strong></p>
+                    <p><span>Channel</span><strong>{{ selectedTx.channel }}</strong></p>
+                    <p><span>Date</span><strong>{{ selectedTx.date }}</strong></p>
+                    <p><span>Amount</span><strong>{{ selectedTx.amount }}</strong></p>
+                    <p><span>Status</span><strong>{{ selectedTx.status }}</strong></p>
+                    <p><span>Processed By</span><strong>System (Auto-matched)</strong></p>
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" type="button"
+                        (click)="closeModal()">Close</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'accountDetail' && selectedAccount) {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Account Detail"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">{{ selectedAccount.iconLabel }}</span> {{ selectedAccount.title }} Details
+                </h2><button class="modal-close" type="button" aria-label="Close modal"
+                    (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="summary-card">
+                    <p><span>Balance</span><strong>{{ selectedAccount.balance }}</strong></p>
+                    <p><span>Members</span><strong>{{ selectedAccount.sub }}</strong></p>
+                    <p><span>Access Rule</span><strong>{{ selectedAccount.lockLabel }}</strong></p>@for (stat of
+                    selectedAccount.stats; track stat.label) { <p><span>{{ stat.label }}</span><strong>{{ stat.value
+                            }}</strong></p> }
+                </div>
+                <div class="modal-footer"><button class="btn btn-primary" type="button"
+                        (click)="closeModal()">Close</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'otp') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="OTP Review"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header withdrawal">
+                <h2><span class="btn-icon">OTP</span> OTP Review</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section narrow">
+                    <p class="muted">KES 185,000 is awaiting OTP verification across 3 pending withdrawals.</p><input
+                        class="otp-input" maxlength="6" [(ngModel)]="otpCode" placeholder="Enter OTP" />
+                </div>
+                <div class="modal-footer"><button class="btn btn-ghost" type="button"
+                        (click)="closeModal()">Cancel</button><button class="btn btn-primary" type="button"
+                        (click)="confirmAndClose('OTP verified for pending withdrawal.')">Approve OTP</button></div>
+            </div>
+        </section>
+    </div>
+    }
+
+    @if (modal === 'fullLog') {
+    <div class="modal-backdrop" role="presentation" (mousedown)="closeModal()">
+        <section class="admin-modal wide" role="dialog" aria-modal="true" aria-label="Recent Activity Log"
+            (mousedown)="$event.stopPropagation()">
+            <div class="modal-header deposit">
+                <h2><span class="btn-icon">LOG</span> Recent Activity Log</h2><button class="modal-close" type="button"
+                    aria-label="Close modal" (click)="closeModal()">x</button>
+            </div>
+            <div class="modal-body">
+                <div class="log-list">@for (item of activityItems; track item.title) { <div><strong>{{ item.time
+                            }}</strong><span>{{ item.title }}</span><small>{{ item.detail }}</small></div> }</div>
+                <div class="modal-footer"><button class="btn btn-primary" type="button"
+                        (click)="closeModal()">Close</button></div>
+            </div>
+        </section>
+    </div>
+    }
+</main>

@@ -1,0 +1,1088 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SACCOPay Onboarding — Angular v21 Template
+     Views: landing | wizard | success | dashboard
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ── TOAST NOTIFICATION ──────────────────────────────────────────────────── -->
+<div class="toast-wrap" [class.toast-show]="toast.show">
+  <div class="toast-inner toast-{{ toast.type }}">
+    <span class="toast-msg">{{ toast.message }}</span>
+    <button class="toast-close" (click)="hideToast()">✕</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     VIEW: LANDING
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (view === 'landing') {
+<div class="page page--center">
+  <div class="landing-wrap">
+
+    <!-- Brand header -->
+    <div class="landing-brand">
+      <div class="brand-logo">S</div>
+      <h1 class="brand-title">Register Your SACCO</h1>
+      <p class="brand-sub">
+        Join the SACCOPay platform and unlock digital banking, savings
+        management, and loan processing for your members.
+      </p>
+    </div>
+
+    <!-- Hero card -->
+    <div class="card landing-card">
+      <div class="landing-hero-icon">🏦</div>
+      <h2 class="landing-card-title">Register Your SACCO with<br />SACCOPay</h2>
+      <p class="landing-card-sub">
+        Complete the onboarding process to set up your SACCO on our platform.<br />
+        It takes about 10 minutes.
+      </p>
+      <button class="btn-primary btn-lg" (click)="startWizard()">
+        ⚡ Get Started
+      </button>
+    </div>
+
+    <!-- Feature badges -->
+    <div class="features-grid">
+      <div class="feature-badge">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-lbl">SASRA Compliant</div>
+        <div class="feature-sub">Meets all regulatory requirements</div>
+      </div>
+      <div class="feature-badge">
+        <span class="feature-icon">⚡</span>
+        <div class="feature-lbl">10 Min Setup</div>
+        <div class="feature-sub">Quick onboarding process</div>
+      </div>
+      <div class="feature-badge">
+        <span class="feature-icon">🔒</span>
+        <div class="feature-lbl">Bank-Grade Security</div>
+        <div class="feature-sub">256-bit encryption</div>
+      </div>
+      <div class="feature-badge">
+        <span class="feature-icon">📱</span>
+        <div class="feature-lbl">M-Pesa Integrated</div>
+        <div class="feature-sub">Instant mobile money</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     VIEW: WIZARD
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (view === 'wizard') {
+<div class="page">
+  <div class="wizard-wrap">
+
+    <!-- ── STEPPER ──────────────────────────────────────────────────────── -->
+    <div class="stepper">
+      @for (lbl of steps; track lbl; let i = $index) {
+      <div class="step-item" [class.step-active]="isStepActive(i + 1)" [class.step-done]="isStepDone(i + 1)"
+        (click)="goToStep(i + 1)">
+        <!-- connector left -->
+        @if (i > 0) {
+        <div class="step-line step-line--left" [class.step-line--done]="step > i"></div>
+        }
+        <!-- circle -->
+        <div class="step-circle">
+          @if (isStepDone(i + 1)) {
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          } @else {
+          {{ i + 1 }}
+          }
+        </div>
+        <!-- connector right -->
+        @if (i < steps.length - 1) { <div class="step-line step-line--right" [class.step-line--done]="step > i + 1">
+      </div>
+      }
+      <!-- label -->
+      <div class="step-label">{{ lbl }}</div>
+    </div>
+    }
+  </div>
+
+  <!-- ── WIZARD CARD ───────────────────────────────────────────────────── -->
+  <div class="card wizard-card">
+
+    <!-- Header -->
+    <div class="wizard-header">
+      <div class="wizard-header-icon">{{ currentMeta.icon }}</div>
+      <div>
+        <h2 class="wizard-title">{{ currentMeta.title }}</h2>
+        <p class="wizard-sub">{{ currentMeta.sub }}</p>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="wizard-body">
+
+      <!-- ── STEP 1: General ─────────────────────────────────────────── -->
+      @if (step === 1) {
+      <div class="grid-2">
+        <div class="field-group">
+          <label class="field-label">SACCO Name *</label>
+          <input class="field-input" type="text" [(ngModel)]="general.saccoName"
+            placeholder="e.g. Rongo SACCO Society Ltd" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Registration Number *</label>
+          <input class="field-input" type="text" [(ngModel)]="general.registrationNumber" placeholder="e.g. CS/7842" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">SASRA License *</label>
+          <input class="field-input" type="text" [(ngModel)]="general.sasraLicense" placeholder="e.g. DT/0198" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Year Established</label>
+          <input class="field-input" type="text" [(ngModel)]="general.yearEstablished" placeholder="e.g. 1982" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Official Email *</label>
+          <input class="field-input" type="email" [(ngModel)]="general.officialEmail"
+            placeholder="info@rongosacco.co.ke" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Phone Number *</label>
+          <input class="field-input" type="tel" [(ngModel)]="general.phoneNumber" placeholder="+254 20 277 1000" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">County</label>
+          <select class="field-select" [(ngModel)]="general.county">
+            @for (c of counties; track c) {
+            <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Postal Address</label>
+          <input class="field-input" type="text" [(ngModel)]="general.postalAddress"
+            placeholder="P.O. Box 45-40404, Rongo" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Website (Optional)</label>
+          <input class="field-input" type="text" [(ngModel)]="general.website" placeholder="www.rongosacco.co.ke" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">SACCO Logo (Optional)</label>
+          <label class="file-input-wrap">
+            <input type="file" accept="image/*" hidden (change)="handleLogoUpload($event)" />
+            <span class="file-btn">Choose File</span>
+            <span class="file-name">{{ general.logoName || 'No file chosen' }}</span>
+          </label>
+        </div>
+      </div>
+      }
+
+      <!-- ── STEP 2: Financial ───────────────────────────────────────── -->
+      @if (step === 2) {
+      <div class="grid-2">
+        <div class="field-group">
+          <label class="field-label">Share Price (KES) *</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.sharePrice" placeholder="1000" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Min. Share Purchase *</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.minSharePurchase" placeholder="1" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Max. Share Holdings</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.maxShareHoldings" placeholder="5000" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Min. Savings Deposit (KES) *</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.minSavingsDeposit" placeholder="500" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Min. Savings Balance (KES)</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.minSavingsBalance" placeholder="1000" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Interest Rate – Regular (% p.a.) *</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.interestRateRegular" placeholder="7" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Interest Rate – Premium (% p.a.)</label>
+          <input class="field-input" type="number" [(ngModel)]="financial.interestRatePremium" placeholder="8.5" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Bank Name</label>
+          <input class="field-input" type="text" [(ngModel)]="financial.bankName" placeholder="e.g. Equity Bank" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Bank Account Number</label>
+          <input class="field-input" type="text" [(ngModel)]="financial.bankAccount" placeholder="Account number" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Bank Branch</label>
+          <input class="field-input" type="text" [(ngModel)]="financial.bankBranch" placeholder="e.g. Rongo Branch" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Financial Year End</label>
+          <select class="field-select" [(ngModel)]="financial.financialYearEnd">
+            <option value="December">December</option>
+            <option value="June">June</option>
+            <option value="March">March</option>
+            <option value="September">September</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Currency</label>
+          <select class="field-select" [(ngModel)]="financial.currency">
+            <option value="KES">KES — Kenyan Shilling</option>
+            <option value="USD">USD — US Dollar</option>
+            <option value="UGX">UGX — Ugandan Shilling</option>
+          </select>
+        </div>
+      </div>
+      }
+
+      <!-- ── STEP 3: Officials ──────────────────────────────────────── -->
+      @if (step === 3) {
+      <div class="officials-wrap">
+
+        @for (section of officialSections; track section.prefix) {
+        <div class="official-section">
+          <div class="subsect-title">{{ section.title }}</div>
+          <div class="grid-3">
+            @for (field of section.fields; track field.suffix) {
+            <div class="field-group">
+              <label class="field-label">{{ field.label }}</label>
+              <input class="field-input" type="text" [value]="getOfficialValue(section.prefix, field.suffix)"
+                (input)="setOfficialValue(section.prefix, field.suffix, $any($event.target).value)"
+                [placeholder]="field.label" />
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Board Members -->
+        <div class="board-section">
+          <div class="subsect-title">Board Members</div>
+          @for (member of officials.boardMembers; track trackByIndex($index); let i = $index) {
+          <div class="board-row">
+            <div class="board-fields">
+              <div class="field-group">
+                <label class="field-label">Name</label>
+                <input class="field-input" type="text" [(ngModel)]="member.name" placeholder="Full name" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Role</label>
+                <input class="field-input" type="text" [(ngModel)]="member.role" placeholder="e.g. Board Director" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">ID Number</label>
+                <input class="field-input" type="text" [(ngModel)]="member.id" placeholder="National ID" />
+              </div>
+            </div>
+            <button class="btn-remove-board" (click)="removeBoardMember(i)" title="Remove">✕</button>
+          </div>
+          }
+          <button class="btn-add-board" (click)="addBoardMember()">
+            + Add Board Member
+          </button>
+        </div>
+
+      </div>
+      }
+
+      <!-- ── STEP 4: Documents ──────────────────────────────────────── -->
+      @if (step === 4) {
+      <div class="docs-wrap">
+
+        <div class="docs-info-banner">
+          ℹ️ All documents must be in PDF, JPG, or PNG format. Maximum file size: 5MB per document.
+        </div>
+
+        <div class="subsect-title">Required Documents</div>
+        @for (doc of requiredDocs; track doc.key) {
+        <div class="doc-row" [class.doc-row--uploaded]="hasDocument(doc.key)">
+          <div class="doc-icon">{{ hasDocument(doc.key) ? '✅' : '📄' }}</div>
+          <div class="doc-info">
+            <div class="doc-label">{{ doc.label }}</div>
+            <div class="doc-desc">{{ doc.desc }}</div>
+            @if (hasDocument(doc.key)) {
+            <div class="doc-filename">✓ {{ documents[doc.key] }}</div>
+            }
+          </div>
+          @if (!hasDocument(doc.key)) {
+          <label class="btn-upload btn-upload--primary">
+            <input type="file" hidden accept=".pdf,.jpg,.jpeg,.png" (change)="handleDocUpload($event, doc.key)" />
+            Upload
+          </label>
+          } @else {
+          <button class="btn-remove-doc" (click)="removeDocument(doc.key)">Remove</button>
+          }
+        </div>
+        }
+
+        <div class="subsect-title subsect-title--mt">Optional Documents</div>
+        @for (doc of optionalDocs; track doc.key) {
+        <div class="doc-row doc-row--optional" [class.doc-row--uploaded]="hasDocument(doc.key)">
+          <div class="doc-icon">{{ hasDocument(doc.key) ? '✅' : '📎' }}</div>
+          <div class="doc-info">
+            <div class="doc-label">
+              {{ doc.label }}
+              <span class="doc-optional-badge">Optional</span>
+            </div>
+            <div class="doc-desc">{{ doc.desc }}</div>
+            @if (hasDocument(doc.key)) {
+            <div class="doc-filename">✓ {{ documents[doc.key] }}</div>
+            }
+          </div>
+          @if (!hasDocument(doc.key)) {
+          <label class="btn-upload btn-upload--secondary">
+            <input type="file" hidden accept=".pdf,.jpg,.jpeg,.png" (change)="handleDocUpload($event, doc.key)" />
+            Upload
+          </label>
+          } @else {
+          <button class="btn-remove-doc" (click)="removeDocument(doc.key)">Remove</button>
+          }
+        </div>
+        }
+
+      </div>
+      }
+
+      <!-- ── STEP 5: Membership ─────────────────────────────────────── -->
+      @if (step === 5) {
+      <div class="membership-wrap">
+        <div class="grid-2">
+          <div class="field-group">
+            <label class="field-label">Minimum Age *</label>
+            <input class="field-input" type="number" [(ngModel)]="membership.minAge" placeholder="18" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Maximum Age</label>
+            <input class="field-input" type="number" [(ngModel)]="membership.maxAge" placeholder="70" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Registration Fee (KES) *</label>
+            <input class="field-input" type="number" [(ngModel)]="membership.registrationFee" placeholder="1000" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Min. Shares Required *</label>
+            <input class="field-input" type="number" [(ngModel)]="membership.minSharesRequired" placeholder="5" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Monthly Contribution (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="membership.monthlyContribution" placeholder="500" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Membership Type</label>
+            <select class="field-select" [(ngModel)]="membership.membershipType">
+              <option value="individual">Individual Only</option>
+              <option value="both">Individual &amp; Corporate</option>
+              <option value="cooperative">Cooperative</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Target Members</label>
+            <select class="field-select" [(ngModel)]="membership.targetMembers">
+              <option value="employees">Employees</option>
+              <option value="farmers">Farmers</option>
+              <option value="teachers">Teachers</option>
+              <option value="general public">General Public</option>
+              <option value="traders / business">Traders / Business</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Geographic Area</label>
+            <input class="field-input" type="text" [(ngModel)]="membership.geographicArea"
+              placeholder="e.g. Migori County" />
+          </div>
+        </div>
+
+        <div class="field-group field-group--full">
+          <label class="field-label">Additional Eligibility Notes</label>
+          <textarea class="field-textarea" [(ngModel)]="membership.eligibilityNotes"
+            placeholder="Any additional membership requirements..."></textarea>
+        </div>
+
+        <div class="subsect-title">Online Registration Options</div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Allow Online Registration</div>
+            <div class="toggle-desc">Members can register via portal</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="membership.allowOnlineReg" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Require Document Upload</div>
+            <div class="toggle-desc">ID &amp; KRA PIN required on registration</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="membership.requireDocUpload" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Require Guarantors</div>
+            <div class="toggle-desc">Members must provide guarantors for loans</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="membership.requireGuarantors" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Auto-Approve Members</div>
+            <div class="toggle-desc">Members are automatically approved after registration</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="membership.autoApprove" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Allow Member Referrals</div>
+            <div class="toggle-desc">Existing members can refer new members</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="membership.allowReferrals" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+      }
+
+      <!-- ── STEP 6: Settings ───────────────────────────────────────── -->
+      @if (step === 6) {
+      <div class="settings-wrap">
+
+        <div class="subsect-title">💳 Loan Settings</div>
+        <div class="grid-2 grid-2--bordered">
+          <div class="field-group">
+            <label class="field-label">Max. Loan Amount (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.maxLoanAmount" placeholder="5000000" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Min. Loan Amount (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.minLoanAmount" placeholder="5000" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Loan Interest Rate (% p.a.)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.loanInterestRate" placeholder="12" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Max. Loan Term (months)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.maxLoanTerm" placeholder="60" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Loan Multiplier (×savings)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.loanMultiplier" placeholder="3" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Processing Fee (%)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.processingFee" placeholder="1.5" />
+          </div>
+        </div>
+
+        <div class="subsect-title">🔄 Withdrawals &amp; Transfers</div>
+        <div class="grid-2 grid-2--bordered">
+          <div class="field-group">
+            <label class="field-label">Max. Daily Withdrawal (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.maxDailyWithdrawal" placeholder="200000" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Max. Single Transfer (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.maxSingleTransfer" placeholder="150000" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Withdrawal Processing Days</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.withdrawalDays" placeholder="3" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Transfer Fee (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.transferFee" placeholder="50" />
+          </div>
+        </div>
+
+        <div class="subsect-title">📱 Wallet · Notifications · Security</div>
+        <div class="grid-2" style="margin-bottom:1rem">
+          <div class="field-group">
+            <label class="field-label">Max. Wallet Balance (KES)</label>
+            <input class="field-input" type="number" [(ngModel)]="settings.maxWalletBalance" placeholder="1000000" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">M-Pesa Paybill Number</label>
+            <input class="field-input" type="text" [(ngModel)]="settings.mpesaPaybill" placeholder="123456" />
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Enable M-Pesa</div>
+            <div class="toggle-desc">M-Pesa payments for members</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="settings.enableMpesa" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">SMS Notifications</div>
+            <div class="toggle-desc">Send SMS alerts for transactions</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="settings.smsNotifications" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Email Notifications</div>
+            <div class="toggle-desc">Send email alerts and statements</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="settings.emailNotifications" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Two-Factor Authentication</div>
+            <div class="toggle-desc">Require 2FA for admin logins</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="settings.twoFactor" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Auto-generate Statements</div>
+            <div class="toggle-desc">Monthly statements sent automatically</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="settings.autoStatements" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+
+      </div>
+      }
+
+      <!-- ── STEP 7: Review ─────────────────────────────────────────── -->
+      @if (step === 7) {
+      <div class="review-wrap">
+        <div class="review-grid">
+          @for (card of reviewCards; track card.title) {
+          <div class="review-card">
+            <div class="review-card-header">
+              <span>{{ card.icon }}</span>
+              <span>{{ card.title }}</span>
+              <button class="btn-edit" (click)="goToStep(card.stepNum)">Edit</button>
+            </div>
+            <div class="review-card-body">
+              @for (row of card.rows; track row.label) {
+              <div class="review-row">
+                <span class="review-row-label">{{ row.label }}</span>
+                <span class="review-row-val" [class.review-row-val--ok]="row.ok === true"
+                  [class.review-row-val--bad]="row.ok === false">
+                  {{ row.value }}
+                </span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+        <div class="alert-warning">
+          ⚠️ Please review all information carefully. Once submitted, changes require contacting SACCOPay support.
+        </div>
+      </div>
+      }
+
+      <!-- ── STEP 8: Terms ──────────────────────────────────────────── -->
+      @if (step === 8) {
+      <div class="terms-wrap">
+        <div class="terms-scroll-box">
+          <p class="terms-heading">SACCOPay Platform Terms of Service</p>
+          <p>1. By registering your SACCO on the SACCOPay platform, you agree to comply with all applicable laws
+            including the SACCO Societies Act, the Co-operative Societies Act, and regulations issued by SASRA.</p>
+          <p>2. SACCOPay provides a technology platform for digital financial management. SACCOPay is not a
+            deposit-taking institution.</p>
+          <p>3. The SACCO is solely responsible for the accuracy of all information provided during registration and for
+            maintaining compliance with regulatory requirements.</p>
+          <p>4. SACCOPay reserves the right to suspend or terminate access to the platform for non-compliance with these
+            terms or regulatory requirements.</p>
+          <p>5. Member data is protected under the Kenya Data Protection Act, 2019. SACCOPay implements
+            industry-standard security measures to protect data.</p>
+          <p>6. Transaction fees and charges are subject to change with 30 days' notice communicated via the platform.
+          </p>
+          <p>7. Disputes arising from the use of this platform shall be resolved through arbitration as per the
+            Arbitration Act of Kenya.</p>
+          <p>8. The SACCO authorizes SACCOPay to process transactions on its behalf as instructed through the platform.
+          </p>
+          <p>9. SACCOPay shall not be liable for losses arising from system downtime beyond its reasonable control.</p>
+          <p>10. These terms may be updated periodically. Continued use of the platform constitutes acceptance of
+            updated terms.</p>
+          <p class="terms-heading" style="margin-top:1rem">Privacy Policy</p>
+          <p>SACCOPay collects and processes personal data to provide platform services. Data is not shared with third
+            parties without consent except as required by law.</p>
+          <p class="terms-heading" style="margin-top:1rem">Service Level Agreement (SLA)</p>
+          <p>SACCOPay guarantees 99.5% uptime for critical services. Scheduled maintenance will be communicated 48 hours
+            in advance. Support response times: Critical — 2 hours; High — 8 hours; Normal — 24 hours.</p>
+        </div>
+
+        <div class="terms-checks">
+          <label class="chk-row">
+            <span class="chk-box" [class.chk-box--on]="terms.termsOfService">
+              @if (terms.termsOfService) {
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              }
+            </span>
+            <input type="checkbox" [(ngModel)]="terms.termsOfService" hidden />
+            I agree to the <strong>SACCOPay Terms of Service</strong>
+          </label>
+          <label class="chk-row">
+            <span class="chk-box" [class.chk-box--on]="terms.privacyPolicy">
+              @if (terms.privacyPolicy) {
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              }
+            </span>
+            <input type="checkbox" [(ngModel)]="terms.privacyPolicy" hidden />
+            I agree to the <strong>Privacy Policy</strong> and data processing terms
+          </label>
+          <label class="chk-row">
+            <span class="chk-box" [class.chk-box--on]="terms.accurateInfo">
+              @if (terms.accurateInfo) {
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              }
+            </span>
+            <input type="checkbox" [(ngModel)]="terms.accurateInfo" hidden />
+            I confirm that all information provided is <strong>accurate and truthful</strong>
+          </label>
+          <label class="chk-row">
+            <span class="chk-box" [class.chk-box--on]="terms.authorizedBoard">
+              @if (terms.authorizedBoard) {
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              }
+            </span>
+            <input type="checkbox" [(ngModel)]="terms.authorizedBoard" hidden />
+            I am <strong>authorized by the SACCO Board</strong> to register on this platform
+          </label>
+          <label class="chk-row">
+            <span class="chk-box" [class.chk-box--on]="terms.slaAccepted">
+              @if (terms.slaAccepted) {
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              }
+            </span>
+            <input type="checkbox" [(ngModel)]="terms.slaAccepted" hidden />
+            I accept the <strong>Service Level Agreement (SLA)</strong>
+          </label>
+        </div>
+
+        @if (!allTermsOk) {
+        <div class="alert-warning">
+          ⚠️ Please accept all terms above to complete your registration.
+        </div>
+        }
+      </div>
+      }
+
+    </div><!-- /wizard-body -->
+
+    <!-- ── WIZARD FOOTER ──────────────────────────────────────────────── -->
+    <div class="wizard-footer">
+      @if (step > 1) {
+      <button class="btn-outline" (click)="goBack()">← Back</button>
+      }
+      <span class="step-counter">Step {{ step }} of 8</span>
+      <button class="btn-primary" [class.btn-disabled]="step === 8 && !allTermsOk"
+        [disabled]="step === 8 && !allTermsOk" (click)="handleFooterNext()">
+        {{ step === 8 ? '⚡ Complete Registration' : 'Next →' }}
+      </button>
+    </div>
+
+  </div><!-- /wizard-card -->
+</div><!-- /wizard-wrap -->
+</div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     VIEW: SUCCESS
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (view === 'success') {
+<div class="page page--center">
+  <div class="success-wrap">
+    <div class="success-emoji">🎉</div>
+    <h2 class="success-title">Registration Complete!</h2>
+    <p class="success-sub">
+      <strong>{{ general.saccoName }}</strong> has been successfully registered on
+      the SACCOPay platform. Your SACCO ID is:
+    </p>
+    <div class="sacco-id-badge">SACCO-RS-2024-001</div>
+    <button class="btn-primary btn-lg" (click)="goToDashboard()">
+      🏢 Go to SACCO Dashboard
+    </button>
+  </div>
+</div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     VIEW: DASHBOARD
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (view === 'dashboard') {
+<div class="page">
+  <div class="dashboard-wrap">
+
+    <!-- ── Profile Banner ──────────────────────────────────────────────── -->
+    <div class="profile-banner">
+      <div class="profile-avatar">{{ saccoInitial }}</div>
+      <div class="profile-info">
+        <h1 class="profile-name">{{ general.saccoName }}</h1>
+        <div class="profile-meta">
+          SASRA: {{ general.sasraLicense }} &bull;
+          Reg: {{ general.registrationNumber }} &bull;
+          ID: <span class="profile-id">SACCO-RS-2024-001</span>
+        </div>
+      </div>
+      <div class="profile-badges">
+        <div class="profile-badge">
+          <div class="profile-badge-label">Status</div>
+          <div class="profile-badge-val profile-badge-val--green">Active</div>
+        </div>
+        <div class="profile-badge">
+          <div class="profile-badge-label">Registered</div>
+          <div class="profile-badge-val">Dec 18</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Setup Progress ──────────────────────────────────────────────── -->
+    <div class="card progress-card">
+      <div class="progress-header">
+        <span class="progress-title">✅ Setup Progress</span>
+        <span class="progress-count">{{ completedNextSteps }} of 8 complete</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" [style.width.%]="(completedNextSteps / 8) * 100"></div>
+      </div>
+      <p class="progress-sub">Complete the remaining setup steps to fully activate your SACCO on SACCOPay.</p>
+    </div>
+
+    <!-- ── Next Steps ──────────────────────────────────────────────────── -->
+    <div class="next-steps-section">
+      <div class="section-title">⊙ Next Steps — Configure Your SACCO</div>
+      <div class="next-steps-grid">
+        @for (ns of nextSteps; track ns.id) {
+        <div class="next-step-card" [class.next-step-card--active]="ns.active" (click)="openModal(ns)">
+          <div class="next-step-icon" [style.background]="ns.bg" [style.color]="ns.color">
+            {{ ns.icon }}
+          </div>
+          <div class="next-step-info">
+            <div class="next-step-title">{{ ns.title }}</div>
+            <div class="next-step-desc">{{ ns.desc }}</div>
+          </div>
+          <span class="next-step-arrow">›</span>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── SACCO at a Glance ───────────────────────────────────────────── -->
+    <div class="glance-section">
+      <div class="section-title">🏢 Your SACCO at a Glance</div>
+      <div class="glance-grid">
+
+        <!-- General card -->
+        <div class="card glance-card">
+          <div class="glance-card-header">
+            <span class="glance-card-icon" style="background:#e6faf4;color:#00d084">🏢</span>
+            <span class="glance-card-title">General</span>
+          </div>
+          <div class="glance-card-body">
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">SACCO Name</span><span
+                  class="glance-row-sub">Official registered name</span></div><span class="glance-row-val">{{
+                general.saccoName }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Registration Number</span><span
+                  class="glance-row-sub">Ministry of Cooperatives</span></div><span class="glance-row-val">{{
+                general.registrationNumber }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">SASRA License</span><span
+                  class="glance-row-sub">Deposit-taking license</span></div><span class="glance-row-val">{{
+                general.sasraLicense }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Official Email</span><span
+                  class="glance-row-sub">Primary contact email</span></div><span class="glance-row-val">{{
+                general.officialEmail }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Phone Number</span><span
+                  class="glance-row-sub">Main office line</span></div><span class="glance-row-val">{{
+                general.phoneNumber }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Postal Address</span><span
+                  class="glance-row-sub">Head office location</span></div><span class="glance-row-val">{{
+                general.postalAddress }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Website URL</span><span
+                  class="glance-row-sub">SACCO website address</span></div><span class="glance-row-val">{{
+                general.website }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial card -->
+        <div class="card glance-card">
+          <div class="glance-card-header">
+            <span class="glance-card-icon" style="background:#e3f2fd;color:#2196f3">💰</span>
+            <span class="glance-card-title">Financial</span>
+          </div>
+          <div class="glance-card-body">
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Share Price</span><span
+                  class="glance-row-sub">Per share value</span></div><span class="glance-row-val">KES {{
+                fmt(financial.sharePrice) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Min. Share Purchase</span><span
+                  class="glance-row-sub">Minimum shares per transaction</span></div><span class="glance-row-val">{{
+                financial.minSharePurchase }} share</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Max. Share Holdings</span><span
+                  class="glance-row-sub">Maximum per member</span></div><span class="glance-row-val">{{
+                fmt(financial.maxShareHoldings) }} shares</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Min. Savings Deposit</span><span
+                  class="glance-row-sub">Minimum deposit amount</span></div><span class="glance-row-val">KES {{
+                fmt(financial.minSavingsDeposit) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Min. Savings Balance</span><span
+                  class="glance-row-sub">Minimum account balance</span></div><span class="glance-row-val">KES {{
+                fmt(financial.minSavingsBalance) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Interest Rate (Reg.)</span><span
+                  class="glance-row-sub">Savings interest rate</span></div><span class="glance-row-val">{{
+                financial.interestRateRegular }}% p.a.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Membership card -->
+        <div class="card glance-card">
+          <div class="glance-card-header">
+            <span class="glance-card-icon" style="background:#fce4ec;color:#e91e63">👥</span>
+            <span class="glance-card-title">Membership</span>
+          </div>
+          <div class="glance-card-body">
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Minimum Age</span><span
+                  class="glance-row-sub">Age requirement for membership</span></div><span class="glance-row-val">{{
+                membership.minAge }} years</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Maximum Age</span><span
+                  class="glance-row-sub">Age limit for new members</span></div><span class="glance-row-val">{{
+                membership.maxAge }} years</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Registration Fee</span><span
+                  class="glance-row-sub">One-time joining fee</span></div><span class="glance-row-val">KES {{
+                fmt(membership.registrationFee) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Min. Shares Required</span><span
+                  class="glance-row-sub">Shares to become a member</span></div><span class="glance-row-val">{{
+                membership.minSharesRequired }} shares</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Allow Online Reg.</span><span
+                  class="glance-row-sub">Members can register via portal</span></div>
+              <label class="toggle toggle--sm">
+                <input type="checkbox" [(ngModel)]="membership.allowOnlineReg" />
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              </label>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Require Doc Upload</span><span
+                  class="glance-row-sub">ID &amp; KRA PIN required</span></div>
+              <label class="toggle toggle--sm">
+                <input type="checkbox" [(ngModel)]="membership.requireDocUpload" />
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loans card -->
+        <div class="card glance-card">
+          <div class="glance-card-header">
+            <span class="glance-card-icon" style="background:#fff3e0;color:#ff9800">💳</span>
+            <span class="glance-card-title">Loans</span>
+          </div>
+          <div class="glance-card-body">
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Max. Loan Amount</span><span
+                  class="glance-row-sub">Maximum loan per member</span></div><span class="glance-row-val">KES {{
+                fmt(settings.maxLoanAmount) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Min. Loan Amount</span><span
+                  class="glance-row-sub">Minimum loan per member</span></div><span class="glance-row-val">KES {{
+                fmt(settings.minLoanAmount) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Loan Interest Rate</span><span
+                  class="glance-row-sub">Annual interest rate</span></div><span class="glance-row-val">{{
+                settings.loanInterestRate }}% p.a.</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Max. Loan Term</span><span
+                  class="glance-row-sub">Maximum repayment period</span></div><span class="glance-row-val">{{
+                settings.maxLoanTerm }} months</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Loan Multiplier</span><span
+                  class="glance-row-sub">Times savings balance</span></div><span class="glance-row-val">{{
+                settings.loanMultiplier }}× savings</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Processing Fee</span><span
+                  class="glance-row-sub">One-time loan fee</span></div><span class="glance-row-val">{{
+                settings.processingFee }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Withdrawals card -->
+        <div class="card glance-card">
+          <div class="glance-card-header">
+            <span class="glance-card-icon" style="background:#fff8e1;color:#ffc107">🔄</span>
+            <span class="glance-card-title">Withdrawals &amp; Transfers</span>
+          </div>
+          <div class="glance-card-body">
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Max. Daily Withdrawal</span><span
+                  class="glance-row-sub">Member daily limit</span></div><span class="glance-row-val">KES {{
+                fmt(settings.maxDailyWithdrawal) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Max. Single Transfer</span><span
+                  class="glance-row-sub">Per transaction limit</span></div><span class="glance-row-val">KES {{
+                fmt(settings.maxSingleTransfer) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Processing Days</span><span
+                  class="glance-row-sub">Withdrawal processing time</span></div><span class="glance-row-val">{{
+                settings.withdrawalDays }} business days</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Transfer Fee</span><span
+                  class="glance-row-sub">Per transfer charge</span></div><span class="glance-row-val">KES {{
+                settings.transferFee }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wallet / Security card -->
+        <div class="card glance-card">
+          <div class="glance-card-header">
+            <span class="glance-card-icon" style="background:#f3e5f5;color:#9c27b0">📱</span>
+            <span class="glance-card-title">Wallet · Notifications · Security</span>
+          </div>
+          <div class="glance-card-body">
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Max. Wallet Balance</span><span
+                  class="glance-row-sub">Maximum wallet holding</span></div><span class="glance-row-val">KES {{
+                fmt(settings.maxWalletBalance) }}</span>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Enable M-Pesa</span><span
+                  class="glance-row-sub">Mobile money integration</span></div>
+              <label class="toggle toggle--sm"><input type="checkbox" [(ngModel)]="settings.enableMpesa" /><span
+                  class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">SMS Notifications</span><span
+                  class="glance-row-sub">Transaction SMS alerts</span></div>
+              <label class="toggle toggle--sm"><input type="checkbox" [(ngModel)]="settings.smsNotifications" /><span
+                  class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Email Notifications</span><span
+                  class="glance-row-sub">Email alerts &amp; statements</span></div>
+              <label class="toggle toggle--sm"><input type="checkbox" [(ngModel)]="settings.emailNotifications" /><span
+                  class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">Two-Factor Auth</span><span
+                  class="glance-row-sub">Admin login security</span></div>
+              <label class="toggle toggle--sm"><input type="checkbox" [(ngModel)]="settings.twoFactor" /><span
+                  class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            </div>
+            <div class="glance-row">
+              <div class="glance-row-left"><span class="glance-row-label">M-Pesa Paybill</span><span
+                  class="glance-row-sub">Paybill number</span></div><span class="glance-row-val">{{
+                settings.mpesaPaybill || 'Not set' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /glance-grid -->
+    </div><!-- /glance-section -->
+
+  </div><!-- /dashboard-wrap -->
+</div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL — Next Step Configuration
+     ══════════════════════════════════════════════════════════════════════════ -->
+@if (showModal && selectedNS) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ selectedNS.title }}</h3>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">{{ selectedNS.desc }}</p>
+      <div class="modal-info-banner">
+        ℹ️ This section allows you to fully customize
+        <strong>{{ selectedNS.title }}</strong> settings for your SACCO.
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" (click)="closeModal()">Later</button>
+        <button class="btn-primary" (click)="configureNow()">Configure Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+}

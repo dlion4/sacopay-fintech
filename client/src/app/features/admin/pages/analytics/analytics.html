@@ -1,2270 +1,1323 @@
-<!-- Analytics Dashboard - Angular v21 Template -->
-<div class="analytics-dashboard">
+<!-- ══════════════════════════════════════════════════════════════════════════
+  SACCO ANALYTICS - MAIN BODY CONTENT ONLY
+  Original Theme Preserved with Full Functionality
+══════════════════════════════════════════════════════════════════════════ -->
 
-  <!-- Breadcrumb -->
-  <nav class="analytics-breadcrumb">
-    <a href="/dashboard"><i class="fas fa-home"></i> Home</a>
-    <span class="breadcrumb-separator">&gt;</span>
-    <span class="breadcrumb-current">Analytics Dashboard</span>
-  </nav>
+<div class="analytics-wrapper">
 
-  <!-- Page Header -->
-  <div class="analytics-header">
-    <h1>Analytics &amp; Insights</h1>
-    <p>Comprehensive performance metrics for Rongo SACCO Ltd</p>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    PAGE HEADER WITH FILTERS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="page-header-section">
+    <div class="page-header-content">
+      <div class="header-left">
+        <div class="page-icon-badge">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div class="page-title-group">
+          <h1 class="page-title">Analytics & Reports</h1>
+          <p class="page-subtitle">Comprehensive financial insights and performance metrics</p>
+        </div>
+      </div>
+      
+      <div class="header-right-actions">
+        <div class="date-range-selector">
+          <button class="date-range-btn" (click)="toggleDateRangePicker()">
+            <i class="bi bi-calendar3"></i>
+            <span>{{selectedDateRange}}</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          
+          <!-- Date Range Dropdown -->
+          <div class="date-range-dropdown" [class.show]="showDateRangePicker">
+            <div class="dropdown-section">
+              <h4 class="dropdown-title">Quick Ranges</h4>
+              <button class="range-option" 
+                      *ngFor="let range of quickDateRanges"
+                      [class.active]="selectedDateRange === range"
+                      (click)="selectDateRange(range)">
+                {{range}}
+              </button>
+            </div>
+            <div class="dropdown-section">
+              <h4 class="dropdown-title">Custom Range</h4>
+              <div class="custom-date-inputs">
+                <div class="date-input-group">
+                  <label>From</label>
+                  <input type="date" [(ngModel)]="customDateFrom" class="date-input">
+                </div>
+                <div class="date-input-group">
+                  <label>To</label>
+                  <input type="date" [(ngModel)]="customDateTo" class="date-input">
+                </div>
+              </div>
+              <button class="btn-apply-custom" (click)="applyCustomDateRange()">
+                Apply Custom Range
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="icon-btn" (click)="refreshAnalytics()" title="Refresh Data">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+        <button class="icon-btn" (click)="openExportModal()" title="Export Report">
+          <i class="bi bi-download"></i>
+        </button>
+        <button class="btn-primary" (click)="openAdvancedFilters()">
+          <i class="bi bi-sliders"></i>
+          <span>Advanced Filters</span>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Action Bar -->
-  <div class="analytics-actions">
-    <div class="date-range-selector">
-      <i class="far fa-calendar-alt"></i>
-      <select [(ngModel)]="selectedDateRange" (change)="onDateRangeChange()">
-        <option value="7">Last 7 Days</option>
-        <option value="30" selected>Last 30 Days</option>
-        <option value="90">Last 90 Days</option>
-        <option value="180">Last 6 Months</option>
-        <option value="365">Last Year</option>
-      </select>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    KEY PERFORMANCE INDICATORS (KPIs)
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="kpi-grid">
+    <div class="kpi-card revenue-kpi">
+      <div class="kpi-header">
+        <div class="kpi-icon">
+          <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="kpi-trend-badge positive">
+          <i class="bi bi-arrow-up"></i> 15.3%
+        </div>
+      </div>
+      <div class="kpi-body">
+        <h3 class="kpi-value">KES 12.4M</h3>
+        <p class="kpi-label">Total Revenue</p>
+        <div class="kpi-comparison">
+          <span class="comparison-label">vs Previous Period:</span>
+          <span class="comparison-value positive">+KES 1.6M</span>
+        </div>
+      </div>
+      <div class="kpi-sparkline">
+        <div class="sparkline-chart">
+          <div class="spark-bar" *ngFor="let val of revenueSparkline" [style.height]="val + '%'"></div>
+        </div>
+      </div>
     </div>
-    <div class="btn-group">
-      <button class="btn btn-export" (click)="openModal('export')">
-        <i class="fas fa-download"></i> Export Report
+
+    <div class="kpi-card loans-kpi">
+      <div class="kpi-header">
+        <div class="kpi-icon">
+          <i class="bi bi-wallet2"></i>
+        </div>
+        <div class="kpi-trend-badge positive">
+          <i class="bi bi-arrow-up"></i> 8.7%
+        </div>
+      </div>
+      <div class="kpi-body">
+        <h3 class="kpi-value">KES 45.2M</h3>
+        <p class="kpi-label">Active Loans Portfolio</p>
+        <div class="kpi-comparison">
+          <span class="comparison-label">Disbursed this period:</span>
+          <span class="comparison-value">KES 8.3M</span>
+        </div>
+      </div>
+      <div class="kpi-sparkline">
+        <div class="sparkline-chart">
+          <div class="spark-bar" *ngFor="let val of loansSparkline" [style.height]="val + '%'"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card savings-kpi">
+      <div class="kpi-header">
+        <div class="kpi-icon">
+          <i class="bi bi-piggy-bank"></i>
+        </div>
+        <div class="kpi-trend-badge positive">
+          <i class="bi bi-arrow-up"></i> 12.1%
+        </div>
+      </div>
+      <div class="kpi-body">
+        <h3 class="kpi-value">KES 78.9M</h3>
+        <p class="kpi-label">Total Savings</p>
+        <div class="kpi-comparison">
+          <span class="comparison-label">Average per member:</span>
+          <span class="comparison-value">KES 63,205</span>
+        </div>
+      </div>
+      <div class="kpi-sparkline">
+        <div class="sparkline-chart">
+          <div class="spark-bar" *ngFor="let val of savingsSparkline" [style.height]="val + '%'"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card members-kpi">
+      <div class="kpi-header">
+        <div class="kpi-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="kpi-trend-badge positive">
+          <i class="bi bi-arrow-up"></i> 6.4%
+        </div>
+      </div>
+      <div class="kpi-body">
+        <h3 class="kpi-value">1,248</h3>
+        <p class="kpi-label">Active Members</p>
+        <div class="kpi-comparison">
+          <span class="comparison-label">New this month:</span>
+          <span class="comparison-value positive">+76</span>
+        </div>
+      </div>
+      <div class="kpi-sparkline">
+        <div class="sparkline-chart">
+          <div class="spark-bar" *ngFor="let val of membersSparkline" [style.height]="val + '%'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+    ANALYTICS TABS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="analytics-tabs-section">
+    <div class="tabs-nav">
+      <button class="tab-nav-btn" 
+              [class.active]="activeAnalyticsTab === 'overview'"
+              (click)="activeAnalyticsTab = 'overview'">
+        <i class="bi bi-grid"></i>
+        Overview
       </button>
-      <button class="btn btn-ai" (click)="openModal('aiInsights')">
-        <i class="fas fa-robot"></i> AI Insights
+      <button class="tab-nav-btn" 
+              [class.active]="activeAnalyticsTab === 'revenue'"
+              (click)="activeAnalyticsTab = 'revenue'">
+        <i class="bi bi-graph-up"></i>
+        Revenue Analysis
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeAnalyticsTab === 'loans'"
+              (click)="activeAnalyticsTab = 'loans'">
+        <i class="bi bi-cash-coin"></i>
+        Loans Performance
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeAnalyticsTab === 'members'"
+              (click)="activeAnalyticsTab = 'members'">
+        <i class="bi bi-person-badge"></i>
+        Member Insights
+      </button>
+      <button class="tab-nav-btn" 
+              [class.active]="activeAnalyticsTab === 'comparison'"
+              (click)="activeAnalyticsTab = 'comparison'">
+        <i class="bi bi-bar-chart-line"></i>
+        Period Comparison
       </button>
     </div>
-  </div>
 
-  <!-- KPI Stat Cards Row -->
-  <div class="row g-4 mb-4">
-    <!-- Total Members -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card" (click)="navigateToTab('member-analytics')">
-        <div class="stat-header">
-          <h4 class="stat-title">Total Members</h4>
-          <div class="stat-icon icon-members">
-            <i class="fas fa-users"></i>
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: OVERVIEW
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeAnalyticsTab === 'overview'">
+      <div class="content-grid-2col">
+        
+        <!-- Revenue Trends Chart -->
+        <div class="content-card chart-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-graph-up"></i>
+              Revenue Trends
+            </h3>
+            <div class="card-header-actions">
+              <select class="chart-period-select" [(ngModel)]="revenuePeriod">
+                <option>Daily</option>
+                <option>Weekly</option>
+                <option selected>Monthly</option>
+                <option>Quarterly</option>
+              </select>
+              <button class="icon-btn-sm" (click)="toggleChartType('revenue')">
+                <i class="bi bi-{{revenueChartType === 'bar' ? 'graph-up' : 'bar-chart'}}"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="line-chart-container">
+              <div class="line-chart">
+                <div class="chart-grid">
+                  <div class="grid-line" *ngFor="let line of [0,1,2,3,4]"></div>
+                </div>
+                <div class="chart-bars">
+                  <div class="chart-bar-group" *ngFor="let data of revenueChartData">
+                    <div class="chart-bar" 
+                         [style.height]="data.height"
+                         [title]="data.label + ': ' + data.value">
+                      <div class="bar-fill deposits"></div>
+                    </div>
+                    <span class="bar-label">{{data.label}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="chart-legend-row">
+              <div class="legend-item">
+                <span class="legend-dot deposits"></span>
+                <span>Deposits</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot repayments"></span>
+                <span>Loan Repayments</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot fees"></span>
+                <span>Fees & Charges</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="stat-value">2,847</div>
-        <div class="stat-change positive">
-          <i class="fas fa-arrow-up"></i> +156 this month
+
+        <!-- Income Distribution Pie -->
+        <div class="content-card chart-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-pie-chart"></i>
+              Income Distribution
+            </h3>
+            <button class="icon-btn-sm" (click)="openIncomeBreakdown()">
+              <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="donut-chart-wrapper">
+              <div class="donut-chart-lg" [style.background]="getIncomeDonutGradient()">
+                <div class="donut-center">
+                  <span class="donut-total-label">Total Income</span>
+                  <span class="donut-total-value">KES 12.4M</span>
+                  <span class="donut-period">This Month</span>
+                </div>
+              </div>
+            </div>
+            <div class="pie-legend-grid">
+              <div class="legend-item-detailed" *ngFor="let segment of incomeDistribution">
+                <div class="legend-color" [style.background]="segment.color"></div>
+                <div class="legend-info">
+                  <span class="legend-label">{{segment.label}}</span>
+                  <span class="legend-value">{{segment.value}}</span>
+                </div>
+                <div class="legend-percentage">{{segment.percent}}</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-footer">
-          <span class="stat-detail">
-            <i class="fas fa-user-check"></i> Active: 2,645 | Dormant: 202
-          </span>
-          <a class="stat-link" (click)="openModal('memberDetails'); $event.stopPropagation()">
-            Details <i class="fas fa-arrow-right"></i>
-          </a>
+
+        <!-- Transaction Volume -->
+        <div class="content-card stats-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-arrow-left-right"></i>
+              Transaction Volume
+            </h3>
+            <button class="icon-btn-sm" (click)="openVolumeAnalysis()">
+              <i class="bi bi-three-dots"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="volume-stats-grid">
+              <div class="volume-stat-item">
+                <div class="stat-icon deposits-icon">
+                  <i class="bi bi-box-arrow-in-down"></i>
+                </div>
+                <div class="stat-content">
+                  <h4 class="stat-number">2,847</h4>
+                  <p class="stat-label">Total Deposits</p>
+                  <span class="stat-amount">KES 8.9M</span>
+                </div>
+                <div class="stat-chart-mini">
+                  <div class="mini-line-chart">
+                    <div class="line-point" *ngFor="let p of depositTrend" [style.height]="p + '%'"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="volume-stat-item">
+                <div class="stat-icon withdrawals-icon">
+                  <i class="bi bi-box-arrow-up"></i>
+                </div>
+                <div class="stat-content">
+                  <h4 class="stat-number">1,523</h4>
+                  <p class="stat-label">Total Withdrawals</p>
+                  <span class="stat-amount">KES 4.2M</span>
+                </div>
+                <div class="stat-chart-mini">
+                  <div class="mini-line-chart">
+                    <div class="line-point" *ngFor="let p of withdrawalTrend" [style.height]="p + '%'"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="volume-stat-item">
+                <div class="stat-icon loans-icon">
+                  <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-content">
+                  <h4 class="stat-number">384</h4>
+                  <p class="stat-label">Loan Repayments</p>
+                  <span class="stat-amount">KES 3.1M</span>
+                </div>
+                <div class="stat-chart-mini">
+                  <div class="mini-line-chart">
+                    <div class="line-point" *ngFor="let p of repaymentTrend" [style.height]="p + '%'"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="volume-stat-item">
+                <div class="stat-icon transfers-icon">
+                  <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div class="stat-content">
+                  <h4 class="stat-number">892</h4>
+                  <p class="stat-label">Internal Transfers</p>
+                  <span class="stat-amount">KES 2.7M</span>
+                </div>
+                <div class="stat-chart-mini">
+                  <div class="mini-line-chart">
+                    <div class="line-point" *ngFor="let p of transferTrend" [style.height]="p + '%'"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Top Performers -->
+        <div class="content-card ranking-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-trophy"></i>
+              Top Performing Members
+            </h3>
+            <div class="ranking-tabs">
+              <button class="ranking-tab" 
+                      [class.active]="rankingBy === 'savings'"
+                      (click)="rankingBy = 'savings'">
+                Savings
+              </button>
+              <button class="ranking-tab" 
+                      [class.active]="rankingBy === 'loans'"
+                      (click)="rankingBy = 'loans'">
+                Loans
+              </button>
+              <button class="ranking-tab" 
+                      [class.active]="rankingBy === 'activity'"
+                      (click)="rankingBy = 'activity'">
+                Activity
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="ranking-list">
+              <div class="ranking-item" *ngFor="let member of topMembers; let i = index">
+                <div class="rank-badge" [class.top-three]="i < 3">
+                  <span *ngIf="i === 0" class="gold-medal">🥇</span>
+                  <span *ngIf="i === 1" class="silver-medal">🥈</span>
+                  <span *ngIf="i === 2" class="bronze-medal">🥉</span>
+                  <span *ngIf="i > 2">{{i + 1}}</span>
+                </div>
+                <div class="member-avatar" [ngClass]="member.color">
+                  {{member.initials}}
+                </div>
+                <div class="member-details">
+                  <h5 class="member-name">{{member.name}}</h5>
+                  <span class="member-id">{{member.id}}</span>
+                </div>
+                <div class="member-value">
+                  <span class="value-amount">{{member.amount}}</span>
+                  <span class="value-trend" [class.positive]="member.trend > 0">
+                    <i class="bi bi-arrow-{{member.trend > 0 ? 'up' : 'down'}}"></i>
+                    {{member.trendPercent}}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- Total Deposits -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card" (click)="openModal('depositsDetail')">
-        <div class="stat-header">
-          <h4 class="stat-title">Total Deposits</h4>
-          <div class="stat-icon icon-deposits">
-            <i class="fas fa-piggy-bank"></i>
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: REVENUE ANALYSIS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeAnalyticsTab === 'revenue'">
+      <div class="content-grid-full">
+        
+        <!-- Revenue Breakdown Table -->
+        <div class="content-card table-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-table"></i>
+              Detailed Revenue Breakdown
+            </h3>
+            <div class="card-header-actions">
+              <button class="icon-btn-sm" (click)="exportRevenueData()">
+                <i class="bi bi-download"></i>
+              </button>
+              <button class="icon-btn-sm" (click)="printRevenueReport()">
+                <i class="bi bi-printer"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="data-table-wrapper">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Revenue Source</th>
+                    <th>Current Period</th>
+                    <th>Previous Period</th>
+                    <th>Change</th>
+                    <th>% Change</th>
+                    <th>Target</th>
+                    <th>Achievement</th>
+                    <th>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of revenueBreakdown" [class.highlight]="row.highlight">
+                    <td class="source-cell">
+                      <i class="{{row.icon}}" [style.color]="row.color"></i>
+                      <strong>{{row.source}}</strong>
+                    </td>
+                    <td class="amount-cell">{{row.current}}</td>
+                    <td class="amount-cell">{{row.previous}}</td>
+                    <td class="change-cell" [class.positive]="row.changePositive">
+                      {{row.change}}
+                    </td>
+                    <td class="percent-cell">
+                      <span class="percent-badge" [class.positive]="row.changePositive">
+                        <i class="bi bi-arrow-{{row.changePositive ? 'up' : 'down'}}"></i>
+                        {{row.percentChange}}
+                      </span>
+                    </td>
+                    <td class="amount-cell">{{row.target}}</td>
+                    <td class="achievement-cell">
+                      <div class="progress-bar-container">
+                        <div class="progress-bar-fill" 
+                             [style.width]="row.achievement"
+                             [class.achieved]="parseFloat(row.achievement) >= 100"></div>
+                        <span class="progress-label">{{row.achievement}}</span>
+                      </div>
+                    </td>
+                    <td class="trend-cell">
+                      <div class="mini-trend-chart">
+                        <div class="trend-bar" *ngFor="let val of row.trendData" [style.height]="val + '%'"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr class="totals-row">
+                    <td><strong>TOTAL REVENUE</strong></td>
+                    <td class="amount-cell"><strong>KES 12.4M</strong></td>
+                    <td class="amount-cell"><strong>KES 10.8M</strong></td>
+                    <td class="change-cell positive"><strong>+KES 1.6M</strong></td>
+                    <td class="percent-cell">
+                      <span class="percent-badge positive">
+                        <i class="bi bi-arrow-up"></i>
+                        <strong>+15.3%</strong>
+                      </span>
+                    </td>
+                    <td class="amount-cell"><strong>KES 12.0M</strong></td>
+                    <td class="achievement-cell">
+                      <div class="progress-bar-container">
+                        <div class="progress-bar-fill achieved" style="width: 103%"></div>
+                        <span class="progress-label"><strong>103%</strong></span>
+                      </div>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
         </div>
-        <div class="stat-value">KES 456M</div>
-        <div class="stat-change positive">
-          <i class="fas fa-arrow-up"></i> +8.3%
+
+        <!-- Revenue by Category Chart -->
+        <div class="content-grid-2col">
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-bar-chart-fill"></i>
+                Revenue by Category
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="horizontal-bar-chart">
+                <div class="h-bar-item" *ngFor="let item of revenueByCategoryData">
+                  <div class="h-bar-label">
+                    <span class="category-name">{{item.category}}</span>
+                    <span class="category-amount">{{item.amount}}</span>
+                  </div>
+                  <div class="h-bar-track">
+                    <div class="h-bar-fill" 
+                         [style.width]="item.percentage"
+                         [style.background]="item.color"></div>
+                  </div>
+                  <div class="h-bar-percentage">{{item.percentage}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-calendar-week"></i>
+                Revenue by Day of Week
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="weekly-revenue-chart">
+                <div class="week-day-bar" *ngFor="let day of weeklyRevenueData">
+                  <div class="day-bar-container">
+                    <div class="day-bar" [style.height]="day.height">
+                      <span class="bar-value">{{day.value}}</span>
+                    </div>
+                  </div>
+                  <span class="day-label">{{day.day}}</span>
+                  <span class="day-count">{{day.transactions}} txns</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-footer">
-          <span class="stat-detail">
-            <i class="fas fa-coins"></i> Monthly inflow: KES 12.5M
-          </span>
-          <a class="stat-link" (click)="openModal('depositsDetail'); $event.stopPropagation()">
-            View <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
+
       </div>
     </div>
 
-    <!-- Loan Portfolio -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card" (click)="navigateToTab('loan-performance')">
-        <div class="stat-header">
-          <h4 class="stat-title">Loan Portfolio</h4>
-          <div class="stat-icon icon-loans">
-            <i class="fas fa-hand-holding-usd"></i>
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: LOANS PERFORMANCE
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeAnalyticsTab === 'loans'">
+      <div class="content-grid-full">
+        
+        <!-- Loan Portfolio Overview -->
+        <div class="portfolio-overview-grid">
+          <div class="portfolio-card outstanding">
+            <div class="portfolio-icon">
+              <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="portfolio-content">
+              <h3 class="portfolio-value">KES 45.2M</h3>
+              <p class="portfolio-label">Outstanding Portfolio</p>
+              <div class="portfolio-meta">
+                <span class="meta-item">
+                  <i class="bi bi-file-text"></i>
+                  384 active loans
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-card disbursed">
+            <div class="portfolio-icon">
+              <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="portfolio-content">
+              <h3 class="portfolio-value">KES 8.3M</h3>
+              <p class="portfolio-label">Disbursed This Period</p>
+              <div class="portfolio-meta">
+                <span class="meta-item">
+                  <i class="bi bi-graph-up-arrow"></i>
+                  +18% from last period
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-card repaid">
+            <div class="portfolio-icon">
+              <i class="bi bi-arrow-down-circle"></i>
+            </div>
+            <div class="portfolio-content">
+              <h3 class="portfolio-value">KES 3.1M</h3>
+              <p class="portfolio-label">Repayments Received</p>
+              <div class="portfolio-meta">
+                <span class="meta-item">
+                  <i class="bi bi-check-circle"></i>
+                  98.5% collection rate
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-card arrears">
+            <div class="portfolio-icon">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="portfolio-content">
+              <h3 class="portfolio-value">KES 467K</h3>
+              <p class="portfolio-label">In Arrears</p>
+              <div class="portfolio-meta">
+                <span class="meta-item">
+                  <i class="bi bi-percent"></i>
+                  1.03% PAR ratio
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="stat-value">KES 789M</div>
-        <div class="stat-change positive">
-          <i class="fas fa-arrow-up"></i> +5.7%
+
+        <!-- Loan Performance Charts -->
+        <div class="content-grid-2col">
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-pie-chart-fill"></i>
+                Portfolio by Loan Type
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="loan-type-distribution">
+                <div class="loan-type-chart">
+                  <div class="donut-chart-lg" [style.background]="getLoanTypeDonutGradient()">
+                    <div class="donut-center">
+                      <span class="donut-total-value">384</span>
+                      <span class="donut-total-label">Active Loans</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="loan-type-legend">
+                  <div class="legend-item-detailed" *ngFor="let type of loanTypeDistribution">
+                    <div class="legend-color" [style.background]="type.color"></div>
+                    <div class="legend-info">
+                      <span class="legend-label">{{type.type}}</span>
+                      <span class="legend-count">{{type.count}} loans</span>
+                    </div>
+                    <div class="legend-percentage">{{type.percent}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-graph-up"></i>
+                Loan Performance Trends
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="multi-line-chart">
+                <div class="chart-grid-bg">
+                  <div class="grid-line" *ngFor="let i of [0,1,2,3,4,5]"></div>
+                </div>
+                <div class="chart-lines">
+                  <!-- This would be replaced with actual charting library -->
+                  <div class="performance-metrics-list">
+                    <div class="metric-row" *ngFor="let metric of loanPerformanceMetrics">
+                      <div class="metric-indicator" [style.background]="metric.color"></div>
+                      <span class="metric-name">{{metric.name}}</span>
+                      <span class="metric-value">{{metric.value}}</span>
+                      <span class="metric-change" [class.positive]="metric.changePositive">
+                        <i class="bi bi-arrow-{{metric.changePositive ? 'up' : 'down'}}"></i>
+                        {{metric.change}}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-footer">
-          <span class="stat-detail">
-            <i class="fas fa-file-invoice-dollar"></i> 1,234 active loans
-          </span>
-          <a class="stat-link" (click)="openModal('loanPortfolio'); $event.stopPropagation()">
-            Details <i class="fas fa-arrow-right"></i>
-          </a>
+
+        <!-- Loan Aging Analysis -->
+        <div class="content-card table-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-clock-history"></i>
+              Loan Aging Analysis
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="aging-table-wrapper">
+              <table class="analytics-table aging-table">
+                <thead>
+                  <tr>
+                    <th>Age Bracket</th>
+                    <th>Number of Loans</th>
+                    <th>Outstanding Amount</th>
+                    <th>% of Portfolio</th>
+                    <th>Expected Collections</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let bracket of loanAgingData" [class.alert]="bracket.alert">
+                    <td class="bracket-cell">
+                      <strong>{{bracket.bracket}}</strong>
+                    </td>
+                    <td>{{bracket.count}}</td>
+                    <td class="amount-cell">{{bracket.amount}}</td>
+                    <td>
+                      <div class="percentage-bar-inline">
+                        <div class="bar-fill-inline" [style.width]="bracket.percent"></div>
+                        <span>{{bracket.percent}}</span>
+                      </div>
+                    </td>
+                    <td class="amount-cell">{{bracket.expected}}</td>
+                    <td>
+                      <span class="status-badge-sm" [ngClass]="bracket.statusClass">
+                        {{bracket.status}}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Share Capital -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card" (click)="openModal('sharesDetail')">
-        <div class="stat-header">
-          <h4 class="stat-title">Share Capital</h4>
-          <div class="stat-icon icon-shares">
-            <i class="fas fa-chart-pie"></i>
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: MEMBER INSIGHTS
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeAnalyticsTab === 'members'">
+      <div class="content-grid-full">
+        
+        <!-- Member Demographics -->
+        <div class="content-grid-3col">
+          <div class="content-card stat-card">
+            <div class="card-header-mini">
+              <h4 class="card-title-sm">
+                <i class="bi bi-people-fill"></i>
+                Member Growth
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="growth-stat">
+                <h2 class="growth-number">1,248</h2>
+                <p class="growth-label">Total Active Members</p>
+                <div class="growth-chart">
+                  <div class="growth-bar" *ngFor="let val of memberGrowthData" [style.height]="val + '%'"></div>
+                </div>
+                <div class="growth-meta">
+                  <span class="meta-positive">
+                    <i class="bi bi-arrow-up"></i> +76 this month
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card stat-card">
+            <div class="card-header-mini">
+              <h4 class="card-title-sm">
+                <i class="bi bi-gender-ambiguous"></i>
+                Gender Distribution
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="gender-distribution">
+                <div class="gender-chart">
+                  <div class="gender-segment male" style="width: 58%">
+                    <span>58%</span>
+                  </div>
+                  <div class="gender-segment female" style="width: 42%">
+                    <span>42%</span>
+                  </div>
+                </div>
+                <div class="gender-stats">
+                  <div class="gender-stat-item">
+                    <span class="gender-icon male-icon">♂</span>
+                    <div class="gender-info">
+                      <strong>724</strong>
+                      <span>Male</span>
+                    </div>
+                  </div>
+                  <div class="gender-stat-item">
+                    <span class="gender-icon female-icon">♀</span>
+                    <div class="gender-info">
+                      <strong>524</strong>
+                      <span>Female</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card stat-card">
+            <div class="card-header-mini">
+              <h4 class="card-title-sm">
+                <i class="bi bi-calendar-range"></i>
+                Age Distribution
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="age-distribution">
+                <div class="age-bar-chart">
+                  <div class="age-bar-item" *ngFor="let age of ageDistributionData">
+                    <div class="age-bar" [style.height]="age.percent">
+                      <span class="age-count">{{age.count}}</span>
+                    </div>
+                    <span class="age-label">{{age.range}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="stat-value">KES 234M</div>
-        <div class="stat-change positive">
-          <i class="fas fa-arrow-up"></i> +12.1%
+
+        <!-- Member Engagement -->
+        <div class="content-grid-2col">
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-activity"></i>
+                Member Engagement Score
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="engagement-score-display">
+                <div class="score-circle">
+                  <svg viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" class="score-bg"></circle>
+                    <circle cx="100" cy="100" r="90" class="score-fill" 
+                            [style.stroke-dashoffset]="calculateScoreDashOffset(8.4)"></circle>
+                  </svg>
+                  <div class="score-center">
+                    <span class="score-value">8.4</span>
+                    <span class="score-max">/10</span>
+                  </div>
+                </div>
+                <div class="engagement-breakdown">
+                  <div class="engagement-item" *ngFor="let item of engagementFactors">
+                    <div class="engagement-label">
+                      <i class="{{item.icon}}"></i>
+                      <span>{{item.label}}</span>
+                    </div>
+                    <div class="engagement-bar">
+                      <div class="engagement-fill" [style.width]="item.score + '%'"></div>
+                      <span class="engagement-score">{{item.score}}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card table-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-star-fill"></i>
+                Member Segmentation
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="segmentation-list">
+                <div class="segment-item" *ngFor="let segment of memberSegments">
+                  <div class="segment-header">
+                    <div class="segment-icon" [style.background]="segment.color">
+                      <i class="{{segment.icon}}"></i>
+                    </div>
+                    <div class="segment-info">
+                      <h5 class="segment-name">{{segment.name}}</h5>
+                      <p class="segment-description">{{segment.description}}</p>
+                    </div>
+                    <div class="segment-count">
+                      <strong>{{segment.count}}</strong>
+                      <span>members</span>
+                    </div>
+                  </div>
+                  <div class="segment-metrics">
+                    <div class="segment-metric">
+                      <span class="metric-label">Avg. Savings</span>
+                      <span class="metric-value">{{segment.avgSavings}}</span>
+                    </div>
+                    <div class="segment-metric">
+                      <span class="metric-label">Avg. Loans</span>
+                      <span class="metric-value">{{segment.avgLoans}}</span>
+                    </div>
+                    <div class="segment-metric">
+                      <span class="metric-label">Activity Score</span>
+                      <span class="metric-value">{{segment.activityScore}}/10</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-footer">
-          <span class="stat-detail">
-            <i class="fas fa-user"></i> Avg per member: KES 82,150
-          </span>
-          <a class="stat-link" (click)="openModal('sharesDetail'); $event.stopPropagation()">
-            View <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
+
       </div>
     </div>
-  </div>
 
-  <!-- Tabs Navigation -->
-  <div class="analytics-tabs">
-    <ul class="nav-tabs">
-      @for (tab of tabs; track tab.id) {
-        <li class="nav-item">
-          <a class="nav-link" [class.active]="activeTab === tab.id" (click)="setActiveTab(tab.id)">
-            <i [class]="tab.icon"></i> {{ tab.label }}
-          </a>
-        </li>
-      }
-    </ul>
-  </div>
-
-  <!-- Tab Content -->
-  <div class="tab-content">
-
-    <!-- ========== OVERVIEW TAB ========== -->
-    @if (activeTab === 'overview') {
-      <div class="tab-pane active">
-        <div class="row g-4">
-          <!-- Financial Summary -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-chart-line text-primary me-2"></i>Financial Summary</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('financialBreakdown')" title="View Breakdown">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Total Income</span>
-                  <span class="progress-value">KES 89.4M</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar" style="width: 78%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Total Expenses</span>
-                  <span class="progress-value">KES 45.2M</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-warning" style="width: 45%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Net Profit</span>
-                  <span class="progress-value">KES 44.2M</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success" style="width: 65%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Transaction Volume -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-exchange-alt text-info me-2"></i>Transaction Volume</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('transactionDetails')" title="View Details">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="bar-chart">
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 65%" data-value="KES 12.5M"></div>
-                  <span class="bar-label">Week 1</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 80%" data-value="KES 15.8M"></div>
-                  <span class="bar-label">Week 2</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 55%" data-value="KES 10.2M"></div>
-                  <span class="bar-label">Week 3</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 90%" data-value="KES 18.1M"></div>
-                  <span class="bar-label">Week 4</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="row g-4 mt-2">
-          <div class="col-12">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-bolt text-warning me-2"></i>Quick Stats</h3>
-              </div>
-              <div class="quick-stats-grid">
-                <div class="quick-stat-card" (click)="openModal('newMembers')">
-                  <div class="quick-stat-icon icon-new-members">
-                    <i class="fas fa-user-plus"></i>
-                  </div>
-                  <div class="quick-stat-value">156</div>
-                  <div class="quick-stat-label">New Members</div>
-                </div>
-                <div class="quick-stat-card" (click)="openModal('loanDisbursements')">
-                  <div class="quick-stat-icon icon-loans">
-                    <i class="fas fa-hand-holding-usd"></i>
-                  </div>
-                  <div class="quick-stat-value">KES 45.2M</div>
-                  <div class="quick-stat-label">Loans Disbursed</div>
-                </div>
-                <div class="quick-stat-card" (click)="openModal('repayments')">
-                  <div class="quick-stat-icon icon-repayments">
-                    <i class="fas fa-money-bill-wave"></i>
-                  </div>
-                  <div class="quick-stat-value">KES 38.7M</div>
-                  <div class="quick-stat-label">Repayments</div>
-                </div>
-                <div class="quick-stat-card" (click)="openModal('overdueLoans')">
-                  <div class="quick-stat-icon icon-overdue">
-                    <i class="fas fa-exclamation-triangle"></i>
-                  </div>
-                  <div class="quick-stat-value">KES 8.3M</div>
-                  <div class="quick-stat-label">Overdue Loans</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- ========== MEMBER ANALYTICS TAB ========== -->
-    @if (activeTab === 'member-analytics') {
-      <div class="tab-pane active">
-        <div class="row g-4">
-          <!-- Member Growth Table -->
-          <div class="col-lg-8">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-chart-bar text-primary me-2"></i>Member Growth</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('memberGrowthReport')" title="View Report">
-                    <i class="fas fa-file-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="table-responsive">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Period</th>
-                      <th>New Members</th>
-                      <th>Active</th>
-                      <th>Dormant</th>
-                      <th>Growth Rate</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><strong>This Month</strong></td>
-                      <td>156</td>
-                      <td>2,645</td>
-                      <td>202</td>
-                      <td><span class="text-success fw-semibold">+5.8%</span></td>
-                    </tr>
-                    <tr>
-                      <td><strong>Last Month</strong></td>
-                      <td>142</td>
-                      <td>2,489</td>
-                      <td>215</td>
-                      <td><span class="text-success fw-semibold">+5.4%</span></td>
-                    </tr>
-                    <tr>
-                      <td><strong>Last Quarter</strong></td>
-                      <td>398</td>
-                      <td>2,347</td>
-                      <td>228</td>
-                      <td><span class="text-success fw-semibold">+14.5%</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Member Segmentation -->
-          <div class="col-lg-4">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-users-cog text-info me-2"></i>Member Segmentation</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('segmentDetails')" title="View Details">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="segmentation-item" (click)="openModal('segmentDetails')">
-                <div class="segment-icon segment-active">
-                  <i class="fas fa-user-check"></i>
-                </div>
-                <div class="segment-info">
-                  <div class="segment-name">Active Members</div>
-                  <div class="segment-count">2,645 members</div>
-                </div>
-                <div class="segment-progress">
-                  <div class="progress">
-                    <div class="progress-bar bg-success" style="width: 93%"></div>
-                  </div>
-                  <div class="progress-percent">93%</div>
-                </div>
-              </div>
-              <div class="segmentation-item" (click)="openModal('segmentDetails')">
-                <div class="segment-icon segment-dormant">
-                  <i class="fas fa-user-clock"></i>
-                </div>
-                <div class="segment-info">
-                  <div class="segment-name">Dormant Members</div>
-                  <div class="segment-count">202 members</div>
-                </div>
-                <div class="segment-progress">
-                  <div class="progress">
-                    <div class="progress-bar bg-secondary" style="width: 7%"></div>
-                  </div>
-                  <div class="progress-percent">7%</div>
-                </div>
-              </div>
-              <div class="segmentation-item" (click)="openModal('segmentDetails')">
-                <div class="segment-icon segment-gold">
-                  <i class="fas fa-crown"></i>
-                </div>
-                <div class="segment-info">
-                  <div class="segment-name">Gold Tier</div>
-                  <div class="segment-count">425 members</div>
-                </div>
-                <div class="segment-progress">
-                  <div class="progress">
-                    <div class="progress-bar bg-warning" style="width: 15%"></div>
-                  </div>
-                  <div class="progress-percent">15%</div>
-                </div>
-              </div>
-              <div class="segmentation-item" (click)="openModal('segmentDetails')">
-                <div class="segment-icon segment-silver">
-                  <i class="fas fa-medal"></i>
-                </div>
-                <div class="segment-info">
-                  <div class="segment-name">Silver Tier</div>
-                  <div class="segment-count">1,138 members</div>
-                </div>
-                <div class="segment-progress">
-                  <div class="progress">
-                    <div class="progress-bar" style="width: 40%"></div>
-                  </div>
-                  <div class="progress-percent">40%</div>
-                </div>
-              </div>
-              <div class="segmentation-item" (click)="openModal('segmentDetails')">
-                <div class="segment-icon segment-bronze">
-                  <i class="fas fa-award"></i>
-                </div>
-                <div class="segment-info">
-                  <div class="segment-name">Bronze Tier</div>
-                  <div class="segment-count">1,284 members</div>
-                </div>
-                <div class="segment-progress">
-                  <div class="progress">
-                    <div class="progress-bar bg-info" style="width: 45%"></div>
-                  </div>
-                  <div class="progress-percent">45%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Contributing Members -->
-        <div class="row g-4 mt-2">
-          <div class="col-12">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-trophy text-warning me-2"></i>Top Contributing Members</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('allTopMembers')" title="View All">
-                    <i class="fas fa-list"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="table-responsive">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Member</th>
-                      <th>Member ID</th>
-                      <th>Total Deposits</th>
-                      <th>Loan Repaid</th>
-                      <th>Share Capital</th>
-                      <th>Total Contribution</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><span class="rank-badge rank-1">1</span></td>
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="member-avatar">JM</div>
-                          <span>John Maina</span>
-                        </div>
-                      </td>
-                      <td>SAC-001</td>
-                      <td><strong>KES 2.4M</strong></td>
-                      <td>KES 1.8M</td>
-                      <td>KES 500K</td>
-                      <td><span class="text-success fw-bold">KES 4.7M</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="rank-badge rank-2">2</span></td>
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="member-avatar">WO</div>
-                          <span>Wanjiku Omondi</span>
-                        </div>
-                      </td>
-                      <td>SAC-045</td>
-                      <td><strong>KES 2.1M</strong></td>
-                      <td>KES 1.5M</td>
-                      <td>KES 450K</td>
-                      <td><span class="text-success fw-bold">KES 4.05M</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="rank-badge rank-3">3</span></td>
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="member-avatar">PK</div>
-                          <span>Peter Kamau</span>
-                        </div>
-                      </td>
-                      <td>SAC-089</td>
-                      <td><strong>KES 1.9M</strong></td>
-                      <td>KES 1.3M</td>
-                      <td>KES 400K</td>
-                      <td><span class="text-success fw-bold">KES 3.6M</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="rank-badge rank-other">4</span></td>
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="member-avatar">AM</div>
-                          <span>Agnes Muthoni</span>
-                        </div>
-                      </td>
-                      <td>SAC-156</td>
-                      <td><strong>KES 1.7M</strong></td>
-                      <td>KES 1.1M</td>
-                      <td>KES 380K</td>
-                      <td><span class="text-success fw-bold">KES 3.18M</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="rank-badge rank-other">5</span></td>
-                      <td>
-                        <div class="d-flex align-items-center gap-2">
-                          <div class="member-avatar">DK</div>
-                          <span>David Kipchirchir</span>
-                        </div>
-                      </td>
-                      <td>SAC-203</td>
-                      <td><strong>KES 1.5M</strong></td>
-                      <td>KES 950K</td>
-                      <td>KES 350K</td>
-                      <td><span class="text-success fw-bold">KES 2.8M</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- ========== LOAN PERFORMANCE TAB ========== -->
-    @if (activeTab === 'loan-performance') {
-      <div class="tab-pane active">
-        <div class="row g-4">
-          <!-- Portfolio Overview -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-chart-pie text-primary me-2"></i>Portfolio Overview</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('loanPortfolioReport')" title="View Report">
-                    <i class="fas fa-file-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Performing Loans</span>
-                  <span class="progress-value">KES 712M (90.2%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success" style="width: 90.2%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Watch List</span>
-                  <span class="progress-value">KES 45M (5.7%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-warning" style="width: 5.7%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Non-Performing</span>
-                  <span class="progress-value">KES 32M (4.1%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-danger" style="width: 4.1%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Loan Applications Status -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-clipboard-list text-info me-2"></i>Loan Applications Status</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('loanApplications')" title="View All">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="bar-chart">
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 75%; background: linear-gradient(180deg, #00d4aa, #00b894) !important;" data-value="142"></div>
-                  <span class="bar-label">Approved</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 35%; background: linear-gradient(180deg, #ffc107, #e0a800) !important;" data-value="38"></div>
-                  <span class="bar-label">Pending</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 15%; background: linear-gradient(180deg, #dc3545, #c82333) !important;" data-value="12"></div>
-                  <span class="bar-label">Rejected</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 25%; background: linear-gradient(180deg, #0dcaf0, #0aa2c0) !important;" data-value="24"></div>
-                  <span class="bar-label">Under Review</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loan Quick Stats -->
-        <div class="row g-4 mt-2">
-          <div class="col-12">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-bolt text-warning me-2"></i>Loan Performance Metrics</h3>
-              </div>
-              <div class="quick-stats-grid">
-                <div class="quick-stat-card" (click)="openModal('interestIncome')">
-                  <div class="quick-stat-icon icon-new-members">
-                    <i class="fas fa-percentage"></i>
-                  </div>
-                  <div class="quick-stat-value">14.5%</div>
-                  <div class="quick-stat-label">Interest Income</div>
-                </div>
-                <div class="quick-stat-card" (click)="openModal('defaultRate')">
-                  <div class="quick-stat-icon icon-overdue">
-                    <i class="fas fa-exclamation-circle"></i>
-                  </div>
-                  <div class="quick-stat-value">4.1%</div>
-                  <div class="quick-stat-label">Default Rate</div>
-                </div>
-                <div class="quick-stat-card" (click)="openModal('averageLoanSize')">
-                  <div class="quick-stat-icon icon-deposits">
-                    <i class="fas fa-calculator"></i>
-                  </div>
-                  <div class="quick-stat-value">KES 640K</div>
-                  <div class="quick-stat-label">Avg Loan Size</div>
-                </div>
-                <div class="quick-stat-card" (click)="openModal('approvalRate')">
-                  <div class="quick-stat-icon icon-repayments">
-                    <i class="fas fa-check-circle"></i>
-                  </div>
-                  <div class="quick-stat-value">78.9%</div>
-                  <div class="quick-stat-label">Approval Rate</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- ========== FINANCIAL HEALTH TAB ========== -->
-    @if (activeTab === 'financial-health') {
-      <div class="tab-pane active">
-        <div class="row g-4">
-          <!-- Capital Adequacy -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-shield-alt text-primary me-2"></i>Capital Adequacy</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('capitalAdequacy')" title="View Details">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Core Capital</span>
-                  <span class="progress-value">KES 234M (18.5%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success" style="width: 18.5%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Risk Weighted Assets</span>
-                  <span class="progress-value">KES 789M</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar" style="width: 62%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Liquidity Ratio</span>
-                  <span class="progress-value">24.8%</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-info" style="width: 24.8%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Income Breakdown -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-coins text-warning me-2"></i>Income Breakdown</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('incomeBreakdown')" title="View Details">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="bar-chart">
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 85%; background: linear-gradient(180deg, #00d4aa, #00b894) !important;" data-value="KES 52.3M"></div>
-                  <span class="bar-label">Interest</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 45%; background: linear-gradient(180deg, #ffc107, #e0a800) !important;" data-value="KES 18.7M"></div>
-                  <span class="bar-label">Fees</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 30%; background: linear-gradient(180deg, #0dcaf0, #0aa2c0) !important;" data-value="KES 12.4M"></div>
-                  <span class="bar-label">Investments</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 15%; background: linear-gradient(180deg, #6c757d, #495057) !important;" data-value="KES 6.0M"></div>
-                  <span class="bar-label">Other</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
-    <!-- ========== RISK ANALYSIS TAB ========== -->
-    @if (activeTab === 'risk-analysis') {
-      <div class="tab-pane active">
-        <div class="row g-4">
-          <!-- Risk Indicators -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i>Risk Indicators</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('riskAssessment')" title="View Report">
-                    <i class="fas fa-file-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Credit Risk</span>
-                  <span class="progress-value text-success">Low (12%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success" style="width: 12%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Operational Risk</span>
-                  <span class="progress-value text-warning">Medium (35%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-warning" style="width: 35%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Market Risk</span>
-                  <span class="progress-value text-success">Low (18%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success" style="width: 18%"></div>
-                </div>
-              </div>
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span class="progress-label">Liquidity Risk</span>
-                  <span class="progress-value text-success">Low (8%)</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success" style="width: 8%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Overdue Loans by Age -->
-          <div class="col-lg-6">
-            <div class="dashboard-card">
-              <div class="card-header">
-                <h3><i class="fas fa-clock text-danger me-2"></i>Overdue Loans by Age</h3>
-                <div class="card-actions">
-                  <button class="btn-icon" (click)="openModal('overdueLoansDetail')" title="View Details">
-                    <i class="fas fa-expand-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="bar-chart">
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 60%; background: linear-gradient(180deg, #ffc107, #e0a800) !important;" data-value="KES 3.2M"></div>
-                  <span class="bar-label">1-30 Days</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 40%; background: linear-gradient(180deg, #fd7e14, #e56b0a) !important;" data-value="KES 2.1M"></div>
-                  <span class="bar-label">31-60 Days</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 25%; background: linear-gradient(180deg, #dc3545, #c82333) !important;" data-value="KES 1.5M"></div>
-                  <span class="bar-label">61-90 Days</span>
-                </div>
-                <div class="bar-chart-item">
-                  <div class="bar" style="height: 15%; background: linear-gradient(180deg, #6f42c1, #5a32a3) !important;" data-value="KES 1.5M"></div>
-                  <span class="bar-label">90+ Days</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-  </div>
-
-  <!-- ========== MODALS ========== -->
-
-  <!-- Export Report Modal -->
-  @if (activeModal === 'export') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-download me-2"></i>Export Report</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Report Type</label>
-            <select class="form-select" [(ngModel)]="exportForm.type">
-              <option value="full">Full Analytics Report</option>
-              <option value="members">Member Analytics</option>
-              <option value="loans">Loan Performance</option>
-              <option value="financial">Financial Health</option>
-              <option value="risk">Risk Analysis</option>
+    <!-- ═════════════════════════════════════════════════════════════════════
+      TAB CONTENT: PERIOD COMPARISON
+    ═════════════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" [class.active]="activeAnalyticsTab === 'comparison'">
+      <div class="content-grid-full">
+        
+        <!-- Comparison Header -->
+        <div class="comparison-controls">
+          <div class="period-selector">
+            <label>Compare:</label>
+            <select class="period-select" [(ngModel)]="comparisonPeriod1">
+              <option>This Month</option>
+              <option>Last Month</option>
+              <option>This Quarter</option>
+              <option>Last Quarter</option>
+              <option>This Year</option>
+              <option>Last Year</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Date Range</label>
-            <select class="form-select" [(ngModel)]="exportForm.dateRange">
-              <option value="7">Last 7 Days</option>
-              <option value="30">Last 30 Days</option>
-              <option value="90">Last 90 Days</option>
-              <option value="180">Last 6 Months</option>
-              <option value="365">Last Year</option>
-              <option value="custom">Custom Range</option>
+          <div class="period-separator">
+            <i class="bi bi-arrow-left-right"></i>
+          </div>
+          <div class="period-selector">
+            <label>With:</label>
+            <select class="period-select" [(ngModel)]="comparisonPeriod2">
+              <option>Last Month</option>
+              <option selected>Previous Month</option>
+              <option>Same Period Last Year</option>
+              <option>Last Quarter</option>
+              <option>Last Year</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Format</label>
-            <select class="form-select" [(ngModel)]="exportForm.format">
-              <option value="pdf">PDF Document</option>
-              <option value="excel">Excel Spreadsheet</option>
-              <option value="csv">CSV File</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
+          <button class="btn-apply-comparison" (click)="applyComparison()">
+            <i class="bi bi-arrow-repeat"></i>
+            Compare Periods
           </button>
         </div>
-      </div>
-    </div>
-  }
 
-  <!-- AI Insights Modal -->
-  @if (activeModal === 'aiInsights') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-robot me-2"></i>AI-Powered Insights</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
+        <!-- Comparison Table -->
+        <div class="content-card table-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="bi bi-bar-chart-line"></i>
+              Period-over-Period Comparison
+            </h3>
+            <button class="icon-btn-sm" (click)="exportComparisonData()">
+              <i class="bi bi-download"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="comparison-table-wrapper">
+              <table class="analytics-table comparison-table">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>{{comparisonPeriod1}}</th>
+                    <th>{{comparisonPeriod2}}</th>
+                    <th>Variance</th>
+                    <th>% Change</th>
+                    <th>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let metric of comparisonMetrics">
+                    <td class="metric-name-cell">
+                      <i class="{{metric.icon}}" [style.color]="metric.color"></i>
+                      <strong>{{metric.name}}</strong>
+                    </td>
+                    <td class="amount-cell primary-period">
+                      <strong>{{metric.period1}}</strong>
+                    </td>
+                    <td class="amount-cell">{{metric.period2}}</td>
+                    <td class="variance-cell" [class.positive]="metric.variancePositive">
+                      {{metric.variance}}
+                    </td>
+                    <td class="percent-cell">
+                      <span class="percent-badge-lg" [class.positive]="metric.variancePositive">
+                        <i class="bi bi-arrow-{{metric.variancePositive ? 'up' : 'down'}}"></i>
+                        {{metric.percentChange}}
+                      </span>
+                    </td>
+                    <td class="trend-cell">
+                      <div class="comparison-trend-chart">
+                        <div class="trend-line" *ngFor="let point of metric.trendData" 
+                             [style.height]="point + '%'"
+                             [class.period1]="metric.trendData.indexOf(point) < metric.trendData.length / 2"
+                             [class.period2]="metric.trendData.indexOf(point) >= metric.trendData.length / 2">
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="modal-body">
-          <div class="ai-insight-card">
-            <div class="insight-header">
-              <h4><i class="fas fa-lightbulb text-warning me-2"></i>Member Retention Alert</h4>
-              <span class="impact-badge impact-high">High Impact</span>
-            </div>
-            <p class="insight-description">
-              202 members have been dormant for over 90 days. Consider launching a re-engagement campaign
-              with reduced interest rates for returning members. Estimated recovery potential: KES 15M in deposits.
-            </p>
-          </div>
-          <div class="ai-insight-card">
-            <div class="insight-header">
-              <h4><i class="fas fa-chart-line text-primary me-2"></i>Loan Portfolio Optimization</h4>
-              <span class="impact-badge impact-medium">Medium Impact</span>
-            </div>
-            <p class="insight-description">
-              Your approval rate of 78.9% is above industry average. Consider tightening criteria slightly
-              for loans above KES 1M to reduce default risk while maintaining growth. Target: 82% approval rate.
-            </p>
-          </div>
-          <div class="ai-insight-card">
-            <div class="insight-header">
-              <h4><i class="fas fa-piggy-bank text-success me-2"></i>Deposit Growth Opportunity</h4>
-              <span class="impact-badge impact-medium">Medium Impact</span>
-            </div>
-            <p class="insight-description">
-              Monthly deposit inflow has plateaued at KES 12.5M. Introducing a high-yield savings product
-              could increase inflows by 20-25%. Projected additional deposits: KES 30M annually.
-            </p>
-          </div>
-          <div class="ai-insight-card">
-            <div class="insight-header">
-              <h4><i class="fas fa-shield-alt text-info me-2"></i>Risk Mitigation</h4>
-              <span class="impact-badge impact-low">Low Impact</span>
-            </div>
-            <p class="insight-description">
-              Your liquidity ratio of 24.8% exceeds regulatory minimum (20%). Consider allocating excess
-              liquidity to short-term government securities for additional income of ~KES 2M annually.
-            </p>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="generateFullReport()">
-            <i class="fas fa-file-alt me-1"></i> Generate Full Report
-          </button>
-        </div>
-      </div>
-    </div>
-  }
 
-  <!-- Deposits Detail Modal -->
-  @if (activeModal === 'depositsDetail') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-piggy-bank me-2"></i>Deposits Detail</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Total Savings</div>
-                <div class="fw-bold fs-5">KES 312M</div>
-              </div>
+        <!-- Visual Comparison Charts -->
+        <div class="content-grid-2col">
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-graph-up"></i>
+                Revenue Comparison
+              </h3>
             </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Fixed Deposits</div>
-                <div class="fw-bold fs-5">KES 144M</div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Savings Accounts</span>
-              <span class="progress-value">68.4%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" style="width: 68.4%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Fixed Deposits</span>
-              <span class="progress-value">31.6%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-info" style="width: 31.6%"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Shares Detail Modal -->
-  @if (activeModal === 'sharesDetail') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-chart-pie me-2"></i>Share Capital Detail</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Total Shares</div>
-                <div class="fw-bold fs-5">KES 234M</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Avg Per Member</div>
-                <div class="fw-bold fs-5">KES 82,150</div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Minimum Share Requirement</span>
-              <span class="progress-value">Met (100%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-success" style="width: 100%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Members with Full Shares</span>
-              <span class="progress-value">2,645 (93%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" style="width: 93%"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Financial Breakdown Modal -->
-  @if (activeModal === 'financialBreakdown') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-chart-line me-2"></i>Financial Breakdown</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>% of Total</th>
-                  <th>Change</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Interest Income</strong></td>
-                  <td>KES 52.3M</td>
-                  <td>58.5%</td>
-                  <td><span class="text-success">+12.4%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Fee Income</strong></td>
-                  <td>KES 18.7M</td>
-                  <td>20.9%</td>
-                  <td><span class="text-success">+8.2%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Investment Income</strong></td>
-                  <td>KES 12.4M</td>
-                  <td>13.9%</td>
-                  <td><span class="text-success">+5.1%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Other Income</strong></td>
-                  <td>KES 6.0M</td>
-                  <td>6.7%</td>
-                  <td><span class="text-danger">-2.3%</span></td>
-                </tr>
-                <tr style="border-top: 2px solid var(--card-border);">
-                  <td><strong>Total Income</strong></td>
-                  <td><strong>KES 89.4M</strong></td>
-                  <td><strong>100%</strong></td>
-                  <td><span class="text-success fw-bold">+9.8%</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Transaction Details Modal -->
-  @if (activeModal === 'transactionDetails') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-exchange-alt me-2"></i>Transaction Details</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Week</th>
-                  <th>Deposits</th>
-                  <th>Withdrawals</th>
-                  <th>Loan Disbursed</th>
-                  <th>Repayments</th>
-                  <th>Net Volume</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Week 1</strong></td>
-                  <td>KES 8.2M</td>
-                  <td>KES 3.1M</td>
-                  <td>KES 12.5M</td>
-                  <td>KES 9.8M</td>
-                  <td><span class="text-success fw-bold">KES 12.5M</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Week 2</strong></td>
-                  <td>KES 9.5M</td>
-                  <td>KES 2.8M</td>
-                  <td>KES 15.8M</td>
-                  <td>KES 11.2M</td>
-                  <td><span class="text-success fw-bold">KES 15.8M</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Week 3</strong></td>
-                  <td>KES 7.1M</td>
-                  <td>KES 4.2M</td>
-                  <td>KES 10.2M</td>
-                  <td>KES 8.5M</td>
-                  <td><span class="text-success fw-bold">KES 10.2M</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Week 4</strong></td>
-                  <td>KES 10.8M</td>
-                  <td>KES 3.5M</td>
-                  <td>KES 18.1M</td>
-                  <td>KES 12.4M</td>
-                  <td><span class="text-success fw-bold">KES 18.1M</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- New Members Modal -->
-  @if (activeModal === 'newMembers') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-user-plus me-2"></i>New Members</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">This Month</div>
-                <div class="fw-bold fs-5 text-success">156</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Last Month</div>
-                <div class="fw-bold fs-5">142</div>
-              </div>
-            </div>
-          </div>
-          <p class="text-secondary">156 new members joined this month, representing a <strong class="text-success">+9.9%</strong> increase compared to last month. The growth is driven by the new member referral program.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Loan Disbursements Modal -->
-  @if (activeModal === 'loanDisbursements') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-hand-holding-usd me-2"></i>Loan Disbursements</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">This Month</div>
-                <div class="fw-bold fs-5 text-success">KES 45.2M</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Avg per Loan</div>
-                <div class="fw-bold fs-5">KES 640K</div>
-              </div>
-            </div>
-          </div>
-          <p class="text-secondary">Total of <strong>71 loans</strong> were disbursed this month. The most popular product is the Development Loan at <strong>42%</strong> of total disbursements.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Repayments Modal -->
-  @if (activeModal === 'repayments') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-money-bill-wave me-2"></i>Repayments</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">This Month</div>
-                <div class="fw-bold fs-5 text-success">KES 38.7M</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Collection Rate</div>
-                <div class="fw-bold fs-5 text-success">94.2%</div>
-              </div>
-            </div>
-          </div>
-          <p class="text-secondary">Repayment collection rate is <strong class="text-success">94.2%</strong>, slightly above the target of 92%. Mobile money collections account for 68% of all repayments.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Overdue Loans Modal -->
-  @if (activeModal === 'overdueLoans') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-exclamation-triangle me-2"></i>Overdue Loans</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Total Overdue</div>
-                <div class="fw-bold fs-5 text-danger">KES 8.3M</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Affected Loans</div>
-                <div class="fw-bold fs-5 text-danger">47</div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">1-30 Days</span>
-              <span class="progress-value">KES 3.2M</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-warning" style="width: 38%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">31-60 Days</span>
-              <span class="progress-value">KES 2.1M</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-warning" style="width: 25%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">61-90 Days</span>
-              <span class="progress-value">KES 1.5M</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-danger" style="width: 18%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">90+ Days</span>
-              <span class="progress-value">KES 1.5M</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-danger" style="width: 18%"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Member Growth Report Modal -->
-  @if (activeModal === 'memberGrowthReport') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-chart-bar me-2"></i>Member Growth Report</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Period</th>
-                  <th>Opening</th>
-                  <th>New</th>
-                  <th>Exited</th>
-                  <th>Closing</th>
-                  <th>Net Growth</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>January 2026</strong></td>
-                  <td>2,691</td>
-                  <td>156</td>
-                  <td>0</td>
-                  <td>2,847</td>
-                  <td><span class="text-success fw-bold">+156</span></td>
-                </tr>
-                <tr>
-                  <td><strong>December 2025</strong></td>
-                  <td>2,549</td>
-                  <td>142</td>
-                  <td>0</td>
-                  <td>2,691</td>
-                  <td><span class="text-success fw-bold">+142</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Q4 2025</strong></td>
-                  <td>2,151</td>
-                  <td>398</td>
-                  <td>0</td>
-                  <td>2,549</td>
-                  <td><span class="text-success fw-bold">+398</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Segment Details Modal -->
-  @if (activeModal === 'segmentDetails') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-users-cog me-2"></i>Member Segmentation Details</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Segment</th>
-                  <th>Count</th>
-                  <th>%</th>
-                  <th>Avg Deposits</th>
-                  <th>Avg Loans</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="status-badge status-active"><i class="fas fa-user-check"></i> Active</span></td>
-                  <td>2,645</td>
-                  <td>93%</td>
-                  <td>KES 168K</td>
-                  <td>KES 312K</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge status-pending"><i class="fas fa-user-clock"></i> Dormant</span></td>
-                  <td>202</td>
-                  <td>7%</td>
-                  <td>KES 45K</td>
-                  <td>KES 0</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge" style="background: rgba(255,193,7,0.1); color: #e0a800;"><i class="fas fa-crown"></i> Gold</span></td>
-                  <td>425</td>
-                  <td>15%</td>
-                  <td>KES 520K</td>
-                  <td>KES 850K</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge" style="background: rgba(192,192,192,0.15); color: #a0a0a0;"><i class="fas fa-medal"></i> Silver</span></td>
-                  <td>1,138</td>
-                  <td>40%</td>
-                  <td>KES 180K</td>
-                  <td>KES 320K</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge" style="background: rgba(205,127,50,0.1); color: #cd7f32;"><i class="fas fa-award"></i> Bronze</span></td>
-                  <td>1,284</td>
-                  <td>45%</td>
-                  <td>KES 85K</td>
-                  <td>KES 150K</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- All Top Members Modal -->
-  @if (activeModal === 'allTopMembers') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-header">
-          <h3><i class="fas fa-trophy me-2"></i>All Top Contributing Members</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Member</th>
-                  <th>Member ID</th>
-                  <th>Total Deposits</th>
-                  <th>Loan Repaid</th>
-                  <th>Share Capital</th>
-                  <th>Total Contribution</th>
-                  <th>Tier</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="rank-badge rank-1">1</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">JM</div>
-                      <span>John Maina</span>
+            <div class="card-body">
+              <div class="dual-bar-chart">
+                <div class="dual-bar-group" *ngFor="let data of revenueComparisonData">
+                  <div class="dual-bars">
+                    <div class="bar period1" [style.height]="data.period1Height">
+                      <span class="bar-value">{{data.period1Value}}</span>
                     </div>
-                  </td>
-                  <td>SAC-001</td>
-                  <td><strong>KES 2.4M</strong></td>
-                  <td>KES 1.8M</td>
-                  <td>KES 500K</td>
-                  <td><span class="text-success fw-bold">KES 4.7M</span></td>
-                  <td><span class="status-badge" style="background: rgba(255,193,7,0.1); color: #e0a800;">Gold</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-2">2</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">WO</div>
-                      <span>Wanjiku Omondi</span>
+                    <div class="bar period2" [style.height]="data.period2Height">
+                      <span class="bar-value">{{data.period2Value}}</span>
                     </div>
-                  </td>
-                  <td>SAC-045</td>
-                  <td><strong>KES 2.1M</strong></td>
-                  <td>KES 1.5M</td>
-                  <td>KES 450K</td>
-                  <td><span class="text-success fw-bold">KES 4.05M</span></td>
-                  <td><span class="status-badge" style="background: rgba(255,193,7,0.1); color: #e0a800;">Gold</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-3">3</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">PK</div>
-                      <span>Peter Kamau</span>
+                  </div>
+                  <span class="bar-group-label">{{data.label}}</span>
+                </div>
+              </div>
+              <div class="chart-legend-row">
+                <div class="legend-item">
+                  <span class="legend-dot period1"></span>
+                  <span>{{comparisonPeriod1}}</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot period2"></span>
+                  <span>{{comparisonPeriod2}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-card chart-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="bi bi-people"></i>
+                Member Activity Comparison
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="activity-comparison">
+                <div class="activity-metric" *ngFor="let activity of activityComparisonData">
+                  <div class="activity-label">
+                    <i class="{{activity.icon}}"></i>
+                    <span>{{activity.label}}</span>
+                  </div>
+                  <div class="activity-bars">
+                    <div class="activity-bar-row period1">
+                      <span class="period-label">{{comparisonPeriod1}}</span>
+                      <div class="activity-bar-track">
+                        <div class="activity-bar-fill" [style.width]="activity.period1Percent"></div>
+                      </div>
+                      <span class="activity-value">{{activity.period1Value}}</span>
                     </div>
-                  </td>
-                  <td>SAC-089</td>
-                  <td><strong>KES 1.9M</strong></td>
-                  <td>KES 1.3M</td>
-                  <td>KES 400K</td>
-                  <td><span class="text-success fw-bold">KES 3.6M</span></td>
-                  <td><span class="status-badge" style="background: rgba(255,193,7,0.1); color: #e0a800;">Gold</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">4</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">AM</div>
-                      <span>Agnes Muthoni</span>
+                    <div class="activity-bar-row period2">
+                      <span class="period-label">{{comparisonPeriod2}}</span>
+                      <div class="activity-bar-track">
+                        <div class="activity-bar-fill" [style.width]="activity.period2Percent"></div>
+                      </div>
+                      <span class="activity-value">{{activity.period2Value}}</span>
                     </div>
-                  </td>
-                  <td>SAC-156</td>
-                  <td><strong>KES 1.7M</strong></td>
-                  <td>KES 1.1M</td>
-                  <td>KES 380K</td>
-                  <td><span class="text-success fw-bold">KES 3.18M</span></td>
-                  <td><span class="status-badge" style="background: rgba(192,192,192,0.15); color: #a0a0a0;">Silver</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">5</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">DK</div>
-                      <span>David Kipchirchir</span>
-                    </div>
-                  </td>
-                  <td>SAC-203</td>
-                  <td><strong>KES 1.5M</strong></td>
-                  <td>KES 950K</td>
-                  <td>KES 350K</td>
-                  <td><span class="text-success fw-bold">KES 2.8M</span></td>
-                  <td><span class="status-badge" style="background: rgba(192,192,192,0.15); color: #a0a0a0;">Silver</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">6</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">SM</div>
-                      <span>Susan Mwangi</span>
-                    </div>
-                  </td>
-                  <td>SAC-267</td>
-                  <td><strong>KES 1.4M</strong></td>
-                  <td>KES 900K</td>
-                  <td>KES 320K</td>
-                  <td><span class="text-success fw-bold">KES 2.62M</span></td>
-                  <td><span class="status-badge" style="background: rgba(192,192,192,0.15); color: #a0a0a0;">Silver</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">7</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">CO</div>
-                      <span>Charles Ochieng</span>
-                    </div>
-                  </td>
-                  <td>SAC-312</td>
-                  <td><strong>KES 1.3M</strong></td>
-                  <td>KES 850K</td>
-                  <td>KES 300K</td>
-                  <td><span class="text-success fw-bold">KES 2.45M</span></td>
-                  <td><span class="status-badge" style="background: rgba(205,127,50,0.1); color: #cd7f32;">Bronze</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">8</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">MK</div>
-                      <span>Mary Karanja</span>
-                    </div>
-                  </td>
-                  <td>SAC-378</td>
-                  <td><strong>KES 1.2M</strong></td>
-                  <td>KES 780K</td>
-                  <td>KES 280K</td>
-                  <td><span class="text-success fw-bold">KES 2.26M</span></td>
-                  <td><span class="status-badge" style="background: rgba(205,127,50,0.1); color: #cd7f32;">Bronze</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">9</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">JN</div>
-                      <span>James Njoroge</span>
-                    </div>
-                  </td>
-                  <td>SAC-445</td>
-                  <td><strong>KES 1.1M</strong></td>
-                  <td>KES 720K</td>
-                  <td>KES 260K</td>
-                  <td><span class="text-success fw-bold">KES 2.08M</span></td>
-                  <td><span class="status-badge" style="background: rgba(205,127,50,0.1); color: #cd7f32;">Bronze</span></td>
-                </tr>
-                <tr>
-                  <td><span class="rank-badge rank-other">10</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="member-avatar">FA</div>
-                      <span>Faith Akinyi</span>
-                    </div>
-                  </td>
-                  <td>SAC-512</td>
-                  <td><strong>KES 1.0M</strong></td>
-                  <td>KES 650K</td>
-                  <td>KES 240K</td>
-                  <td><span class="text-success fw-bold">KES 1.89M</span></td>
-                  <td><span class="status-badge" style="background: rgba(205,127,50,0.1); color: #cd7f32;">Bronze</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Loan Portfolio Report Modal -->
-  @if (activeModal === 'loanPortfolioReport') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-chart-pie me-2"></i>Loan Portfolio Report</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>% of Portfolio</th>
-                  <th>Count</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Performing Loans</strong></td>
-                  <td>KES 712M</td>
-                  <td>90.2%</td>
-                  <td>1,112</td>
-                  <td><span class="status-badge status-active">Healthy</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Watch List</strong></td>
-                  <td>KES 45M</td>
-                  <td>5.7%</td>
-                  <td>75</td>
-                  <td><span class="status-badge status-pending">Monitoring</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Non-Performing</strong></td>
-                  <td>KES 32M</td>
-                  <td>4.1%</td>
-                  <td>47</td>
-                  <td><span class="status-badge status-rejected">At Risk</span></td>
-                </tr>
-                <tr style="border-top: 2px solid var(--card-border);">
-                  <td><strong>Total Portfolio</strong></td>
-                  <td><strong>KES 789M</strong></td>
-                  <td><strong>100%</strong></td>
-                  <td><strong>1,234</strong></td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Loan Applications Modal -->
-  @if (activeModal === 'loanApplications') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-clipboard-list me-2"></i>Loan Applications</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Status</th>
-                  <th>Count</th>
-                  <th>%</th>
-                  <th>Avg Amount</th>
-                  <th>Total Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="status-badge status-active"><i class="fas fa-check"></i> Approved</span></td>
-                  <td>142</td>
-                  <td>62.3%</td>
-                  <td>KES 640K</td>
-                  <td>KES 90.9M</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span></td>
-                  <td>38</td>
-                  <td>16.7%</td>
-                  <td>KES 520K</td>
-                  <td>KES 19.8M</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge status-review"><i class="fas fa-search"></i> Under Review</span></td>
-                  <td>24</td>
-                  <td>10.5%</td>
-                  <td>KES 750K</td>
-                  <td>KES 18.0M</td>
-                </tr>
-                <tr>
-                  <td><span class="status-badge status-rejected"><i class="fas fa-times"></i> Rejected</span></td>
-                  <td>12</td>
-                  <td>5.3%</td>
-                  <td>KES 480K</td>
-                  <td>KES 5.8M</td>
-                </tr>
-                <tr style="border-top: 2px solid var(--card-border);">
-                  <td><strong>Total</strong></td>
-                  <td><strong>216</strong></td>
-                  <td><strong>100%</strong></td>
-                  <td><strong>KES 620K</strong></td>
-                  <td><strong>KES 134.5M</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Interest Income Modal -->
-  @if (activeModal === 'interestIncome') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-percentage me-2"></i>Interest Income</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Current Rate</div>
-                <div class="fw-bold fs-5 text-success">14.5%</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Monthly Income</div>
-                <div class="fw-bold fs-5">KES 4.4M</div>
+                  </div>
+                  <div class="activity-change" [class.positive]="activity.changePositive">
+                    <i class="bi bi-arrow-{{activity.changePositive ? 'up' : 'down'}}"></i>
+                    {{activity.change}}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <p class="text-secondary">Interest income is generated from loan products at an average rate of <strong>14.5% p.a.</strong> The Development Loan product contributes the highest at <strong>42%</strong> of total interest income.</p>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
+
       </div>
     </div>
-  }
 
-  <!-- Default Rate Modal -->
-  @if (activeModal === 'defaultRate') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-exclamation-circle me-2"></i>Default Rate</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Current Rate</div>
-                <div class="fw-bold fs-5 text-warning">4.1%</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Industry Avg</div>
-                <div class="fw-bold fs-5">5.2%</div>
-              </div>
-            </div>
-          </div>
-          <p class="text-secondary">Your default rate of <strong class="text-success">4.1%</strong> is below the industry average of 5.2%. This indicates strong credit risk management. Target: maintain below 5%.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Average Loan Size Modal -->
-  @if (activeModal === 'averageLoanSize') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-calculator me-2"></i>Average Loan Size</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Average</div>
-                <div class="fw-bold fs-5">KES 640K</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Median</div>
-                <div class="fw-bold fs-5">KES 520K</div>
-              </div>
-            </div>
-          </div>
-          <p class="text-secondary">The average loan size of <strong>KES 640K</strong> has increased by <strong class="text-success">8.5%</strong> compared to last quarter. Development loans average KES 850K while Emergency loans average KES 200K.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Approval Rate Modal -->
-  @if (activeModal === 'approvalRate') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-check-circle me-2"></i>Approval Rate</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Current Rate</div>
-                <div class="fw-bold fs-5 text-success">78.9%</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Target</div>
-                <div class="fw-bold fs-5">82%</div>
-              </div>
-            </div>
-          </div>
-          <p class="text-secondary">Approval rate of <strong class="text-success">78.9%</strong> is above industry average. Consider tightening criteria for loans above KES 1M to reach the target of 82% while reducing defaults.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Capital Adequacy Modal -->
-  @if (activeModal === 'capitalAdequacy') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-shield-alt me-2"></i>Capital Adequacy Details</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Metric</th>
-                  <th>Current</th>
-                  <th>Required</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Core Capital</strong></td>
-                  <td>KES 234M (18.5%)</td>
-                  <td>Min 10%</td>
-                  <td><span class="status-badge status-active">Compliant</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Risk Weighted Assets</strong></td>
-                  <td>KES 789M</td>
-                  <td>-</td>
-                  <td><span class="status-badge status-active">Healthy</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Liquidity Ratio</strong></td>
-                  <td>24.8%</td>
-                  <td>Min 20%</td>
-                  <td><span class="status-badge status-active">Compliant</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Capital to Assets</strong></td>
-                  <td>29.7%</td>
-                  <td>Min 15%</td>
-                  <td><span class="status-badge status-active">Compliant</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Income Breakdown Modal -->
-  @if (activeModal === 'incomeBreakdown') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-coins me-2"></i>Income Breakdown Details</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Source</th>
-                  <th>Amount</th>
-                  <th>% of Income</th>
-                  <th>Change (YoY)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Interest Income</strong></td>
-                  <td>KES 52.3M</td>
-                  <td>58.5%</td>
-                  <td><span class="text-success">+12.4%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Fee Income</strong></td>
-                  <td>KES 18.7M</td>
-                  <td>20.9%</td>
-                  <td><span class="text-success">+8.2%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Investment Income</strong></td>
-                  <td>KES 12.4M</td>
-                  <td>13.9%</td>
-                  <td><span class="text-success">+5.1%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>Other Income</strong></td>
-                  <td>KES 6.0M</td>
-                  <td>6.7%</td>
-                  <td><span class="text-danger">-2.3%</span></td>
-                </tr>
-                <tr style="border-top: 2px solid var(--card-border);">
-                  <td><strong>Total</strong></td>
-                  <td><strong>KES 89.4M</strong></td>
-                  <td><strong>100%</strong></td>
-                  <td><span class="text-success fw-bold">+9.8%</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Risk Assessment Modal -->
-  @if (activeModal === 'riskAssessment') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-exclamation-triangle me-2"></i>Risk Assessment Report</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Risk Category</th>
-                  <th>Score</th>
-                  <th>Level</th>
-                  <th>Trend</th>
-                  <th>Action Required</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Credit Risk</strong></td>
-                  <td>12%</td>
-                  <td><span class="status-badge status-active">Low</span></td>
-                  <td><span class="text-success"><i class="fas fa-arrow-down"></i> Improving</span></td>
-                  <td>Continue current policies</td>
-                </tr>
-                <tr>
-                  <td><strong>Operational Risk</strong></td>
-                  <td>35%</td>
-                  <td><span class="status-badge status-pending">Medium</span></td>
-                  <td><span class="text-warning"><i class="fas fa-minus"></i> Stable</span></td>
-                  <td>Review internal controls</td>
-                </tr>
-                <tr>
-                  <td><strong>Market Risk</strong></td>
-                  <td>18%</td>
-                  <td><span class="status-badge status-active">Low</span></td>
-                  <td><span class="text-success"><i class="fas fa-arrow-down"></i> Improving</span></td>
-                  <td>Monitor interest rates</td>
-                </tr>
-                <tr>
-                  <td><strong>Liquidity Risk</strong></td>
-                  <td>8%</td>
-                  <td><span class="status-badge status-active">Low</span></td>
-                  <td><span class="text-success"><i class="fas fa-arrow-down"></i> Improving</span></td>
-                  <td>Maintain current reserves</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Overdue Loans Detail Modal -->
-  @if (activeModal === 'overdueLoansDetail') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-header">
-          <h3><i class="fas fa-clock me-2"></i>Overdue Loans Detail</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Age Bucket</th>
-                  <th>Amount</th>
-                  <th>Count</th>
-                  <th>% of Total</th>
-                  <th>Recovery Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>1-30 Days</strong></td>
-                  <td>KES 3.2M</td>
-                  <td>22</td>
-                  <td>38.6%</td>
-                  <td><span class="text-success">92%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>31-60 Days</strong></td>
-                  <td>KES 2.1M</td>
-                  <td>14</td>
-                  <td>25.3%</td>
-                  <td><span class="text-success">78%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>61-90 Days</strong></td>
-                  <td>KES 1.5M</td>
-                  <td>7</td>
-                  <td>18.1%</td>
-                  <td><span class="text-warning">55%</span></td>
-                </tr>
-                <tr>
-                  <td><strong>90+ Days</strong></td>
-                  <td>KES 1.5M</td>
-                  <td>4</td>
-                  <td>18.1%</td>
-                  <td><span class="text-danger">32%</span></td>
-                </tr>
-                <tr style="border-top: 2px solid var(--card-border);">
-                  <td><strong>Total</strong></td>
-                  <td><strong>KES 8.3M</strong></td>
-                  <td><strong>47</strong></td>
-                  <td><strong>100%</strong></td>
-                  <td><span class="text-success fw-bold">72%</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-          <button class="btn btn-primary" (click)="exportReport()">
-            <i class="fas fa-download me-1"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Member Details Modal -->
-  @if (activeModal === 'memberDetails') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-users me-2"></i>Member Details</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Total Members</div>
-                <div class="fw-bold fs-5">2,847</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Active Rate</div>
-                <div class="fw-bold fs-5 text-success">93%</div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Active Members</span>
-              <span class="progress-value">2,645 (93%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-success" style="width: 93%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Dormant Members</span>
-              <span class="progress-value">202 (7%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-secondary" style="width: 7%"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Loan Portfolio Modal -->
-  @if (activeModal === 'loanPortfolio') {
-    <div class="modal-overlay" (click)="closeModalOnOverlay($event)">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3><i class="fas fa-hand-holding-usd me-2"></i>Loan Portfolio Detail</h3>
-          <button class="btn-close" (click)="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Total Portfolio</div>
-                <div class="fw-bold fs-5">KES 789M</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded" style="background: var(--bg-body);">
-                <div class="text-muted fs-8">Active Loans</div>
-                <div class="fw-bold fs-5">1,234</div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Performing</span>
-              <span class="progress-value">KES 712M (90.2%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-success" style="width: 90.2%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Watch List</span>
-              <span class="progress-value">KES 45M (5.7%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-warning" style="width: 5.7%"></div>
-            </div>
-          </div>
-          <div class="progress-container">
-            <div class="progress-header">
-              <span class="progress-label">Non-Performing</span>
-              <span class="progress-value">KES 32M (4.1%)</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-danger" style="width: 4.1%"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Toast Notifications -->
-  <div class="toast-container">
-    @for (toast of toasts; track toast.id) {
-      <div class="toast toast-{{ toast.type }}" (mouseenter)="pauseToast(toast)" (mouseleave)="resumeToast(toast)">
-        <div class="toast-icon">
-          @if (toast.type === 'success') { <i class="fas fa-check-circle"></i> }
-          @if (toast.type === 'warning') { <i class="fas fa-exclamation-triangle"></i> }
-          @if (toast.type === 'danger') { <i class="fas fa-times-circle"></i> }
-          @if (toast.type === 'info') { <i class="fas fa-info-circle"></i> }
-        </div>
-        <div class="toast-content">
-          <div class="toast-title">{{ toast.title }}</div>
-          <div class="toast-message">{{ toast.message }}</div>
-        </div>
-        <button class="toast-close" (click)="removeToast(toast.id)">&times;</button>
-      </div>
-    }
   </div>
 
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+  MODALS
+══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Export Modal -->
+<div class="modal-backdrop" [class.show]="showExportModal" (click)="closeExportModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-download"></i>
+          Export Analytics Report
+        </h3>
+        <button class="modal-close-btn" (click)="closeExportModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Report Type</label>
+          <select class="form-select" [(ngModel)]="exportReportType">
+            <option>Complete Analytics Report</option>
+            <option>Revenue Summary</option>
+            <option>Loan Performance Report</option>
+            <option>Member Insights Report</option>
+            <option>Period Comparison Report</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Export Format</label>
+          <div class="format-options">
+            <label class="format-option">
+              <input type="radio" name="format" value="PDF" [(ngModel)]="exportFormat">
+              <div class="format-box">
+                <i class="bi bi-file-pdf"></i>
+                <span>PDF</span>
+              </div>
+            </label>
+            <label class="format-option">
+              <input type="radio" name="format" value="Excel" [(ngModel)]="exportFormat">
+              <div class="format-box">
+                <i class="bi bi-file-excel"></i>
+                <span>Excel</span>
+              </div>
+            </label>
+            <label class="format-option">
+              <input type="radio" name="format" value="CSV" [(ngModel)]="exportFormat">
+              <div class="format-box">
+                <i class="bi bi-filetype-csv"></i>
+                <span>CSV</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Include Charts</label>
+          <div class="checkbox-group">
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="includeCharts">
+              <span>Include all charts and graphs</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Report To</label>
+          <input type="email" class="form-control" [(ngModel)]="exportEmail" placeholder="email@example.com">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeExportModal()">Cancel</button>
+        <button class="btn-primary" (click)="confirmExport()">
+          <i class="bi bi-download"></i>
+          Export Report
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Advanced Filters Modal -->
+<div class="modal-backdrop" [class.show]="showAdvancedFilters" (click)="closeAdvancedFilters()">
+  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-sliders"></i>
+          Advanced Filters
+        </h3>
+        <button class="modal-close-btn" (click)="closeAdvancedFilters()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="filter-grid">
+          <div class="form-group">
+            <label class="form-label">Account Type</label>
+            <select class="form-select" [(ngModel)]="filterAccountType">
+              <option>All Account Types</option>
+              <option>Savings Accounts</option>
+              <option>Fixed Deposits</option>
+              <option>Share Capital</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Transaction Channel</label>
+            <select class="form-select" [(ngModel)]="filterChannel">
+              <option>All Channels</option>
+              <option>M-Pesa</option>
+              <option>Bank Transfer</option>
+              <option>Cash</option>
+              <option>Cheque</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Member Category</label>
+            <select class="form-select" [(ngModel)]="filterMemberCategory">
+              <option>All Members</option>
+              <option>Regular Members</option>
+              <option>Premium Members</option>
+              <option>VIP Members</option>
+              <option>Dormant Members</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Loan Status</label>
+            <select class="form-select" [(ngModel)]="filterLoanStatus">
+              <option>All Loans</option>
+              <option>Active</option>
+              <option>Fully Paid</option>
+              <option>In Arrears</option>
+              <option>Written Off</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Amount Range</label>
+            <div class="range-inputs">
+              <input type="number" class="form-control" [(ngModel)]="filterAmountMin" placeholder="Min">
+              <span class="range-separator">to</span>
+              <input type="number" class="form-control" [(ngModel)]="filterAmountMax" placeholder="Max">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Branch/Location</label>
+            <select class="form-select" [(ngModel)]="filterBranch">
+              <option>All Branches</option>
+              <option>Main Branch</option>
+              <option>Westlands Branch</option>
+              <option>Eastleigh Branch</option>
+              <option>Online</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="resetAdvancedFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i>
+          Reset All
+        </button>
+        <button class="btn-primary" (click)="applyAdvancedFilters()">
+          <i class="bi bi-check-lg"></i>
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-notification" [class.show]="toastVisible" [attr.data-type]="toastType">
+  <div class="toast-icon">
+    <i class="bi bi-check-circle-fill" *ngIf="toastType === 'success'"></i>
+    <i class="bi bi-info-circle-fill" *ngIf="toastType === 'info'"></i>
+    <i class="bi bi-exclamation-triangle-fill" *ngIf="toastType === 'warning'"></i>
+    <i class="bi bi-x-circle-fill" *ngIf="toastType === 'danger'"></i>
+  </div>
+  <div class="toast-content">
+    <span class="toast-message">{{toastMessage}}</span>
+  </div>
+  <button class="toast-close" (click)="hideToast()">
+    <i class="bi bi-x"></i>
+  </button>
 </div>

@@ -1,1 +1,825 @@
-<p>compliance works!</p>
+<div class="compliance-container">
+
+  <!-- Toast Notifications -->
+  <div class="toast-container">
+    @for (toast of toasts; track toast.id) {
+      <div class="toast toast-{{ toast.type }}" (click)="removeToast(toast.id)">
+        <i class="bi {{ toast.icon }}"></i>
+        <span>{{ toast.message }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Page Header -->
+  <div class="dashboard-header fade-in">
+    <div class="breadcrumb">
+      <span class="breadcrumb-item"><i class="bi bi-house"></i> Dashboard</span>
+      <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+      <span class="breadcrumb-item active">Compliance & Regulatory</span>
+    </div>
+    <div class="flex-between flex-wrap" style="gap:var(--spacing-md);">
+      <div>
+        <h2><i class="bi bi-building-check" style="color:var(--primary-green);"></i> Compliance & Regulatory</h2>
+        <p>Rongo SACCO — Manage regulatory filings, AML monitoring, KYC oversight & policy compliance</p>
+      </div>
+      <div style="display:flex;gap:var(--spacing-sm);flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" (click)="openModal('complianceChecklist')">
+          <i class="bi bi-check2-square"></i> Checklist
+        </button>
+        <button class="btn btn-outline btn-sm" (click)="openModal('auditLog')">
+          <i class="bi bi-journal-text"></i> Audit Log
+        </button>
+        <button class="btn btn-primary btn-sm" (click)="openModal('newSubmission')">
+          <i class="bi bi-plus-lg"></i> New Submission
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance Score Hero -->
+  <div class="compliance-hero fade-in">
+    <div class="score-ring-wrap">
+      <div class="score-ring" [style.background]="getScoreRingStyle()">
+        <div class="score-ring-inner">
+          <div class="score-value" style="color:var(--primary-green);">{{ complianceScore }}</div>
+          <div class="score-label">Compliance Score</div>
+          <span class="score-grade" style="background:rgba(0,208,132,0.12);color:var(--primary-green);">Good</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-metrics">
+      <div class="hero-metric" (click)="setTab('regulatory'); openModal('regulatoryFilings')">
+        <div class="hm-value" style="color:var(--primary-green);">12/14</div>
+        <div class="hm-label">Regulatory Filings</div>
+        <span class="hm-trend good"><i class="bi bi-check-circle"></i> 2 pending</span>
+      </div>
+      <div class="hero-metric" (click)="setTab('aml'); openModal('amlCases')">
+        <div class="hm-value" style="color:var(--accent-orange);">5</div>
+        <div class="hm-label">AML Alerts</div>
+        <span class="hm-trend warn"><i class="bi bi-exclamation-triangle"></i> 3 under review</span>
+      </div>
+      <div class="hero-metric" (click)="setTab('kyc'); openModal('kycOversight')">
+        <div class="hm-value" style="color:var(--accent-blue);">94%</div>
+        <div class="hm-label">KYC Completion</div>
+        <span class="hm-trend good"><i class="bi bi-arrow-up-short"></i> +2% this month</span>
+      </div>
+      <div class="hero-metric" (click)="setTab('pending'); openModal('pendingApprovals')">
+        <div class="hm-value" style="color:var(--status-danger);">{{ pendingCount }}</div>
+        <div class="hm-label">Pending Approvals</div>
+        <span class="hm-trend bad"><i class="bi bi-clock"></i> {{ urgentCount }} urgent</span>
+      </div>
+      <div class="hero-metric" (click)="setTab('policy'); openModal('policyList')">
+        <div class="hm-value" style="color:var(--accent-purple);">18</div>
+        <div class="hm-label">Active Policies</div>
+        <span class="hm-trend good"><i class="bi bi-check-circle"></i> All current</span>
+      </div>
+      <div class="hero-metric" (click)="openModal('auditLog')">
+        <div class="hm-value" style="color:#795548;">342</div>
+        <div class="hm-label">Audit Events (Month)</div>
+        <span class="hm-trend good"><i class="bi bi-shield-check"></i> No anomalies</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="glass-card fade-in">
+    <div class="glass-card-header">
+      <div class="tab-nav" style="gap:var(--spacing-sm);flex-wrap:wrap;">
+        <button class="ftab" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
+          Pending Approvals <span class="cnt">{{ pendingCount }}</span>
+        </button>
+        <button class="ftab" [class.active]="activeTab === 'regulatory'" (click)="setTab('regulatory')">
+          Regulatory Filings
+        </button>
+        <button class="ftab" [class.active]="activeTab === 'aml'" (click)="setTab('aml')">
+          AML Monitoring <span class="cnt">{{ amlCount }}</span>
+        </button>
+        <button class="ftab" [class.active]="activeTab === 'kyc'" (click)="setTab('kyc')">
+          KYC Oversight
+        </button>
+        <button class="ftab" [class.active]="activeTab === 'policy'" (click)="setTab('policy')">
+          Policies
+        </button>
+      </div>
+    </div>
+    <div class="glass-card-body">
+
+      <!-- PENDING APPROVALS TAB -->
+      @if (activeTab === 'pending') {
+        <div class="tab-pane">
+          <div class="alert alert-warning" style="font-size:0.82rem;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <strong>{{ pendingCount }} items</strong> require your review and approval. <strong>{{ urgentCount }} are marked urgent.</strong>
+          </div>
+          <div class="filter-bar" style="margin-bottom:var(--spacing-md);">
+            <div class="search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-input" placeholder="Search approvals..." [(ngModel)]="searchQuery">
+            </div>
+            <select class="form-select" [(ngModel)]="filterStatus" style="width:auto;min-width:140px;">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="under-review">Under Review</option>
+              <option value="submitted">Submitted</option>
+            </select>
+            <select class="form-select" [(ngModel)]="filterPriority" style="width:auto;min-width:140px;">
+              <option value="all">All Priority</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr><th>Ref</th><th>Type</th><th>Description</th><th>Submitted By</th><th>Date</th><th>Priority</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @for (item of filteredApprovals; track item.id) {
+                  <tr [class.urgent-row]="item.urgent">
+                    <td><code class="ref-code" (click)="openModal('approvalDetail', item)">{{ item.ref }}</code></td>
+                    <td>
+                      <span class="cs-badge {{ getTypeBadge(item.type).class }}">
+                        <i class="bi {{ getTypeBadge(item.type).icon }}"></i> {{ getTypeBadge(item.type).label }}
+                      </span>
+                    </td>
+                    <td style="font-weight:600;">{{ item.description }}</td>
+                    <td>
+                      <div class="m-cell">
+                        <div class="m-av {{ item.submittedByColor }}">{{ item.submittedByInitials }}</div>
+                        <div><div class="m-name" style="font-size:0.78rem;">{{ item.submittedBy }}</div></div>
+                      </div>
+                    </td>
+                    <td style="font-size:0.78rem;">{{ item.date }}</td>
+                    <td>
+                      <span class="risk-pill {{ getRiskPill(item.priority).class }}">
+                        <i class="bi {{ getRiskPill(item.priority).icon }}"></i> {{ item.priority | titlecase }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="cs-badge {{ getStatusBadge(item.status).class }}">
+                        <i class="bi {{ getStatusBadge(item.status).icon }}"></i> {{ item.status | titlecase }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-btns">
+                        @if (item.type !== 'aml') {
+                          <button class="btn btn-sm btn-action btn-success" (click)="approveItem(item.ref); $event.stopPropagation()"><i class="bi bi-check"></i></button>
+                          <button class="btn btn-sm btn-action btn-purple" (click)="returnItem(item.ref); $event.stopPropagation()"><i class="bi bi-arrow-return-left"></i></button>
+                          <button class="btn btn-sm btn-action btn-danger" (click)="rejectItem(item.ref); $event.stopPropagation()"><i class="bi bi-x"></i></button>
+                        } @else {
+                          <button class="btn btn-sm btn-action btn-success" (click)="clearAMLCase(item.id); $event.stopPropagation()"><i class="bi bi-check"></i></button>
+                          <button class="btn btn-sm btn-action btn-orange" (click)="escalateCase(item.id); $event.stopPropagation()"><i class="bi bi-arrow-up"></i></button>
+                        }
+                        <button class="btn btn-ghost btn-icon btn-sm" (click)="openModal('approvalDetail', item)"><i class="bi bi-eye"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- REGULATORY FILINGS TAB -->
+      @if (activeTab === 'regulatory') {
+        <div class="tab-pane">
+          <div class="filter-bar" style="margin-bottom:var(--spacing-md);">
+            <div class="search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-input" placeholder="Search filings..." [(ngModel)]="searchQuery">
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="openModal('newSubmission')"><i class="bi bi-plus-lg"></i> New Filing</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Filing Name</th><th>Authority</th><th>Due Date</th><th>Status</th><th>Last Filed</th><th>Next Due</th><th>Actions</th></tr></thead>
+              <tbody>
+                @for (filing of filteredFilings; track filing.id) {
+                  <tr>
+                    <td style="font-weight:600;">{{ filing.name }}</td>
+                    <td>{{ filing.authority }}</td>
+                    <td>{{ filing.dueDate }}</td>
+                    <td>
+                      <span class="cs-badge {{ getStatusBadge(filing.status).class }}">
+                        <i class="bi {{ getStatusBadge(filing.status).icon }}"></i> {{ filing.status | titlecase }}
+                      </span>
+                    </td>
+                    <td style="font-size:0.78rem;">{{ filing.lastFiled }}</td>
+                    <td style="font-size:0.78rem;">{{ filing.nextDue }}</td>
+                    <td>
+                      <div class="action-btns">
+                        <button class="btn btn-ghost btn-icon btn-sm" (click)="openModal('filingDetail', filing)"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-ghost btn-icon btn-sm" (click)="exportReport()"><i class="bi bi-download"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- AML MONITORING TAB -->
+      @if (activeTab === 'aml') {
+        <div class="tab-pane">
+          <div class="alert alert-info" style="font-size:0.82rem;">
+            <i class="bi bi-shield-check me-1"></i>
+            <strong>AML Monitoring:</strong> {{ amlCases.length }} total cases. {{ amlCount }} require immediate review.
+          </div>
+          <div class="filter-bar" style="margin-bottom:var(--spacing-md);">
+            <div class="search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-input" placeholder="Search cases..." [(ngModel)]="searchQuery">
+            </div>
+          </div>
+          <div class="aml-grid">
+            @for (case of filteredAML; track case.id) {
+              <div class="aml-card" [class.escalated]="case.status === 'escalated'">
+                <div class="aml-header">
+                  <div class="m-cell">
+                    <div class="m-av {{ case.memberColor }}">{{ case.memberInitials }}</div>
+                    <div><div class="m-name">{{ case.memberName }}</div><div class="m-sub">{{ case.id }}</div></div>
+                  </div>
+                  <span class="risk-pill {{ getRiskPill(case.riskLevel).class }}">
+                    <i class="bi {{ getRiskPill(case.riskLevel).icon }}"></i> {{ case.riskLevel | titlecase }}
+                  </span>
+                </div>
+                <div class="aml-body">
+                  <div class="drow"><span class="dl">Alert Type</span><span class="dv">{{ case.alertType }}</span></div>
+                  <div class="drow"><span class="dl">Amount</span><span class="dv" style="color:var(--status-danger);font-weight:700;">{{ case.amount }}</span></div>
+                  <div class="drow"><span class="dl">Date</span><span class="dv">{{ case.date }}</span></div>
+                  <div class="drow"><span class="dl">Assigned To</span><span class="dv">{{ case.assignedTo }}</span></div>
+                  <div class="drow">
+                    <span class="dl">Status</span>
+                    <span class="cs-badge {{ getStatusBadge(case.status).class }}"><i class="bi {{ getStatusBadge(case.status).icon }}"></i> {{ case.status | titlecase }}</span>
+                  </div>
+                </div>
+                <div class="aml-footer">
+                  <button class="btn btn-sm" style="background:var(--status-success);color:white;" (click)="clearAMLCase(case.id)"><i class="bi bi-check"></i> Clear</button>
+                  <button class="btn btn-sm" style="background:var(--accent-orange);color:white;" (click)="escalateCase(case.id)"><i class="bi bi-arrow-up"></i> Escalate</button>
+                  <button class="btn btn-ghost btn-icon btn-sm" (click)="openModal('amlDetail', case)"><i class="bi bi-eye"></i></button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- KYC OVERSIGHT TAB -->
+      @if (activeTab === 'kyc') {
+        <div class="tab-pane">
+          <div class="alert alert-success" style="font-size:0.82rem;">
+            <i class="bi bi-check-circle-fill me-1"></i>
+            <strong>KYC Compliance:</strong> 94% completion rate. 2 members require document updates.
+          </div>
+          <div class="filter-bar" style="margin-bottom:var(--spacing-md);">
+            <div class="search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-input" placeholder="Search members..." [(ngModel)]="searchQuery">
+            </div>
+          </div>
+          <div class="kyc-grid">
+            @for (member of filteredKYC; track member.id) {
+              <div class="kyc-card" (click)="openModal('kycDetail', member)">
+                <div class="kyc-header">
+                  <div class="m-cell">
+                    <div class="m-av {{ member.color }}">{{ member.initials }}</div>
+                    <div><div class="m-name">{{ member.name }}</div><div class="m-sub">{{ member.memberId }}</div></div>
+                  </div>
+                  <span class="cs-badge {{ getStatusBadge(member.status).class }}"><i class="bi {{ getStatusBadge(member.status).icon }}"></i> {{ member.status | titlecase }}</span>
+                </div>
+                <div class="kyc-body">
+                  <div class="progress-wrap">
+                    <div class="progress-label"><span>Completion</span><span>{{ member.completion }}%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" [style.width.%]="member.completion" [class.complete]="member.completion === 100"></div></div>
+                  </div>
+                  @if (member.missingDocs.length > 0) {
+                    <div class="missing-docs">
+                      <span class="dl" style="font-size:0.72rem;">Missing:</span>
+                      <div class="doc-tags">
+                        @for (doc of member.missingDocs; track doc) { <span class="doc-tag">{{ doc }}</span> }
+                      </div>
+                    </div>
+                  }
+                  <div class="drow" style="border:none;padding:4px 0;font-size:0.78rem;"><span class="dl">Last Updated</span><span class="dv">{{ member.lastUpdated }}</span></div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- POLICIES TAB -->
+      @if (activeTab === 'policy') {
+        <div class="tab-pane">
+          <div class="filter-bar" style="margin-bottom:var(--spacing-md);">
+            <div class="search-box">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-input" placeholder="Search policies..." [(ngModel)]="searchQuery">
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="openModal('newSubmission')"><i class="bi bi-plus-lg"></i> New Policy</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Policy ID</th><th>Title</th><th>Category</th><th>Version</th><th>Effective Date</th><th>Review Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                @for (policy of filteredPolicies; track policy.id) {
+                  <tr>
+                    <td><code class="ref-code">{{ policy.id }}</code></td>
+                    <td style="font-weight:600;">{{ policy.title }}</td>
+                    <td>{{ policy.category }}</td>
+                    <td>{{ policy.version }}</td>
+                    <td style="font-size:0.78rem;">{{ policy.effectiveDate }}</td>
+                    <td style="font-size:0.78rem;">{{ policy.reviewDate }}</td>
+                    <td>
+                      <span class="cs-badge {{ getStatusBadge(policy.status).class }}"><i class="bi {{ getStatusBadge(policy.status).icon }}"></i> {{ policy.status | titlecase }}</span>
+                    </td>
+                    <td>
+                      <div class="action-btns">
+                        <button class="btn btn-ghost btn-icon btn-sm" (click)="openModal('policyDetail', policy)"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-ghost btn-icon btn-sm" (click)="downloadPolicy()"><i class="bi bi-download"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+  @if (activeModal) {
+    <div class="modal-overlay active" (click)="closeModal()">
+
+      <!-- Approval Detail Modal -->
+      @if (activeModal === 'approvalDetail' && selectedApproval) {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr green">
+            <h5 class="modal-title"><i class="bi bi-receipt"></i> Approval Detail — {{ selectedApproval.ref }}</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-grid">
+              <div class="detail-item"><span class="detail-label">Reference</span><span class="detail-value">{{ selectedApproval.id }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Type</span>
+                <span class="detail-value">
+                  <span class="cs-badge {{ getTypeBadge(selectedApproval.type).class }}"><i class="bi {{ getTypeBadge(selectedApproval.type).icon }}"></i> {{ getTypeBadge(selectedApproval.type).label }}</span>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Description</span><span class="detail-value">{{ selectedApproval.description }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Submitted By</span>
+                <span class="detail-value">
+                  <div class="m-cell"><div class="m-av {{ selectedApproval.submittedByColor }}">{{ selectedApproval.submittedByInitials }}</div><span>{{ selectedApproval.submittedBy }}</span></div>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Date Submitted</span><span class="detail-value">{{ selectedApproval.date }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Priority</span>
+                <span class="detail-value">
+                  <span class="risk-pill {{ getRiskPill(selectedApproval.priority).class }}"><i class="bi {{ getRiskPill(selectedApproval.priority).icon }}"></i> {{ selectedApproval.priority | titlecase }}</span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span class="cs-badge {{ getStatusBadge(selectedApproval.status).class }}"><i class="bi {{ getStatusBadge(selectedApproval.status).icon }}"></i> {{ selectedApproval.status | titlecase }}</span>
+                </span>
+              </div>
+            </div>
+            <div style="margin-top:var(--spacing-lg);">
+              <h6 style="font-size:0.85rem;font-weight:600;margin-bottom:var(--spacing-md);">Approval Flow</h6>
+              <div class="approval-flow">
+                @for (step of approvalFlow; track step.label; let i = $index) {
+                  <div class="af-step"><div class="af-dot {{ step.status }}">{{ i + 1 }}</div><span class="af-label {{ step.status }}">{{ step.label }}</span></div>
+                  @if (i < approvalFlow.length - 1) { <div class="af-line {{ step.status === 'done' ? 'done' : '' }}"></div> }
+                }
+              </div>
+            </div>
+            <div style="margin-top:var(--spacing-lg);">
+              <h6 style="font-size:0.85rem;font-weight:600;margin-bottom:var(--spacing-md);">Timeline</h6>
+              <div class="timeline">
+                @for (event of timelineEvents; track event.title) {
+                  <div class="tl-item {{ event.type }}"><div class="tl-time">{{ event.time }}</div><div class="tl-content"><strong>{{ event.title }}</strong><br>{{ event.desc }}</div></div>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            @if (selectedApproval.type !== 'aml') {
+              <button class="btn btn-outline" (click)="closeModal()">Close</button>
+              <button class="btn btn-sm" style="background:var(--accent-purple);color:white;" (click)="returnItem(selectedApproval.ref); closeModal()"><i class="bi bi-arrow-return-left"></i> Return</button>
+              <button class="btn btn-sm" style="background:var(--status-danger);color:white;" (click)="rejectItem(selectedApproval.ref); closeModal()"><i class="bi bi-x"></i> Reject</button>
+              <button class="btn btn-primary" (click)="approveItem(selectedApproval.ref); closeModal()"><i class="bi bi-check"></i> Approve</button>
+            } @else {
+              <button class="btn btn-outline" (click)="closeModal()">Close</button>
+              <button class="btn btn-sm" style="background:var(--accent-orange);color:white;" (click)="escalateCase(selectedApproval.id); closeModal()"><i class="bi bi-arrow-up"></i> Escalate</button>
+              <button class="btn btn-primary" (click)="clearAMLCase(selectedApproval.id); closeModal()"><i class="bi bi-check"></i> Clear Case</button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- New Submission Modal -->
+      @if (activeModal === 'newSubmission') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr green">
+            <h5 class="modal-title"><i class="bi bi-plus-lg"></i> New Submission</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="flbl">Submission Type</label>
+                <select class="fselect" [(ngModel)]="newSubmission.type">
+                  <option value="filing">Regulatory Filing</option>
+                  <option value="policy">Policy Document</option>
+                  <option value="kyc">KYC Update</option>
+                  <option value="aml">AML Report</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="flbl">Title</label>
+                <input type="text" class="finput" placeholder="Enter submission title" [(ngModel)]="newSubmission.title">
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="flbl">Description</label>
+                <textarea class="finput" rows="3" placeholder="Enter detailed description" [(ngModel)]="newSubmission.description"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="flbl">Authority / Department</label>
+                <input type="text" class="finput" placeholder="e.g. SASRA, KRA" [(ngModel)]="newSubmission.authority">
+              </div>
+              <div class="form-group">
+                <label class="flbl">Due Date</label>
+                <input type="date" class="finput" [(ngModel)]="newSubmission.dueDate">
+              </div>
+              <div class="form-group">
+                <label class="flbl">Priority</label>
+                <select class="fselect" [(ngModel)]="newSubmission.priority">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="submitNewSubmission()"><i class="bi bi-send"></i> Submit</button>
+          </div>
+        </div>
+      }
+
+      <!-- Compliance Checklist Modal -->
+      @if (activeModal === 'complianceChecklist') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr teal">
+            <h5 class="modal-title"><i class="bi bi-check2-square"></i> Compliance Checklist</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="filter-bar" style="margin-bottom:var(--spacing-md);">
+              <button class="ftab" [class.active]="checklistFilter === 'all'" (click)="checklistFilter = 'all'">All</button>
+              <button class="ftab" [class.active]="checklistFilter === 'pending'" (click)="checklistFilter = 'pending'">Pending</button>
+              <button class="ftab" [class.active]="checklistFilter === 'completed'" (click)="checklistFilter = 'completed'">Completed</button>
+            </div>
+            <div class="checklist">
+              @for (item of filteredChecklist; track item.id) {
+                <div class="checklist-item" (click)="item.completed = !item.completed">
+                  <div class="checklist-icon {{ item.completed ? 'done' : 'pending' }}"><i class="bi {{ item.completed ? 'bi-check-lg' : 'bi-hourglass' }}"></i></div>
+                  <div style="flex:1;">
+                    <div style="font-weight:600;font-size:0.85rem;" [style.text-decoration]="item.completed ? 'line-through' : 'none'" [style.opacity]="item.completed ? 0.6 : 1">{{ item.title }}</div>
+                    <div style="font-size:0.72rem;color:var(--text-tertiary);margin-top:2px;">{{ item.category }} · Due {{ item.dueDate }}</div>
+                  </div>
+                  <span class="cs-badge {{ item.completed ? 'compliant' : 'pending' }}">{{ item.completed ? 'Done' : 'Pending' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="showToast('✓ Checklist updated', 'success'); closeModal()"><i class="bi bi-save"></i> Save Changes</button>
+          </div>
+        </div>
+      }
+
+      <!-- Audit Log Modal -->
+      @if (activeModal === 'auditLog') {
+        <div class="modal-container active modal-lg" (click)="$event.stopPropagation()">
+          <div class="mhdr dark">
+            <h5 class="modal-title"><i class="bi bi-journal-text"></i> Audit Log</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead><tr><th>Event</th><th>User</th><th>Timestamp</th><th>Severity</th><th>IP Address</th></tr></thead>
+                <tbody>
+                  @for (event of auditEvents; track event.id) {
+                    <tr>
+                      <td style="font-weight:500;">{{ event.event }}</td>
+                      <td>
+                        <div class="m-cell"><div class="m-av {{ event.userColor }}">{{ event.userInitials }}</div><span style="font-size:0.78rem;">{{ event.user }}</span></div>
+                      </td>
+                      <td style="font-size:0.78rem;">{{ event.timestamp }}</td>
+                      <td>
+                        <span class="cs-badge {{ event.severity }}">
+                          <i class="bi {{ event.severity === 'danger' ? 'bi-exclamation-circle' : event.severity === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
+                          {{ event.severity | titlecase }}
+                        </span>
+                      </td>
+                      <td style="font-family:var(--font-mono);font-size:0.78rem;">{{ event.ip }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="exportReport()"><i class="bi bi-download"></i> Export Log</button>
+          </div>
+        </div>
+      }
+
+      <!-- AML Detail Modal -->
+      @if (activeModal === 'amlDetail' && selectedAMLCase) {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr orange">
+            <h5 class="modal-title"><i class="bi bi-shield-exclamation"></i> AML Case Detail</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-grid">
+              <div class="detail-item"><span class="detail-label">Case ID</span><span class="detail-value">{{ selectedAMLCase.id }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Member</span>
+                <span class="detail-value">
+                  <div class="m-cell"><div class="m-av {{ selectedAMLCase.memberColor }}">{{ selectedAMLCase.memberInitials }}</div><span>{{ selectedAMLCase.memberName }}</span></div>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Alert Type</span><span class="detail-value">{{ selectedAMLCase.alertType }}</span></div>
+              <div class="detail-item"><span class="detail-label">Amount</span><span class="detail-value" style="color:var(--status-danger);font-weight:700;">{{ selectedAMLCase.amount }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Risk Level</span>
+                <span class="detail-value">
+                  <span class="risk-pill {{ getRiskPill(selectedAMLCase.riskLevel).class }}"><i class="bi {{ getRiskPill(selectedAMLCase.riskLevel).icon }}"></i> {{ selectedAMLCase.riskLevel | titlecase }}</span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span class="cs-badge {{ getStatusBadge(selectedAMLCase.status).class }}"><i class="bi {{ getStatusBadge(selectedAMLCase.status).icon }}"></i> {{ selectedAMLCase.status | titlecase }}</span>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Assigned To</span><span class="detail-value">{{ selectedAMLCase.assignedTo }}</span></div>
+              <div class="detail-item"><span class="detail-label">Date</span><span class="detail-value">{{ selectedAMLCase.date }}</span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-sm" style="background:var(--accent-orange);color:white;" (click)="escalateCase(selectedAMLCase.id); closeModal()"><i class="bi bi-arrow-up"></i> Escalate</button>
+            <button class="btn btn-primary" (click)="clearAMLCase(selectedAMLCase.id); closeModal()"><i class="bi bi-check"></i> Clear Case</button>
+          </div>
+        </div>
+      }
+
+      <!-- KYC Detail Modal -->
+      @if (activeModal === 'kycDetail' && selectedKYC) {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr blue">
+            <h5 class="modal-title"><i class="bi bi-person-check"></i> KYC Member Detail</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Member Name</span>
+                <span class="detail-value">
+                  <div class="m-cell"><div class="m-av {{ selectedKYC.color }}">{{ selectedKYC.initials }}</div><span>{{ selectedKYC.name }}</span></div>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Member ID</span><span class="detail-value" style="font-family:var(--font-mono);">{{ selectedKYC.memberId }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Completion</span>
+                <span class="detail-value">
+                  <div class="progress-wrap" style="margin:0;"><div class="progress-bar-bg" style="height:8px;"><div class="progress-bar-fill" [style.width.%]="selectedKYC.completion" [class.complete]="selectedKYC.completion === 100"></div></div></div>
+                  <span style="font-size:0.78rem;color:var(--text-secondary);">{{ selectedKYC.completion }}% Complete</span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span class="cs-badge {{ getStatusBadge(selectedKYC.status).class }}"><i class="bi {{ getStatusBadge(selectedKYC.status).icon }}"></i> {{ selectedKYC.status | titlecase }}</span>
+                </span>
+              </div>
+              <div class="detail-item" style="grid-column:1/-1;">
+                <span class="detail-label">Missing Documents</span>
+                <span class="detail-value">
+                  @if (selectedKYC.missingDocs.length > 0) {
+                    <div class="doc-tags">@for (doc of selectedKYC.missingDocs; track doc) { <span class="doc-tag">{{ doc }}</span> }</div>
+                  } @else {
+                    <span style="color:var(--status-success);"><i class="bi bi-check-circle"></i> All documents complete</span>
+                  }
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Last Updated</span><span class="detail-value">{{ selectedKYC.lastUpdated }}</span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="showToast('✓ KYC update requested', 'info'); closeModal()"><i class="bi bi-envelope"></i> Request Update</button>
+          </div>
+        </div>
+      }
+
+      <!-- Policy Detail Modal -->
+      @if (activeModal === 'policyDetail' && selectedPolicy) {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr purple">
+            <h5 class="modal-title"><i class="bi bi-file-text"></i> Policy Detail</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-grid">
+              <div class="detail-item"><span class="detail-label">Policy ID</span><span class="detail-value" style="font-family:var(--font-mono);">{{ selectedPolicy.id }}</span></div>
+              <div class="detail-item"><span class="detail-label">Title</span><span class="detail-value" style="font-weight:600;">{{ selectedPolicy.title }}</span></div>
+              <div class="detail-item"><span class="detail-label">Category</span><span class="detail-value">{{ selectedPolicy.category }}</span></div>
+              <div class="detail-item"><span class="detail-label">Version</span><span class="detail-value">{{ selectedPolicy.version }}</span></div>
+              <div class="detail-item"><span class="detail-label">Effective Date</span><span class="detail-value">{{ selectedPolicy.effectiveDate }}</span></div>
+              <div class="detail-item"><span class="detail-label">Review Date</span><span class="detail-value">{{ selectedPolicy.reviewDate }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span class="cs-badge {{ getStatusBadge(selectedPolicy.status).class }}"><i class="bi {{ getStatusBadge(selectedPolicy.status).icon }}"></i> {{ selectedPolicy.status | titlecase }}</span>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Approved By</span><span class="detail-value">{{ selectedPolicy.approvedBy }}</span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-outline" (click)="downloadPolicy()"><i class="bi bi-download"></i> Download</button>
+            <button class="btn btn-primary" (click)="showToast('✓ Policy sent for review', 'success'); closeModal()"><i class="bi bi-send"></i> Send for Review</button>
+          </div>
+        </div>
+      }
+
+      <!-- Filing Detail Modal -->
+      @if (activeModal === 'filingDetail' && selectedFiling) {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr green">
+            <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> Filing Detail</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-grid">
+              <div class="detail-item"><span class="detail-label">Filing Name</span><span class="detail-value" style="font-weight:600;">{{ selectedFiling.name }}</span></div>
+              <div class="detail-item"><span class="detail-label">Authority</span><span class="detail-value">{{ selectedFiling.authority }}</span></div>
+              <div class="detail-item"><span class="detail-label">Due Date</span><span class="detail-value" [style.color]="selectedFiling.status === 'overdue' ? 'var(--status-danger)' : 'inherit'">{{ selectedFiling.dueDate }}</span></div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                  <span class="cs-badge {{ getStatusBadge(selectedFiling.status).class }}"><i class="bi {{ getStatusBadge(selectedFiling.status).icon }}"></i> {{ selectedFiling.status | titlecase }}</span>
+                </span>
+              </div>
+              <div class="detail-item"><span class="detail-label">Last Filed</span><span class="detail-value">{{ selectedFiling.lastFiled }}</span></div>
+              <div class="detail-item"><span class="detail-label">Next Due</span><span class="detail-value">{{ selectedFiling.nextDue }}</span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="showToast('✓ Filing marked complete', 'success'); closeModal()"><i class="bi bi-check"></i> Mark Complete</button>
+          </div>
+        </div>
+      }
+
+      <!-- Regulatory Filings Overview Modal -->
+      @if (activeModal === 'regulatoryFilings') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr green">
+            <h5 class="modal-title"><i class="bi bi-building-check"></i> Regulatory Filings Overview</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="stats-grid" style="margin-bottom:var(--spacing-lg);">
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--primary-green);">12</div><div class="stat-mini-label">Compliant</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--accent-orange);">2</div><div class="stat-mini-label">Pending</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--status-danger);">0</div><div class="stat-mini-label">Overdue</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--accent-blue);">14</div><div class="stat-mini-label">Total</div></div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">All regulatory filings are up to date. Next filing due: <strong>CBK Prudential Return</strong> on Jan 31, 2025.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="setTab('regulatory'); closeModal()"><i class="bi bi-eye"></i> View All</button>
+          </div>
+        </div>
+      }
+
+      <!-- AML Cases Overview Modal -->
+      @if (activeModal === 'amlCases') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr orange">
+            <h5 class="modal-title"><i class="bi bi-shield-exclamation"></i> AML Monitoring Overview</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="stats-grid" style="margin-bottom:var(--spacing-lg);">
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--status-success);">2</div><div class="stat-mini-label">Cleared</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--accent-orange);">3</div><div class="stat-mini-label">Under Review</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--status-danger);">1</div><div class="stat-mini-label">Escalated</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--text-primary);">5</div><div class="stat-mini-label">Total</div></div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">3 cases require immediate attention. 1 case has been escalated to senior compliance officer.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="setTab('aml'); closeModal()"><i class="bi bi-eye"></i> View All Cases</button>
+          </div>
+        </div>
+      }
+
+      <!-- KYC Oversight Overview Modal -->
+      @if (activeModal === 'kycOversight') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr blue">
+            <h5 class="modal-title"><i class="bi bi-person-check"></i> KYC Oversight Overview</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="stats-grid" style="margin-bottom:var(--spacing-lg);">
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--status-success);">4</div><div class="stat-mini-label">Compliant</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--accent-orange);">2</div><div class="stat-mini-label">Pending</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--primary-green);">94%</div><div class="stat-mini-label">Completion</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--text-primary);">6</div><div class="stat-mini-label">Total</div></div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">KYC completion rate is at 94%. Grace Wanjiku and Peter Ochieng have pending document submissions.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="setTab('kyc'); closeModal()"><i class="bi bi-eye"></i> View All Members</button>
+          </div>
+        </div>
+      }
+
+      <!-- Pending Approvals Overview Modal -->
+      @if (activeModal === 'pendingApprovals') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr red">
+            <h5 class="modal-title"><i class="bi bi-hourglass-split"></i> Pending Approvals Overview</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="stats-grid" style="margin-bottom:var(--spacing-lg);">
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--status-danger);">{{ urgentCount }}</div><div class="stat-mini-label">Urgent</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--accent-orange);">{{ pendingCount - urgentCount }}</div><div class="stat-mini-label">Standard</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--primary-green);">0</div><div class="stat-mini-label">Approved Today</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--text-primary);">{{ pendingCount }}</div><div class="stat-mini-label">Total Pending</div></div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">{{ urgentCount }} items require urgent attention. Oldest pending item: <strong>SASRA Q4 2024 Quarterly Return</strong> (Dec 18).</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="setTab('pending'); closeModal()"><i class="bi bi-eye"></i> View All</button>
+          </div>
+        </div>
+      }
+
+      <!-- Policy List Overview Modal -->
+      @if (activeModal === 'policyList') {
+        <div class="modal-container active" (click)="$event.stopPropagation()">
+          <div class="mhdr purple">
+            <h5 class="modal-title"><i class="bi bi-file-text"></i> Active Policies Overview</h5>
+            <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="stats-grid" style="margin-bottom:var(--spacing-lg);">
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--status-success);">16</div><div class="stat-mini-label">Active</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--accent-orange);">1</div><div class="stat-mini-label">Under Review</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--text-muted);">1</div><div class="stat-mini-label">Draft</div></div>
+              <div class="stat-mini"><div class="stat-mini-value" style="color:var(--text-primary);">18</div><div class="stat-mini-label">Total</div></div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">All policies are current. <strong>Loan Recovery Policy v3.2</strong> is pending board approval.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeModal()">Close</button>
+            <button class="btn btn-primary" (click)="setTab('policy'); closeModal()"><i class="bi bi-eye"></i> View All Policies</button>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

@@ -140,25 +140,54 @@ export const routes: Routes = [
         ]
     },
     {
-        path: 'admin',
-        component: AdminLayoutComponent,
-        children: [
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-            { path: 'dashboard', loadComponent: () => import('./features/admin/pages/dashboard/dashboard').then(m => m.DashboardComponent) },
-            { path: 'analytics', loadComponent: () => import('./features/admin/pages/analytics/analytics').then(m => m.AnalyticsComponent) },
-            // { path: 'members', loadComponent: () => import('./features/admin/pages/members/members').then(m => m.MembersComponent) },
-            { path: 'deposits', loadComponent: () => import('./features/admin/pages/deposits/deposits').then(m => m.DepositsComponent) },
-            // { path: 'withdrawals', loadComponent: () => import('./features/admin/pages/withdrawals/withdrawals').then(m => m.WithdrawalsComponent) },
-            // { path: 'loans', loadComponent: () => import('./features/admin/pages/loans/loans').then(m => m.LoansComponent) },
-            // { path: 'shares', loadComponent: () => import('./features/admin/pages/shares/shares').then(m => m.SharesComponent) },
-            // { path: 'reconciliation', loadComponent: () => import('./features/admin/pages/reconciliation/reconciliation').then(m => m.ReconciliationComponent) },
-            // { path: 'vendors', loadComponent: () => import('./features/admin/pages/vendors/vendors').then(m => m.VendorsComponent) },
-            // { path: 'reports', loadComponent: () => import('./features/admin/pages/reports/reports').then(m => m.ReportsComponent) },
-            // { path: 'settings', loadComponent: () => import('./features/admin/pages/settings/settings').then(m => m.SettingsComponent) },
-            // { path: 'audit', loadComponent: () => import('./features/admin/pages/audit/audit').then(m => m.AuditComponent) }
-        ]
-    },
+    path: 'admin',
+    component: AdminLayoutComponent,
+    children: [
+        { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
+        // Core Dashboard & Analytics
+        { path: 'dashboard', loadComponent: () => import('./features/admin/pages/dashboard/dashboard').then(m => m.DashboardComponent) },
+        { path: 'analytics', loadComponent: () => import('./features/admin/pages/analytics/analytics').then(m => m.AnalyticsComponent) },
+
+        // Members & KYC
+        { path: 'members', loadComponent: () => import('./features/admin/pages/members/members').then(m => m.MembersAllComponent) },
+        { path: 'kyc-verification', loadComponent: () => import('./features/admin/pages/kyc-verification/kyc-verification').then(m => m.KycVerificationComponent) },
+
+        // Financial Operations - Deposits & Savings
+        { path: 'deposits', loadComponent: () => import('./features/admin/pages/deposits/deposits').then(m => m.DepositsComponent) },
+        { path: 'savings', loadComponent: () => import('./features/admin/pages/savings/savings').then(m => m.SavingsComponent) },
+        { path: 'withdrawals', loadComponent: () => import('./features/admin/pages/withdrawals/withdrawals').then(m => m.WithdrawalsComponent) },
+
+        // Loans
+        { path: 'loan-portifolio', loadComponent: () => import('./features/admin/pages/loan-portifolio/loan-portifolio').then(m => m.LoanPortifolioComponent) },
+        { path: 'loan-disbursements', loadComponent: () => import('./features/admin/pages/loan-disbursements/loan-disbursements').then(m => m.LoanDisbursementsComponent) },
+        { path: 'loan-repayments', loadComponent: () => import('./features/admin/pages/loan-repayments/loan-repayments').then(m => m.LoanRepaymentsComponent) },
+        { path: 'loan-applications', loadComponent: () => import('./features/admin/pages/loan-applications/loan-applications').then(m => m.LoanApplicationsComponent) },
+
+        // Shares & Capital
+        { path: 'shares', loadComponent: () => import('./features/admin/pages/share-capital/share-capital').then(m => m.ShareCapitalComponent) },
+
+        // Transactions & Wallet
+        { path: 'transactions', loadComponent: () => import('./features/admin/pages/transactions/transactions').then(m => m.TransactionsComponent) },
+        { path: 'saccopay-wallet', loadComponent: () => import('./features/admin/pages/saccopay-wallet/saccopay-wallet').then(m => m.SaccopayWalletComponent) },
+
+        // // Reconciliation & Compliance
+        // { path: 'reconciliation', loadComponent: () => import('./features/admin/pages/reconciliation/reconciliation').then(m => m.ReconciliationComponent) },
+        { path: 'compliance', loadComponent: () => import('./features/admin/pages/compliance/compliance').then(m => m.ComplianceComponent) },
+
+        // Reports
+        { path: 'reports', loadComponent: () => import('./features/admin/pages/all-reports/all-reports').then(m => m.ReportsComponent) },
+
+        // Staff & Management
+        { path: 'staff-management', loadComponent: () => import('./features/admin/pages/staff-management/staff-management').then(m => m.StaffManagementComponent) },
+        // { path: 'notifications', loadComponent: () => import('./features/admin/pages/notifications/notifications').then(m => m.NotificationsComponent) },
+
+        // // Settings
+        { path: 'onboarding', loadComponent: () => import('./features/admin/pages/onboarding/onboarding').then(m => m.OnboardingComponent) },
+        { path: 'notifications', loadComponent: () => import('./features/admin/pages/notifications/notifications').then(m => m.NotificationsComponent) },
+        { path: 'sacco-settings', loadComponent: () => import('./features/admin/pages/sacco-settings/sacco-settings').then(m => m.SaccoSettingsComponent) },
+    ]
+},
     // Fallback Route
     { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

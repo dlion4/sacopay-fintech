@@ -1,1 +1,680 @@
-<p>sacco-settings works!</p>
+<!-- SACCO Settings - Angular v21 Standalone Component Template -->
+<!-- Matches original design: neo-green glassmorphic theme, all sections, all modals -->
+
+<div class="sacco-settings-page">
+
+  <!-- Toast Notification -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1060;">
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMsg">
+          <i class="bi bi-check-circle-fill me-2"></i>Settings saved successfully!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">SACCO Settings</li>
+      </ol>
+    </nav>
+    <div class="header-title-row">
+      <div class="header-title">
+        <div class="title-icon">
+          <i class="bi bi-gear"></i>
+        </div>
+        <div>
+          <h1>SACCO Settings</h1>
+          <p class="subtitle">Configure your Rongo SACCO — general, financial, operational & system preferences</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Info Card -->
+  <div class="hero-card">
+    <div class="hero-main">
+      <div class="hero-logo">R</div>
+      <div class="hero-info">
+        <h2>Rongo SACCO Society Ltd</h2>
+        <p class="hero-address">P.O. Box 45-40404, Rongo, Migori County, Kenya</p>
+        <p class="hero-meta">SASRA License: DT/0198 | Reg: CS/7842 | Est. 1982</p>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-box">
+        <div class="stat-value">28</div>
+        <div class="stat-label">Settings</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">1,847</div>
+        <div class="stat-label">Members</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">KES 256M</div>
+        <div class="stat-label">Total Assets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Grid -->
+  <div class="settings-grid">
+
+    <!-- General Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon general"><i class="bi bi-building"></i></div>
+        <h3>General</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditText('SACCO Name', settings.general.saccoName, 'text')">
+          <div class="setting-info">
+            <div class="setting-label">SACCO Name</div>
+            <div class="setting-desc">Official registered name</div>
+          </div>
+          <div class="setting-value">{{ settings.general.saccoName }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('Registration Number', settings.general.regNumber, 'text')">
+          <div class="setting-info">
+            <div class="setting-label">Registration Number</div>
+            <div class="setting-desc">Ministry of Cooperatives</div>
+          </div>
+          <div class="setting-value">{{ settings.general.regNumber }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('SASRA License', settings.general.sasraLicense, 'text')">
+          <div class="setting-info">
+            <div class="setting-label">SASRA License</div>
+            <div class="setting-desc">SACCO regulatory license</div>
+          </div>
+          <div class="setting-value">{{ settings.general.sasraLicense }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('Official Email', settings.general.officialEmail, 'email')">
+          <div class="setting-info">
+            <div class="setting-label">Official Email</div>
+            <div class="setting-desc">Primary contact email</div>
+          </div>
+          <div class="setting-value">{{ settings.general.officialEmail }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('Phone Number', settings.general.phoneNumber, 'phone')">
+          <div class="setting-info">
+            <div class="setting-label">Phone Number</div>
+            <div class="setting-desc">Main office line</div>
+          </div>
+          <div class="setting-value">{{ settings.general.phoneNumber }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('Physical Address', settings.general.physicalAddress, 'textarea')">
+          <div class="setting-info">
+            <div class="setting-label">Physical Address</div>
+            <div class="setting-desc">Head office location</div>
+          </div>
+          <div class="setting-value">{{ settings.general.physicalAddress }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('Website URL', settings.general.websiteUrl, 'url')">
+          <div class="setting-info">
+            <div class="setting-label">Website URL</div>
+            <div class="setting-desc">SACCO website address</div>
+          </div>
+          <div class="setting-value">{{ settings.general.websiteUrl }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon financial"><i class="bi bi-cash-stack"></i></div>
+        <h3>Financial</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditNumber('Share Price', settings.financial.sharePrice, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Share Price</div>
+            <div class="setting-desc">Per share value</div>
+          </div>
+          <div class="setting-value">KES {{ settings.financial.sharePrice | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Min. Share Purchase', settings.financial.minSharePurchase, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Share Purchase</div>
+            <div class="setting-desc">Minimum shares per transaction</div>
+          </div>
+          <div class="setting-value">{{ settings.financial.minSharePurchase }} share <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Max. Share Holdings', settings.financial.maxShareHoldings, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Max. Share Holdings</div>
+            <div class="setting-desc">Maximum per member</div>
+          </div>
+          <div class="setting-value">{{ settings.financial.maxShareHoldings | number }} shares <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Min. Savings Deposit', settings.financial.minSavingsDeposit, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Savings Deposit</div>
+            <div class="setting-desc">Minimum deposit amount</div>
+          </div>
+          <div class="setting-value">KES {{ settings.financial.minSavingsDeposit | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Min. Savings Balance', settings.financial.minSavingsBalance, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Savings Balance</div>
+            <div class="setting-desc">Minimum account balance</div>
+          </div>
+          <div class="setting-value">KES {{ settings.financial.minSavingsBalance | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Interest Rate (Regular)', settings.financial.interestRateRegular, 'percent')">
+          <div class="setting-info">
+            <div class="setting-label">Interest Rate (Regular)</div>
+            <div class="setting-desc">Regular savings interest rate</div>
+          </div>
+          <div class="setting-value">{{ settings.financial.interestRateRegular }}% p.a. <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Interest Rate (Personal)', settings.financial.interestRatePersonal, 'percent')">
+          <div class="setting-info">
+            <div class="setting-label">Interest Rate (Personal)</div>
+            <div class="setting-desc">Personal loan interest rate</div>
+          </div>
+          <div class="setting-value">{{ settings.financial.interestRatePersonal }}% p.a. <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loans Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon loans"><i class="bi bi-bank"></i></div>
+        <h3>Loans</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditNumber('Max. Loan Amount', settings.loans.maxLoanAmount, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Max. Loan Amount</div>
+            <div class="setting-desc">Maximum loan per member</div>
+          </div>
+          <div class="setting-value">KES {{ settings.loans.maxLoanAmount | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Min. Loan Amount', settings.loans.minLoanAmount, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Loan Amount</div>
+            <div class="setting-desc">Minimum loan per member</div>
+          </div>
+          <div class="setting-value">KES {{ settings.loans.minLoanAmount | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Processing Fee', settings.loans.processingFee, 'percent')">
+          <div class="setting-info">
+            <div class="setting-label">Processing Fee</div>
+            <div class="setting-desc">Loan processing fee rate</div>
+          </div>
+          <div class="setting-value">{{ settings.loans.processingFee }}% <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Late Payment Penalty', settings.loans.latePaymentPenalty, 'percent')">
+          <div class="setting-info">
+            <div class="setting-label">Late Payment Penalty</div>
+            <div class="setting-desc">Per month overdue</div>
+          </div>
+          <div class="setting-value">{{ settings.loans.latePaymentPenalty }}% <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Grace Period', settings.loans.gracePeriod, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Grace Period</div>
+            <div class="setting-desc">Days before penalty applies</div>
+          </div>
+          <div class="setting-value">{{ settings.loans.gracePeriod }} days <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Withdrawals & Transfers Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon withdrawals"><i class="bi bi-arrow-left-right"></i></div>
+        <h3>Withdrawals & Transfers</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditNumber('Max. Daily Withdrawal', settings.withdrawals.maxDailyWithdrawal, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Max. Daily Withdrawal</div>
+            <div class="setting-desc">Member daily withdrawal limit</div>
+          </div>
+          <div class="setting-value">KES {{ settings.withdrawals.maxDailyWithdrawal | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Max. Single Transfer', settings.withdrawals.maxSingleTransfer, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Max. Single Transfer</div>
+            <div class="setting-desc">Per transaction limit</div>
+          </div>
+          <div class="setting-value">KES {{ settings.withdrawals.maxSingleTransfer | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Transfer Fee', settings.withdrawals.transferFee, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Transfer Fee</div>
+            <div class="setting-desc">Internal transfer charge</div>
+          </div>
+          <div class="setting-value">KES {{ settings.withdrawals.transferFee | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('M-Pesa Withdrawal Fee', settings.withdrawals.mpesaWithdrawalFee, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">M-Pesa Withdrawal Fee</div>
+            <div class="setting-desc">Charge for M-Pesa withdrawals</div>
+          </div>
+          <div class="setting-value">KES {{ settings.withdrawals.mpesaWithdrawalFee | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Allow External Withdrawals</div>
+            <div class="setting-desc">M-Pesa/Bank withdrawals enabled</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="externalWithdrawals" [(ngModel)]="settings.withdrawals.allowExternal" (change)="toggleSetting('External Withdrawals', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Auto-Save Withdrawals</div>
+            <div class="setting-desc">Withdrawals require admin approval</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="autoSaveWithdrawals" [(ngModel)]="settings.withdrawals.autoSave" (change)="toggleSetting('Auto-Save Withdrawals', $event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membership Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon membership"><i class="bi bi-people"></i></div>
+        <h3>Membership</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditNumber('Minimum Age', settings.membership.minAge, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Minimum Age</div>
+            <div class="setting-desc">Age requirement for membership</div>
+          </div>
+          <div class="setting-value">{{ settings.membership.minAge }} years <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Maximum Age', settings.membership.maxAge, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Maximum Age</div>
+            <div class="setting-desc">Age limit for new members</div>
+          </div>
+          <div class="setting-value">{{ settings.membership.maxAge }} years <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Registration Fee', settings.membership.registrationFee, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Registration Fee</div>
+            <div class="setting-desc">One-time joining fee</div>
+          </div>
+          <div class="setting-value">KES {{ settings.membership.registrationFee | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Min. Shares Required', settings.membership.minSharesRequired, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Shares Required</div>
+            <div class="setting-desc">Shares needed to join</div>
+          </div>
+          <div class="setting-value">{{ settings.membership.minSharesRequired }} shares (KES {{ settings.membership.minSharesRequired * 1000 | number }}) <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Allow Online Registration</div>
+            <div class="setting-desc">Members can register via portal</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="onlineRegistration" [(ngModel)]="settings.membership.allowOnlineRegistration" (change)="toggleSetting('Online Registration', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Require Document Upload</div>
+            <div class="setting-desc">ID & KRA PIN required on registration</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="requireDocumentUpload" [(ngModel)]="settings.membership.requireDocumentUpload" (change)="toggleSetting('Document Upload Requirement', $event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SACCO Pay Wallet Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon wallet"><i class="bi bi-wallet2"></i></div>
+        <h3>SACCO Pay Wallet</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditNumber('Max. Wallet Balance', settings.wallet.maxWalletBalance, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Max. Wallet Balance</div>
+            <div class="setting-desc">Maximum wallet limit per member</div>
+          </div>
+          <div class="setting-value">KES {{ settings.wallet.maxWalletBalance | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Min. Wallet Top-up', settings.wallet.minWalletTopup, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Wallet Top-up</div>
+            <div class="setting-desc">Minimum deposit amount</div>
+          </div>
+          <div class="setting-value">KES {{ settings.wallet.minWalletTopup | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Wallet Transfer Fee', settings.wallet.walletTransferFee, 'currency')">
+          <div class="setting-info">
+            <div class="setting-label">Wallet Transfer Fee</div>
+            <div class="setting-desc">Internal wallet transfer</div>
+          </div>
+          <div class="setting-value">KES {{ settings.wallet.walletTransferFee | number }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Enable M-Pesa Integration</div>
+            <div class="setting-desc">Allow M-Pesa top-ups & withdrawals</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="mpesaIntegration" [(ngModel)]="settings.wallet.enableMpesa" (change)="toggleSetting('M-Pesa Integration', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Allow QR Code Payments</div>
+            <div class="setting-desc">Enable QR code payments</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="qrPayments" [(ngModel)]="settings.wallet.allowQrPayments" (change)="toggleSetting('QR Code Payments', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Enable Wallet-to-Bank</div>
+            <div class="setting-desc">Allow transfers to bank accounts</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="walletToBank" [(ngModel)]="settings.wallet.enableWalletToBank" (change)="toggleSetting('Wallet-to-Bank Transfers', $event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon notifications"><i class="bi bi-bell"></i></div>
+        <h3>Notifications</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">SMS Notifications</div>
+            <div class="setting-desc">Transaction alerts via SMS</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="smsNotifications" [(ngModel)]="settings.notifications.smsEnabled" (change)="toggleSetting('SMS Notifications', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Email Notifications</div>
+            <div class="setting-desc">Transaction alerts via email</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="emailNotifications" [(ngModel)]="settings.notifications.emailEnabled" (change)="toggleSetting('Email Notifications', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Push Notifications</div>
+            <div class="setting-desc">In-app & browser push alerts</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="pushNotifications" [(ngModel)]="settings.notifications.pushEnabled" (change)="toggleSetting('Push Notifications', $event)">
+          </div>
+        </div>
+        <div class="setting-row" (click)="openEditText('SMS Sender ID', settings.notifications.smsSenderId, 'text')">
+          <div class="setting-info">
+            <div class="setting-label">SMS Sender ID</div>
+            <div class="setting-desc">Name displayed on member phones</div>
+          </div>
+          <div class="setting-value">{{ settings.notifications.smsSenderId }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditText('Alert Email', settings.notifications.alertEmail, 'email')">
+          <div class="setting-info">
+            <div class="setting-label">Alert Email</div>
+            <div class="setting-desc">Admin notification email</div>
+          </div>
+          <div class="setting-value">{{ settings.notifications.alertEmail }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Card -->
+    <div class="settings-card">
+      <div class="card-header">
+        <div class="header-icon security"><i class="bi bi-shield-lock"></i></div>
+        <h3>Security</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openEditNumber('Min. Password Length', settings.security.minPasswordLength, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Min. Password Length</div>
+            <div class="setting-desc">Password strength requirement</div>
+          </div>
+          <div class="setting-value">{{ settings.security.minPasswordLength }} characters <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Session Timeout', settings.security.sessionTimeout, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Session Timeout</div>
+            <div class="setting-desc">Auto-logout after inactivity</div>
+          </div>
+          <div class="setting-value">{{ settings.security.sessionTimeout }} minutes <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('Max Login Attempts', settings.security.maxLoginAttempts, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">Max Login Attempts</div>
+            <div class="setting-desc">Before account lockout</div>
+          </div>
+          <div class="setting-value">{{ settings.security.maxLoginAttempts }} attempts <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openEditNumber('OTP Expiry', settings.security.otpExpiry, 'number')">
+          <div class="setting-info">
+            <div class="setting-label">OTP Expiry</div>
+            <div class="setting-desc">OTP code validity period</div>
+          </div>
+          <div class="setting-value">{{ settings.security.otpExpiry }} minutes <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">Require OTP on Login</div>
+            <div class="setting-desc">Two-factor authentication</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="requireOtpLogin" [(ngModel)]="settings.security.requireOtpLogin" (change)="toggleSetting('OTP on Login', $event)">
+          </div>
+        </div>
+        <div class="setting-row toggle-row">
+          <div class="setting-info">
+            <div class="setting-label">IP Restriction</div>
+            <div class="setting-desc">Restrict admin access to office IPs</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="ipRestriction" [(ngModel)]="settings.security.ipRestriction" (change)="toggleSetting('IP Restriction', $event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System & Integrations Card -->
+    <div class="settings-card full-width">
+      <div class="card-header">
+        <div class="header-icon system"><i class="bi bi-cpu"></i></div>
+        <h3>System & Integrations</h3>
+      </div>
+      <div class="card-body">
+        <div class="setting-row" (click)="openSelect('Time Zone', settings.system.timeZone, timeZones)">
+          <div class="setting-info">
+            <div class="setting-label">Time Zone</div>
+            <div class="setting-desc">System time zone</div>
+          </div>
+          <div class="setting-value">{{ settings.system.timeZone }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openSelect('Currency', settings.system.currency, currencies)">
+          <div class="setting-info">
+            <div class="setting-label">Currency</div>
+            <div class="setting-desc">System currency</div>
+          </div>
+          <div class="setting-value">{{ settings.system.currency }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openSelect('Date Format', settings.system.dateFormat, dateFormats)">
+          <div class="setting-info">
+            <div class="setting-label">Date Format</div>
+            <div class="setting-desc">Display date format</div>
+          </div>
+          <div class="setting-value">{{ settings.system.dateFormat }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openSelect('Language', settings.system.language, languages)">
+          <div class="setting-info">
+            <div class="setting-label">Language</div>
+            <div class="setting-desc">System interface language</div>
+          </div>
+          <div class="setting-value">{{ settings.system.language }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row" (click)="openSelect('Accounting Software', settings.system.accountingSoftware, accountingSoftwares)">
+          <div class="setting-info">
+            <div class="setting-label">Accounting Software</div>
+            <div class="setting-desc">Integration with external system</div>
+          </div>
+          <div class="setting-value">{{ settings.system.accountingSoftware }} <i class="bi bi-pencil-square edit-icon"></i></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">M-Pesa API Status</div>
+            <div class="setting-desc">Lipa na M-Pesa Integration</div>
+          </div>
+          <div class="setting-value status-connected">
+            <span class="status-dot"></span> Connected <i class="bi bi-pencil-square edit-icon" style="opacity:0.3;cursor:default;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Actions Footer -->
+  <div class="actions-bar">
+    <div class="actions-info">
+      <div class="actions-icon"><i class="bi bi-gear"></i></div>
+      <div>
+        <div class="actions-title">Actions</div>
+        <div class="actions-desc">Manage SACCO-wide settings and preferences</div>
+      </div>
+    </div>
+    <div class="actions-buttons">
+      <button class="btn btn-outline-action" (click)="showToast('Audit log opened')">
+        <i class="bi bi-journal-text"></i> Audit Log
+      </button>
+      <button class="btn btn-outline-action" (click)="showToast('Backup initiated')">
+        <i class="bi bi-cloud-arrow-up"></i> Backup
+      </button>
+      <button class="btn btn-outline-action" (click)="showToast('System status: All systems operational')">
+        <i class="bi bi-activity"></i> System Status
+      </button>
+      <button class="btn btn-save-all" (click)="saveAllSettings()">
+        <i class="bi bi-check-circle"></i> Save All Changes
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Edit Text Modal -->
+@if (showEditTextModal) {
+<div class="modal-backdrop" (click)="closeEditTextModal()"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="etTitle">Edit: {{ currentEditLabel }}</h5>
+        <button type="button" class="btn-close" (click)="closeEditTextModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="etInput" class="form-label" id="etLabel">{{ currentEditLabel }}</label>
+          @if (currentEditType === 'textarea') {
+            <textarea class="form-control" id="etInput" rows="3" [(ngModel)]="editTextValue" [placeholder]="'Enter ' + currentEditLabel.toLowerCase()"></textarea>
+          } @else {
+            <input type="text" class="form-control" id="etInput" [(ngModel)]="editTextValue" [placeholder]="'Enter ' + currentEditLabel.toLowerCase()">
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditTextModal()">Cancel</button>
+        <button type="button" class="btn btn-primary-green" (click)="saveTextEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Edit Number Modal -->
+@if (showEditNumberModal) {
+<div class="modal-backdrop" (click)="closeEditNumberModal()"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="enTitle">Edit: {{ currentNumberLabel }}</h5>
+        <button type="button" class="btn-close" (click)="closeEditNumberModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="enInput" class="form-label" id="enLabel">{{ currentNumberLabel }}</label>
+          <div class="input-group">
+            @if (currentNumberType === 'currency') {
+              <span class="input-group-text" id="enPrefix">KES</span>
+            }
+            <input type="number" class="form-control" id="enInput" [(ngModel)]="editNumberValue" placeholder="Enter value">
+            @if (currentNumberType === 'percent') {
+              <span class="input-group-text" id="enSuffix">%</span>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditNumberModal()">Cancel</button>
+        <button type="button" class="btn btn-primary-green" (click)="saveNumberEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Edit Select Modal -->
+@if (showEditSelectModal) {
+<div class="modal-backdrop" (click)="closeEditSelectModal()"></div>
+<div class="modal show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="esTitle">Edit: {{ currentSelectLabel }}</h5>
+        <button type="button" class="btn-close" (click)="closeEditSelectModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="esSelect" class="form-label" id="esLabel">{{ currentSelectLabel }}</label>
+          <select class="form-select" id="esSelect" [(ngModel)]="editSelectValue">
+            @for (opt of currentSelectOptions; track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditSelectModal()">Cancel</button>
+        <button type="button" class="btn btn-primary-green" (click)="saveSelectEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+}

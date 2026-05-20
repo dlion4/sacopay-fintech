@@ -1,1 +1,2066 @@
-<p>kyc-verification works!</p>
+<!-- KYC Verification - Angular v21 Component Template -->
+<div class="kyc-page">
+  <!-- Toast Container -->
+  <div class="toast-container">
+    @for (toast of toasts; track toast.id) {
+      <div class="toast" [class]="'toast-' + toast.type" [class.toast-hide]="!toast.visible">
+        <span class="toast-icon">
+          @switch (toast.type) {
+            @case ('success') { ✅ }
+            @case ('danger') { ❌ }
+            @case ('warning') { ⚠️ }
+            @case ('info') { ℹ️ }
+            @case ('primary') { 🟢 }
+          }
+        </span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" (click)="dismissToast(toast.id)">×</button>
+      </div>
+    }
+  </div>
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <span class="breadcrumb-link" (click)="showToast('Navigating to Dashboard...', 'info')">🏠 Home</span>
+    <span class="breadcrumb-sep">›</span>
+    <span>Member Management</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">KYC Verification</span>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <span class="page-title-icon">🛡️</span>
+        KYC Verification
+      </h1>
+      <p class="page-subtitle">Review and verify member identity documents and applications</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline" (click)="openModal('export')">📥 Export Report</button>
+      <button class="btn btn-outline" (click)="openModal('settings')">⚙️ Settings</button>
+      <button class="btn btn-primary" (click)="openModal('bulkActions')">📋 Bulk Actions</button>
+      <button class="btn btn-gradient" (click)="openModal('registration')">👤 Register New Member</button>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  <div class="alert-banner alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <p class="alert-text">
+      <strong>{{ pendingCount }} Pending Verifications:</strong> New applications require review within 48 hours.
+      <strong>{{ urgentCount }} applications</strong> are marked as urgent with incomplete documents.
+    </p>
+    <button class="btn btn-sm btn-warning" (click)="switchTab('pending')">Review Now</button>
+  </div>
+
+  <!-- KPI Stats -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color: #ff9800" (click)="switchTab('pending')">
+      <div class="kpi-bg-icon">⏳</div>
+      <span class="kpi-icon">⏳</span>
+      <p class="kpi-label">Pending Verification</p>
+      <p class="kpi-value">{{ pendingCount }}</p>
+      <p class="kpi-sub">📅 {{ newToday }} new today</p>
+    </div>
+    <div class="kpi-card" style="--kpi-color: #22c55e" (click)="switchTab('approved')">
+      <div class="kpi-bg-icon">✅</div>
+      <span class="kpi-icon">✅</span>
+      <p class="kpi-label">Approved This Month</p>
+      <p class="kpi-value">{{ approvedCount }}</p>
+      <p class="kpi-sub">📈 +{{ approvalRate }}% approval rate</p>
+    </div>
+    <div class="kpi-card" style="--kpi-color: #ef4444" (click)="switchTab('rejected')">
+      <div class="kpi-bg-icon">❌</div>
+      <span class="kpi-icon">❌</span>
+      <p class="kpi-label">Rejected / Returned</p>
+      <p class="kpi-value">{{ rejectedCount }}</p>
+      <p class="kpi-sub">🔄 {{ returnedForResubmission }} for resubmission</p>
+    </div>
+    <div class="kpi-card" style="--kpi-color: #2196f3" (click)="showToast('Average processing time: 1.8 days', 'info')">
+      <div class="kpi-bg-icon">⏱️</div>
+      <span class="kpi-icon">⏱️</span>
+      <p class="kpi-label">Avg. Processing Time</p>
+      <p class="kpi-value">1.8 days</p>
+      <p class="kpi-sub">🎯 Target: 2 days</p>
+    </div>
+  </div>
+
+  <!-- Document Requirements Info -->
+  <div class="info-card glass-card">
+    <div class="info-card-header">
+      <h4>📋 Required Documents Checklist</h4>
+      <button class="btn btn-sm btn-outline" (click)="openModal('requirements')">View Full Policy</button>
+    </div>
+    <div class="info-card-body">
+      <div class="doc-checklist">
+        @for (doc of requiredDocuments; track doc.name) {
+          <div class="doc-item">
+            <span class="doc-icon" [style.background]="doc.color + '20'" [style.color]="doc.color">{{ doc.icon }}</span>
+            <div class="doc-info">
+              <p class="doc-name">{{ doc.name }}</p>
+              <p class="doc-desc">{{ doc.description }}</p>
+            </div>
+            <span class="doc-required" [class.required]="doc.required">{{ doc.required ? 'Required' : 'Optional' }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-nav">
+    @for (tab of tabs; track tab.id) {
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === tab.id"
+        (click)="switchTab(tab.id)">
+        <span>{{ tab.icon }}</span> {{ tab.label }}
+        @if (tab.id === 'pending') {
+          <span class="tab-badge tab-badge-warning">{{ pendingCount }}</span>
+        }
+        @if (tab.id === 'approved') {
+          <span class="tab-badge tab-badge-success">{{ approvedCount }}</span>
+        }
+        @if (tab.id === 'rejected') {
+          <span class="tab-badge tab-badge-danger">{{ rejectedCount }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- ==================== TAB: PENDING KYC ==================== -->
+  @if (activeTab === 'pending') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Filters -->
+      <div class="filters-card">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            placeholder="Search by name, ID, or email..."
+            class="search-input">
+        </div>
+        <select [(ngModel)]="filterUrgency" class="filter-select">
+          <option value="all">All Urgency</option>
+          <option value="urgent">🔴 Urgent</option>
+          <option value="normal">🟢 Normal</option>
+        </select>
+        <select [(ngModel)]="filterDocStatus" class="filter-select">
+          <option value="all">All Doc Status</option>
+          <option value="complete">Complete</option>
+          <option value="incomplete">Incomplete</option>
+        </select>
+        <select [(ngModel)]="sortBy" class="filter-select">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="urgent">Urgent First</option>
+        </select>
+      </div>
+
+      <!-- Pending KYC Cards -->
+      <div class="kyc-cards-grid">
+        @for (kyc of filteredPendingKyc; track kyc.applicationId; let i = $index) {
+          <div class="kyc-card glass-card" [class.urgent]="kyc.urgency === 'urgent'">
+            <!-- Card Header -->
+            <div class="kyc-card-header">
+              <div class="kyc-card-header-left">
+                <div class="avatar" [class.avatar-urgent]="kyc.urgency === 'urgent'">{{ kyc.initials }}</div>
+                <div class="kyc-member-info">
+                  <h4 class="kyc-member-name">{{ kyc.name }}</h4>
+                  <p class="kyc-member-email">{{ kyc.email }}</p>
+                </div>
+              </div>
+              <div class="kyc-card-header-right">
+                @if (kyc.urgency === 'urgent') {
+                  <span class="badge badge-urgent">🔴 Urgent</span>
+                }
+                <span class="badge badge-pending">⏳ Pending</span>
+              </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="kyc-card-body">
+              <div class="kyc-info-grid">
+                <div class="kyc-info-item">
+                  <span class="info-label">Application ID</span>
+                  <span class="info-value"><code>{{ kyc.applicationId }}</code></span>
+                </div>
+                <div class="kyc-info-item">
+                  <span class="info-label">Phone</span>
+                  <span class="info-value">{{ kyc.phone }}</span>
+                </div>
+                <div class="kyc-info-item">
+                  <span class="info-label">ID Number</span>
+                  <span class="info-value">{{ kyc.idNumber }}</span>
+                </div>
+                <div class="kyc-info-item">
+                  <span class="info-label">Submitted</span>
+                  <span class="info-value">{{ kyc.submittedDate }}</span>
+                </div>
+              </div>
+
+              <!-- Documents Status -->
+              <div class="docs-status">
+                <h5 class="docs-status-title">📄 Document Status</h5>
+                <div class="docs-list">
+                  @for (doc of kyc.documents; track doc.name) {
+                    <div class="doc-status-item" [class]="'doc-' + doc.status">
+                      <span class="doc-status-icon">
+                        @switch (doc.status) {
+                          @case ('verified') { ✅ }
+                          @case ('pending') { ⏳ }
+                          @case ('rejected') { ❌ }
+                          @case ('missing') { ⚪ }
+                        }
+                      </span>
+                      <span class="doc-status-name">{{ doc.name }}</span>
+                      <span class="doc-status-badge" [class]="'badge-' + doc.status">{{ doc.status | titlecase }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="kyc-progress">
+                <div class="progress-header">
+                  <span>Verification Progress</span>
+                  <span class="progress-percent">{{ kyc.progress }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="kyc.progress" 
+                       [class.progress-complete]="kyc.progress === 100"
+                       [class.progress-warning]="kyc.progress < 100 && kyc.progress >= 50"
+                       [class.progress-danger]="kyc.progress < 50"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer / Actions -->
+            <div class="kyc-card-footer">
+              <button class="btn btn-sm btn-outline" (click)="viewKycDetails(kyc)">
+                👁️ View Details
+              </button>
+              <button class="btn btn-sm btn-primary" (click)="openVerifyModal(kyc)" [disabled]="kyc.progress < 100">
+                🔍 Verify
+              </button>
+              @if (kyc.progress === 100) {
+                <button class="btn btn-sm btn-success" (click)="openApproveModal(kyc)">
+                  ✅ Approve
+                </button>
+              }
+              <button class="btn btn-sm btn-danger" (click)="openRejectModal(kyc)">
+                ❌ Reject
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Empty State -->
+      @if (filteredPendingKyc.length === 0) {
+        <div class="empty-state glass-card">
+          <span class="empty-icon">🔍</span>
+          <h3>No Pending KYC Found</h3>
+          <p>No applications match your search criteria.</p>
+        </div>
+      }
+
+      <!-- Pagination -->
+      @if (filteredPendingKyc.length > 0) {
+        <div class="pagination-card glass-card">
+          <p class="pagination-info">Showing {{ filteredPendingKyc.length }} of {{ pendingKycList.length }} pending applications</p>
+          <div class="pagination">
+            <button class="page-btn">←</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">→</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ==================== TAB: APPROVED KYC ==================== -->
+  @if (activeTab === 'approved') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Filters -->
+      <div class="filters-card">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTermApproved" 
+            placeholder="Search approved members..."
+            class="search-input">
+        </div>
+        <select [(ngModel)]="filterApprovedMonth" class="filter-select">
+          <option value="all">All Time</option>
+          <option value="thisMonth">This Month</option>
+          <option value="lastMonth">Last Month</option>
+          <option value="last3Months">Last 3 Months</option>
+        </select>
+        <select [(ngModel)]="filterTier" class="filter-select">
+          <option value="all">All Tiers</option>
+          <option value="Gold">Gold</option>
+          <option value="Silver">Silver</option>
+          <option value="Bronze">Bronze</option>
+        </select>
+      </div>
+
+      <!-- Approved Table -->
+      <div class="glass-card table-card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Application ID</th>
+                <th>ID Number</th>
+                <th>Approved Date</th>
+                <th>Approved By</th>
+                <th>Tier</th>
+                <th>Initial Shares</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (kyc of filteredApprovedKyc; track kyc.applicationId) {
+                <tr class="table-row">
+                  <td>
+                    <div class="member-cell">
+                      <div class="avatar avatar-success">{{ kyc.initials }}</div>
+                      <div class="member-info">
+                        <p class="member-name">{{ kyc.name }}</p>
+                        <p class="member-email">{{ kyc.email }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td><code class="id-badge">{{ kyc.applicationId }}</code></td>
+                  <td>{{ kyc.idNumber }}</td>
+                  <td class="text-muted">{{ kyc.approvedDate }}</td>
+                  <td>{{ kyc.approvedBy }}</td>
+                  <td>
+                    <span class="badge" [class]="'badge-tier-' + kyc.tier.toLowerCase()">
+                      ⭐ {{ kyc.tier }}
+                    </span>
+                  </td>
+                  <td class="font-bold">{{ kyc.initialShares }} shares</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="View Profile" (click)="viewMemberProfile(kyc)">👤</button>
+                      <button class="action-btn" title="Download Documents" (click)="downloadDocs(kyc)">📥</button>
+                      <button class="action-btn" title="Send Welcome" (click)="sendWelcome(kyc)">📧</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <p class="table-info">Showing {{ filteredApprovedKyc.length }} approved members</p>
+          <button class="btn btn-sm btn-primary" (click)="showToast('Exporting approved list...', 'info')">📥 Export List</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: REJECTED KYC ==================== -->
+  @if (activeTab === 'rejected') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Filters -->
+      <div class="filters-card">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTermRejected" 
+            placeholder="Search rejected applications..."
+            class="search-input">
+        </div>
+        <select [(ngModel)]="filterRejectionReason" class="filter-select">
+          <option value="all">All Reasons</option>
+          <option value="invalid_documents">Invalid Documents</option>
+          <option value="incomplete">Incomplete Application</option>
+          <option value="fraud_suspected">Fraud Suspected</option>
+          <option value="duplicate">Duplicate Application</option>
+        </select>
+      </div>
+
+      <!-- Rejected Table -->
+      <div class="glass-card table-card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Applicant</th>
+                <th>Application ID</th>
+                <th>Rejected Date</th>
+                <th>Reason</th>
+                <th>Rejected By</th>
+                <th>Resubmission</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (kyc of filteredRejectedKyc; track kyc.applicationId) {
+                <tr class="table-row">
+                  <td>
+                    <div class="member-cell">
+                      <div class="avatar avatar-danger">{{ kyc.initials }}</div>
+                      <div class="member-info">
+                        <p class="member-name">{{ kyc.name }}</p>
+                        <p class="member-email">{{ kyc.email }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td><code class="id-badge">{{ kyc.applicationId }}</code></td>
+                  <td class="text-muted">{{ kyc.rejectedDate }}</td>
+                  <td>
+                    <span class="badge badge-danger-light">{{ kyc.rejectionReason }}</span>
+                  </td>
+                  <td>{{ kyc.rejectedBy }}</td>
+                  <td>
+                    @if (kyc.canResubmit) {
+                      <span class="badge badge-info">Allowed</span>
+                    } @else {
+                      <span class="badge badge-neutral">Not Allowed</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="View Details" (click)="viewRejectionDetails(kyc)">👁️</button>
+                      @if (kyc.canResubmit) {
+                        <button class="action-btn" title="Resend Instructions" (click)="resendInstructions(kyc)">📧</button>
+                      }
+                      <button class="action-btn" title="Delete" (click)="confirmDelete(kyc)">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <p class="table-info">Showing {{ filteredRejectedKyc.length }} rejected applications</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: VERIFICATION HISTORY ==================== -->
+  @if (activeTab === 'history') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Activity Log -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h4 class="section-title-inline">📋 Verification Activity Log</h4>
+          <div class="header-actions">
+            <select [(ngModel)]="filterActivityType" class="filter-select">
+              <option value="all">All Activities</option>
+              <option value="approved">Approvals</option>
+              <option value="rejected">Rejections</option>
+              <option value="pending">Status Changes</option>
+            </select>
+            <button class="btn btn-sm btn-outline" (click)="exportActivityLog()">📥 Export</button>
+          </div>
+        </div>
+        <div class="activity-log">
+          @for (activity of activityLog; track activity.id) {
+            <div class="activity-item" [class]="'activity-' + activity.type">
+              <div class="activity-icon">
+                @switch (activity.type) {
+                  @case ('approved') { ✅ }
+                  @case ('rejected') { ❌ }
+                  @case ('pending') { ⏳ }
+                  @case ('document') { 📄 }
+                }
+              </div>
+              <div class="activity-content">
+                <p class="activity-text">
+                  <strong>{{ activity.actor }}</strong> {{ activity.action }} 
+                  <strong>{{ activity.target }}</strong>
+                </p>
+                <p class="activity-meta">{{ activity.timestamp }} • {{ activity.details }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- KYC Details Modal -->
+  @if (modals.kycDetails && selectedKyc) {
+    <div class="modal-overlay" (click)="closeModal('kycDetails')">
+      <div class="modal modal-xl" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">🛡️</span>
+            <h3>KYC Verification - {{ selectedKyc.name }}</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('kycDetails')">×</button>
+        </div>
+        <div class="modal-body">
+          <!-- Applicant Info Section -->
+          <div class="detail-section">
+            <div class="applicant-header">
+              <div class="avatar avatar-xl">{{ selectedKyc.initials }}</div>
+              <div class="applicant-info">
+                <h3>{{ selectedKyc.name }}</h3>
+                <p class="text-muted">{{ selectedKyc.email }} • {{ selectedKyc.phone }}</p>
+                <div class="applicant-badges">
+                  <span class="badge badge-info">{{ selectedKyc.applicationId }}</span>
+                  @if (selectedKyc.urgency === 'urgent') {
+                    <span class="badge badge-urgent">🔴 Urgent</span>
+                  }
+                  <span class="badge badge-pending">⏳ Pending Review</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Personal Information -->
+          <div class="detail-section">
+            <h4 class="section-title">👤 Personal Information</h4>
+            <div class="info-grid">
+              <div class="info-box">
+                <span class="info-label">Full Name</span>
+                <span class="info-value">{{ selectedKyc.name }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">National ID</span>
+                <span class="info-value">{{ selectedKyc.idNumber }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Date of Birth</span>
+                <span class="info-value">{{ selectedKyc.dateOfBirth }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Gender</span>
+                <span class="info-value">{{ selectedKyc.gender }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Phone Number</span>
+                <span class="info-value">{{ selectedKyc.phone }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Email Address</span>
+                <span class="info-value">{{ selectedKyc.email }}</span>
+              </div>
+              <div class="info-box full-width">
+                <span class="info-label">Physical Address</span>
+                <span class="info-value">{{ selectedKyc.address }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Occupation</span>
+                <span class="info-value">{{ selectedKyc.occupation }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Employer</span>
+                <span class="info-value">{{ selectedKyc.employer }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents Section -->
+          <div class="detail-section">
+            <h4 class="section-title">📄 Uploaded Documents</h4>
+            <div class="documents-grid">
+              @for (doc of selectedKyc.documents; track doc.name) {
+                <div class="document-card" [class]="'doc-card-' + doc.status">
+                  <div class="doc-card-preview">
+                    <span class="doc-preview-icon">{{ doc.icon }}</span>
+                  </div>
+                  <div class="doc-card-info">
+                    <h5 class="doc-card-title">{{ doc.name }}</h5>
+                    <p class="doc-card-meta">Uploaded: {{ doc.uploadedDate }}</p>
+                    <span class="badge" [class]="'badge-' + doc.status">
+                      @switch (doc.status) {
+                        @case ('verified') { ✅ Verified }
+                        @case ('pending') { ⏳ Pending }
+                        @case ('rejected') { ❌ Rejected }
+                        @case ('missing') { ⚪ Missing }
+                      }
+                    </span>
+                  </div>
+                  <div class="doc-card-actions">
+                    @if (doc.status !== 'missing') {
+                      <button class="btn btn-sm btn-outline" (click)="previewDocument(doc)">👁️ View</button>
+                      <button class="btn btn-sm btn-outline" (click)="downloadDocument(doc)">📥</button>
+                    }
+                    @if (doc.status === 'pending') {
+                      <button class="btn btn-sm btn-success" (click)="verifyDocument(doc)">✅</button>
+                      <button class="btn btn-sm btn-danger" (click)="rejectDocument(doc)">❌</button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Next of Kin -->
+          <div class="detail-section">
+            <h4 class="section-title">👨‍👩‍👧 Next of Kin</h4>
+            <div class="info-grid">
+              <div class="info-box">
+                <span class="info-label">Name</span>
+                <span class="info-value">{{ selectedKyc.nextOfKin.name }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Relationship</span>
+                <span class="info-value">{{ selectedKyc.nextOfKin.relationship }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">Phone</span>
+                <span class="info-value">{{ selectedKyc.nextOfKin.phone }}</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">ID Number</span>
+                <span class="info-value">{{ selectedKyc.nextOfKin.idNumber }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Verification Notes -->
+          <div class="detail-section">
+            <h4 class="section-title">📝 Verification Notes</h4>
+            <textarea 
+              [(ngModel)]="verificationNotes" 
+              class="form-textarea" 
+              rows="3" 
+              placeholder="Add notes about this application..."></textarea>
+          </div>
+
+          <!-- Modal Actions -->
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('kycDetails')">Close</button>
+            @if (selectedKyc.progress === 100) {
+              <button class="btn btn-success" (click)="closeModal('kycDetails'); openApproveModal(selectedKyc)">✅ Approve KYC</button>
+            }
+            <button class="btn btn-danger" (click)="closeModal('kycDetails'); openRejectModal(selectedKyc)">❌ Reject KYC</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Approve KYC Modal -->
+  @if (modals.approve && selectedKyc) {
+    <div class="modal-overlay" (click)="closeModal('approve')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-success">
+          <div class="modal-title">
+            <span class="modal-icon">✅</span>
+            <h3>Approve KYC Application</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('approve')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="approve-info-box">
+            <p>ℹ️ Approving this KYC will activate the member account and grant full access to SACCO services.</p>
+          </div>
+
+          <h5 class="sub-section-title">Member Details</h5>
+          <div class="details-table">
+            <div class="detail-row">
+              <span class="detail-label">Name:</span>
+              <span class="detail-value">{{ selectedKyc.name }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Application ID:</span>
+              <span class="detail-value">{{ selectedKyc.applicationId }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Documents Status:</span>
+              <span class="detail-value"><span class="badge badge-success">All Verified</span></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Member Tier Assignment</label>
+            <select [(ngModel)]="approvalForm.tier" class="form-input">
+              <option value="Bronze">Bronze (Standard)</option>
+              <option value="Silver">Silver (Premium)</option>
+              <option value="Gold">Gold (VIP)</option>
+            </select>
+            <p class="form-hint">Tier can be upgraded later based on deposits and activity</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Initial Share Purchase (KES)</label>
+            <input type="number" [(ngModel)]="approvalForm.initialShares" class="form-input" min="5000" step="500">
+            <p class="form-hint">Minimum KES 5,000 required</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Approval Notes (Optional)</label>
+            <textarea [(ngModel)]="approvalForm.notes" class="form-textarea" rows="2" placeholder="Any notes about this approval..."></textarea>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="approvalForm.sendWelcome">
+              <span>Send welcome email and SMS to member</span>
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="approvalForm.confirmVerification" required>
+              <span>I confirm that all documents have been verified and are authentic</span>
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('approve')">Cancel</button>
+            <button class="btn btn-success" (click)="submitApproval()" [disabled]="!approvalForm.confirmVerification">
+              ✅ Approve & Activate Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Reject KYC Modal -->
+  @if (modals.reject && selectedKyc) {
+    <div class="modal-overlay" (click)="closeModal('reject')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-danger">
+          <div class="modal-title">
+            <span class="modal-icon">❌</span>
+            <h3>Reject KYC Application</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('reject')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="reject-info-box">
+            <p>⚠️ Rejecting this application will notify the applicant. They may be allowed to resubmit based on rejection reason.</p>
+          </div>
+
+          <h5 class="sub-section-title">Applicant Details</h5>
+          <div class="details-table">
+            <div class="detail-row">
+              <span class="detail-label">Name:</span>
+              <span class="detail-value">{{ selectedKyc.name }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Application ID:</span>
+              <span class="detail-value">{{ selectedKyc.applicationId }}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Rejection Reason *</label>
+            <select [(ngModel)]="rejectionForm.reason" class="form-input" required>
+              <option value="">Select Reason</option>
+              <option value="invalid_documents">Invalid or Fake Documents</option>
+              <option value="incomplete">Incomplete Application</option>
+              <option value="blurry_photos">Blurry/Unreadable Photos</option>
+              <option value="mismatch">Information Mismatch</option>
+              <option value="expired_documents">Expired Documents</option>
+              <option value="fraud_suspected">Fraud Suspected</option>
+              <option value="duplicate">Duplicate Application</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Detailed Explanation *</label>
+            <textarea [(ngModel)]="rejectionForm.details" class="form-textarea" rows="3" placeholder="Provide detailed explanation for rejection..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Documents to Resubmit</label>
+            <div class="checkbox-list">
+              @for (doc of selectedKyc.documents; track doc.name) {
+                <label class="checkbox-label">
+                  <input type="checkbox" [checked]="rejectionForm.documentsToResubmit.includes(doc.name)" 
+                         (change)="toggleResubmitDoc(doc.name)">
+                  <span>{{ doc.name }}</span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="rejectionForm.allowResubmission">
+              <span>Allow applicant to resubmit application</span>
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="rejectionForm.notifyApplicant">
+              <span>Send rejection notification to applicant</span>
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('reject')">Cancel</button>
+            <button class="btn btn-danger" (click)="submitRejection()" [disabled]="!rejectionForm.reason || !rejectionForm.details">
+              ❌ Reject Application
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Document Preview Modal -->
+  @if (modals.documentPreview && selectedDocument) {
+    <div class="modal-overlay" (click)="closeModal('documentPreview')">
+      <div class="modal modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📄</span>
+            <h3>{{ selectedDocument.name }}</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('documentPreview')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="document-preview-container">
+            <div class="document-preview-placeholder">
+              <span class="preview-icon">{{ selectedDocument.icon }}</span>
+              <p>Document Preview</p>
+              <p class="text-muted">{{ selectedDocument.name }}</p>
+            </div>
+          </div>
+          <div class="document-meta">
+            <div class="meta-item">
+              <span class="meta-label">File Name:</span>
+              <span class="meta-value">{{ selectedDocument.fileName }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Upload Date:</span>
+              <span class="meta-value">{{ selectedDocument.uploadedDate }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">File Size:</span>
+              <span class="meta-value">{{ selectedDocument.fileSize }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Status:</span>
+              <span class="badge" [class]="'badge-' + selectedDocument.status">{{ selectedDocument.status | titlecase }}</span>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="downloadDocument(selectedDocument)">📥 Download</button>
+            @if (selectedDocument.status === 'pending') {
+              <button class="btn btn-success" (click)="verifyDocument(selectedDocument); closeModal('documentPreview')">✅ Verify</button>
+              <button class="btn btn-danger" (click)="rejectDocument(selectedDocument); closeModal('documentPreview')">❌ Reject</button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Bulk Actions Modal -->
+  @if (modals.bulkActions) {
+    <div class="modal-overlay" (click)="closeModal('bulkActions')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📋</span>
+            <h3>Bulk Actions</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('bulkActions')">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">Perform actions on multiple KYC applications at once.</p>
+          
+          <div class="bulk-action-options">
+            <button class="bulk-action-btn" (click)="bulkAction('approve')">
+              <span class="bulk-icon" style="background: #22c55e20; color: #22c55e">✅</span>
+              <div class="bulk-info">
+                <p class="bulk-title">Bulk Approve</p>
+                <p class="bulk-desc">Approve all fully verified applications</p>
+              </div>
+            </button>
+            <button class="bulk-action-btn" (click)="bulkAction('reminder')">
+              <span class="bulk-icon" style="background: #2196f320; color: #2196f3">📧</span>
+              <div class="bulk-info">
+                <p class="bulk-title">Send Reminders</p>
+                <p class="bulk-desc">Remind applicants with incomplete documents</p>
+              </div>
+            </button>
+            <button class="bulk-action-btn" (click)="bulkAction('export')">
+              <span class="bulk-icon" style="background: #9c27b020; color: #9c27b0">📥</span>
+              <div class="bulk-info">
+                <p class="bulk-title">Export All</p>
+                <p class="bulk-desc">Download all pending applications as CSV</p>
+              </div>
+            </button>
+            <button class="bulk-action-btn" (click)="bulkAction('archive')">
+              <span class="bulk-icon" style="background: #64748b20; color: #64748b">📦</span>
+              <div class="bulk-info">
+                <p class="bulk-title">Archive Old</p>
+                <p class="bulk-desc">Archive applications older than 90 days</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Settings Modal -->
+  @if (modals.settings) {
+    <div class="modal-overlay" (click)="closeModal('settings')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">⚙️</span>
+            <h3>KYC Settings</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('settings')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Auto-Reminder Period (Days)</label>
+            <input type="number" [(ngModel)]="kycSettings.reminderDays" class="form-input" min="1" max="30">
+            <p class="form-hint">Send automatic reminders for incomplete applications</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Document Expiry Check (Days)</label>
+            <input type="number" [(ngModel)]="kycSettings.expiryCheckDays" class="form-input" min="30" max="365">
+            <p class="form-hint">Flag documents expiring within this period</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Maximum Resubmission Attempts</label>
+            <input type="number" [(ngModel)]="kycSettings.maxResubmissions" class="form-input" min="1" max="5">
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="kycSettings.autoNotify">
+              <span>Send automatic notifications on status changes</span>
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="kycSettings.requireAllDocs">
+              <span>Require all documents before allowing approval</span>
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('settings')">Cancel</button>
+            <button class="btn btn-primary" (click)="saveSettings()">💾 Save Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Export Modal -->
+  @if (modals.export) {
+    <div class="modal-overlay" (click)="closeModal('export')">
+      <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📥</span>
+            <h3>Export KYC Report</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('export')">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="export-intro">Choose export format and options:</p>
+          
+          <div class="form-group">
+            <label class="form-label">Data Range</label>
+            <select [(ngModel)]="exportOptions.range" class="form-input">
+              <option value="pending">Pending Applications Only</option>
+              <option value="approved">Approved This Month</option>
+              <option value="rejected">Rejected Applications</option>
+              <option value="all">All Applications</option>
+            </select>
+          </div>
+
+          @for (format of exportFormats; track format.name) {
+            <button class="export-option" (click)="exportData(format.name)">
+              <span class="export-icon" [style.background]="format.color + '15'">{{ format.icon }}</span>
+              <div class="export-info">
+                <p class="export-name">{{ format.name }}</p>
+                <p class="export-desc">{{ format.desc }}</p>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Requirements Modal -->
+  @if (modals.requirements) {
+    <div class="modal-overlay" (click)="closeModal('requirements')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📋</span>
+            <h3>KYC Document Requirements</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('requirements')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="requirements-list">
+            @for (doc of requiredDocuments; track doc.name) {
+              <div class="requirement-item">
+                <div class="req-header">
+                  <span class="req-icon" [style.background]="doc.color + '20'" [style.color]="doc.color">{{ doc.icon }}</span>
+                  <div class="req-info">
+                    <h5>{{ doc.name }}</h5>
+                    <span class="badge" [class]="doc.required ? 'badge-danger-light' : 'badge-neutral'">
+                      {{ doc.required ? 'Required' : 'Optional' }}
+                    </span>
+                  </div>
+                </div>
+                <p class="req-desc">{{ doc.description }}</p>
+                <ul class="req-specs">
+                  <li>Format: {{ doc.formats }}</li>
+                  <li>Max Size: {{ doc.maxSize }}</li>
+                  @if (doc.notes) {
+                    <li>Note: {{ doc.notes }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MEMBER REGISTRATION WIZARD MODAL ==================== -->
+  @if (modals.registration) {
+    <div class="modal-overlay" (click)="closeModal('registration')">
+      <div class="modal modal-xl registration-modal" (click)="$event.stopPropagation()">
+        <!-- Modal Header with Progress -->
+        <div class="modal-header registration-header">
+          <div class="registration-header-top">
+            <div class="registration-title">
+              <div class="registration-icon">👤</div>
+              <div>
+                <h5>Register New Member</h5>
+                <p>Step {{ currentStep }} of {{ totalSteps }}: {{ stepNames[currentStep - 1] }}</p>
+              </div>
+            </div>
+            <button class="modal-close modal-close-white" (click)="closeModal('registration')">×</button>
+          </div>
+          <!-- Progress Bar -->
+          <div class="registration-progress">
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+            </div>
+            <div class="step-indicators">
+              @for (step of stepNames; track step; let i = $index) {
+                <div class="step-indicator" 
+                     [class.active]="currentStep === i + 1" 
+                     [class.completed]="currentStep > i + 1"
+                     (click)="goToStep(i + 1)">
+                  <span class="step-dot">{{ currentStep > i + 1 ? '✓' : i + 1 }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body registration-body">
+          <!-- Step 1: Personal Details -->
+          @if (currentStep === 1) {
+            <div class="step-content animate-fadeInUp">
+              <div class="step-alert step-alert-info">
+                <span>ℹ️</span>
+                <small>Enter the member's personal information exactly as it appears on their National ID card.</small>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">First Name *</label>
+                  <input type="text" [(ngModel)]="regForm.firstName" class="form-input" placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Middle Name</label>
+                  <input type="text" [(ngModel)]="regForm.middleName" class="form-input" placeholder="Enter middle name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name *</label>
+                  <input type="text" [(ngModel)]="regForm.lastName" class="form-input" placeholder="Enter last name">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">National ID Number *</label>
+                  <input type="text" [(ngModel)]="regForm.nationalId" class="form-input" placeholder="e.g. 12345678">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">KRA PIN</label>
+                  <input type="text" [(ngModel)]="regForm.kraPin" class="form-input" placeholder="e.g. A012345678Z">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Date of Birth *</label>
+                  <input type="date" [(ngModel)]="regForm.dateOfBirth" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Gender *</label>
+                  <select [(ngModel)]="regForm.gender" class="form-input">
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Marital Status *</label>
+                  <select [(ngModel)]="regForm.maritalStatus" class="form-input">
+                    <option value="">Select status</option>
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Divorced">Divorced</option>
+                    <option value="Widowed">Widowed</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nationality *</label>
+                <select [(ngModel)]="regForm.nationality" class="form-input">
+                  <option value="Kenyan">Kenyan</option>
+                  <option value="Ugandan">Ugandan</option>
+                  <option value="Tanzanian">Tanzanian</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          }
+
+          <!-- Step 2: Contact Details -->
+          @if (currentStep === 2) {
+            <div class="step-content animate-fadeInUp">
+              <div class="step-alert step-alert-success">
+                <span>📱</span>
+                <small>The primary phone number will be used for M-Pesa transactions and SMS notifications.</small>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Primary Phone Number *</label>
+                  <div class="input-group">
+                    <span class="input-prefix">+254</span>
+                    <input type="tel" [(ngModel)]="regForm.primaryPhone" class="form-input input-with-prefix" placeholder="7XX XXX XXX">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Alternative Phone</label>
+                  <div class="input-group">
+                    <span class="input-prefix">+254</span>
+                    <input type="tel" [(ngModel)]="regForm.altPhone" class="form-input input-with-prefix" placeholder="7XX XXX XXX">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" [(ngModel)]="regForm.email" class="form-input" placeholder="member@example.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Preferred Contact Method *</label>
+                <div class="radio-card-group">
+                  @for (method of contactMethods; track method.value) {
+                    <label class="radio-card" [class.selected]="regForm.contactMethod === method.value">
+                      <input type="radio" name="contactMethod" [value]="method.value" [(ngModel)]="regForm.contactMethod">
+                      <span class="radio-card-icon">{{ method.icon }}</span>
+                      <span class="radio-card-label">{{ method.label }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Step 3: Residential Details -->
+          @if (currentStep === 3) {
+            <div class="step-content animate-fadeInUp">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">County *</label>
+                  <select [(ngModel)]="regForm.county" class="form-input">
+                    <option value="">Select county</option>
+                    <option value="Nairobi">Nairobi</option>
+                    <option value="Mombasa">Mombasa</option>
+                    <option value="Kisumu">Kisumu</option>
+                    <option value="Nakuru">Nakuru</option>
+                    <option value="Migori">Migori</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sub-County *</label>
+                  <input type="text" [(ngModel)]="regForm.subCounty" class="form-input" placeholder="Enter sub-county">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Ward</label>
+                  <input type="text" [(ngModel)]="regForm.ward" class="form-input" placeholder="Enter ward">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Estate/Village</label>
+                  <input type="text" [(ngModel)]="regForm.estate" class="form-input" placeholder="Enter estate or village">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Street Address *</label>
+                <textarea [(ngModel)]="regForm.streetAddress" class="form-textarea" rows="2" placeholder="Enter detailed street address"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">P.O. Box</label>
+                  <input type="text" [(ngModel)]="regForm.poBox" class="form-input" placeholder="e.g. 12345">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Postal Code</label>
+                  <input type="text" [(ngModel)]="regForm.postalCode" class="form-input" placeholder="e.g. 00100">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Residence Type *</label>
+                  <select [(ngModel)]="regForm.residenceType" class="form-input">
+                    <option value="">Select type</option>
+                    <option value="Owned">Owned</option>
+                    <option value="Rented">Rented</option>
+                    <option value="Family">Family</option>
+                    <option value="Employer Provided">Employer Provided</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Years at Current Address</label>
+                  <select [(ngModel)]="regForm.yearsAtAddress" class="form-input">
+                    <option value="">Select</option>
+                    <option value="Less than 1 year">Less than 1 year</option>
+                    <option value="1-2 years">1-2 years</option>
+                    <option value="3-5 years">3-5 years</option>
+                    <option value="More than 5 years">More than 5 years</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Step 4: Employment Details -->
+          @if (currentStep === 4) {
+            <div class="step-content animate-fadeInUp">
+              <div class="form-group">
+                <label class="form-label">Employment Status *</label>
+                <select [(ngModel)]="regForm.employmentStatus" class="form-input">
+                  <option value="">Select status</option>
+                  <option value="Employed">Employed</option>
+                  <option value="Self-Employed">Self-Employed</option>
+                  <option value="Business Owner">Business Owner</option>
+                  <option value="Retired">Retired</option>
+                  <option value="Student">Student</option>
+                  <option value="Unemployed">Unemployed</option>
+                </select>
+              </div>
+              @if (regForm.employmentStatus === 'Employed') {
+                <div class="employed-fields animate-fadeIn">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Employer Name *</label>
+                      <input type="text" [(ngModel)]="regForm.employerName" class="form-input" placeholder="Enter employer name">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Employee Number</label>
+                      <input type="text" [(ngModel)]="regForm.employeeNumber" class="form-input" placeholder="Enter employee number">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Job Title *</label>
+                      <input type="text" [(ngModel)]="regForm.jobTitle" class="form-input" placeholder="Enter job title">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Department</label>
+                      <input type="text" [(ngModel)]="regForm.department" class="form-input" placeholder="Enter department">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Employer Address</label>
+                    <textarea [(ngModel)]="regForm.employerAddress" class="form-textarea" rows="2" placeholder="Enter employer address"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Date of Employment</label>
+                    <input type="date" [(ngModel)]="regForm.employmentDate" class="form-input">
+                  </div>
+                </div>
+              }
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Monthly Income Range *</label>
+                  <select [(ngModel)]="regForm.incomeRange" class="form-input">
+                    <option value="">Select range</option>
+                    <option value="Below KES 20,000">Below KES 20,000</option>
+                    <option value="KES 20,000 - 50,000">KES 20,000 - 50,000</option>
+                    <option value="KES 50,000 - 100,000">KES 50,000 - 100,000</option>
+                    <option value="KES 100,000 - 200,000">KES 100,000 - 200,000</option>
+                    <option value="Above KES 200,000">Above KES 200,000</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Payment Mode</label>
+                  <select [(ngModel)]="regForm.paymentMode" class="form-input">
+                    <option value="">Select mode</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="M-Pesa">M-Pesa</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Cheque">Cheque</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Step 5: Next of Kin -->
+          @if (currentStep === 5) {
+            <div class="step-content animate-fadeInUp">
+              <div class="step-alert step-alert-warning">
+                <span>⚠️</span>
+                <small>Next of kin information is required for emergency contacts and in case of beneficiary claims.</small>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name *</label>
+                  <input type="text" [(ngModel)]="regForm.nokName" class="form-input" placeholder="Enter full name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Relationship *</label>
+                  <select [(ngModel)]="regForm.nokRelationship" class="form-input">
+                    <option value="">Select relationship</option>
+                    <option value="Spouse">Spouse</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Child">Child</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Other Relative">Other Relative</option>
+                    <option value="Friend">Friend</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Phone Number *</label>
+                  <div class="input-group">
+                    <span class="input-prefix">+254</span>
+                    <input type="tel" [(ngModel)]="regForm.nokPhone" class="form-input input-with-prefix" placeholder="7XX XXX XXX">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">National ID</label>
+                  <input type="text" [(ngModel)]="regForm.nokIdNumber" class="form-input" placeholder="Enter national ID">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" [(ngModel)]="regForm.nokEmail" class="form-input" placeholder="Enter email address">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Physical Address</label>
+                <textarea [(ngModel)]="regForm.nokAddress" class="form-textarea" rows="2" placeholder="Enter physical address"></textarea>
+              </div>
+            </div>
+          }
+
+          <!-- Step 6: Documents -->
+          @if (currentStep === 6) {
+            <div class="step-content animate-fadeInUp">
+              <div class="step-alert step-alert-neutral">
+                <span>📄</span>
+                <div>
+                  <p class="alert-title">Document Upload</p>
+                  <small>Upload required documents or skip to upload later. Required documents are marked with *</small>
+                </div>
+              </div>
+              <div class="document-upload-list">
+                @for (doc of uploadDocuments; track doc.name) {
+                  <div class="document-upload-item" [class.uploaded]="doc.uploaded">
+                    <div class="doc-upload-info">
+                      <div class="doc-upload-icon">{{ doc.icon }}</div>
+                      <div>
+                        <p class="doc-upload-name">{{ doc.name }} @if (doc.required) { <span class="required">*</span> }</p>
+                        <small class="doc-upload-meta">{{ doc.formats }} (Max {{ doc.maxSize }})</small>
+                      </div>
+                    </div>
+                    <div class="doc-upload-actions">
+                      @if (doc.uploaded) {
+                        <span class="badge badge-success">✅ Uploaded</span>
+                        <button class="btn btn-sm btn-outline" (click)="removeDocument(doc)">Remove</button>
+                      } @else {
+                        <button class="btn btn-sm btn-primary" (click)="uploadDoc(doc)">Upload</button>
+                        @if (!doc.required) {
+                          <button class="btn btn-sm btn-outline" (click)="skipDocument(doc)">Skip</button>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Step 7: Shares & Fees -->
+          @if (currentStep === 7) {
+            <div class="step-content animate-fadeInUp">
+              <div class="total-amount-card">
+                <div class="total-amount-info">
+                  <p class="total-label">Total Amount Due</p>
+                  <h2 class="total-value">KES {{ calculateTotal() | number }}</h2>
+                </div>
+                <div class="total-amount-icon">💰</div>
+              </div>
+              <div class="fee-list">
+                @for (fee of fees; track fee.name) {
+                  <div class="fee-item" [class.selected]="fee.selected">
+                    <div class="fee-info">
+                      <span class="fee-check">{{ fee.selected ? '✅' : '⬜' }}</span>
+                      <div>
+                        <p class="fee-name">{{ fee.name }} @if (fee.required) { <span class="required">*</span> }</p>
+                        <small class="fee-desc">{{ fee.required ? 'Required' : 'Optional' }}</small>
+                      </div>
+                    </div>
+                    @if (fee.editable) {
+                      <div class="fee-input">
+                        <span>KES</span>
+                        <input type="number" [(ngModel)]="fee.amount" class="form-input form-input-sm" min="0" step="1000">
+                      </div>
+                    } @else {
+                      <span class="fee-amount">KES {{ fee.amount | number }}</span>
+                    }
+                  </div>
+                }
+              </div>
+              <div class="fee-total">
+                <span>Total Payable</span>
+                <span class="fee-total-amount">KES {{ calculateTotal() | number }}</span>
+              </div>
+            </div>
+          }
+
+          <!-- Step 8: Payment -->
+          @if (currentStep === 8) {
+            <div class="step-content animate-fadeInUp">
+              <div class="payment-summary-bar">
+                <span>Amount to Pay:</span>
+                <span class="payment-amount">KES {{ calculateTotal() | number }}</span>
+              </div>
+              <label class="form-label">Select Payment Method</label>
+              <div class="payment-methods-grid">
+                @for (method of paymentMethods; track method.value) {
+                  <label class="payment-method-card" [class.selected]="regForm.paymentMethod === method.value">
+                    <input type="radio" name="paymentMethod" [value]="method.value" [(ngModel)]="regForm.paymentMethod">
+                    <span class="payment-method-icon">{{ method.icon }}</span>
+                    <span class="payment-method-label">{{ method.label }}</span>
+                  </label>
+                }
+              </div>
+              
+              <!-- M-Pesa Form -->
+              @if (regForm.paymentMethod === 'mpesa') {
+                <div class="payment-form payment-form-success animate-fadeIn">
+                  <div class="payment-form-header">
+                    <span>📱</span> M-Pesa STK Push
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">M-Pesa Phone Number</label>
+                    <div class="input-group">
+                      <span class="input-prefix">+254</span>
+                      <input type="tel" [(ngModel)]="regForm.mpesaPhone" class="form-input input-with-prefix" placeholder="7XX XXX XXX">
+                    </div>
+                  </div>
+                  <button class="btn btn-success btn-block" (click)="sendStkPush()">Send STK Push</button>
+                </div>
+              }
+              
+              <!-- Cash Form -->
+              @if (regForm.paymentMethod === 'cash') {
+                <div class="payment-form payment-form-warning animate-fadeIn">
+                  <div class="payment-form-header">
+                    <span>💵</span> Cash Payment
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Receipt Number</label>
+                    <input type="text" [(ngModel)]="regForm.cashReceipt" class="form-input" placeholder="Enter receipt number">
+                  </div>
+                  <button class="btn btn-warning btn-block" (click)="recordCashPayment()">Record Cash Payment</button>
+                </div>
+              }
+              
+              <!-- Bank Form -->
+              @if (regForm.paymentMethod === 'bank') {
+                <div class="payment-form payment-form-info animate-fadeIn">
+                  <div class="payment-form-header">
+                    <span>🏦</span> Bank Transfer
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Bank Name</label>
+                    <select [(ngModel)]="regForm.bankName" class="form-input">
+                      <option value="">Select Bank</option>
+                      <option value="KCB">KCB</option>
+                      <option value="Equity">Equity</option>
+                      <option value="Cooperative">Cooperative</option>
+                    </select>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Account Number</label>
+                      <input type="text" [(ngModel)]="regForm.bankAccount" class="form-input">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Reference Number</label>
+                      <input type="text" [(ngModel)]="regForm.bankReference" class="form-input">
+                    </div>
+                  </div>
+                  <button class="btn btn-info btn-block" (click)="confirmBankPayment()">Confirm Bank Payment</button>
+                </div>
+              }
+              
+              <!-- Card Form -->
+              @if (regForm.paymentMethod === 'card') {
+                <div class="payment-form payment-form-purple animate-fadeIn">
+                  <div class="payment-form-header">
+                    <span>💳</span> Card Payment
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Card Number</label>
+                    <input type="text" [(ngModel)]="regForm.cardNumber" class="form-input" placeholder="1234 5678 9012 3456">
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Expiry Date</label>
+                      <input type="text" [(ngModel)]="regForm.cardExpiry" class="form-input" placeholder="MM/YY">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">CVV</label>
+                      <input type="password" [(ngModel)]="regForm.cardCvv" class="form-input" placeholder="***" maxlength="4">
+                    </div>
+                  </div>
+                  <button class="btn btn-purple btn-block" (click)="processCardPayment()">Pay KES {{ calculateTotal() | number }}</button>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Step 9: Terms & Policies -->
+          @if (currentStep === 9) {
+            <div class="step-content animate-fadeInUp">
+              <div class="step-alert step-alert-info">
+                <span>🛡️</span>
+                <div>
+                  <p class="alert-title">Terms & Policies Acceptance</p>
+                  <small>The member must accept all terms and policies to complete registration.</small>
+                </div>
+              </div>
+              <div class="terms-header">
+                <span class="terms-count">{{ getAcceptedTermsCount() }} of {{ terms.length }} accepted</span>
+                <button class="btn-link" (click)="acceptAllTerms()">Accept All</button>
+              </div>
+              <div class="terms-list">
+                @for (term of terms; track term.id) {
+                  <label class="term-item" [class.accepted]="term.accepted">
+                    <input type="checkbox" [(ngModel)]="term.accepted" (change)="updateTermsCount()">
+                    <div class="term-content">
+                      <div class="term-header">
+                        <span class="term-name">{{ term.name }}</span>
+                        <a href="javascript:void(0)" class="term-link" (click)="viewTermDetails(term)">View Full</a>
+                      </div>
+                      <span class="term-desc">{{ term.description }}</span>
+                    </div>
+                  </label>
+                }
+              </div>
+              <div class="master-declaration" [class.enabled]="allTermsAccepted">
+                <label class="term-item master">
+                  <input type="checkbox" [(ngModel)]="regForm.masterDeclaration" [disabled]="!allTermsAccepted">
+                  <div class="term-content">
+                    <span class="term-name">Member Declaration</span>
+                    <span class="term-desc">I hereby confirm that I have read, understood, and agree to all the above terms, conditions, and policies of Rongo SACCO.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          }
+
+          <!-- Step 10: Review & Complete -->
+          @if (currentStep === 10) {
+            <div class="step-content animate-fadeInUp">
+              <div class="step-alert step-alert-success">
+                <span>✅</span>
+                <small>Review all information before completing the registration.</small>
+              </div>
+              <div class="review-sections">
+                <!-- Personal Information -->
+                <div class="review-section">
+                  <div class="review-section-header">
+                    <span>Personal Information</span>
+                    <a href="javascript:void(0)" (click)="goToStep(1)">Edit</a>
+                  </div>
+                  <div class="review-section-body">
+                    <div class="review-item"><span>Name:</span><span>{{ regForm.firstName }} {{ regForm.middleName }} {{ regForm.lastName }}</span></div>
+                    <div class="review-item"><span>ID:</span><span>{{ regForm.nationalId }}</span></div>
+                    <div class="review-item"><span>DOB:</span><span>{{ regForm.dateOfBirth }}</span></div>
+                    <div class="review-item"><span>Gender:</span><span>{{ regForm.gender }}</span></div>
+                  </div>
+                </div>
+                <!-- Contact Information -->
+                <div class="review-section">
+                  <div class="review-section-header">
+                    <span>Contact Information</span>
+                    <a href="javascript:void(0)" (click)="goToStep(2)">Edit</a>
+                  </div>
+                  <div class="review-section-body">
+                    <div class="review-item"><span>Phone:</span><span>+254 {{ regForm.primaryPhone }}</span></div>
+                    <div class="review-item"><span>Email:</span><span>{{ regForm.email }}</span></div>
+                  </div>
+                </div>
+                <!-- Documents -->
+                <div class="review-section">
+                  <div class="review-section-header">
+                    <span>Documents</span>
+                    <a href="javascript:void(0)" (click)="goToStep(6)">Edit</a>
+                  </div>
+                  <div class="review-section-body review-docs">
+                    @for (doc of uploadDocuments; track doc.name) {
+                      <span class="review-doc-badge" [class.uploaded]="doc.uploaded" [class.pending]="!doc.uploaded">
+                        {{ doc.name }}
+                      </span>
+                    }
+                  </div>
+                </div>
+                <!-- Payment Summary -->
+                <div class="review-section">
+                  <div class="review-section-header">
+                    <span>Payment Summary</span>
+                    <a href="javascript:void(0)" (click)="goToStep(7)">Edit</a>
+                  </div>
+                  <div class="review-section-body">
+                    @for (fee of fees; track fee.name) {
+                      @if (fee.selected && fee.amount > 0) {
+                        <div class="review-item"><span>{{ fee.name }}</span><span>KES {{ fee.amount | number }}</span></div>
+                      }
+                    }
+                    <div class="review-item review-total">
+                      <span>Total Paid</span>
+                      <span>KES {{ calculateTotal() | number }}</span>
+                    </div>
+                    <div class="review-item">
+                      <span>Method:</span>
+                      <span>{{ getPaymentMethodLabel() }} <span class="badge badge-success">Paid</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="ready-card">
+                <div class="ready-icon">✓</div>
+                <div class="ready-info">
+                  <h6>Ready to Complete Registration</h6>
+                  <small>All required information has been provided.</small>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer registration-footer">
+          @if (currentStep > 1) {
+            <button class="btn btn-outline" (click)="prevStep()">
+              ← Back
+            </button>
+          }
+          <div class="footer-right">
+            <button class="btn btn-outline" (click)="closeModal('registration')">Cancel</button>
+            @if (currentStep < totalSteps) {
+              <button class="btn btn-primary" (click)="nextStep()">
+                Continue →
+              </button>
+            } @else {
+              <button class="btn btn-gradient" (click)="completeRegistration()">
+                ✓ Complete Registration
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== BULK APPROVE MODAL ==================== -->
+  @if (modals.bulkApprove) {
+    <div class="modal-overlay" (click)="closeModal('bulkApprove')">
+      <div class="modal modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-success">
+          <div class="modal-title">
+            <span class="modal-icon">✅</span>
+            <h3>Bulk KYC Approval</h3>
+          </div>
+          <button class="modal-close modal-close-white" (click)="closeModal('bulkApprove')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="step-alert step-alert-warning">
+            <span>⚠️</span>
+            <small>Only applications with ALL documents verified should be bulk approved.</small>
+          </div>
+          <h5 class="sub-section-title">Applications Ready for Approval ({{ bulkApproveList.length }})</h5>
+          <div class="bulk-approve-list">
+            @for (app of bulkApproveList; track app.applicationId) {
+              <label class="bulk-approve-item">
+                <input type="checkbox" [(ngModel)]="app.selected">
+                <div class="bulk-approve-info">
+                  <strong>{{ app.name }}</strong> - {{ app.applicationId }}
+                  <span class="badge badge-success">{{ app.docsVerified }}/{{ app.totalDocs }} Documents</span>
+                </div>
+              </label>
+            }
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default Tier Assignment</label>
+            <select [(ngModel)]="bulkApprovalForm.tier" class="form-input">
+              <option value="Bronze">Bronze (Recommended)</option>
+              <option value="Silver">Silver</option>
+              <option value="Gold">Gold</option>
+            </select>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="bulkApprovalForm.sendWelcome">
+              <span>Send welcome email and SMS to all approved members</span>
+            </label>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="bulkApprovalForm.confirmVerification">
+              <span>I confirm all selected applications have been individually verified</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('bulkApprove')">Cancel</button>
+            <button class="btn btn-success" (click)="confirmBulkApproval()" [disabled]="!bulkApprovalForm.confirmVerification">
+              ✅ Approve {{ getSelectedBulkCount() }} Applications
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== REQUEST MORE INFO MODAL ==================== -->
+  @if (modals.requestInfo && selectedKyc) {
+    <div class="modal-overlay" (click)="closeModal('requestInfo')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-warning">
+          <div class="modal-title">
+            <span class="modal-icon">ℹ️</span>
+            <h3>Request Additional Information</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('requestInfo')">×</button>
+        </div>
+        <div class="modal-body">
+          <h5 class="sub-section-title">Member: {{ selectedKyc.name }}</h5>
+          <p class="text-muted">Application ID: {{ selectedKyc.applicationId }}</p>
+          <div class="form-group">
+            <label class="form-label">Documents Needed</label>
+            <div class="checkbox-list">
+              @for (doc of requestInfoForm.documents; track doc.name) {
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="doc.requested">
+                  <span>{{ doc.name }}</span>
+                </label>
+              }
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Additional Requirements</label>
+            <textarea [(ngModel)]="requestInfoForm.additionalNotes" class="form-textarea" rows="3" placeholder="Specify what additional information or corrections are needed..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deadline for Submission</label>
+            <select [(ngModel)]="requestInfoForm.deadline" class="form-input">
+              <option value="3">3 days</option>
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+            </select>
+          </div>
+          <div class="step-alert step-alert-info">
+            <span>ℹ️</span>
+            <small>Member will be notified via email and SMS with details of required documents.</small>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('requestInfo')">Cancel</button>
+            <button class="btn btn-warning" (click)="sendInfoRequest()">📧 Send Request</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== UPLOAD DOCUMENT FOR MEMBER MODAL ==================== -->
+  @if (modals.uploadForMember) {
+    <div class="modal-overlay" (click)="closeModal('uploadForMember')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📤</span>
+            <h3>Upload Document for Member</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('uploadForMember')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="step-alert step-alert-info">
+            <span>ℹ️</span>
+            <small>As an admin, you can upload documents on behalf of members who cannot access their dashboard.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Member Name</label>
+            <input type="text" [value]="uploadForMemberForm.memberName" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Application ID</label>
+            <input type="text" [value]="uploadForMemberForm.applicationId" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Document Type *</label>
+            <select [(ngModel)]="uploadForMemberForm.documentType" class="form-input">
+              <option value="">Select document type</option>
+              <option value="national-id">National ID</option>
+              <option value="passport-photo">Passport Photo</option>
+              <option value="kra-pin">KRA PIN Certificate</option>
+              <option value="proof-residence">Proof of Residence</option>
+              <option value="employment-letter">Employment Letter</option>
+              <option value="bank-statement">Bank Statement</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Upload Document *</label>
+            <div class="file-upload-area" (click)="triggerFileUpload()">
+              <span class="file-upload-icon">📁</span>
+              <p>Click to upload or drag and drop</p>
+              <small>JPG, PNG, PDF (Max 5MB)</small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Upload Notes</label>
+            <textarea [(ngModel)]="uploadForMemberForm.notes" class="form-textarea" rows="2" placeholder="Add notes about this upload (e.g., 'Member submitted via email')"></textarea>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="uploadForMemberForm.notifyMember">
+              <span>Notify member via SMS that document was uploaded</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('uploadForMember')">Cancel</button>
+            <button class="btn btn-primary" (click)="uploadDocumentForMember()">📤 Upload Document</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== EDIT MEMBER INFO MODAL ==================== -->
+  @if (modals.editMemberInfo && selectedKyc) {
+    <div class="modal-overlay" (click)="closeModal('editMemberInfo')">
+      <div class="modal modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">✏️</span>
+            <h3>Edit Member Information</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('editMemberInfo')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="step-alert step-alert-warning">
+            <span>⚠️</span>
+            <small>Changes made here will update the member's profile and be visible on their dashboard.</small>
+          </div>
+          <!-- Edit Tabs -->
+          <div class="edit-tabs">
+            @for (tab of editMemberTabs; track tab.id) {
+              <button class="edit-tab" [class.active]="editMemberActiveTab === tab.id" (click)="editMemberActiveTab = tab.id">
+                {{ tab.label }}
+              </button>
+            }
+          </div>
+          <!-- Personal Info Tab -->
+          @if (editMemberActiveTab === 'personal') {
+            <div class="edit-tab-content animate-fadeIn">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">First Name *</label>
+                  <input type="text" [(ngModel)]="editMemberForm.firstName" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Middle Name</label>
+                  <input type="text" [(ngModel)]="editMemberForm.middleName" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name *</label>
+                  <input type="text" [(ngModel)]="editMemberForm.lastName" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">National ID *</label>
+                  <input type="text" [(ngModel)]="editMemberForm.nationalId" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date of Birth *</label>
+                  <input type="date" [(ngModel)]="editMemberForm.dateOfBirth" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Gender *</label>
+                  <select [(ngModel)]="editMemberForm.gender" class="form-input">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Marital Status</label>
+                  <select [(ngModel)]="editMemberForm.maritalStatus" class="form-input">
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Divorced">Divorced</option>
+                    <option value="Widowed">Widowed</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+          <!-- Contact Tab -->
+          @if (editMemberActiveTab === 'contact') {
+            <div class="edit-tab-content animate-fadeIn">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Phone Number *</label>
+                  <input type="tel" [(ngModel)]="editMemberForm.phone" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Alternative Phone</label>
+                  <input type="tel" [(ngModel)]="editMemberForm.altPhone" class="form-input">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" [(ngModel)]="editMemberForm.email" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Physical Address *</label>
+                <textarea [(ngModel)]="editMemberForm.address" class="form-textarea" rows="2"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">County</label>
+                  <select [(ngModel)]="editMemberForm.county" class="form-input">
+                    <option value="Migori">Migori</option>
+                    <option value="Nairobi">Nairobi</option>
+                    <option value="Kisumu">Kisumu</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Postal Code</label>
+                  <input type="text" [(ngModel)]="editMemberForm.postalCode" class="form-input">
+                </div>
+              </div>
+            </div>
+          }
+          <!-- Financial Tab -->
+          @if (editMemberActiveTab === 'financial') {
+            <div class="edit-tab-content animate-fadeIn">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Occupation *</label>
+                  <input type="text" [(ngModel)]="editMemberForm.occupation" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Employer</label>
+                  <input type="text" [(ngModel)]="editMemberForm.employer" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Monthly Income Range</label>
+                  <select [(ngModel)]="editMemberForm.incomeRange" class="form-input">
+                    <option value="KES 0 - 30,000">KES 0 - 30,000</option>
+                    <option value="KES 30,000 - 50,000">KES 30,000 - 50,000</option>
+                    <option value="KES 50,000 - 100,000">KES 50,000 - 100,000</option>
+                    <option value="KES 100,000+">KES 100,000+</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">KRA PIN</label>
+                  <input type="text" [(ngModel)]="editMemberForm.kraPin" class="form-input">
+                </div>
+              </div>
+            </div>
+          }
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('editMemberInfo')">Cancel</button>
+            <button class="btn btn-primary" (click)="saveMemberInfo()">💾 Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== ADD NOTE MODAL ==================== -->
+  @if (modals.addNote) {
+    <div class="modal-overlay" (click)="closeModal('addNote')">
+      <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📝</span>
+            <h3>Add Verification Note</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('addNote')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Note Type</label>
+            <select [(ngModel)]="addNoteForm.type" class="form-input">
+              <option value="general">General Note</option>
+              <option value="document">Document Issue</option>
+              <option value="contact">Member Contact</option>
+              <option value="verification">Verification Step</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Note</label>
+            <textarea [(ngModel)]="addNoteForm.content" class="form-textarea" rows="4" placeholder="Add your note here..."></textarea>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="addNoteForm.visibleToMember">
+              <span>Make this note visible to member</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('addNote')">Cancel</button>
+            <button class="btn btn-primary" (click)="saveNote()">💾 Add Note</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

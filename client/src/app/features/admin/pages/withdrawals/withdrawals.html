@@ -1,1 +1,356 @@
-<p>withdrawals works!</p>
+
+<main class="wd-page">
+  <section class="wd-shell">
+    <div class="page-heading">
+      <div>
+        <nav class="breadcrumbs"><span>Home</span><span>Financial Operations</span><strong>Withdrawals</strong></nav>
+        <h1>Withdrawal Management</h1>
+        <p>Process, approve, and monitor all member withdrawal requests</p>
+      </div>
+      <div class="heading-actions">
+        <button class="btn btn-ghost" type="button" (click)="showToast('Data refreshed.')">↻ Refresh</button>
+        <button class="btn btn-outline-warning" type="button" (click)="showToast('Export ready.')">📥 Export</button>
+        <button class="btn btn-outline-success" type="button" (click)="openModal('editLimits')">🔒 Check Limits</button>
+        <button class="btn btn-primary" type="button" (click)="openModal('processWithdrawal')">● Process Withdrawal</button>
+      </div>
+    </div>
+
+    <div class="float-alert">
+      <span>⚠ <strong>Float Alert:</strong> Current SACCO float balance is KES 45M. Daily withdrawal limit: KES 50M. <a href="javascript:void(0)">View Float Management</a></span>
+    </div>
+
+    <div class="kpi-grid">
+      @for (c of kpiCards; track c.label; let i = $index) {
+        <article class="kpi-card" [style.--delay]="(i * 60) + 'ms'">
+          <span class="kpi-icon">{{ c.icon }}</span>
+          <small>{{ c.label }}</small>
+          <strong>{{ c.value }}</strong>
+          <span class="kpi-sub" [class.green]="c.subTone === 'green'" [class.red]="c.subTone === 'red'">{{ c.sub }}</span>
+        </article>
+      }
+    </div>
+
+    <div class="method-grid">
+      @for (c of methodCards; track c.label; let i = $index) {
+        <article class="method-card" [style.--delay]="(i * 50 + 260) + 'ms'">
+          <span class="method-icon" [class]="'method-icon tone-' + c.tone">{{ c.icon }}</span>
+          <small>{{ c.label }}</small>
+          <strong>{{ c.value }}</strong>
+          <span class="method-sub">{{ c.sub }}</span>
+        </article>
+      }
+    </div>
+
+    <div class="primary-tabs" role="tablist">
+      @for (t of tabs; track t.key) {
+        <button type="button" [class.active]="tab === t.key" (click)="tab = t.key">{{ t.label }}</button>
+      }
+    </div>
+
+    <!-- ALL WITHDRAWALS -->
+    @if (tab === 'all') {
+      <section class="glass-card tab-card">
+        <div class="table-head">
+          <h2>🔄 Recent Withdrawals</h2>
+          <div class="table-filters">
+            <select [(ngModel)]="statusF"><option value="all">All Status</option><option>Completed</option><option>Pending</option><option>Failed</option><option>Processing</option></select>
+            <select [(ngModel)]="methodF"><option value="all">All Methods</option><option>M-Pesa</option><option>Bank</option><option>Cash</option><option>Cheque</option></select>
+            <select [(ngModel)]="typeF"><option value="all">All Types</option><option>Savings</option><option>Share Redemption</option><option>Fixed Deposit</option></select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="wd-table">
+            <thead><tr><th><input type="checkbox" /></th><th>Withdrawal ID</th><th>Date &amp; Time</th><th>Member</th><th>Account Type</th><th>Method</th><th>Amount</th><th>Reference</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              @for (w of filteredWithdrawals; track w.id) {
+                <tr [class.row-pending]="w.status === 'Pending'">
+                  <td><input type="checkbox" /></td>
+                  <td data-label="ID"><code>{{ w.id }}</code></td>
+                  <td data-label="Date">{{ w.date }}</td>
+                  <td data-label="Member"><div class="m-cell"><span class="av" [class]="'av ' + w.av">{{ w.initials }}</span><span><strong>{{ w.name }}</strong><small>{{ w.mid }}</small></span></div></td>
+                  <td data-label="Account"><span class="acct-badge" [class]="'acct-badge tone-' + w.acctTone">{{ w.acctType }}</span></td>
+                  <td data-label="Method"><span>{{ w.methodIcon }} {{ w.method }}</span></td>
+                  <td data-label="Amount"><strong [class.danger]="w.status === 'Failed'" [class.positive]="w.status !== 'Failed'">{{ w.amount }}</strong></td>
+                  <td data-label="Ref"><code class="ref-code">{{ w.reference }}</code></td>
+                  <td data-label="Status"><span class="status-pill" [class]="'status-pill st-' + w.status.toLowerCase()">● {{ w.status }}</span></td>
+                  <td data-label="Actions">
+                    <div class="row-actions">
+                      @if (w.status === 'Pending') { <button class="btn btn-xs btn-primary" type="button" (click)="confirmAndClose('Withdrawal approved.')">✔</button> }
+                      @if (w.status === 'Failed') { <button class="btn btn-xs btn-warning" type="button" (click)="confirmAndClose('Withdrawal retried.')">🔄</button> }
+                      <button class="icon-btn" type="button" (click)="openModal('viewDetail', w)">👁</button>
+                      <button class="icon-btn" type="button" (click)="openModal('viewDetail', w)">🖨</button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="10" class="empty">No withdrawals match filters.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span>Showing 1-5 of 567 withdrawals</span>
+          <div class="pagination"><button>&lt;</button><button class="active">1</button><button>2</button><button>3</button><button>…</button><button>114</button><button>&gt;</button></div>
+        </div>
+      </section>
+    }
+
+    <!-- PENDING -->
+    @if (tab === 'pending') {
+      <section class="glass-card tab-card">
+        <div class="table-head">
+          <h2>🟡 Withdrawals Awaiting Approval (28)</h2>
+          <div class="heading-actions">
+            <button class="btn btn-outline-danger btn-sm" type="button" (click)="showToast('Selected rejected.')">⛔ Reject Selected</button>
+            <button class="btn btn-primary btn-sm" type="button" (click)="showToast('Selected approved.')">✔ Approve Selected</button>
+          </div>
+        </div>
+        <div class="pending-list">
+          @for (p of pendingItems; track p.id) {
+            <article class="pending-card">
+              <div class="pending-left">
+                <input type="checkbox" />
+                <span class="av" [class]="'av ' + p.av">{{ p.initials }}</span>
+                <div>
+                  <strong>{{ p.name }}</strong>
+                  <small>{{ p.id }} • {{ p.mid }}</small>
+                  <div class="tag-row">
+                    @for (t of p.tags; track t) { <span class="mini-tag" [class]="'mini-tag ' + tagTone(t)">{{ t }}</span> }
+                  </div>
+                  <small class="detail-line">{{ p.detail }}</small>
+                </div>
+              </div>
+              <div class="pending-right">
+                <strong class="positive">{{ p.amount }}</strong>
+                <small>{{ p.time }}</small>
+                <div class="pending-actions">
+                  <button class="btn btn-primary btn-sm" type="button" (click)="confirmAndClose('Withdrawal approved.')">✔ Approve</button>
+                  <button class="icon-btn danger" type="button" (click)="confirmAndClose('Withdrawal rejected.')">✕</button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+        <div class="pending-footer">
+          <span>Showing 3 of 28 pending withdrawals</span>
+          <button class="btn btn-outline-success btn-sm" type="button">Load More ↓</button>
+        </div>
+      </section>
+    }
+
+    <!-- LIMITS & RULES -->
+    @if (tab === 'limits') {
+      <div class="limits-grid">
+        <section class="glass-card tab-card">
+          <h2>ℹ Withdrawal Limits</h2>
+          <div class="limits-body">
+            @for (l of limitsData; track l.label) { <div class="limit-row"><span>{{ l.label }}</span><strong>{{ l.value }}</strong></div> }
+            <div class="limit-row highlight"><span>Available Today</span><strong class="positive">KES 46.2M</strong></div>
+          </div>
+          <button class="btn btn-outline-success full-btn" type="button" (click)="openModal('editLimits')">✏ Edit Limits</button>
+        </section>
+        <section class="glass-card tab-card">
+          <h2>⚠ Auto-Approval Rules</h2>
+          <div class="rules-list">
+            @for (r of rulesData; track r.label) {
+              <div class="rule-row">
+                <div><strong>{{ r.label }}</strong><small>{{ r.sub }}</small></div>
+                <span class="rule-badge" [class]="'rule-badge tone-' + r.tone">{{ r.badge }}</span>
+              </div>
+            }
+          </div>
+          <button class="btn btn-outline-success full-btn" type="button" (click)="openModal('configRules')">⚙ Configure Rules</button>
+        </section>
+      </div>
+      <section class="glass-card tab-card">
+        <h2>🚫 Flagged Withdrawals (Requires Review)</h2>
+        <div class="table-responsive">
+          <table class="wd-table flag-table">
+            <thead><tr><th>Member</th><th>Amount</th><th>Reason</th><th>Risk Level</th><th>Action</th></tr></thead>
+            <tbody>
+              @for (f of flaggedItems; track f.member) {
+                <tr>
+                  <td data-label="Member"><strong>{{ f.member }}</strong></td>
+                  <td data-label="Amount"><strong class="danger">{{ f.amount }}</strong></td>
+                  <td data-label="Reason">{{ f.reason }}</td>
+                  <td data-label="Risk"><span class="risk-badge" [class]="'risk-badge tone-' + f.riskTone">{{ f.risk }}</span></td>
+                  <td data-label="Action"><button class="btn btn-outline-success btn-sm" type="button" (click)="openModal('reviewFlagged')">Review</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- QUICK PROCESS -->
+    @if (tab === 'quick') {
+      <div class="quick-grid">
+        <section class="glass-card tab-card">
+          <h2>⚡ Quick Withdrawal Processing</h2>
+          <p class="sub-text">Process withdrawal requests on behalf of members (cash, cheque, or manual M-Pesa)</p>
+          <div class="section-label">👤 Member Information</div>
+          <label class="field-label">Select Member *<select [(ngModel)]="pForm.member"><option value="">-- Search or Select Member --</option><option>David Kipkorir (R-00045)</option><option>Sarah Akinyi (R-00123)</option><option>Mary Wanjiku (R-00034)</option></select></label>
+          <small class="hint">ℹ Type member name or ID to search</small>
+          <div class="section-label">💳 Withdrawal Details</div>
+          <div class="form-grid two">
+            <label class="field-label">Source Account *<select [(ngModel)]="pForm.account"><option value="">-- Select Account --</option><option>Savings</option><option>Share Capital</option><option>Fixed Deposit</option></select></label>
+            <label class="field-label">Payment Method *<select [(ngModel)]="pForm.method"><option value="">-- Select Method --</option><option>M-Pesa</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option></select></label>
+          </div>
+          <label class="field-label">Amount (KES) *<input type="number" [(ngModel)]="pForm.amount" placeholder="e.g. 50000" /></label>
+          <div class="preset-row">
+            @for (p of amountPresets; track p) { <button type="button" class="preset-btn" (click)="setPresetAmount(p)">{{ p }}</button> }
+          </div>
+          <div class="section-label">📋 Additional Info</div>
+          <label class="field-label">Reason for Withdrawal<select [(ngModel)]="pForm.reason"><option value="">-- Select Reason --</option><option>Personal Expense</option><option>School Fees</option><option>Medical</option><option>Business</option><option>Emergency</option></select></label>
+          <label class="field-label">Notes<textarea [(ngModel)]="pForm.notes" placeholder="Optional notes..."></textarea></label>
+          <label class="checkbox-label"><input type="checkbox" [(ngModel)]="pForm.autoApprove" /> Auto-approve this withdrawal (if within limits)</label>
+          <label class="checkbox-label" [class.checked]="pForm.sms"><input type="checkbox" [(ngModel)]="pForm.sms" /> Send SMS notification to member</label>
+        </section>
+        <div class="quick-sidebar">
+          <section class="glass-card tab-card">
+            <h2>💹 Calculation</h2>
+            <div class="calc-body">
+              <div class="calc-row"><span>Withdrawal Amount</span><strong>KES {{ amtNum | number }}</strong></div>
+              <div class="calc-row"><span>Processing Fee</span><strong>KES {{ fee | number }}</strong></div>
+              <div class="calc-row"><span>Tax (Excise Duty)</span><strong>KES {{ tax | number }}</strong></div>
+              <div class="calc-row total"><span>Deducted from Account</span><strong class="danger">KES {{ totalDeducted | number }}</strong></div>
+            </div>
+            <small class="hint">ℹ Fees vary by withdrawal method</small>
+          </section>
+          <section class="glass-card tab-card">
+            <h2>🕐 Recent Activity</h2>
+            <div class="recent-list">
+              @for (a of recentActivity; track a.name) {
+                <div class="recent-item">
+                  <span class="recent-dot" [class]="'recent-dot tone-' + a.tone"></span>
+                  <div><strong>{{ a.name }}</strong><small>{{ a.amount }} • {{ a.method }}</small><small class="muted">{{ a.time }}</small></div>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+      </div>
+    }
+
+    <!-- ANALYTICS -->
+    @if (tab === 'analytics') {
+      <section class="glass-card tab-card">
+        <h2>📊 Withdrawal Trends &amp; Analytics</h2>
+        <div class="chart-section">
+          <h3>7-Day Withdrawal Trend</h3>
+          <div class="bar-chart-lg">
+            @for (d of trendData; track d.day) {
+              <div class="bar-col">
+                <span class="bar-label">{{ d.value }}</span>
+                <div class="bar" [style.height]="d.h + '%'"></div>
+                <span class="bar-day">{{ d.day }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        <h3>Withdrawals by Source (This Month)</h3>
+        <div class="source-grid">
+          @for (s of sourceCards; track s.label) {
+            <article class="source-card">
+              <div class="source-head"><small>{{ s.label }}</small><span>{{ s.icon }}</span></div>
+              <strong>{{ s.amount }}</strong>
+              <div class="source-bar"><div [style.width]="s.pct + '%'" [style.background]="s.color"></div></div>
+              <small>{{ s.pct }}% of total</small>
+            </article>
+          }
+        </div>
+        <h3>Top 5 Withdrawers (This Month)</h3>
+        <div class="table-responsive">
+          <table class="wd-table top-table">
+            <thead><tr><th>Rank</th><th>Member</th><th>Total Withdrawals</th><th>Frequency</th><th>Avg. Withdrawal</th></tr></thead>
+            <tbody>
+              @for (t of topWithdrawers; track t.rank) {
+                <tr>
+                  <td data-label="Rank"><span class="rank-circle" [class]="'rank-circle ' + t.tone">{{ t.rank }}</span></td>
+                  <td data-label="Member"><strong>{{ t.name }}</strong></td>
+                  <td data-label="Total"><strong class="positive">{{ t.total }}</strong></td>
+                  <td data-label="Freq">{{ t.freq }}</td>
+                  <td data-label="Avg">{{ t.avg }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </section>
+
+  @if (toast) { <div class="admin-toast"><span></span>✅ {{ toast.msg }}</div> }
+
+  <!-- MODAL: Process Withdrawal -->
+  @if (modal === 'processWithdrawal') {
+    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>● Process New Withdrawal</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+      <div class="modal-alert">⚠ Ensure member identity verification before processing cash withdrawals</div>
+      <div class="form-grid two">
+        <label class="field-label">Member *<select [(ngModel)]="pForm.member"><option value="">-- Select Member --</option><option>David Kipkorir</option><option>Sarah Akinyi</option><option>Mary Wanjiku</option></select></label>
+        <label class="field-label">Amount (KES) *<input type="number" [(ngModel)]="pForm.amount" placeholder="50000" /></label>
+        <label class="field-label">Source Account *<select [(ngModel)]="pForm.account"><option value="">-- Select --</option><option>Savings</option><option>Share Capital</option><option>Fixed Deposit</option></select></label>
+        <label class="field-label">Payment Method *<select [(ngModel)]="pForm.method"><option value="">-- Select --</option><option>M-Pesa</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option></select></label>
+      </div>
+      <label class="field-label full">Reason<select [(ngModel)]="pForm.reason"><option value="">-- Select --</option><option>Personal Expense</option><option>School Fees</option><option>Medical</option><option>Business</option></select></label>
+      <label class="field-label full">Notes<textarea [(ngModel)]="pForm.notes" placeholder="Optional notes..."></textarea></label>
+      <label class="checkbox-label"><input type="checkbox" [(ngModel)]="pForm.autoApprove" /> Auto-approve (if within limits)</label>
+      <label class="checkbox-label" [class.checked]="pForm.sms"><input type="checkbox" [(ngModel)]="pForm.sms" /> Send SMS notification</label>
+      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Withdrawal processed successfully.')">● Process Withdrawal</button></div>
+    </div></section></div>
+  }
+
+  @if (modal === 'viewDetail' && selectedW) {
+    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>Detail — {{ selectedW.id }}</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+      <div class="summary-card">
+        <p><span>Withdrawal ID</span><strong>{{ selectedW.id }}</strong></p>
+        <p><span>Member</span><strong>{{ selectedW.name }} ({{ selectedW.mid }})</strong></p>
+        <p><span>Account Type</span><strong>{{ selectedW.acctType }}</strong></p>
+        <p><span>Method</span><strong>{{ selectedW.method }}</strong></p>
+        <p><span>Amount</span><strong>{{ selectedW.amount }}</strong></p>
+        <p><span>Date</span><strong>{{ selectedW.date }}</strong></p>
+        <p><span>Reference</span><strong>{{ selectedW.reference }}</strong></p>
+        <p><span>Status</span><strong>{{ selectedW.status }}</strong></p>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" (click)="closeModal()">Close</button></div>
+    </div></section></div>
+  }
+
+  @if (modal === 'editLimits') {
+    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>Edit Withdrawal Limits</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+      <div class="form-grid two">
+        <label class="field-label">Single Transaction Limit<input value="500000" /></label>
+        <label class="field-label">Daily Member Limit<input value="1000000" /></label>
+        <label class="field-label">Monthly Member Limit<input value="5000000" /></label>
+        <label class="field-label">Daily SACCO Limit<input value="50000000" /></label>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Limits updated.')">Save Limits</button></div>
+    </div></section></div>
+  }
+
+  @if (modal === 'configRules') {
+    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>Configure Auto-Approval Rules</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+      <div class="form-grid two">
+        <label class="field-label">M-Pesa auto-approve threshold<input value="50000" /></label>
+        <label class="field-label">Cash manual review above<input value="100000" /></label>
+      </div>
+      <label class="checkbox-label checked"><input type="checkbox" checked /> Enable auto-approval for M-Pesa</label>
+      <label class="checkbox-label"><input type="checkbox" /> Enable auto-approval for Bank</label>
+      <label class="checkbox-label"><input type="checkbox" /> Enable auto-approval for Fixed Deposits (matured)</label>
+      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Rules saved.')">Save Rules</button></div>
+    </div></section></div>
+  }
+
+  @if (modal === 'reviewFlagged') {
+    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-red"><h2>Review Flagged Withdrawal</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+      <div class="summary-card">
+        <p><span>Member</span><strong>James Omondi</strong></p>
+        <p><span>Amount</span><strong class="danger">KES 950,000</strong></p>
+        <p><span>Reason</span><strong>Amount exceeds 90% of available balance</strong></p>
+        <p><span>Risk Level</span><strong class="warning-text">Medium Risk</strong></p>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Flagged withdrawal cleared.')">Approve &amp; Clear</button></div>
+    </div></section></div>
+  }
+</main>

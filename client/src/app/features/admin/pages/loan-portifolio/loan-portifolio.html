@@ -1,0 +1,1199 @@
+<div class="loan-portfolio">
+  <div class="content-body">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- ALERT BANNERS -->
+    <!-- ══════════════════════════════════════════ -->
+    @if (showPoolAlert) {
+      <div class="alert-banner alert-warning">
+        <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
+        <div class="alert-body">
+          <strong>Emergency Loan Pool at 87% Utilization</strong>
+          The Emergency Loan pool (KES 10M) is nearing capacity. KES 8.7M disbursed. Consider increasing the pool limit or temporarily pausing new applications.
+        </div>
+        <button class="btn btn-warning btn-sm" style="flex-shrink:0;" (click)="openPoolModal()">Adjust Pool</button>
+        <button class="alert-close" (click)="dismissAlert('pool')"><i class="bi bi-x-lg"></i></button>
+      </div>
+    }
+
+    @if (showInfoAlert) {
+      <div class="alert-banner alert-info" style="margin-top:-.75rem;margin-bottom:1.75rem;">
+        <i class="bi bi-info-circle-fill alert-icon"></i>
+        <div class="alert-body">
+          <strong>23 Loan Applications Pending Review</strong>
+          Quick Loan: 12 • Emergency Loan: 7 • Guarantor Loan: 4 pending your approval. Last reviewed 2 hours ago.
+        </div>
+        <button class="btn btn-outline btn-sm" style="flex-shrink:0;">Review Now</button>
+        <button class="alert-close" (click)="dismissAlert('info')"><i class="bi bi-x-lg"></i></button>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STATS ROW -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="stats-grid">
+      @for (stat of stats; track stat.label) {
+        <div class="stat-card {{stat.cardClass}}">
+          <div class="stat-card-header">
+            <div class="stat-icon {{stat.iconClass}}"><i class="bi {{stat.icon}}"></i></div>
+            <span class="stat-change {{stat.changeClass}}"><i class="bi {{stat.changeIcon}}"></i> {{stat.change}}</span>
+          </div>
+          <div class="stat-value">{{stat.value}}</div>
+          <div class="stat-label">{{stat.label}}</div>
+          <div class="stat-sub">{{stat.sub}}</div>
+        </div>
+      }
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- POOL FUND OVERVIEW -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section-header">
+      <h3 class="section-title"><span class="section-title-dot"></span> Pool Fund Overview</h3>
+      <div class="section-actions">
+        <button class="btn btn-outline btn-sm" (click)="openPoolModal()">
+          <i class="bi bi-sliders"></i> Manage Pools
+        </button>
+        <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <i class="bi bi-plus-lg"></i> New Loan Product
+        </button>
+      </div>
+    </div>
+
+    <div class="pool-grid">
+      @for (pool of pools; track pool.id) {
+        <div class="pool-card">
+          <div class="pool-card-accent" [style.background]="pool.accentColor"></div>
+          <div class="pool-card-head">
+            <div class="pool-card-type">
+              <div class="pool-type-icon" [style.background]="pool.iconGradient" style="color:#fff;">
+                <i class="bi {{pool.icon}}"></i>
+              </div>
+              <div>
+                <div class="pool-name">{{pool.name}}</div>
+                <div class="pool-label">{{pool.label}}</div>
+              </div>
+            </div>
+            <span class="pool-card-status-badge"
+              [class.badge-active]="pool.status === 'active'"
+              [class.badge-paused]="pool.status === 'paused'"
+              [class.badge-critical]="pool.utilization >= 85">
+              <i class="bi {{pool.status === 'paused' ? 'bi-pause-fill' : 'bi-circle-fill'}}" style="font-size:.45rem;"></i>
+              {{pool.statusLabel}}
+            </span>
+          </div>
+          <div class="pool-amounts">
+            <div class="pool-amount-item">
+              <div class="pool-amount-val" [style.color]="pool.id === 'emergency' ? '#f44336' : pool.id === 'guarantor' ? '#9c27b0' : pool.id === 'collateral' ? '#2196f3' : 'var(--primary-green)'">{{pool.poolLimit}}</div>
+              <div class="pool-amount-lbl">Pool Limit</div>
+            </div>
+            <div class="pool-amount-item">
+              <div class="pool-amount-val">{{pool.disbursed}}</div>
+              <div class="pool-amount-lbl">Disbursed</div>
+            </div>
+          </div>
+          <div class="pool-bar-wrap">
+            <div class="pool-bar-label">
+              <span>Pool utilization</span>
+              <span style="font-weight:700;" [style.color]="pool.id === 'emergency' ? '#f44336' : pool.id === 'guarantor' ? '#9c27b0' : pool.id === 'collateral' ? '#2196f3' : 'var(--primary-green)'">{{pool.utilization}}%</span>
+            </div>
+            <div class="pool-bar-track">
+              <div class="pool-bar-fill {{pool.barClass}}" [style.width.%]="pool.utilization" [style.background]="pool.id === 'emergency' ? 'linear-gradient(90deg,#f44336,#e91e63)' : ''"></div>
+            </div>
+          </div>
+          <div class="pool-stats-row">
+            <div class="pool-stat-mini">
+              <div class="pool-stat-mini-val">{{pool.applied}}</div>
+              <div class="pool-stat-mini-lbl">Applied</div>
+            </div>
+            <div class="pool-stat-mini">
+              <div class="pool-stat-mini-val">{{pool.approved}}</div>
+              <div class="pool-stat-mini-lbl">Approved</div>
+            </div>
+            <div class="pool-stat-mini">
+              <div class="pool-stat-mini-val" [style.color]="pool.availableColor">{{pool.available}}</div>
+              <div class="pool-stat-mini-lbl">Available</div>
+            </div>
+          </div>
+          <div class="pool-actions">
+            @if (pool.status === 'paused') {
+              <button class="btn btn-xs btn-primary" (click)="showToast('Pool Resumed', pool.name + ' is now active', 'success')">
+                <i class="bi bi-play-fill"></i> Resume
+              </button>
+            } @else {
+              <button class="btn btn-outline btn-xs" (click)="openPoolModal()">
+                <i class="bi bi-pen"></i> Edit Limit
+              </button>
+              <button class="btn btn-xs" [style.background]="pool.id === 'emergency' ? '#fee2e2' : pool.id === 'guarantor' ? '#faf5ff' : '#fff7ed'"
+                [style.color]="pool.id === 'emergency' ? '#991b1b' : pool.id === 'guarantor' ? '#7c3aed' : '#c2410c'"
+                [style.border]="pool.id === 'emergency' ? '1px solid #fecaca' : pool.id === 'guarantor' ? '1px solid #e9d5ff' : '1px solid #fed7aa'"
+                (click)="openPauseModal(pool.name)">
+                <i class="bi bi-pause-fill"></i> {{pool.id === 'emergency' ? 'Pause' : 'Pause Pool'}}
+              </button>
+            }
+            <button class="btn btn-outline btn-xs" (click)="generatePoolReport(pool)">
+              <i class="bi bi-bar-chart"></i> Report
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- LOAN PRODUCT CARDS -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section-header">
+      <h3 class="section-title"><span class="section-title-dot"></span> Loan Products Configuration</h3>
+      <div class="section-actions">
+        <button class="btn btn-outline btn-sm">
+          <i class="bi bi-funnel"></i> Filter
+        </button>
+        <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <i class="bi bi-plus-lg"></i> Create Product
+        </button>
+      </div>
+    </div>
+
+    <div class="products-grid">
+      @for (product of products; track product.id) {
+        <div class="product-card" [style.border-color]="product.id === 'collateral' ? 'rgba(33,150,243,.2)' : ''">
+          <div class="product-card-header">
+            <div class="product-header-gradient" [style.background]="product.headerGradient"></div>
+            <div class="product-card-title-wrap">
+              <div class="product-card-icon" [style.background]="product.iconGradient" [style.color]="'#fff'" [style.box-shadow]="product.boxShadow">
+                <i class="bi {{product.icon}}"></i>
+              </div>
+              <div class="product-card-meta">
+                <div class="product-card-name">{{product.name}}</div>
+                <div class="product-card-id">{{product.productId}} · {{product.createdDate}}</div>
+                <div class="product-card-badges">
+                  @for (badge of product.badges; track badge.label) {
+                    <span class="tag {{badge.class}}">
+                      @if (badge.icon) {
+                        <i class="bi {{badge.icon}}" style="font-size:.4rem;"></i>
+                      }
+                      {{badge.label}}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="product-card-controls">
+              <div class="toggle-wrap">
+                <span class="toggle-label">Live</span>
+                <label class="toggle">
+                  <input type="checkbox" [checked]="product.isLive" (change)="onProductToggle(product)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="dropdown-container">
+                <button class="btn btn-ghost btn-icon" (click)="toggleDropdown(product.dropdownId, $event)">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <div class="dropdown-menu" [class.open]="openDropdownId === product.dropdownId">
+                  <button class="dropdown-item" (click)="openEditModal(product)">
+                    <i class="bi bi-pen"></i> Edit Product
+                  </button>
+                  <button class="dropdown-item" (click)="openViewModal(product)">
+                    <i class="bi bi-eye"></i> View Details
+                  </button>
+                  <button class="dropdown-item" (click)="duplicateProduct(product)">
+                    <i class="bi bi-copy"></i> Duplicate
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  @if (product.status === 'paused') {
+                    <button class="dropdown-item" (click)="resumeProduct(product)">
+                      <i class="bi bi-play-fill"></i> Resume Product
+                    </button>
+                  } @else {
+                    <button class="dropdown-item" (click)="openPauseModal(product.name)">
+                      <i class="bi bi-pause-fill"></i> Pause Product
+                    </button>
+                  }
+                  <button class="dropdown-item danger" (click)="openDeleteModal(product.name)">
+                    <i class="bi bi-trash"></i> Delete Product
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card-body">
+            <div class="product-specs-grid">
+              @for (spec of product.specs; track spec.label) {
+                <div class="product-spec">
+                  <div class="product-spec-val" [style.color]="spec.color || 'var(--text-primary)'">{{spec.value}}</div>
+                  <div class="product-spec-lbl">{{spec.label}}</div>
+                </div>
+              }
+            </div>
+
+            <div class="product-desc">{{product.description}}</div>
+
+            <div class="product-notifications">
+              <div class="product-notif-title">
+                <i class="bi bi-bell-fill" [style.color]="product.notifTitleColor"></i> Auto Notifications
+              </div>
+              <div class="product-notif-list">
+                @for (notif of product.notifications; track notif.text) {
+                  <div class="product-notif-item">
+                    <div class="notif-dot-sm {{notif.dotColor}}"></div>
+                    {{notif.text}}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="product-terms">
+              <div class="product-terms-title">
+                <i class="bi bi-file-earmark-text" [style.color]="product.termsTitleColor"></i> Terms of Acceptance
+              </div>
+              <div class="product-terms-list">
+                @for (term of product.terms; track term.text) {
+                  <div class="product-term-item">
+                    <i class="bi bi-check-circle-fill" [style.color]="term.iconColor"></i>
+                    {{term.text}}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card-footer" [style.background]="product.footerBg || 'rgba(248,250,251,.6)'">
+            <div class="product-footer-stats">
+              <div class="product-footer-stat">
+                <span class="product-footer-stat-val" [style.color]="product.membersColor">{{product.membersApplied}}</span>
+                <span class="product-footer-stat-lbl">Members Applied</span>
+              </div>
+              <div class="product-footer-stat">
+                <span class="product-footer-stat-val">{{product.channeled}}</span>
+                <span class="product-footer-stat-lbl">Channeled</span>
+              </div>
+              <div class="product-footer-stat">
+                <span class="product-footer-stat-val" [style.color]="product.repaymentColor">{{product.repaymentRate}}</span>
+                <span class="product-footer-stat-lbl">Repayment Rate</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn btn-outline btn-sm" (click)="openEditModal(product)">
+                <i class="bi bi-pen"></i> Edit
+              </button>
+              @if (product.status === 'paused') {
+                <button class="btn btn-sm btn-primary" (click)="resumeProduct(product)">
+                  <i class="bi bi-play-fill"></i> Resume
+                </button>
+              } @else {
+                <button class="btn btn-sm" [style.background]="product.viewBtnGradient || 'linear-gradient(135deg, var(--primary-green), var(--accent-teal))'"
+                  [style.color]="'#fff'" [style.box-shadow]="product.boxShadow" (click)="openViewModal(product)">
+                  <i class="bi bi-eye"></i> View
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ADD NEW PRODUCT CARD -->
+      <div class="product-card add-product-card" (click)="openCreateModal()">
+        <div style="text-align:center;padding:2rem;">
+          <div style="width:64px;height:64px;border-radius:var(--radius-xl);background:var(--primary-green-ultra-light);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;border:2px dashed var(--primary-green-light);">
+            <i class="bi bi-plus-lg" style="font-size:1.5rem;color:var(--primary-green);"></i>
+          </div>
+          <div style="font-size:.95rem;font-weight:700;color:var(--text-secondary);margin-bottom:.4rem;">Create New Loan Product</div>
+          <div style="font-size:.78rem;color:var(--text-tertiary);max-width:200px;margin:0 auto;">Configure a new loan product with custom rates, terms, and eligibility rules</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:1.25rem;" (click)="openCreateModal(); $event.stopPropagation()">
+            <i class="bi bi-plus-lg"></i> New Product
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- NOTIFICATIONS PANEL -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section-header">
+      <h3 class="section-title"><span class="section-title-dot"></span> Admin Notifications & Alerts</h3>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" (click)="markAllRead()">
+          <i class="bi bi-check2-all"></i> Mark All Read
+        </button>
+      </div>
+    </div>
+    <div class="notif-panel">
+      <div class="notif-items">
+        @for (notif of notifications; track notif.title) {
+          <div class="notif-panel-item" [class.notif-unread]="notif.unread">
+            <div class="notif-panel-icon" [style.background]="notif.iconBg" [style.color]="notif.iconColor">
+              <i class="bi {{notif.icon}}"></i>
+            </div>
+            <div class="notif-panel-body">
+              <strong>{{notif.title}}</strong>
+              <p>{{notif.description}}</p>
+            </div>
+            <span class="notif-panel-time">{{notif.time}}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- PORTFOLIO RECORDS TABLE -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section-header">
+      <h3 class="section-title"><span class="section-title-dot"></span> Portfolio Records</h3>
+      <div class="section-actions">
+        <button class="btn btn-outline btn-sm" (click)="exportCSV()">
+          <i class="bi bi-filetype-csv"></i> Export CSV
+        </button>
+        <button class="btn btn-outline btn-sm" (click)="printTable()">
+          <i class="bi bi-printer"></i> Print
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <div class="table-filters">
+          <div class="filter-search-wrap">
+            <i class="bi bi-search"></i>
+            <input class="filter-search" type="text" placeholder="Search product..." [(ngModel)]="searchQuery" />
+          </div>
+          <select class="filter-select" [(ngModel)]="filterProduct">
+            <option>All Products</option>
+            <option>Quick Loan</option>
+            <option>Emergency Loan</option>
+            <option>Guarantor Loan</option>
+            <option>Collateral Loan</option>
+            <option>Non-Collateral Loan</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="filterStatus">
+            <option>All Statuses</option>
+            <option>Active</option>
+            <option>Paused</option>
+            <option>Inactive</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="filterTime">
+            <option>All Time</option>
+            <option>This Month</option>
+            <option>This Quarter</option>
+            <option>This Year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Pool Limit</th>
+              <th>Disbursed</th>
+              <th>Available</th>
+              <th>Pool Usage</th>
+              <th>Members Applied</th>
+              <th>Interest Rate</th>
+              <th>Max Term</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (record of filteredTableRecords; track record.productId) {
+              <tr [class.paused-row]="record.isPaused">
+                <td>
+                  <div class="product-cell">
+                    <div class="product-cell-icon" [style.background]="record.iconGradient" style="color:#fff;">
+                      <i class="bi {{record.icon}}"></i>
+                    </div>
+                    <div>
+                      <div class="product-cell-name">{{record.productName}}</div>
+                      <div class="product-cell-id">{{record.productId}}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-weight:700;">{{record.poolLimit}}</td>
+                <td>{{record.disbursed}}</td>
+                <td [style.color]="record.availableColor" style="font-weight:700;">{{record.available}}</td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="progress-bar">
+                      <div class="progress-fill"
+                        [class.progress-green]="record.productName === 'Quick Loan'"
+                        [class.progress-purple]="record.productName === 'Guarantor Loan'"
+                        [class.progress-blue]="record.productName === 'Collateral Loan'"
+                        [class.progress-orange]="record.productName === 'Non-Collateral Loan'"
+                        [class.progress-red]="record.productName === 'Emergency Loan'"
+                        [style.width.%]="record.usage"
+                        [style.background]="record.productName === 'Emergency Loan' ? 'linear-gradient(90deg,#f44336,#e91e63)' : ''">
+                      </div>
+                    </div>
+                    <div class="progress-text" [style.color]="record.usageColor">{{record.usageText}}</div>
+                  </div>
+                </td>
+                <td><span style="font-weight:700;" [style.color]="record.membersColor">{{record.membersApplied}}</span></td>
+                <td>{{record.interestRate}}</td>
+                <td>{{record.maxTerm}}</td>
+                <td>
+                  <span class="status-pill"
+                    [class.pill-active]="record.status === 'active'"
+                    [class.pill-paused]="record.status === 'paused'">
+                    <i class="bi {{record.status === 'paused' ? 'bi-pause-fill' : 'bi-circle-fill'}}" style="font-size:.45rem;"></i>
+                    {{record.status === 'active' ? 'Active' : 'Paused'}}
+                  </span>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <button class="table-action-btn" title="Edit" (click)="openEditModal()">
+                      <i class="bi bi-pen"></i>
+                    </button>
+                    <button class="table-action-btn" title="View" (click)="openViewModal()">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    @if (record.isPaused) {
+                      <button class="table-action-btn success" title="Resume" (click)="showToast('Product Resumed', record.productName + ' now active', 'success')">
+                        <i class="bi bi-play-fill"></i>
+                      </button>
+                    } @else {
+                      <button class="table-action-btn" title="Pause" (click)="openPauseModal(record.productName)">
+                        <i class="bi bi-pause-fill"></i>
+                      </button>
+                    }
+                    <button class="table-action-btn danger" title="Delete" (click)="openDeleteModal(record.productName)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span style="font-size:.78rem;color:var(--text-secondary);">Showing <strong>{{filteredTableRecords.length}}</strong> of <strong>{{tableRecords.length}}</strong> loan products</span>
+        <div class="pagination">
+          <button class="page-btn"><i class="bi bi-chevron-left" style="font-size:.65rem;"></i></button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn"><i class="bi bi-chevron-right" style="font-size:.65rem;"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- ANALYTICS GRID -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section-header">
+      <h3 class="section-title"><span class="section-title-dot"></span> Portfolio Analytics</h3>
+    </div>
+
+    <div class="analytics-grid">
+      <!-- Pool Health -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">
+          <i class="bi bi-heart-pulse" style="color:var(--primary-green);"></i> Pool Fund Health
+        </div>
+        <div class="health-bars">
+          @for (bar of healthBars; track bar.name) {
+            <div class="health-bar-item">
+              <div class="health-bar-label">
+                <span class="health-bar-name">{{bar.name}}</span>
+                <span class="health-bar-pct" [style.color]="bar.color">{{bar.pct}}%</span>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar-fill" [style.width.%]="bar.pct" [style.background]="bar.gradient"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">
+          <i class="bi bi-bar-chart" style="color:var(--accent-blue);"></i> Key Performance Indicators
+        </div>
+        <div class="kpi-grid">
+          @for (kpi of kpis; track kpi.label) {
+            <div class="kpi-item">
+              <div class="kpi-val" [style.color]="kpi.color || 'var(--text-primary)'">{{kpi.value}}</div>
+              <div class="kpi-label">{{kpi.label}}</div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="analytics-card">
+        <div class="analytics-card-title">
+          <i class="bi bi-clock-history" style="color:var(--accent-orange);"></i> Recent Admin Activity
+        </div>
+        <div class="recent-activity">
+          @for (activity of activities; track activity.title) {
+            <div class="activity-item">
+              <div class="activity-icon" [style.background]="activity.iconBg" [style.color]="activity.iconColor">
+                <i class="bi {{activity.icon}}"></i>
+              </div>
+              <div class="activity-text">
+                <strong>{{activity.title}}</strong>
+                <span>{{activity.subtitle}}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content-body -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CUSTOM MODAL RENDERER -->
+  <!-- ══════════════════════════════════════════ -->
+  @if (modalBackdrop) {
+    <div class="modal-backdrop-native" (click)="closeModal()"></div>
+  }
+  @if (activeModal) {
+    <div class="modal-native-container">
+      <div class="modal-native-content"
+        [class.modal-sm]="modalSize === 'sm'"
+        [class.modal-md]="modalSize === 'md'"
+        [class.modal-lg]="modalSize === 'lg'"
+        [class.modal-xl]="modalSize === 'xl'">
+        <ng-container *ngTemplateOutlet="activeModal"></ng-container>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- NG-TEMPLATE MODALS -->
+  <!-- ══════════════════════════════════════════ -->
+
+  <!-- CREATE PRODUCT MODAL -->
+  <ng-template #createModal>
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-icon" style="background:linear-gradient(135deg,var(--primary-green),var(--accent-teal));color:#fff;">
+          <i class="bi bi-plus-lg"></i>
+        </div>
+        Create New Loan Product
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Basic Info -->
+      <div class="form-section-title"><i class="bi bi-info-circle"></i> Basic Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Product Name <span class="form-label-required">*</span></label>
+          <input type="text" class="form-control" placeholder="e.g. Quick Loan, Emergency Loan..." [(ngModel)]="createForm.name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product Type <span class="form-label-required">*</span></label>
+          <select class="form-control" [(ngModel)]="createForm.type">
+            <option value="">Select type...</option>
+            <option>Quick Loan</option>
+            <option>Emergency Loan</option>
+            <option>Guarantor-Based Loan</option>
+            <option>Collateral-Based Loan</option>
+            <option>Non-Collateral Loan</option>
+            <option>Custom</option>
+          </select>
+        </div>
+        <div class="form-group form-group-full">
+          <label class="form-label">Description <span class="form-label-required">*</span></label>
+          <textarea class="form-control" rows="3" placeholder="Describe this loan product, its purpose and who it targets..." [(ngModel)]="createForm.description"></textarea>
+        </div>
+      </div>
+
+      <!-- Amounts & Rates -->
+      <div class="form-section-title"><i class="bi bi-coin"></i> Amounts & Interest Rates</div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label">Minimum Amount <span class="form-label-required">*</span></label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" placeholder="5,000" [(ngModel)]="createForm.minAmount" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maximum Amount <span class="form-label-required">*</span></label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" placeholder="500,000" [(ngModel)]="createForm.maxAmount" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pool Fund Limit <span class="form-label-required">*</span> <span class="form-label-hint">(total allocation)</span></label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" placeholder="10,000,000" [(ngModel)]="createForm.poolLimit" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interest Rate <span class="form-label-required">*</span></label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="10" step="0.5" [(ngModel)]="createForm.interestRate" />
+            <span class="input-suffix">% p.a.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Processing Fee</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="2" step="0.5" [(ngModel)]="createForm.processingFee" />
+            <span class="input-suffix">% p.a.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Late Penalty Fee</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="5" step="0.5" [(ngModel)]="createForm.latePenalty" />
+            <span class="input-suffix">% p.a.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms & Duration -->
+      <div class="form-section-title"><i class="bi bi-calendar"></i> Loan Terms & Duration</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Minimum Loan Term <span class="form-label-required">*</span></label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="1" [(ngModel)]="createForm.minTerm" />
+            <span class="input-suffix">months</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maximum Loan Term <span class="form-label-required">*</span></label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="12" [(ngModel)]="createForm.maxTerm" />
+            <span class="input-suffix">months</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Application Validity</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="30" [(ngModel)]="createForm.validity" />
+            <span class="input-suffix">days</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Repayment Frequency</label>
+          <select class="form-control" [(ngModel)]="createForm.frequency">
+            <option>Monthly</option>
+            <option>Weekly</option>
+            <option>Bi-weekly</option>
+            <option>At Maturity</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Grace Period</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="3" [(ngModel)]="createForm.gracePeriod" />
+            <span class="input-suffix">days</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interest Calculation</label>
+          <select class="form-control" [(ngModel)]="createForm.calculation">
+            <option>Reducing Balance</option>
+            <option>Flat Rate</option>
+            <option>Compound</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Security & Collateral -->
+      <div class="form-section-title"><i class="bi bi-shield-shaded"></i> Security & Collateral Requirements</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Security Type <span class="form-label-required">*</span></label>
+          <select class="form-control" [(ngModel)]="createForm.securityType">
+            <option>None Required</option>
+            <option>Guarantors</option>
+            <option>Collateral (Physical Asset)</option>
+            <option>Savings-Backed</option>
+            <option>Mixed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Minimum Guarantors</label>
+          <input type="number" class="form-control" placeholder="2" min="0" max="10" [(ngModel)]="createForm.minGuarantors" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Collateral Coverage Ratio</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="150" [(ngModel)]="createForm.collateralRatio" />
+            <span class="input-suffix">%</span>
+          </div>
+          <span class="form-hint">Collateral value as % of loan amount</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min. Membership Duration</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="6" [(ngModel)]="createForm.minMembership" />
+            <span class="input-suffix">months</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eligibility -->
+      <div class="form-section-title"><i class="bi bi-person-check"></i> Member Eligibility Criteria</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Min. Savings Balance</label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" placeholder="10,000" [(ngModel)]="createForm.minSavings" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Active Loans per Member</label>
+          <input type="number" class="form-control" placeholder="1" min="1" [(ngModel)]="createForm.maxActiveLoans" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min. Credit Score</label>
+          <input type="number" class="form-control" placeholder="600" min="300" max="900" [(ngModel)]="createForm.minCreditScore" />
+          <span class="form-hint">SACCO internal score 300–900</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Debt-to-Income Ratio</label>
+          <div class="input-group">
+            <input type="number" class="form-control" placeholder="40" [(ngModel)]="createForm.maxDti" />
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="form-section-title"><i class="bi bi-bell"></i> Notification & Alert Settings</div>
+      <div class="checkbox-group">
+        @for (notif of createNotifications; track notif.label) {
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="notif.checked" />
+            {{notif.label}}
+          </label>
+        }
+      </div>
+
+      <!-- Terms of Acceptance -->
+      <div class="form-section-title" style="margin-top:1.25rem;"><i class="bi bi-file-earmark-text"></i> Terms of Acceptance</div>
+      <div class="terms-list-edit">
+        @for (term of createTerms; track $index) {
+          <div class="term-edit-item">
+            <input type="text" class="form-control" placeholder="Enter acceptance term..." [(ngModel)]="createTerms[$index]" />
+            <button class="btn btn-ghost btn-icon" (click)="removeTerm($index)">
+              <i class="bi bi-trash" style="color:var(--status-danger);font-size:.75rem;"></i>
+            </button>
+          </div>
+        }
+      </div>
+      <button class="add-term-btn" (click)="addTerm()">
+        <i class="bi bi-plus-circle"></i> Add Term
+      </button>
+
+      <!-- Publish Settings -->
+      <div class="form-section-title" style="margin-top:1.25rem;"><i class="bi bi-toggle-on"></i> Publish Settings</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Initial Status</label>
+          <select class="form-control" [(ngModel)]="createForm.initialStatus">
+            <option>Active — Publish immediately</option>
+            <option>Draft — Save but don't publish</option>
+            <option>Paused — Create but keep paused</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Approval Mode</label>
+          <select class="form-control" [(ngModel)]="createForm.approvalMode">
+            <option>Manual — Admin reviews each application</option>
+            <option>Auto-Approve — Instant if criteria met</option>
+            <option>Semi-Auto — Auto-reject only</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-outline" (click)="saveDraft()">
+        <i class="bi bi-floppy"></i> Save Draft
+      </button>
+      <button class="btn btn-primary" (click)="publishProduct()">
+        <i class="bi bi-rocket"></i> Publish Product
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- EDIT PRODUCT MODAL -->
+  <ng-template #editModal>
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-icon" style="background:linear-gradient(135deg,#ff9800,#ff5722);color:#fff;">
+          <i class="bi bi-pen"></i>
+        </div>
+        Edit Loan Product — {{editForm.name}}
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section-title"><i class="bi bi-info-circle"></i> Basic Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" class="form-control" [(ngModel)]="editForm.name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product Type</label>
+          <select class="form-control" [(ngModel)]="editForm.type">
+            <option>Quick Loan</option>
+            <option>Emergency Loan</option>
+            <option>Guarantor-Based Loan</option>
+            <option>Collateral-Based Loan</option>
+            <option>Non-Collateral Loan</option>
+          </select>
+        </div>
+        <div class="form-group form-group-full">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="editForm.description"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section-title"><i class="bi bi-coin"></i> Amounts & Rates</div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label">Minimum Amount</label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" [(ngModel)]="editForm.minAmount" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maximum Amount</label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" [(ngModel)]="editForm.maxAmount" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pool Fund Limit</label>
+          <div class="input-group">
+            <span class="input-prefix">KES</span>
+            <input type="number" class="form-control" [(ngModel)]="editForm.poolLimit" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interest Rate</label>
+          <div class="input-group">
+            <input type="number" class="form-control" step="0.5" [(ngModel)]="editForm.interestRate" />
+            <span class="input-suffix">% p.a.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Processing Fee</label>
+          <div class="input-group">
+            <input type="number" class="form-control" step="0.5" [(ngModel)]="editForm.processingFee" />
+            <span class="input-suffix">% p.a.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Late Penalty Fee</label>
+          <div class="input-group">
+            <input type="number" class="form-control" step="0.5" [(ngModel)]="editForm.latePenalty" />
+            <span class="input-suffix">% p.a.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-title"><i class="bi bi-calendar"></i> Loan Terms</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Minimum Term</label>
+          <div class="input-group">
+            <input type="number" class="form-control" [(ngModel)]="editForm.minTerm" />
+            <span class="input-suffix">months</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Maximum Term</label>
+          <div class="input-group">
+            <input type="number" class="form-control" [(ngModel)]="editForm.maxTerm" />
+            <span class="input-suffix">months</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Validity Period</label>
+          <div class="input-group">
+            <input type="number" class="form-control" [(ngModel)]="editForm.validity" />
+            <span class="input-suffix">days</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Repayment Frequency</label>
+          <select class="form-control" [(ngModel)]="editForm.frequency">
+            <option>Monthly</option>
+            <option>Weekly</option>
+            <option>Bi-weekly</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="alert-banner alert-warning" style="margin:.5rem 0;">
+        <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
+        <div class="alert-body">
+          <strong>Editing Live Product</strong>
+          Changes will apply immediately to the member portal and any new applications.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveEditChanges()">
+        <i class="bi bi-check-lg"></i> Save Changes
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- VIEW PRODUCT MODAL -->
+  <ng-template #viewModal>
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-icon" style="background:linear-gradient(135deg,var(--primary-green),var(--accent-teal));color:#fff;">
+          <i class="bi bi-eye"></i>
+        </div>
+        Quick Loan — Full Details
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="view-stats-grid">
+        <div class="view-stat-box" style="background:var(--primary-green-ultra-light);border:1px solid var(--primary-green-light);">
+          <div class="view-stat-val" style="color:var(--primary-green);">234</div>
+          <div class="view-stat-lbl">Total Applicants</div>
+        </div>
+        <div class="view-stat-box" style="background:#eff6ff;border:1px solid #bfdbfe;">
+          <div class="view-stat-val" style="color:#2196f3;">KES 650K</div>
+          <div class="view-stat-lbl">Total Channeled</div>
+        </div>
+        <div class="view-stat-box" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+          <div class="view-stat-val" style="color:#16a34a;">96%</div>
+          <div class="view-stat-lbl">Repayment Rate</div>
+        </div>
+      </div>
+
+      <div class="form-section-title"><i class="bi bi-sliders"></i> Product Configuration</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem;">
+        <div class="view-detail-row">
+          <span class="view-detail-label">Product ID</span>
+          <span class="view-detail-value">PRD-001</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Status</span>
+          <span class="status-pill pill-active">Active</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Min Amount</span>
+          <span class="view-detail-value">KES 5,000</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Max Amount</span>
+          <span class="view-detail-value">KES 100,000</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Interest Rate</span>
+          <span class="view-detail-value">10% p.a.</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Processing Fee</span>
+          <span class="view-detail-value">2% p.a.</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Loan Term</span>
+          <span class="view-detail-value">1–6 months</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Validity</span>
+          <span class="view-detail-value">30 days</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Pool Limit</span>
+          <span class="view-detail-value" style="color:var(--primary-green);">KES 1,000,000</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Pool Available</span>
+          <span class="view-detail-value" style="color:var(--primary-green);">KES 350,000</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Approval Mode</span>
+          <span class="view-detail-value">Auto-Approve</span>
+        </div>
+        <div class="view-detail-row">
+          <span class="view-detail-label">Created</span>
+          <span class="view-detail-value">Jan 15, 2025</span>
+        </div>
+      </div>
+
+      <div class="form-section-title"><i class="bi bi-piggy-bank"></i> Pool Fund Status</div>
+      <div style="background:var(--bg-tertiary);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;">
+          <span style="font-size:.82rem;font-weight:600;color:var(--text-primary);">Pool utilization: 65%</span>
+          <span style="font-size:.82rem;font-weight:700;color:var(--primary-green);">KES 350K remaining</span>
+        </div>
+        <div class="pool-bar-track" style="height:10px;">
+          <div class="pool-bar-fill pool-bar-green" style="width:65%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:.5rem;font-size:.72rem;color:var(--text-tertiary);">
+          <span>KES 0</span><span>Disbursed: KES 650K</span><span>Limit: KES 1M</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Close</button>
+      <button class="btn btn-warning" (click)="pauseFromView()">
+        <i class="bi bi-pause-fill"></i> Pause Product
+      </button>
+      <button class="btn btn-primary" (click)="editFromView()">
+        <i class="bi bi-pen"></i> Edit Product
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- POOL MANAGEMENT MODAL -->
+  <ng-template #poolModal>
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-title-icon" style="background:linear-gradient(135deg,var(--accent-blue),var(--accent-teal));color:#fff;">
+          <i class="bi bi-sliders"></i>
+        </div>
+        Manage Pool Fund Limits
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-banner alert-info" style="margin-bottom:1.25rem;">
+        <i class="bi bi-info-circle-fill alert-icon"></i>
+        <div class="alert-body">Pool adjustments take effect immediately. Members currently in the application process will be affected if pool is reduced below active commitments.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        @for (pool of poolModalData; track pool.id) {
+          <div style="border-radius:var(--radius-lg);padding:1rem;"
+            [style.background]="pool.bg || 'var(--bg-tertiary)'"
+            [style.border]="pool.border ? pool.border : 'none'">
+            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;">
+              <div style="width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;"
+                [style.background]="pool.iconGradient">
+                <i class="bi {{pool.icon}}"></i>
+              </div>
+              <strong style="font-size:.85rem;">{{pool.name}}</strong>
+              <span class="status-pill"
+                [class.pill-active]="pool.status === 'active'"
+                [class.pill-paused]="pool.status === 'paused'"
+                style="margin-left:auto;font-size:.65rem;"
+                [style.background]="pool.id === 'emergency' ? '#fee2e2' : ''"
+                [style.color]="pool.id === 'emergency' ? '#991b1b' : ''">
+                {{pool.statusBadge}}
+              </span>
+            </div>
+            <div class="input-group">
+              <span class="input-prefix">KES</span>
+              <input type="number" class="form-control" [value]="pool.limit" />
+              <span class="input-suffix">limit</span>
+            </div>
+            <div style="font-size:.72rem;margin-top:.4rem;"
+              [style.color]="pool.usageColor || 'var(--text-tertiary)'"
+              [style.font-weight]="pool.warning ? '600' : '400'">
+              {{pool.usage}}
+            </div>
+            @if (pool.warning) {
+              <div style="font-size:.72rem;margin-top:.2rem;font-weight:600;" [style.color]="pool.warningColor">
+                {{pool.warning}}
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div style="background:var(--bg-tertiary);border-radius:var(--radius-lg);padding:1rem;margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:.75rem;color:var(--text-secondary);font-weight:600;">Total Combined Pool Limit</div>
+          <div style="font-size:1.25rem;font-weight:900;color:var(--primary-green);">{{totalPoolLimit}}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:.75rem;color:var(--text-secondary);font-weight:600;">Total Disbursed</div>
+          <div style="font-size:1.25rem;font-weight:900;color:var(--text-primary);">{{totalDisbursed}}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:.75rem;color:var(--text-secondary);font-weight:600;">Combined Available</div>
+          <div style="font-size:1.25rem;font-weight:900;color:var(--primary-green-dark);">{{totalAvailable}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="savePoolLimits()">
+        <i class="bi bi-check-lg"></i> Save Pool Limits
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- CONFIRM PAUSE MODAL -->
+  <ng-template #pauseModal>
+    <div class="modal-header">
+      <div class="modal-title"><i class="bi bi-pause-circle" style="color:#ff9800;"></i> Pause Loan Product</div>
+      <button type="button" class="modal-close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:2rem 1.75rem;">
+      <div class="confirm-icon confirm-icon-warning"><i class="bi bi-pause-fill"></i></div>
+      <h3 style="font-size:1rem;font-weight:800;margin-bottom:.5rem;">Pause {{pauseTargetName}}?</h3>
+      <p style="font-size:.82rem;color:var(--text-secondary);max-width:340px;margin:0 auto 1rem;">This product will be hidden from the member portal immediately. Existing active loans <strong>will not</strong> be affected. Members with pending applications will be notified.</p>
+      <div style="background:#fff7ed;border-radius:var(--radius-md);padding:.75rem;border:1px solid #fed7aa;text-align:left;font-size:.78rem;color:#92400e;">
+        <strong>⚠ Impact:</strong> {{pauseImpactCount}} pending applications will be put on hold. Members will receive an SMS notification.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-warning" (click)="executePause()">
+        <i class="bi bi-pause-fill"></i> Confirm Pause
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <ng-template #deleteModal>
+    <div class="modal-header">
+      <div class="modal-title"><i class="bi bi-trash" style="color:#f44336;"></i> Delete Loan Product</div>
+      <button type="button" class="modal-close-btn" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:2rem 1.75rem;">
+      <div class="confirm-icon confirm-icon-danger"><i class="bi bi-trash"></i></div>
+      <h3 style="font-size:1rem;font-weight:800;margin-bottom:.5rem;">Delete {{deleteTargetName}}?</h3>
+      <p style="font-size:.82rem;color:var(--text-secondary);max-width:340px;margin:0 auto 1rem;">This action is <strong>irreversible</strong>. All product configurations will be permanently removed. Active loans under this product will be migrated to the archive.</p>
+      <div style="background:#fff5f5;border-radius:var(--radius-md);padding:.75rem;border:1px solid #fecaca;text-align:left;font-size:.78rem;color:#991b1b;">
+        <strong>🛑 Warning:</strong> 234 member applications and KES 650K in disbursement records will be archived and can no longer accept new applications.
+      </div>
+      <div style="margin-top:1rem;">
+        <input type="text" class="form-control" placeholder='Type "DELETE" to confirm' style="text-align:center;font-weight:700;"
+          [(ngModel)]="deleteConfirmText" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-danger" [disabled]="!canDelete" (click)="executeDelete()">
+        <i class="bi bi-trash"></i> Permanently Delete
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container">
+    @for (toast of toasts; track toast.id) {
+      <div class="toast toast-{{toast.type}}">
+        <i class="bi {{getToastIcon(toast.type)}} toast-icon" [style.color]="getToastColor(toast.type)"></i>
+        <div class="toast-text">
+          <strong>{{toast.title}}</strong>
+          <span>{{toast.message}}</span>
+        </div>
+        <button class="toast-dismiss" (click)="dismissToast(toast.id)"><i class="bi bi-x-lg"></i></button>
+      </div>
+    }
+  </div>
+
+</div>

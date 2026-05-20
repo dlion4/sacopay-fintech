@@ -1,1 +1,994 @@
-<p>share-capital works!</p>
+<!-- Share Capital Management - Angular v21 Component Template -->
+<div class="share-capital-page">
+  <!-- Toast Container -->
+  <div class="toast-container">
+    @for (toast of toasts; track toast.id) {
+      <div class="toast" [class]="'toast-' + toast.type" [class.toast-hide]="!toast.visible">
+        <span class="toast-icon">
+          @switch (toast.type) {
+            @case ('success') { ✅ }
+            @case ('danger') { ❌ }
+            @case ('warning') { ⚠️ }
+            @case ('info') { ℹ️ }
+            @case ('primary') { 🟢 }
+          }
+        </span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" (click)="dismissToast(toast.id)">×</button>
+      </div>
+    }
+  </div>
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <span class="breadcrumb-link" (click)="showToast('Navigating to Dashboard...', 'info')">🏠 Home</span>
+    <span class="breadcrumb-sep">›</span>
+    <span>Financial Operations</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Share Capital</span>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">
+        <span class="page-title-icon">💎</span>
+        Share Capital Management
+      </h1>
+      <p class="page-subtitle">Manage member shares, transfers, certificates, and dividends</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline" (click)="openModal('export')">📥 Export</button>
+      <button class="btn btn-primary" (click)="openModal('quickEntry')">⚡ Quick Entry</button>
+      <button class="btn btn-gradient" (click)="openModal('addShares')">➕ Add Shares</button>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  <div class="alert-banner">
+    <span class="alert-icon">ℹ️</span>
+    <p class="alert-text">
+      <strong>Share Value Update:</strong> Current share value is <strong>KES {{ sharePrice }}</strong> per share.
+      Minimum shares required: <strong>{{ minShares }} shares (KES {{ minShares * sharePrice | number }})</strong>.
+      Maximum per member: <strong>{{ maxShares }} shares (KES {{ maxShares * sharePrice | number }})</strong>.
+    </p>
+    <button class="btn btn-sm btn-primary" (click)="openModal('shareConfig')">⚙️ Configure</button>
+  </div>
+
+  <!-- KPI Stats -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color: #00d084" (click)="showToast('Total capital: KES 234,000,000', 'info')">
+      <div class="kpi-bg-icon">💰</div>
+      <span class="kpi-icon">💰</span>
+      <p class="kpi-label">Total Share Capital</p>
+      <p class="kpi-value">KES 234M</p>
+      <p class="kpi-sub">📈 +8.5% this quarter</p>
+    </div>
+    <div class="kpi-card" style="--kpi-color: #2196f3" (click)="switchTab('purchases')">
+      <div class="kpi-bg-icon">📅</div>
+      <span class="kpi-icon">📅</span>
+      <p class="kpi-label">Monthly Contributions</p>
+      <p class="kpi-value">KES 12.5M</p>
+      <p class="kpi-sub">🛒 2,456 purchases</p>
+    </div>
+    <div class="kpi-card" style="--kpi-color: #ff9800" (click)="switchTab('transfers')">
+      <div class="kpi-bg-icon">🔄</div>
+      <span class="kpi-icon">🔄</span>
+      <p class="kpi-label">Pending Transfers</p>
+      <p class="kpi-value">18</p>
+      <p class="kpi-sub">⏳ KES 4.2M awaiting</p>
+    </div>
+    <div class="kpi-card" style="--kpi-color: #9c27b0" (click)="openModal('dividend')">
+      <div class="kpi-bg-icon">📊</div>
+      <span class="kpi-icon">📊</span>
+      <p class="kpi-label">Dividend Rate (2025)</p>
+      <p class="kpi-value">12.5%</p>
+      <p class="kpi-sub">✅ Paid Dec 2025</p>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-nav">
+    @for (tab of tabs; track tab.id) {
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === tab.id"
+        (click)="switchTab(tab.id)">
+        <span>{{ tab.icon }}</span> {{ tab.label }}
+        @if (tab.id === 'transfers') {
+          <span class="tab-badge tab-badge-warning">18</span>
+        }
+        @if (tab.id === 'certificates') {
+          <span class="tab-badge tab-badge-info">45</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- ==================== TAB: ALL SHARES ==================== -->
+  @if (activeTab === 'all-shares') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Filters -->
+      <div class="filters-card">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            placeholder="Search by name or ID..."
+            class="search-input">
+        </div>
+        <select [(ngModel)]="filterType" class="filter-select">
+          <option value="all">All Types</option>
+          <option value="Ordinary">Ordinary</option>
+          <option value="Preferential">Preferential</option>
+          <option value="Bonus">Bonus</option>
+        </select>
+        <select [(ngModel)]="filterTier" class="filter-select">
+          <option value="all">All Tiers</option>
+          <option value="Gold">Gold</option>
+          <option value="Silver">Silver</option>
+          <option value="Bronze">Bronze</option>
+        </select>
+      </div>
+
+      <!-- Members Table -->
+      <div class="glass-card table-card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="checkbox"></th>
+                <th>Member</th>
+                <th>Member ID</th>
+                <th>Total Shares</th>
+                <th>Share Value</th>
+                <th>Share Type</th>
+                <th>Tier</th>
+                <th>Last Activity</th>
+                <th>Certificate</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (member of filteredMembers; track member.id) {
+                <tr class="table-row" (click)="viewMemberShares(member)">
+                  <td (click)="$event.stopPropagation()">
+                    <input type="checkbox" class="checkbox">
+                  </td>
+                  <td>
+                    <div class="member-cell">
+                      <div class="avatar">{{ member.initials }}</div>
+                      <div class="member-info">
+                        <p class="member-name">{{ member.name }}</p>
+                        <p class="member-email">{{ member.email }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td><code class="id-badge">{{ member.memberId }}</code></td>
+                  <td class="font-bold">{{ member.totalShares | number }}</td>
+                  <td class="font-bold">KES {{ member.shareValue | number }}</td>
+                  <td>
+                    <span class="badge" [class]="'badge-' + member.shareType.toLowerCase()">
+                      {{ member.shareType }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="'badge-tier-' + member.tier.toLowerCase()">
+                      ⭐ {{ member.tier }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ member.lastActivity }}</td>
+                  <td>
+                    <span class="badge" [class]="member.certificateStatus === 'Issued' ? 'badge-success' : 'badge-pending'">
+                      {{ member.certificateStatus === 'Issued' ? '✅' : '⏳' }} {{ member.certificateStatus }}
+                    </span>
+                  </td>
+                  <td (click)="$event.stopPropagation()">
+                    <div class="action-btns">
+                      <button class="action-btn" title="View" (click)="viewMemberShares(member)">👁️</button>
+                      <button class="action-btn" title="Add Shares" (click)="openAddSharesFor(member)">➕</button>
+                      <button class="action-btn" title="Transfer" (click)="showToast('Initiate transfer for ' + member.name, 'info')">🔄</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <div class="table-footer">
+          <p class="table-info">Showing {{ filteredMembers.length }} of {{ members.length }} members</p>
+          <div class="pagination">
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: PURCHASES ==================== -->
+  @if (activeTab === 'purchases') {
+    <div class="tab-content animate-fadeInUp">
+      <div class="glass-card table-card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Purchase ID</th>
+                <th>Date & Time</th>
+                <th>Member</th>
+                <th>Shares Purchased</th>
+                <th>Amount Paid</th>
+                <th>Payment Method</th>
+                <th>Share Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (purchase of purchases; track purchase.purchaseId) {
+                <tr class="table-row" (click)="viewPurchaseDetails(purchase)">
+                  <td><code class="id-badge">{{ purchase.purchaseId }}</code></td>
+                  <td class="text-muted">{{ purchase.dateTime }}</td>
+                  <td>
+                    <div class="member-cell">
+                      <div class="avatar avatar-sm">{{ purchase.memberInitials }}</div>
+                      <span class="font-semibold">{{ purchase.memberName }}</span>
+                    </div>
+                  </td>
+                  <td class="font-bold">{{ purchase.sharesPurchased }} shares</td>
+                  <td class="font-bold">KES {{ purchase.amountPaid | number }}</td>
+                  <td>
+                    <span class="badge badge-neutral">{{ purchase.paymentIcon }} {{ purchase.paymentMethod }}</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-ordinary">{{ purchase.shareType }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="purchase.status === 'Completed' ? 'badge-success' : 'badge-pending'">
+                      {{ purchase.status === 'Completed' ? '✅' : '⏳' }} {{ purchase.status }}
+                    </span>
+                  </td>
+                  <td (click)="$event.stopPropagation()">
+                    <div class="action-btns">
+                      <button class="action-btn" title="View" (click)="viewPurchaseDetails(purchase)">👁️</button>
+                      <button class="action-btn" title="Receipt" (click)="showToast('Receipt for ' + purchase.purchaseId + ' downloaded', 'success')">🧾</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: TRANSFERS ==================== -->
+  @if (activeTab === 'transfers') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Alert -->
+      <div class="alert-banner alert-warning">
+        <p>
+          <strong>18 Transfer Requests Pending:</strong> Total value <strong>KES 4.2M</strong>. 
+          Please review and approve or reject within 48 hours.
+        </p>
+      </div>
+
+      <!-- Transfer Cards -->
+      @for (transfer of transfers; track transfer.transferId; let i = $index) {
+        <div class="transfer-card glass-card" [style.animation-delay]="(i * 0.15) + 's'">
+          <!-- Transfer Header -->
+          <div class="transfer-header">
+            <div class="transfer-header-left">
+              <code class="id-badge">{{ transfer.transferId }}</code>
+              <span class="badge badge-pending">⏳ {{ transfer.status }}</span>
+            </div>
+            <span class="transfer-submitted">Submitted: {{ transfer.submitted }}</span>
+          </div>
+
+          <!-- Transfer Body -->
+          <div class="transfer-body">
+            <!-- From -->
+            <div class="transfer-party transfer-from">
+              <div class="avatar avatar-lg avatar-from">{{ transfer.fromInitials }}</div>
+              <p class="party-name">{{ transfer.fromName }}</p>
+              <p class="party-id">{{ transfer.fromId }} (From)</p>
+              <p class="party-shares">{{ transfer.fromShares }} shares → <strong class="text-danger">{{ transfer.fromChange }}</strong></p>
+            </div>
+
+            <!-- Center Arrow -->
+            <div class="transfer-center">
+              <div class="transfer-amount-box">
+                <p class="transfer-shares">{{ transfer.sharesToTransfer }} Shares</p>
+                <p class="transfer-value">KES {{ transfer.transferValue | number }}</p>
+              </div>
+            </div>
+
+            <!-- To -->
+            <div class="transfer-party transfer-to">
+              <div class="avatar avatar-lg avatar-to">{{ transfer.toInitials }}</div>
+              <p class="party-name">{{ transfer.toName }}</p>
+              <p class="party-id">{{ transfer.toId }} (To)</p>
+              <p class="party-shares">{{ transfer.toShares }} shares → <strong class="text-success">+{{ transfer.toChange }}</strong></p>
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div class="transfer-reason">
+            <strong>Reason:</strong> {{ transfer.reason }}
+          </div>
+
+          <!-- Actions -->
+          <div class="transfer-actions">
+            <button class="btn btn-success" (click)="approveTransfer(transfer.transferId)">✅ Approve</button>
+            <button class="btn btn-danger" (click)="rejectTransfer(transfer.transferId)">❌ Reject</button>
+            <button class="btn btn-outline" (click)="showToast('Viewing details for ' + transfer.transferId, 'info')">📋 View Details</button>
+          </div>
+        </div>
+      }
+
+      <div class="glass-card transfers-footer">
+        <p class="text-muted">Showing 2 of 18 pending transfers</p>
+        <button class="btn btn-primary" (click)="showToast('Loading all transfers...', 'info')">View All Transfers →</button>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: CERTIFICATES ==================== -->
+  @if (activeTab === 'certificates') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Certificate Stats -->
+      <div class="cert-stats-grid">
+        <div class="cert-stat-card" style="--stat-color: #22c55e">
+          <p class="cert-stat-value">2,790</p>
+          <p class="cert-stat-label">✅ Certificates Issued</p>
+        </div>
+        <div class="cert-stat-card" style="--stat-color: #ff9800">
+          <p class="cert-stat-value">45</p>
+          <p class="cert-stat-label">⏳ Pending Generation</p>
+        </div>
+        <div class="cert-stat-card" style="--stat-color: #2196f3">
+          <p class="cert-stat-value">12</p>
+          <p class="cert-stat-label">📨 Member Requests</p>
+        </div>
+      </div>
+
+      <!-- Sample Certificate Preview -->
+      <div class="glass-card cert-preview-card">
+        <div class="cert-preview-header">
+          <h4>📜 Certificate Preview</h4>
+          <button class="btn btn-sm btn-white" (click)="openModal('certPreview')">View Template</button>
+        </div>
+        <div class="cert-preview-body">
+          <div class="cert-preview-inner">
+            <p class="cert-society">Rongo SACCO Society Ltd</p>
+            <h3 class="cert-title">Share Certificate</h3>
+            <div class="cert-divider"></div>
+            <p class="cert-text">This is to certify that</p>
+            <p class="cert-name">[Member Name]</p>
+            <p class="cert-text">holds <strong>[XXX]</strong> shares of <strong>KES 500</strong> each</p>
+            <p class="cert-number">Certificate No: CERT-XXXX-XXXX</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Generation -->
+      <h4 class="section-title">📋 Pending Generation (45)</h4>
+      <div class="glass-card table-card">
+        <div class="table-actions">
+          <button class="btn btn-sm btn-primary" (click)="showToast('Generating all 45 certificates...', 'info')">🔄 Generate All Selected</button>
+          <button class="btn btn-sm btn-info" (click)="showToast('Bulk download started...', 'info')">📥 Bulk Download</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="checkbox"></th>
+                <th>Member</th>
+                <th>Total Shares</th>
+                <th>Share Value</th>
+                <th>Share Type</th>
+                <th>Requested</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (cert of certificateRequests; track cert.memberId) {
+                <tr class="table-row">
+                  <td><input type="checkbox" class="checkbox"></td>
+                  <td>
+                    <div class="member-cell">
+                      <div class="avatar">{{ cert.initials }}</div>
+                      <div class="member-info">
+                        <p class="member-name">{{ cert.name }}</p>
+                        <p class="member-email">{{ cert.memberId }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="font-bold">{{ cert.totalShares }} shares</td>
+                  <td class="font-bold">KES {{ cert.shareValue | number }}</td>
+                  <td>
+                    <span class="badge" [class]="cert.shareType === 'Preferential' ? 'badge-preferential' : 'badge-ordinary'">
+                      {{ cert.shareType }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ cert.requested }}</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn btn-sm btn-primary" (click)="generateCertificate(cert.name)">📜 Generate</button>
+                      <button class="action-btn" (click)="showToast('Preview for ' + cert.name, 'info')">👁️</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: DIVIDENDS ==================== -->
+  @if (activeTab === 'dividends') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Dividend Summary Cards -->
+      <div class="dividend-summary-grid">
+        <!-- Recent Dividend -->
+        <div class="dividend-card glass-card">
+          <div class="dividend-card-header dividend-header-green">
+            <p>💰 LATEST DIVIDEND (2025)</p>
+          </div>
+          <div class="dividend-card-body">
+            <p class="dividend-amount">KES 29.25M</p>
+            <div class="dividend-stats">
+              <div><p class="stat-label">Rate</p><p class="stat-value text-primary">12.5%</p></div>
+              <div><p class="stat-label">Members</p><p class="stat-value">2,847</p></div>
+              <div><p class="stat-label">Date</p><p class="stat-value">Dec 15, 2025</p></div>
+            </div>
+            <button class="btn btn-primary btn-block" (click)="showToast('Viewing dividend breakdown...', 'info')">📊 View Breakdown</button>
+          </div>
+        </div>
+
+        <!-- Upcoming Dividend -->
+        <div class="dividend-card glass-card">
+          <div class="dividend-card-header dividend-header-purple">
+            <p>📈 PROJECTED DIVIDEND (2026)</p>
+          </div>
+          <div class="dividend-card-body">
+            <p class="dividend-amount">KES 32.5M</p>
+            <div class="dividend-stats">
+              <div><p class="stat-label">Est. Rate</p><p class="stat-value text-purple">13.0%</p></div>
+              <div><p class="stat-label">Target Members</p><p class="stat-value">3,100+</p></div>
+              <div><p class="stat-label">Expected</p><p class="stat-value">Dec 2026</p></div>
+            </div>
+            <button class="btn btn-purple btn-block" (click)="openModal('dividend')">⚙️ Configure Dividend</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dividend History -->
+      <h4 class="section-title">📜 Dividend History</h4>
+      <div class="glass-card table-card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Total Capital</th>
+                <th>Dividend Rate</th>
+                <th>Total Distributed</th>
+                <th>Members</th>
+                <th>Distribution Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (div of dividendRecords; track div.year) {
+                <tr class="table-row">
+                  <td class="font-bold">{{ div.year }}</td>
+                  <td>{{ div.totalCapital }}</td>
+                  <td class="font-bold text-primary">{{ div.dividendRate }}</td>
+                  <td class="font-bold">{{ div.totalDistributed }}</td>
+                  <td>{{ div.members | number }}</td>
+                  <td class="text-muted">{{ div.distributionDate }}</td>
+                  <td><span class="badge badge-success">✅ {{ div.status }}</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="View" (click)="showToast('Viewing ' + div.year + ' dividend details', 'info')">👁️</button>
+                      <button class="action-btn" title="Download" (click)="showToast('Downloading ' + div.year + ' dividend report', 'success')">📥</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== TAB: ANALYTICS ==================== -->
+  @if (activeTab === 'analytics') {
+    <div class="tab-content animate-fadeInUp">
+      <!-- Growth Chart -->
+      <div class="glass-card chart-card">
+        <h4 class="section-title-inline">📈 Share Capital Growth (Last 12 Months)</h4>
+        <div class="bar-chart">
+          @for (data of growthData; track data.month; let isLast = $last) {
+            <div class="bar-item" (click)="showToast(data.month + ': KES ' + data.value, 'info')">
+              <span class="bar-value">{{ data.value }}</span>
+              <div class="bar" [class.bar-highlight]="isLast" [style.height.%]="data.height"></div>
+              <span class="bar-label">{{ data.month }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top Shareholders -->
+      <div class="glass-card table-card">
+        <div class="table-header-row">
+          <h4 class="section-title-inline">🏆 Top 5 Shareholders</h4>
+          <button class="btn btn-sm btn-primary" (click)="showToast('Exporting shareholder report...', 'info')">📥 Export</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Member</th>
+                <th>Total Shares</th>
+                <th>Share Value</th>
+                <th>% of Total</th>
+                <th>Tier</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (shareholder of topShareholders; track shareholder.rank; let i = $index) {
+                <tr class="table-row">
+                  <td>
+                    <span class="rank-badge" [class.rank-top]="i < 3">{{ shareholder.rank }}</span>
+                  </td>
+                  <td [class.font-bold]="i < 3">{{ shareholder.name }}</td>
+                  <td class="font-bold">{{ shareholder.totalShares }} shares</td>
+                  <td class="font-bold">{{ shareholder.shareValue }}</td>
+                  <td>{{ shareholder.percentOfTotal }}</td>
+                  <td>
+                    <span class="badge" [class]="'badge-tier-' + shareholder.tier.toLowerCase()">
+                      ⭐ {{ shareholder.tier }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Distribution Charts -->
+      <div class="distribution-grid">
+        <div class="glass-card distribution-card">
+          <h4 class="section-title-inline">📊 Share Type Distribution</h4>
+          @for (item of shareTypeDistribution; track item.type) {
+            <div class="progress-item">
+              <div class="progress-header">
+                <span class="progress-label">{{ item.type }}</span>
+                <span class="progress-value">{{ item.pct }}% ({{ item.count }})</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="item.pct" [style.background]="item.color"></div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="glass-card distribution-card">
+          <h4 class="section-title-inline">👥 Tier Distribution</h4>
+          @for (item of tierDistribution; track item.tier) {
+            <div class="progress-item">
+              <div class="progress-header">
+                <span class="progress-label">{{ item.tier }}</span>
+                <span class="progress-value">{{ item.pct }}% ({{ item.count }})</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="item.pct" [style.background]="item.color"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Share Config Modal -->
+  @if (modals.shareConfig) {
+    <div class="modal-overlay" (click)="closeModal('shareConfig')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">⚙️</span>
+            <h3>Share Configuration</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('shareConfig')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Share Price (KES)</label>
+            <input type="number" [(ngModel)]="sharePrice" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum Shares per Member</label>
+            <input type="number" [(ngModel)]="minShares" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maximum Shares per Member</label>
+            <input type="number" [(ngModel)]="maxShares" class="form-input">
+          </div>
+          <div class="form-summary">
+            <p>💡 <strong>Summary:</strong></p>
+            <p>Min investment: <strong>KES {{ minShares * sharePrice | number }}</strong> | Max investment: <strong>KES {{ maxShares * sharePrice | number }}</strong></p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('shareConfig')">Cancel</button>
+            <button class="btn btn-primary" (click)="saveShareConfig()">💾 Save Configuration</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Member Detail Modal -->
+  @if (modals.memberDetail && selectedMember) {
+    <div class="modal-overlay" (click)="closeModal('memberDetail')">
+      <div class="modal modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">👤</span>
+            <h3>{{ selectedMember.name }} - Share Details</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('memberDetail')">×</button>
+        </div>
+        <div class="modal-body">
+          <!-- Member Header -->
+          <div class="member-detail-header">
+            <div class="avatar avatar-xl">{{ selectedMember.initials }}</div>
+            <div class="member-detail-info">
+              <h3>{{ selectedMember.name }}</h3>
+              <p class="text-muted">{{ selectedMember.email }}</p>
+              <p class="text-muted">Member ID: <strong>{{ selectedMember.memberId }}</strong></p>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="member-stats-grid">
+            <div class="member-stat">
+              <span class="stat-icon">📊</span>
+              <p class="stat-label">Total Shares</p>
+              <p class="stat-value">{{ selectedMember.totalShares | number }}</p>
+            </div>
+            <div class="member-stat">
+              <span class="stat-icon">💰</span>
+              <p class="stat-label">Share Value</p>
+              <p class="stat-value">KES {{ selectedMember.shareValue | number }}</p>
+            </div>
+            <div class="member-stat">
+              <span class="stat-icon">📋</span>
+              <p class="stat-label">Share Type</p>
+              <p class="stat-value">{{ selectedMember.shareType }}</p>
+            </div>
+            <div class="member-stat">
+              <span class="stat-icon">⭐</span>
+              <p class="stat-label">Tier</p>
+              <p class="stat-value">{{ selectedMember.tier }}</p>
+            </div>
+            <div class="member-stat">
+              <span class="stat-icon">{{ selectedMember.certificateStatus === 'Issued' ? '✅' : '⏳' }}</span>
+              <p class="stat-label">Certificate</p>
+              <p class="stat-value">{{ selectedMember.certificateStatus }}</p>
+            </div>
+            <div class="member-stat">
+              <span class="stat-icon">📅</span>
+              <p class="stat-label">Last Activity</p>
+              <p class="stat-value">{{ selectedMember.lastActivity }}</p>
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <h4 class="section-title">📈 Recent Transactions</h4>
+          <div class="transactions-list">
+            @for (tx of memberTransactions; track tx.date) {
+              <div class="transaction-item">
+                <div class="tx-left">
+                  <p class="tx-type">{{ tx.type }}</p>
+                  <p class="tx-date">{{ tx.date }}</p>
+                </div>
+                <div class="tx-right">
+                  <p class="tx-shares" [class.text-success]="tx.shares.startsWith('+')">{{ tx.shares }} shares</p>
+                  <p class="tx-amount">{{ tx.amount }}</p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="modal-actions">
+            <button class="btn btn-primary" (click)="closeModal('memberDetail'); openAddSharesFor(selectedMember)">➕ Add Shares</button>
+            <button class="btn btn-info" (click)="showToast('Initiating share transfer...', 'info')">🔄 Transfer Shares</button>
+            <button class="btn btn-purple" (click)="showToast('Generating certificate...', 'info')">📜 Generate Certificate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Purchase Detail Modal -->
+  @if (modals.purchaseDetail && selectedPurchase) {
+    <div class="modal-overlay" (click)="closeModal('purchaseDetail')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">🛒</span>
+            <h3>Purchase {{ selectedPurchase.purchaseId }}</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('purchaseDetail')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="purchase-details-grid">
+            <div class="detail-item">
+              <p class="detail-label">Purchase ID</p>
+              <p class="detail-value">{{ selectedPurchase.purchaseId }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Date</p>
+              <p class="detail-value">{{ selectedPurchase.dateTime }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Member</p>
+              <p class="detail-value">{{ selectedPurchase.memberName }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Shares</p>
+              <p class="detail-value">{{ selectedPurchase.sharesPurchased }} shares</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Amount</p>
+              <p class="detail-value">KES {{ selectedPurchase.amountPaid | number }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Payment</p>
+              <p class="detail-value">{{ selectedPurchase.paymentMethod }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Type</p>
+              <p class="detail-value">{{ selectedPurchase.shareType }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">Status</p>
+              <p class="detail-value">{{ selectedPurchase.status }}</p>
+            </div>
+          </div>
+          <div class="modal-actions">
+            @if (selectedPurchase.status === 'Pending') {
+              <button class="btn btn-success" (click)="approvePurchase()">✅ Approve</button>
+            }
+            <button class="btn btn-info" (click)="showToast('Receipt downloaded', 'success')">🧾 Download Receipt</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Add Shares Modal -->
+  @if (modals.addShares) {
+    <div class="modal-overlay" (click)="closeModal('addShares')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">➕</span>
+            <h3>Add Shares</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('addShares')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Member</label>
+            <select [(ngModel)]="addSharesForm.memberId" class="form-input">
+              <option value="">Select Member</option>
+              @for (member of members; track member.memberId) {
+                <option [value]="member.memberId">{{ member.name }} ({{ member.memberId }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Shares</label>
+            <input type="number" [(ngModel)]="addSharesForm.shares" class="form-input" min="1" [max]="maxShares">
+            <p class="form-hint">Total: <strong>KES {{ addSharesForm.shares * sharePrice | number }}</strong></p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select [(ngModel)]="addSharesForm.paymentMethod" class="form-input">
+              <option value="M-Pesa">📱 M-Pesa</option>
+              <option value="Cash">💵 Cash</option>
+              <option value="Bank Transfer">🏦 Bank Transfer</option>
+              <option value="Cheque">📝 Cheque</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Share Type</label>
+            <select [(ngModel)]="addSharesForm.shareType" class="form-input">
+              <option value="Ordinary">Ordinary</option>
+              <option value="Preferential">Preferential</option>
+              <option value="Bonus">Bonus</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('addShares')">Cancel</button>
+            <button class="btn btn-gradient" (click)="submitAddShares()">💾 Add Shares</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Quick Entry Modal -->
+  @if (modals.quickEntry) {
+    <div class="modal-overlay" (click)="closeModal('quickEntry')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">⚡</span>
+            <h3>Quick Share Entry</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('quickEntry')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="info-box">
+            <p>⚡ Quick entry allows you to add shares for a member with minimal input.</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Member ID</label>
+            <input type="text" [(ngModel)]="quickEntryForm.memberId" placeholder="e.g., R-00123" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Shares</label>
+            <input type="number" [(ngModel)]="quickEntryForm.shares" class="form-input" min="1">
+            <p class="form-hint">Amount: <strong>KES {{ quickEntryForm.shares * sharePrice | number }}</strong></p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select [(ngModel)]="quickEntryForm.paymentMethod" class="form-input">
+              <option value="M-Pesa">📱 M-Pesa</option>
+              <option value="Cash">💵 Cash</option>
+              <option value="Bank Transfer">🏦 Bank Transfer</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('quickEntry')">Cancel</button>
+            <button class="btn btn-primary" (click)="submitQuickEntry()">⚡ Submit Entry</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Dividend Modal -->
+  @if (modals.dividend) {
+    <div class="modal-overlay" (click)="closeModal('dividend')">
+      <div class="modal modal-md" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">💰</span>
+            <h3>Dividend Configuration</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('dividend')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Fiscal Year</label>
+            <input type="number" [(ngModel)]="dividendForm.year" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dividend Rate (%)</label>
+            <input type="number" [(ngModel)]="dividendForm.rate" class="form-input" step="0.1" min="0" max="100">
+          </div>
+          <div class="estimate-box">
+            <p>📊 <strong>Estimated Distribution:</strong></p>
+            <p class="estimate-value">KES {{ (234000000 * dividendForm.rate / 100 / 1000000) | number:'1.2-2' }}M</p>
+            <p class="estimate-note">Based on KES 234M total share capital at {{ dividendForm.rate }}%</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distribution Date</label>
+            <input type="date" [(ngModel)]="dividendForm.date" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distribution Method</label>
+            <select [(ngModel)]="dividendForm.method" class="form-input">
+              <option value="savings">Credit to Savings Account</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="reinvest">Reinvest as Shares</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" (click)="closeModal('dividend')">Cancel</button>
+            <button class="btn btn-primary" (click)="saveDividendConfig()">💾 Save Configuration</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Certificate Preview Modal -->
+  @if (modals.certPreview) {
+    <div class="modal-overlay" (click)="closeModal('certPreview')">
+      <div class="modal modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📜</span>
+            <h3>Certificate Template</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('certPreview')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="certificate-full">
+            <div class="cert-society-full">Rongo SACCO Society Limited</div>
+            <h2 class="cert-title-full">Share Certificate</h2>
+            <div class="cert-divider-full"></div>
+            <p class="cert-text-full">This is to certify that</p>
+            <p class="cert-name-full">[Member Full Name]</p>
+            <p class="cert-text-full">is the registered holder of</p>
+            <p class="cert-shares-full">[XXX] Shares</p>
+            <p class="cert-text-full">of <strong>KES {{ sharePrice }}</strong> each in the capital of the above named Society</p>
+            <div class="cert-signatures">
+              <div class="cert-sig">
+                <div class="sig-line"></div>
+                <p>Chairman</p>
+              </div>
+              <div class="cert-seal">
+                <p>🏛️</p>
+                <p>Society Seal</p>
+              </div>
+              <div class="cert-sig">
+                <div class="sig-line"></div>
+                <p>Secretary</p>
+              </div>
+            </div>
+            <p class="cert-footer-full">Certificate No: CERT-XXXX-XXXX | Date of Issue: [Date]</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Export Modal -->
+  @if (modals.export) {
+    <div class="modal-overlay" (click)="closeModal('export')">
+      <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-icon">📥</span>
+            <h3>Export Data</h3>
+          </div>
+          <button class="modal-close" (click)="closeModal('export')">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="export-intro">Choose export format for the current tab data:</p>
+          @for (format of exportFormats; track format.name) {
+            <button class="export-option" (click)="exportData(format.name)">
+              <span class="export-icon" [style.background]="format.color + '15'">{{ format.icon }}</span>
+              <div class="export-info">
+                <p class="export-name">{{ format.name }}</p>
+                <p class="export-desc">{{ format.desc }}</p>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

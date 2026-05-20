@@ -1,1 +1,690 @@
-<p>transactions works!</p>
+<section class="transactions-page">
+  @if (toast) {
+    <div class="toast-container" [class.toast-danger]="toast.type === 'danger'" [class.toast-warning]="toast.type === 'warning'" [class.toast-info]="toast.type === 'info'">
+      <div class="toast-box">
+        <span class="toast-dot"></span>
+        <span>{{ toast.message }}</span>
+      </div>
+    </div>
+  }
+
+  <nav class="breadcrumb-row" aria-label="Breadcrumb">
+    <button type="button" class="breadcrumb-link">Home</button>
+    <span class="breadcrumb-chevron">/</span>
+    <button type="button" class="breadcrumb-link">Financial</button>
+    <span class="breadcrumb-chevron">/</span>
+    <span class="breadcrumb-current">Transactions</span>
+  </nav>
+
+  <header class="page-header">
+    <div class="page-title-group">
+      <h1>Transaction Monitoring</h1>
+      <p>Real-time monitoring and management of all SACCO financial transactions</p>
+      <div class="live-row">
+        <span class="live-dot"></span>
+        <span>Live Updates</span>
+        <span class="updated-label">Last updated: <strong>{{ lastUpdated }}</strong></span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline" (click)="openReconcileModal()">
+        <span class="btn-icon-text">REC</span>
+        <span>Reconcile</span>
+      </button>
+      <button type="button" class="btn btn-outline" (click)="exportTransactions()">
+        <span class="btn-icon-text">EXP</span>
+        <span>Export</span>
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openAddModal()">
+        <span class="btn-icon-text">ADD</span>
+        <span>Add Transaction</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="stats-grid">
+    <article class="glass-card stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Today's Volume</span>
+        <span class="stat-card-icon green">KES</span>
+      </div>
+      <div class="stat-card-value">KES 15.2M</div>
+      <span class="stat-change positive">+18.5%</span>
+      <div class="stat-card-footer">
+        <span>2,456 transactions</span>
+        <button type="button" (click)="applyFilters()">Filter -></button>
+      </div>
+    </article>
+
+    <article class="glass-card stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Pending Approval</span>
+        <span class="stat-card-icon amber">34</span>
+      </div>
+      <div class="stat-card-value">34</div>
+      <span class="stat-change warning">Needs action</span>
+      <div class="stat-card-footer">
+        <span>KES 8.5M total value</span>
+        <button type="button" (click)="setCardFilter('pending')">Review -></button>
+      </div>
+    </article>
+
+    <article class="glass-card stat-card danger-left">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Failed Today</span>
+        <span class="stat-card-icon red">12</span>
+      </div>
+      <div class="stat-card-value">12</div>
+      <span class="stat-change negative">Investigate</span>
+      <div class="stat-card-footer">
+        <span>KES 450K lost</span>
+        <button type="button" (click)="setCardFilter('failed')">Fix -></button>
+      </div>
+    </article>
+
+    <article class="glass-card stat-card">
+      <div class="stat-card-header">
+        <span class="stat-card-label">Success Rate</span>
+        <span class="stat-card-icon blue">99</span>
+      </div>
+      <div class="stat-card-value">99.5%</div>
+      <span class="stat-change positive">Excellent</span>
+      <div class="stat-card-footer">
+        <span>2,444/2,456 successful</span>
+        <button type="button" (click)="setCardFilter('success')">Details -></button>
+      </div>
+    </article>
+  </div>
+
+  <div class="mini-stats-grid">
+    <button type="button" class="glass-card mini-stat-card" (click)="setCardFilter('deposit')">
+      <span class="mini-stat-icon green">IN</span>
+      <span class="mini-stat-copy">
+        <span class="mini-stat-label">Deposits</span>
+        <strong>KES 8.2M</strong>
+        <small>1,234 txns</small>
+      </span>
+    </button>
+    <button type="button" class="glass-card mini-stat-card" (click)="setCardFilter('withdrawal')">
+      <span class="mini-stat-icon red">OUT</span>
+      <span class="mini-stat-copy">
+        <span class="mini-stat-label">Withdrawals</span>
+        <strong>KES 3.8M</strong>
+        <small>567 txns</small>
+      </span>
+    </button>
+    <button type="button" class="glass-card mini-stat-card" (click)="setCardFilter('loan')">
+      <span class="mini-stat-icon blue">LN</span>
+      <span class="mini-stat-copy">
+        <span class="mini-stat-label">Loan Payments</span>
+        <strong>KES 2.5M</strong>
+        <small>456 txns</small>
+      </span>
+    </button>
+    <button type="button" class="glass-card mini-stat-card" (click)="setCardFilter('shares')">
+      <span class="mini-stat-icon orange">SH</span>
+      <span class="mini-stat-copy">
+        <span class="mini-stat-label">Share Purchases</span>
+        <strong>KES 700K</strong>
+        <small>199 txns</small>
+      </span>
+    </button>
+  </div>
+
+  <section class="glass-card-static filter-section" aria-label="Transaction filters">
+    <div class="filter-row">
+      <label class="filter-group search-group">
+        <span>Search Transaction</span>
+        <span class="search-wrap">
+          <span class="search-mark">S</span>
+          <input type="text" placeholder="ID, Member, Amount..." [(ngModel)]="searchQuery" (input)="applyFilters()" />
+        </span>
+      </label>
+
+      <label class="filter-group">
+        <span>Date Range</span>
+        <select [(ngModel)]="dateRange" (change)="applyFilters()">
+          <option>Today</option>
+          <option>Yesterday</option>
+          <option>Last 7 Days</option>
+          <option>Last 30 Days</option>
+          <option>This Month</option>
+          <option>Custom</option>
+          <option>All</option>
+        </select>
+      </label>
+
+      <label class="filter-group">
+        <span>Type</span>
+        <select [(ngModel)]="typeFilter" (change)="applyFilters()">
+          <option>All Types</option>
+          <option>Deposit</option>
+          <option>Withdrawal</option>
+          <option>Loan Payment</option>
+          <option>Shares</option>
+        </select>
+      </label>
+
+      <label class="filter-group">
+        <span>Status</span>
+        <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+          <option>All Status</option>
+          <option>Success</option>
+          <option>Pending</option>
+          <option>Failed</option>
+        </select>
+      </label>
+
+      <label class="filter-group">
+        <span>Method</span>
+        <select [(ngModel)]="methodFilter" (change)="applyFilters()">
+          <option>All Methods</option>
+          <option>M-Pesa</option>
+          <option>Bank</option>
+          <option>Cash</option>
+          <option>Cheque</option>
+        </select>
+      </label>
+
+      <div class="view-toggle" aria-label="View mode">
+        <button type="button" [class.active]="viewMode === 'table'" (click)="viewMode = 'table'">Rows</button>
+        <button type="button" [class.active]="viewMode === 'cards'" (click)="viewMode = 'cards'">Cards</button>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-filter" (click)="applyFilters()">Filter</button>
+    </div>
+
+    @if (activeFilters.length) {
+      <div class="active-filters">
+        <span>Active Filters:</span>
+        @for (filter of activeFilters; track filter.key) {
+          <span class="filter-tag">
+            {{ filter.label }}
+            <button type="button" (click)="removeFilter(filter.key)" aria-label="Remove filter">x</button>
+          </span>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="glass-card-static table-section" aria-label="Transactions table">
+    <div class="table-controls">
+      <label class="select-all">
+        <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()" />
+        <span>Select All ({{ selectedCount }} selected)</span>
+      </label>
+      <div class="table-control-actions">
+        <label class="per-page">
+          <span>Per Page:</span>
+          <select [(ngModel)]="perPage">
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="25">25</option>
+            <option [ngValue]="50">50</option>
+            <option [ngValue]="100">100</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-outline btn-sm" (click)="toggleSort()">Sort {{ sortAscending ? 'ASC' : 'DESC' }}</button>
+        <button type="button" class="icon-button" (click)="refreshTransactions()" aria-label="Refresh transactions">R</button>
+      </div>
+    </div>
+
+    @if (viewMode === 'table') {
+      <div class="table-responsive">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th class="check-col"></th>
+              <th>Transaction ID</th>
+              <th>Date & Time</th>
+              <th>Member</th>
+              <th>Type</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Fee</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (txn of filteredTransactions; track txn.id) {
+              <tr [class.row-warning]="txn.status === 'Pending'" [class.row-danger]="txn.status === 'Failed'">
+                <td><input type="checkbox" [checked]="selectedIds.has(txn.id)" (change)="toggleSelect(txn.id)" /></td>
+                <td>
+                  <button type="button" class="txn-id" (click)="openDetailsModal(txn)">{{ txn.id }}</button>
+                  @if (txn.subText) {
+                    <span class="txn-sub" [class.error-text]="txn.status === 'Failed'">{{ txn.subText }}</span>
+                  }
+                </td>
+                <td>
+                  <span class="date-main">{{ txn.dateMain }}</span>
+                  <span class="date-sub">{{ txn.dateSub }}</span>
+                </td>
+                <td>
+                  <div class="member-cell">
+                    <span class="avatar" [style.background]="txn.avatarColor">{{ txn.memberInitials }}</span>
+                    <span>
+                      <strong>{{ txn.memberName }}</strong>
+                      <small>{{ txn.memberId }}</small>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="type-badge" [ngStyle]="{ background: typeColors[txn.type].bg, color: typeColors[txn.type].text }">
+                    <span>{{ typeIcons[txn.type] }}</span> {{ txn.type }}
+                  </span>
+                </td>
+                <td><span class="method-badge"><span>{{ txn.methodIcon }}</span> {{ txn.method }}</span></td>
+                <td class="amount-cell">{{ formatCurrency(txn.amount) }}</td>
+                <td class="fee-cell">{{ txn.fee ? formatCurrency(txn.fee) : '-' }}</td>
+                <td><span class="status-badge" [class.success]="txn.status === 'Success'" [class.pending]="txn.status === 'Pending'" [class.failed]="txn.status === 'Failed'">{{ txn.status }}</span></td>
+                <td>
+                  <div class="action-buttons">
+                    @if (txn.status === 'Pending') {
+                      <button type="button" class="action-btn success" (click)="approveTransaction(txn)">OK</button>
+                      <button type="button" class="action-btn danger" (click)="rejectTransaction(txn)">No</button>
+                      <button type="button" class="action-btn" (click)="openEditModal(txn)">Edit</button>
+                    } @else if (txn.status === 'Failed') {
+                      <button type="button" class="action-btn accent" (click)="retryTransaction(txn)">Retry</button>
+                      <button type="button" class="action-btn" (click)="openDetailsModal(txn)">View</button>
+                      <button type="button" class="action-btn" (click)="generateReceipt(txn)">More</button>
+                    } @else {
+                      <button type="button" class="action-btn" (click)="openDetailsModal(txn)">View</button>
+                      <button type="button" class="action-btn" (click)="openEditModal(txn)">Edit</button>
+                      <button type="button" class="action-btn" (click)="generateReceipt(txn)">PDF</button>
+                      <button type="button" class="action-btn" (click)="openDetailsModal(txn)">More</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="10" class="empty-row">No transactions match the selected filters.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="mobile-card-grid">
+        @for (txn of filteredTransactions; track txn.id) {
+          <article class="transaction-mobile-card" [class.row-warning]="txn.status === 'Pending'" [class.row-danger]="txn.status === 'Failed'">
+            <div class="mobile-card-top">
+              <label class="mobile-check"><input type="checkbox" [checked]="selectedIds.has(txn.id)" (change)="toggleSelect(txn.id)" /></label>
+              <button type="button" class="txn-id" (click)="openDetailsModal(txn)">{{ txn.id }}</button>
+              <span class="status-badge" [class.success]="txn.status === 'Success'" [class.pending]="txn.status === 'Pending'" [class.failed]="txn.status === 'Failed'">{{ txn.status }}</span>
+            </div>
+            <div class="member-cell mobile-member">
+              <span class="avatar" [style.background]="txn.avatarColor">{{ txn.memberInitials }}</span>
+              <span>
+                <strong>{{ txn.memberName }}</strong>
+                <small>{{ txn.memberId }} - {{ txn.dateMain }}</small>
+              </span>
+            </div>
+            <div class="mobile-meta-grid">
+              <span><small>Type</small><strong>{{ txn.type }}</strong></span>
+              <span><small>Method</small><strong>{{ txn.method }}</strong></span>
+              <span><small>Amount</small><strong>{{ formatCurrency(txn.amount) }}</strong></span>
+              <span><small>Fee</small><strong>{{ txn.fee ? formatCurrency(txn.fee) : '-' }}</strong></span>
+            </div>
+            <div class="action-buttons mobile-actions">
+              <button type="button" class="action-btn" (click)="openDetailsModal(txn)">View</button>
+              <button type="button" class="action-btn" (click)="openEditModal(txn)">Edit</button>
+              @if (txn.status === 'Pending') {
+                <button type="button" class="action-btn success" (click)="approveTransaction(txn)">Approve</button>
+                <button type="button" class="action-btn danger" (click)="rejectTransaction(txn)">Reject</button>
+              }
+              @if (txn.status === 'Failed') {
+                <button type="button" class="action-btn accent" (click)="retryTransaction(txn)">Retry</button>
+              }
+            </div>
+          </article>
+        } @empty {
+          <div class="empty-row card-empty">No transactions match the selected filters.</div>
+        }
+      </div>
+    }
+
+    <footer class="pagination-row">
+      <span>Showing 1-{{ filteredTransactions.length }} of 2,456 transactions</span>
+      <div class="pagination-actions">
+        <button type="button" disabled>Previous</button>
+        <button type="button" class="active">1</button>
+        <button type="button">2</button>
+        <button type="button">3</button>
+        <button type="button">4</button>
+        <button type="button">5</button>
+        <button type="button">Next</button>
+      </div>
+    </footer>
+  </section>
+
+  @if (showEditModal && activeTxn) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2><span class="modal-title-icon">ED</span> Edit Transaction</h2>
+          <button type="button" class="modal-close" (click)="closeModals()">x</button>
+        </header>
+        <div class="modal-body">
+          <div class="alert-banner warning">
+            <span class="alert-mark">!</span>
+            <span>Editing transactions should only be done to correct errors. All changes are logged.</span>
+          </div>
+
+          <label class="form-group">
+            <span>Transaction ID</span>
+            <input type="text" [(ngModel)]="editForm.transactionId" readonly />
+          </label>
+          <label class="form-group">
+            <span>Amount (KES)</span>
+            <input type="number" [(ngModel)]="editForm.amount" />
+            <small>Original: {{ formatCurrency(activeTxn.amount) }}</small>
+          </label>
+          <label class="form-group">
+            <span>Transaction Type</span>
+            <select [(ngModel)]="editForm.type">
+              <option>Deposit</option>
+              <option>Withdrawal</option>
+              <option>Loan Payment</option>
+              <option>Shares</option>
+            </select>
+          </label>
+          <label class="form-group">
+            <span>Status</span>
+            <select [(ngModel)]="editForm.status">
+              <option>Success</option>
+              <option>Pending</option>
+              <option>Failed</option>
+            </select>
+          </label>
+          <label class="form-group">
+            <span>Reference Number</span>
+            <input type="text" [(ngModel)]="editForm.reference" />
+          </label>
+          <label class="form-group">
+            <span>Reason for Edit *</span>
+            <textarea rows="4" placeholder="Explain why this transaction is being edited..." [(ngModel)]="editForm.reason"></textarea>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="editForm.confirmed" />
+            <span>I confirm this edit is necessary and accurate.</span>
+          </label>
+        </div>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+          <button type="button" class="btn btn-primary" [disabled]="!canSaveEdit" (click)="saveEdit()">Save Changes</button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  @if (showDetailsModal && activeTxn; as txn) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-container modal-xl" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2><span class="modal-title-icon">DT</span> Transaction Details - {{ txn.id }}</h2>
+          <button type="button" class="modal-close" (click)="closeModals()">x</button>
+        </header>
+        <div class="modal-body">
+          <div class="detail-layout">
+            <main class="detail-main">
+              <div class="detail-amount-header">
+                <div>
+                  <strong>{{ formatAmount(txn.amount) }}</strong>
+                  <span>{{ txn.type }} via {{ txn.method }}</span>
+                </div>
+                <span class="status-badge" [class.success]="txn.status === 'Success'" [class.pending]="txn.status === 'Pending'" [class.failed]="txn.status === 'Failed'">{{ txn.status }}</span>
+              </div>
+
+              <div class="detail-info-grid top-info">
+                <span><small>Transaction ID</small><strong>{{ txn.id }}</strong></span>
+                <span><small>M-Pesa Reference</small><strong>{{ txn.reference }}</strong></span>
+                <span><small>Date & Time</small><strong>January 23, 2024 at 11:42 AM</strong></span>
+                <span><small>Processed By</small><strong>SACCOPay Gateway</strong></span>
+              </div>
+
+              <h3 class="section-title">Member Information</h3>
+              <div class="member-summary">
+                <span class="avatar large" [style.background]="txn.avatarColor">{{ txn.memberInitials }}</span>
+                <span>
+                  <strong>{{ txn.memberName }}</strong>
+                  <small>Member ID: {{ txn.memberId }}</small>
+                </span>
+              </div>
+              <div class="detail-info-grid">
+                <span><small>Phone Number</small><strong>+254 712 345 678</strong></span>
+                <span><small>Email</small><strong>sarah.akinyi&#64;email.com</strong></span>
+                <span><small>Member Tier</small><strong class="tier-badge">Gold</strong></span>
+              </div>
+
+              <h3 class="section-title">Transaction Breakdown</h3>
+              <table class="breakdown-table">
+                <tbody>
+                  <tr><td>Transaction Amount</td><td>{{ formatAmount(txn.amount) }}</td></tr>
+                  <tr><td>Transaction Fee</td><td>KES {{ txn.fee.toFixed(2) }}</td></tr>
+                  <tr><td>Processing Fee</td><td>KES 0.00</td></tr>
+                  <tr><td>Tax (VAT)</td><td>KES 8.00</td></tr>
+                  <tr class="net-row"><td>Net Amount Credited</td><td>{{ formatAmount(netAmount(txn)) }}</td></tr>
+                </tbody>
+              </table>
+
+              <h3 class="section-title">Payment Details</h3>
+              <div class="detail-info-grid payment-grid">
+                <span><small>Payment Method</small><strong>{{ txn.methodIcon }} {{ txn.method }}</strong></span>
+                <span><small>Sender Number</small><strong>+254 712 345 678</strong></span>
+                <span><small>Paybill Number</small><strong>522533</strong></span>
+                <span><small>Account Number</small><strong>R-00123</strong></span>
+              </div>
+
+              <h3 class="section-title">Transaction Timeline</h3>
+              <div class="timeline">
+                <div class="timeline-item completed"><span></span><div><strong>Transaction Completed</strong><small>Amount credited to member account</small></div><em>11:42:15 AM</em></div>
+                <div class="timeline-item completed"><span></span><div><strong>Payment Verified</strong><small>M-Pesa confirmation received</small></div><em>11:42:10 AM</em></div>
+                <div class="timeline-item completed"><span></span><div><strong>Payment Received</strong><small>M-Pesa payment detected</small></div><em>11:42:05 AM</em></div>
+                <div class="timeline-item completed"><span></span><div><strong>Transaction Initiated</strong><small>Member initiated deposit via M-Pesa</small></div><em>11:42:00 AM</em></div>
+              </div>
+            </main>
+
+            <aside class="detail-sidebar">
+              <h3 class="section-title">Quick Actions</h3>
+              <button type="button" class="quick-action" (click)="generateReceipt(txn)">Generate Receipt</button>
+              <button type="button" class="quick-action" (click)="closeModals(); openEditModal(txn)">Edit Transaction</button>
+              <button type="button" class="quick-action" (click)="sendToMember(txn)">Send to Member</button>
+              <button type="button" class="quick-action warning-action" (click)="reverseTransaction(txn)">Reverse Transaction</button>
+              <button type="button" class="quick-action danger-action" (click)="voidTransaction(txn)">Void Transaction</button>
+
+              @if (quickActionMessage) {
+                <div class="inline-status">{{ quickActionMessage }}</div>
+              }
+
+              <h3 class="section-title notes-title">Transaction Notes</h3>
+              @for (note of notes; track note.time + note.text) {
+                <div class="txn-note">
+                  <div><strong>{{ note.author }}</strong><small>{{ note.time }}</small></div>
+                  <p>{{ note.text }}</p>
+                </div>
+              }
+
+              @if (addingNote) {
+                <div class="note-editor">
+                  <textarea rows="3" placeholder="Add note..." [(ngModel)]="noteDraft"></textarea>
+                  <div>
+                    <button type="button" class="btn btn-cancel btn-xs" (click)="addingNote = false">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-xs" (click)="saveNote()">Save Note</button>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="quick-action add-note" (click)="startAddNote()">Add Note</button>
+              }
+
+              <h3 class="section-title notes-title">System Information</h3>
+              <dl class="system-info">
+                <dt>IP Address</dt><dd>196.201.214.45</dd>
+                <dt>Device</dt><dd>Mobile (Android)</dd>
+                <dt>Location</dt><dd>Nairobi, Kenya</dd>
+                <dt>API Version</dt><dd>v2.1.0</dd>
+              </dl>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showReconcileModal) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2><span class="modal-title-icon">RC</span> Transaction Reconciliation</h2>
+          <button type="button" class="modal-close" (click)="closeModals()">x</button>
+        </header>
+        <div class="modal-body">
+          <div class="alert-banner info">
+            <span class="alert-mark">i</span>
+            <span>Reconcile system transactions with bank statements or M-Pesa statements.</span>
+          </div>
+
+          <div class="recon-tabs">
+            <button type="button" [class.active]="reconTab === 'mpesa'" (click)="reconTab = 'mpesa'">M-Pesa</button>
+            <button type="button" [class.active]="reconTab === 'bank'" (click)="reconTab = 'bank'">Bank</button>
+            <button type="button" [class.active]="reconTab === 'cash'" (click)="reconTab = 'cash'">Cash</button>
+          </div>
+
+          <div class="form-row">
+            <label class="form-group">
+              <span>Reconciliation Period</span>
+              <select [(ngModel)]="reconPeriod">
+                <option>Today</option>
+                <option>Yesterday</option>
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+                <option>Custom</option>
+              </select>
+            </label>
+            <label class="form-group">
+              <span>{{ reconAccountLabel }}</span>
+              <select [(ngModel)]="reconAccount">
+                <option value="522533">522533 (Main Paybill)</option>
+                <option value="522534">522534 (Secondary)</option>
+                <option value="KCB-001">KCB Main Account</option>
+                <option value="CASH-01">Main Cash Desk</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="form-group">
+            <span>Upload {{ reconStatementLabel }}</span>
+            <input type="file" accept=".csv,.xlsx,.xls" />
+            <small>Upload the statement Excel or CSV file</small>
+          </label>
+
+          <div class="quick-summary-title">Quick Summary</div>
+          <div class="recon-summary-grid">
+            <div><small>System Total</small><strong>KES 15.2M</strong></div>
+            <div><small>{{ reconTab === 'mpesa' ? 'M-Pesa' : reconTab === 'bank' ? 'Bank' : 'Cash' }} Total</small><strong>KES 15.2M</strong></div>
+            <div class="diff"><small>Difference</small><strong>KES 0</strong></div>
+          </div>
+        </div>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="startReconciliation()">Start Reconciliation</button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  @if (showAddModal) {
+    <div class="modal-overlay" (click)="closeModals()">
+      <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2><span class="modal-title-icon">AD</span> Add Manual Transaction</h2>
+          <button type="button" class="modal-close" (click)="closeModals()">x</button>
+        </header>
+        <div class="modal-body">
+          <div class="alert-banner info">
+            <span class="alert-mark">i</span>
+            <span>Use this to record offline transactions (cash, cheque) that were processed outside the system.</span>
+          </div>
+
+          <div class="form-row">
+            <label class="form-group">
+              <span>Select Member *</span>
+              <select [(ngModel)]="addForm.member">
+                <option value="">Search and select member...</option>
+                @for (member of members; track member) {
+                  <option [value]="member">{{ member }}</option>
+                }
+              </select>
+            </label>
+            <label class="form-group">
+              <span>Transaction Type *</span>
+              <select [(ngModel)]="addForm.type">
+                <option value="">Select type...</option>
+                <option>Deposit</option>
+                <option>Withdrawal</option>
+                <option>Loan Payment</option>
+                <option>Shares</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="form-group">
+              <span>Payment Method *</span>
+              <select [(ngModel)]="addForm.method">
+                <option value="">Select method...</option>
+                <option>M-Pesa</option>
+                <option>Bank Transfer</option>
+                <option>Cash</option>
+                <option>Cheque</option>
+              </select>
+            </label>
+            <label class="form-group">
+              <span>Amount (KES) *</span>
+              <input type="number" placeholder="50000" [(ngModel)]="addForm.amount" />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="form-group">
+              <span>Transaction Date *</span>
+              <input type="date" [(ngModel)]="addForm.date" />
+            </label>
+            <label class="form-group">
+              <span>Transaction Time *</span>
+              <input type="time" [(ngModel)]="addForm.time" />
+            </label>
+          </div>
+
+          <label class="form-group">
+            <span>Reference Number</span>
+            <input type="text" placeholder="Cheque number, bank reference, etc." [(ngModel)]="addForm.reference" />
+          </label>
+          <label class="form-group">
+            <span>Description/Notes</span>
+            <textarea rows="4" placeholder="Add any additional details about this transaction..." [(ngModel)]="addForm.description"></textarea>
+          </label>
+          <label class="form-group">
+            <span>Upload Proof (Optional)</span>
+            <input type="file" accept=".jpg,.jpeg,.png,.pdf" />
+            <small>Upload receipt, cheque scan, or bank slip</small>
+          </label>
+
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="addForm.autoApprove" />
+            <span>Auto-approve this transaction (skip pending status)</span>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="addForm.notifyMember" />
+            <span>Send SMS notification to member</span>
+          </label>
+        </div>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+          <button type="button" class="btn btn-primary" [disabled]="!canAddTransaction" (click)="addTransaction()">Add Transaction</button>
+        </footer>
+      </div>
+    </div>
+  }
+</section>

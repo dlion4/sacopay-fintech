@@ -1,0 +1,739 @@
+<!-- Toast Notifications -->
+<div class="toast-container">
+  @for (toast of toasts; track toast.id) {
+    <div class="toast {{ toast.type }}" (click)="removeToast(toast.id)">
+      <i class="bi {{ toast.icon }}"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+  }
+</div>
+
+<!-- ==========================================
+     MODALS
+     ========================================== -->
+
+<!-- VIEW APPLICATION MODAL -->
+@if (activeModal === 'viewApplication' && selectedApplication) {
+  <div class="modal-overlay active" (click)="closeModal()">
+    <div class="modal-box xl" (click)="stopPropagation($event)">
+      <div class="modal-head" [style.background]="'linear-gradient(135deg, var(--primary-green), var(--accent-teal))'">
+        <h3><i class="bi bi-file-earmark-text"></i> Loan Application Details</h3>
+        <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Status Timeline -->
+        <div class="loan-status-timeline">
+          @for (step of selectedApplication.timeline; track step.step) {
+            <div class="timeline-step" [class.completed]="step.status === 'completed'" [class.active]="step.status === 'active'">
+              <div class="timeline-step-circle"><i class="bi {{ step.icon }}"></i></div>
+              <span class="timeline-step-label">{{ step.label }}</span>
+              <span style="font-size:0.65rem; color:var(--text-tertiary); text-align:center;">{{ step.date }}</span>
+            </div>
+          }
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+          <!-- Left Column -->
+          <div>
+            <!-- Applicant Info -->
+            <div class="glass-card mb-3">
+              <div class="glass-card-header">
+                <h4 style="font-size:1rem; font-weight:700;"><i class="bi bi-person" style="color:var(--primary-green); margin-right:8px;"></i>Applicant Information</h4>
+              </div>
+              <div class="glass-card-body">
+                <div style="display:flex; align-items:center; gap:var(--spacing-md); margin-bottom:var(--spacing-md);">
+                  <div class="loan-avatar" [style.background]="selectedApplication.avatarGradient">{{ selectedApplication.initials }}</div>
+                  <div>
+                    <h4 style="font-size:1.1rem; font-weight:700;">{{ selectedApplication.memberName }}</h4>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin:0;">{{ selectedApplication.memberId }} &bull; {{ selectedApplication.phone }}</p>
+                  </div>
+                </div>
+                <div class="form-row" style="grid-template-columns: 1fr 1fr; gap:var(--spacing-sm);">
+                  <div class="summary-row"><span class="label">National ID:</span><span class="value">{{ selectedApplication.nationalId }}</span></div>
+                  <div class="summary-row"><span class="label">Date of Birth:</span><span class="value">{{ selectedApplication.dob }}</span></div>
+                  <div class="summary-row"><span class="label">Email:</span><span class="value">{{ selectedApplication.email }}</span></div>
+                  <div class="summary-row"><span class="label">Address:</span><span class="value">{{ selectedApplication.address }}</span></div>
+                  <div class="summary-row"><span class="label">Employer:</span><span class="value">{{ selectedApplication.employer }}</span></div>
+                  <div class="summary-row"><span class="label">Monthly Income:</span><span class="value">{{ formatCurrency(selectedApplication.monthlyIncome) }}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loan Details -->
+            <div class="glass-card mb-3">
+              <div class="glass-card-header">
+                <h4 style="font-size:1rem; font-weight:700;"><i class="bi bi-cash-stack" style="color:var(--accent-blue); margin-right:8px;"></i>Loan Details</h4>
+              </div>
+              <div class="glass-card-body">
+                <div class="summary-box">
+                  <div class="summary-row total">
+                    <span class="label">Loan Amount</span>
+                    <span class="value">{{ formatCurrency(selectedApplication.amount) }}</span>
+                  </div>
+                  <div class="summary-row"><span class="label">Interest Rate</span><span class="value">{{ selectedApplication.interestRate }}% p.a.</span></div>
+                  <div class="summary-row"><span class="label">Term</span><span class="value">{{ selectedApplication.termMonths }} months</span></div>
+                  <div class="summary-row"><span class="label">Monthly Payment</span><span class="value">{{ formatCurrency(selectedApplication.monthlyPayment) }}</span></div>
+                  <div class="summary-row"><span class="label">Total Interest</span><span class="value">{{ formatCurrency(round(selectedApplication.amount * selectedApplication.interestRate / 100 * selectedApplication.termMonths / 12)) }}</span></div>
+                  <div class="summary-row"><span class="label">Total Repayable</span><span class="value">{{ formatCurrency(round(selectedApplication.amount + selectedApplication.amount * selectedApplication.interestRate / 100 * selectedApplication.termMonths / 12)) }}</span></div>
+                </div>
+                <div style="margin-top:var(--spacing-md);">
+                  <div class="summary-row"><span class="label">Purpose:</span><span class="value">{{ selectedApplication.purpose }}</span></div>
+                  <div class="summary-row"><span class="label">Collateral:</span><span class="value">{{ selectedApplication.collateralType }} ({{ formatCurrency(selectedApplication.collateralValue) }})</span></div>
+                  <div class="summary-row"><span class="label">Loan-to-Value:</span><span class="value">{{ selectedApplication.loanToValue }}%</span></div>
+                  <div class="summary-row"><span class="label">Existing Loans:</span><span class="value">{{ selectedApplication.existingLoans }} ({{ formatCurrency(selectedApplication.existingLoansAmount) }})</span></div>
+                  <div class="summary-row"><span class="label">Share Balance:</span><span class="value">{{ formatCurrency(selectedApplication.shareBalance) }}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guarantors -->
+            <div class="glass-card">
+              <div class="glass-card-header">
+                <h4 style="font-size:1rem; font-weight:700;"><i class="bi bi-people" style="color:var(--accent-purple); margin-right:8px;"></i>Guarantors ({{ selectedApplication.guarantorsConfirmed }}/{{ selectedApplication.guarantorsTotal }})</h4>
+              </div>
+              <div class="glass-card-body">
+                @for (guarantor of selectedApplication.guarantors; track guarantor.id) {
+                  <div class="guarantor-card">
+                    <div class="guarantor-avatar" [style.background]="guarantor.avatarGradient">{{ guarantor.initials }}</div>
+                    <div style="flex:1;">
+                      <div style="font-weight:600; font-size:0.85rem;">{{ guarantor.name }}</div>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">{{ guarantor.memberId }} &bull; {{ guarantor.relationship }} &bull; {{ guarantor.phone }}</div>
+                    </div>
+                    <span class="guarantor-status {{ getGuarantorStatusClass(guarantor.status) }}">
+                      <i class="bi {{ guarantor.status === 'accepted' ? 'bi-check-circle' : guarantor.status === 'rejected' ? 'bi-x-circle' : 'bi-hourglass' }}"></i>
+                      {{ guarantor.status | titlecase }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <!-- Credit Score -->
+            <div class="glass-card mb-3">
+              <div class="glass-card-header">
+                <h4 style="font-size:1rem; font-weight:700;"><i class="bi bi-speedometer2" style="color:var(--accent-orange); margin-right:8px;"></i>Credit Score</h4>
+              </div>
+              <div class="glass-card-body" style="text-align:center;">
+                <div class="credit-score-meter">
+                  <div class="score-gauge" [style.background]="'conic-gradient(' + getScoreColor(selectedApplication.creditScore) + ' 0deg, ' + getScoreColor(selectedApplication.creditScore) + ' ' + (selectedApplication.creditScore * 3.6) + 'deg, var(--bg-tertiary) ' + (selectedApplication.creditScore * 3.6) + 'deg)'">
+                    <div class="score-gauge::before"></div>
+                    <span class="score-value">{{ selectedApplication.creditScore }}</span>
+                  </div>
+                  <div class="score-label">{{ getScoreLabel(selectedApplication.creditScore) }}</div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--spacing-sm); margin-top:var(--spacing-md);">
+                  <div style="padding:var(--spacing-sm); background:var(--bg-tertiary); border-radius:var(--radius-sm);">
+                    <div style="font-size:0.7rem; color:var(--text-tertiary);">Payment History</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--status-success);">98%</div>
+                  </div>
+                  <div style="padding:var(--spacing-sm); background:var(--bg-tertiary); border-radius:var(--radius-sm);">
+                    <div style="font-size:0.7rem; color:var(--text-tertiary);">Credit Utilization</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--status-warning);">42%</div>
+                  </div>
+                  <div style="padding:var(--spacing-sm); background:var(--bg-tertiary); border-radius:var(--radius-sm);">
+                    <div style="font-size:0.7rem; color:var(--text-tertiary);">Account Age</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--accent-blue);">7 yrs</div>
+                  </div>
+                  <div style="padding:var(--spacing-sm); background:var(--bg-tertiary); border-radius:var(--radius-sm);">
+                    <div style="font-size:0.7rem; color:var(--text-tertiary);">Inquiries</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--status-success);">1</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Repayment Schedule -->
+            <div class="glass-card mb-3">
+              <div class="glass-card-header">
+                <h4 style="font-size:1rem; font-weight:700;"><i class="bi bi-calendar-check" style="color:var(--accent-teal); margin-right:8px;"></i>Repayment Schedule</h4>
+              </div>
+              <div class="glass-card-body">
+                <div class="repayment-schedule">
+                  <div class="schedule-row" style="font-weight:600; font-size:0.75rem; color:var(--text-secondary); background:var(--bg-tertiary); border-radius:var(--radius-sm);">
+                    <span>Month</span>
+                    <span>Due Date</span>
+                    <span>Principal</span>
+                    <span>Interest</span>
+                    <span>Total</span>
+                    <span>Balance</span>
+                  </div>
+                  @for (item of selectedApplication.repaymentSchedule; track item.month) {
+                    <div class="schedule-row {{ getRepaymentRowClass(item.status) }}">
+                      <span>{{ item.month }}</span>
+                      <span>{{ item.dueDate }}</span>
+                      <span>{{ formatCurrency(item.principal) }}</span>
+                      <span>{{ formatCurrency(item.interest) }}</span>
+                      <span style="font-weight:600;">{{ formatCurrency(item.total) }}</span>
+                      <span>{{ formatCurrency(item.balance) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="glass-card">
+              <div class="glass-card-header">
+                <h4 style="font-size:1rem; font-weight:700;"><i class="bi bi-folder" style="color:var(--accent-blue); margin-right:8px;"></i>Documents</h4>
+              </div>
+              <div class="glass-card-body">
+                <div style="display:flex; flex-direction:column; gap:var(--spacing-sm);">
+                  <div class="info-box">
+                    <div class="info-box-icon"><i class="bi bi-file-earmark-text"></i></div>
+                    <div style="flex:1;">
+                      <div style="font-weight:600; font-size:0.85rem;">National ID Copy</div>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Verified on 15 May 2026</div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" (click)="downloadDocument('National ID')"><i class="bi bi-download"></i></button>
+                  </div>
+                  <div class="info-box">
+                    <div class="info-box-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                    <div style="flex:1;">
+                      <div style="font-weight:600; font-size:0.85rem;">Payslip (Last 3 Months)</div>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Verified on 15 May 2026</div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" (click)="downloadDocument('Payslip')"><i class="bi bi-download"></i></button>
+                  </div>
+                  <div class="info-box">
+                    <div class="info-box-icon"><i class="bi bi-file-earmark-image"></i></div>
+                    <div style="flex:1;">
+                      <div style="font-weight:600; font-size:0.85rem;">Passport Photo</div>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Verified on 14 May 2026</div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" (click)="downloadDocument('Passport Photo')"><i class="bi bi-download"></i></button>
+                  </div>
+                  @if (selectedApplication.collateralType !== 'None' && selectedApplication.collateralType !== 'Salary Assignment') {
+                    <div class="info-box">
+                      <div class="info-box-icon"><i class="bi bi-file-earmark-lock"></i></div>
+                      <div style="flex:1;">
+                        <div style="font-weight:600; font-size:0.85rem;">Collateral Document - {{ selectedApplication.collateralType }}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary);">Verified on 16 May 2026</div>
+                      </div>
+                      <button class="btn btn-ghost btn-sm" (click)="downloadDocument('Collateral')"><i class="bi bi-download"></i></button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        @if (selectedApplication.status === 'pending' || selectedApplication.status === 'under-review') {
+          <button class="btn btn-ghost" (click)="returnApplication(selectedApplication.id)"><i class="bi bi-arrow-return-left"></i> Return</button>
+          <button class="btn btn-danger" (click)="rejectApplication(selectedApplication.id)"><i class="bi bi-x-lg"></i> Reject</button>
+          <button class="btn btn-primary" (click)="approveApplication(selectedApplication.id)"><i class="bi bi-check-lg"></i> Approve</button>
+        }
+        @if (selectedApplication.status === 'approved') {
+          <button class="btn btn-primary" (click)="closeModal()"><i class="bi bi-printer"></i> Print Approval</button>
+        }
+        @if (selectedApplication.status === 'rejected') {
+          <button class="btn btn-outline" (click)="closeModal()"><i class="bi bi-arrow-counterclockwise"></i> Reconsider</button>
+        }
+        <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- NEW APPLICATION MODAL -->
+@if (activeModal === 'newApplicationModal') {
+  <div class="modal-overlay active" (click)="closeModal()">
+    <div class="modal-box" (click)="stopPropagation($event)">
+      <div class="modal-head" [style.background]="'linear-gradient(135deg, var(--primary-green), var(--accent-teal))'">
+        <h3><i class="bi bi-plus-circle"></i> New Loan Application</h3>
+        <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Member ID <span class="req">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newApplication.memberId" placeholder="e.g. R-00045">
+          </div>
+          <div class="form-group">
+            <label>Member Name <span class="req">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newApplication.memberName" placeholder="Full name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Loan Type <span class="req">*</span></label>
+            <select class="form-input" [(ngModel)]="newApplication.type">
+              <option value="emergency">Emergency Loan</option>
+              <option value="development">Development Loan</option>
+              <option value="school">School Fees Loan</option>
+              <option value="business">Business Loan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount (KES) <span class="req">*</span></label>
+            <input type="number" class="form-input" [(ngModel)]="newApplication.amount" placeholder="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Term (Months) <span class="req">*</span></label>
+            <select class="form-input" [(ngModel)]="newApplication.termMonths">
+              <option [value]="6">6 months</option>
+              <option [value]="12">12 months</option>
+              <option [value]="18">18 months</option>
+              <option [value]="24">24 months</option>
+              <option [value]="36">36 months</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Interest Rate (%) <span class="req">*</span></label>
+            <input type="number" class="form-input" [(ngModel)]="newApplication.interestRate" placeholder="12">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Purpose <span class="req">*</span></label>
+          <textarea class="form-input" [(ngModel)]="newApplication.purpose" placeholder="Describe the purpose of this loan..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Collateral Type</label>
+            <select class="form-input" [(ngModel)]="newApplication.collateralType">
+              <option value="">Select collateral...</option>
+              <option value="Land Title Deed">Land Title Deed</option>
+              <option value="Vehicle Logbook">Vehicle Logbook</option>
+              <option value="Salary Assignment">Salary Assignment</option>
+              <option value="Business Inventory">Business Inventory</option>
+              <option value="None">None</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Collateral Value (KES)</label>
+            <input type="number" class="form-input" [(ngModel)]="newApplication.collateralValue" placeholder="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Number of Guarantors</label>
+          <select class="form-input" [(ngModel)]="newApplication.guarantorCount">
+            <option [value]="1">1 Guarantor</option>
+            <option [value]="2">2 Guarantors</option>
+            <option [value]="3">3 Guarantors</option>
+          </select>
+        </div>
+        <div class="info-box">
+          <div class="info-box-icon"><i class="bi bi-info-circle"></i></div>
+          <div>
+            <div style="font-weight:600; font-size:0.85rem;">Auto Credit Check</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">The system will automatically run a CRB credit check and internal scoring once submitted.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitNewApplication()"><i class="bi bi-send"></i> Submit Application</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- EXPORT MODAL -->
+@if (activeModal === 'exportModal') {
+  <div class="modal-overlay active" (click)="closeModal()">
+    <div class="modal-box" (click)="stopPropagation($event)">
+      <div class="modal-head" [style.background]="'linear-gradient(135deg, var(--accent-blue), var(--accent-teal))'">
+        <h3><i class="bi bi-file-earmark-arrow-down"></i> Export Loan Applications</h3>
+        <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Export Format</label>
+          <div style="display:flex; gap:var(--spacing-sm); flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm active"><i class="bi bi-filetype-csv"></i> CSV</button>
+            <button class="btn btn-outline btn-sm"><i class="bi bi-filetype-xlsx"></i> Excel</button>
+            <button class="btn btn-outline btn-sm"><i class="bi bi-filetype-pdf"></i> PDF</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Date Range</label>
+          <div class="form-row">
+            <input type="date" class="form-input" value="2026-05-01">
+            <input type="date" class="form-input" value="2026-05-31">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Status Filter</label>
+          <div style="display:flex; gap:var(--spacing-sm); flex-wrap:wrap;">
+            <span class="badge badge-warning"><i class="bi bi-clock"></i> Pending ({{ pendingCount }})</span>
+            <span class="badge badge-info"><i class="bi bi-search"></i> Under Review ({{ underReviewCount }})</span>
+            <span class="badge badge-success"><i class="bi bi-check-circle"></i> Approved ({{ approvedCount }})</span>
+            <span class="badge badge-danger"><i class="bi bi-x-circle"></i> Rejected ({{ rejectedCount }})</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Include Columns</label>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--spacing-sm);">
+            <label style="display:flex; align-items:center; gap:var(--spacing-sm); font-size:0.85rem; font-weight:500; cursor:pointer;">
+              <input type="checkbox" checked style="accent-color:var(--primary-green);"> Application ID
+            </label>
+            <label style="display:flex; align-items:center; gap:var(--spacing-sm); font-size:0.85rem; font-weight:500; cursor:pointer;">
+              <input type="checkbox" checked style="accent-color:var(--primary-green);"> Member Name
+            </label>
+            <label style="display:flex; align-items:center; gap:var(--spacing-sm); font-size:0.85rem; font-weight:500; cursor:pointer;">
+              <input type="checkbox" checked style="accent-color:var(--primary-green);"> Loan Type
+            </label>
+            <label style="display:flex; align-items:center; gap:var(--spacing-sm); font-size:0.85rem; font-weight:500; cursor:pointer;">
+              <input type="checkbox" checked style="accent-color:var(--primary-green);"> Amount
+            </label>
+            <label style="display:flex; align-items:center; gap:var(--spacing-sm); font-size:0.85rem; font-weight:500; cursor:pointer;">
+              <input type="checkbox" checked style="accent-color:var(--primary-green);"> Status
+            </label>
+            <label style="display:flex; align-items:center; gap:var(--spacing-sm); font-size:0.85rem; font-weight:500; cursor:pointer;">
+              <input type="checkbox" style="accent-color:var(--primary-green);"> Credit Score
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="exportApplications()"><i class="bi bi-download"></i> Export {{ filteredApplications.length }} Records</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- BULK ACTIONS MODAL -->
+@if (activeModal === 'bulkActionsModal') {
+  <div class="modal-overlay active" (click)="closeModal()">
+    <div class="modal-box" (click)="stopPropagation($event)">
+      <div class="modal-head" [style.background]="'linear-gradient(135deg, var(--accent-purple), var(--accent-blue))'">
+        <h3><i class="bi bi-list-check"></i> Bulk Actions</h3>
+        <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="info-box">
+          <div class="info-box-icon"><i class="bi bi-info-circle"></i></div>
+          <div>
+            <div style="font-weight:600; font-size:0.85rem;">Bulk Operations</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">Select the operation you want to perform on multiple loan applications.</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--spacing-md); margin-top:var(--spacing-md);">
+          <button class="btn btn-outline" style="flex-direction:column; padding:var(--spacing-xl);" (click)="bulkApprove(); closeModal();">
+            <i class="bi bi-check-all" style="font-size:1.5rem; margin-bottom:var(--spacing-sm);"></i>
+            <span style="font-weight:600;">Bulk Approve</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Approve all pending</span>
+          </button>
+          <button class="btn btn-outline" style="flex-direction:column; padding:var(--spacing-xl);" (click)="showToast('warning', 'Bulk return initiated'); closeModal();">
+            <i class="bi bi-arrow-return-left" style="font-size:1.5rem; margin-bottom:var(--spacing-sm);"></i>
+            <span style="font-weight:600;">Bulk Return</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Return for more info</span>
+          </button>
+          <button class="btn btn-outline" style="flex-direction:column; padding:var(--spacing-xl);" (click)="showToast('info', 'Bulk reminder sent'); closeModal();">
+            <i class="bi bi-bell" style="font-size:1.5rem; margin-bottom:var(--spacing-sm);"></i>
+            <span style="font-weight:600;">Send Reminders</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Notify guarantors</span>
+          </button>
+          <button class="btn btn-outline" style="flex-direction:column; padding:var(--spacing-xl);" (click)="showToast('info', 'Bulk review scheduled'); closeModal();">
+            <i class="bi bi-calendar-event" style="font-size:1.5rem; margin-bottom:var(--spacing-sm);"></i>
+            <span style="font-weight:600;">Schedule Review</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Committee meeting</span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- NOTIFICATIONS MODAL -->
+@if (activeModal === 'notificationsModal') {
+  <div class="modal-overlay active" (click)="closeModal()">
+    <div class="modal-box" (click)="stopPropagation($event)">
+      <div class="modal-head" [style.background]="'linear-gradient(135deg, var(--accent-orange), var(--accent-red))'">
+        <h3><i class="bi bi-bell"></i> Notifications ({{ unreadNotifications }} unread)</h3>
+        <button class="modal-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        @for (notif of notifications; track notif.id) {
+          <div style="display:flex; align-items:start; gap:var(--spacing-md); padding:var(--spacing-md) var(--spacing-xl); border-bottom:1px solid var(--border-color); cursor:pointer; transition:all 0.2s;" [style.background]="notif.unread ? 'var(--primary-green-ultra-light)' : 'transparent'" (click)="notif.unread = false">
+            <div style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;" [style.background]="notif.iconBg" [style.color]="notif.iconColor">
+              <i class="bi {{ notif.icon }}"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:600; font-size:0.85rem;">{{ notif.title }}</span>
+                <span style="font-size:0.7rem; color:var(--text-tertiary);">{{ notif.time }}</span>
+              </div>
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0;">{{ notif.message }}</p>
+            </div>
+            @if (notif.unread) {
+              <div style="width:8px; height:8px; border-radius:50%; background:var(--status-danger); flex-shrink:0; margin-top:6px;"></div>
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost btn-sm" (click)="notifications.forEach(n => n.unread = false)"><i class="bi bi-check-all"></i> Mark All Read</button>
+        <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ==========================================
+     PAGE CONTENT
+     ========================================== -->
+<div class="dashboard-content">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="#" style="color:var(--text-secondary); text-decoration:none; display:flex; align-items:center; gap:4px;">
+      <i class="bi bi-house-door"></i> Home
+    </a>
+    <i class="bi bi-chevron-right" style="font-size:0.5rem; color:var(--text-tertiary);"></i>
+    <span style="color:var(--text-secondary);">Loan Services</span>
+    <i class="bi bi-chevron-right" style="font-size:0.5rem; color:var(--text-tertiary);"></i>
+    <span style="color:var(--primary-green); font-weight:600;">Loan Applications</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="flex-between mb-4" style="flex-wrap:wrap; gap:var(--spacing-md);">
+    <div>
+      <h2 style="font-size:1.75rem; font-weight:700; margin-bottom:4px;">Loan Applications</h2>
+      <p style="color:var(--text-secondary); font-size:0.9rem;">Review, approve, and manage all loan applications from Rongo SACCO members</p>
+    </div>
+    <div style="display:flex; gap:var(--spacing-sm); flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" (click)="refreshApplications()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+      <button class="btn btn-outline btn-sm" (click)="openModal('exportModal')">
+        <i class="bi bi-file-earmark-arrow-down"></i> Export
+      </button>
+      <button class="btn btn-outline btn-sm" (click)="openModal('bulkActionsModal')">
+        <i class="bi bi-list-check"></i> Bulk Actions
+      </button>
+      <button class="btn btn-primary" (click)="openModal('newApplicationModal')">
+        <i class="bi bi-plus-circle"></i> New Application
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert -->
+  <div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle" style="margin-top:2px;"></i>
+    <div>
+      <strong>Automated Credit Scoring Active:</strong> All applications are automatically assessed using CRB data and internal scoring algorithms.
+      <a href="#" style="color:var(--status-info); font-weight:500;">View Scoring Criteria</a>
+    </div>
+  </div>
+
+  <!-- KPI Stats Grid -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card" (click)="switchTab('pending')" style="cursor:pointer;">
+      <div class="stat-card-header">
+        <div class="stat-card-icon warning"><i class="bi bi-clock"></i></div>
+      </div>
+      <div class="stat-card-title">Pending Review</div>
+      <div class="stat-card-value">{{ pendingCount }}</div>
+      <span class="stat-card-change negative"><i class="bi bi-exclamation-circle"></i> Requires action</span>
+    </div>
+    <div class="stat-card" (click)="switchTab('under-review')" style="cursor:pointer;">
+      <div class="stat-card-header">
+        <div class="stat-card-icon info"><i class="bi bi-search"></i></div>
+      </div>
+      <div class="stat-card-title">Under Review</div>
+      <div class="stat-card-value">{{ underReviewCount }}</div>
+      <span class="stat-card-change positive"><i class="bi bi-person-check"></i> Being assessed</span>
+    </div>
+    <div class="stat-card" (click)="switchTab('approved')" style="cursor:pointer;">
+      <div class="stat-card-header">
+        <div class="stat-card-icon success"><i class="bi bi-check-circle"></i></div>
+      </div>
+      <div class="stat-card-title">Approved</div>
+      <div class="stat-card-value">{{ approvedCount }}</div>
+      <span class="stat-card-change positive"><i class="bi bi-arrow-up"></i> {{ formatCurrency(approvedTodayTotal) }} total</span>
+    </div>
+    <div class="stat-card" style="cursor:pointer;">
+      <div class="stat-card-header">
+        <div class="stat-card-icon primary"><i class="bi bi-percent"></i></div>
+      </div>
+      <div class="stat-card-title">Approval Rate</div>
+      <div class="stat-card-value">{{ approvalRate }}%</div>
+      <span class="stat-card-change positive"><i class="bi bi-hand-thumbs-up"></i> Above target</span>
+    </div>
+  </div>
+
+  <!-- Secondary Stats -->
+  <div class="grid-4 mb-4" style="gap:var(--spacing-md);">
+    <div class="type-stat-card" (click)="setTypeFilter('emergency')" [class.active]="typeFilter === 'emergency'">
+      <div style="font-size:0.7rem; color:var(--text-tertiary); margin-bottom:4px;">Emergency Loans</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--status-danger);">{{ emergencyCount }}</div>
+      <div style="font-size:0.7rem; color:var(--text-tertiary);">High Priority</div>
+    </div>
+    <div class="type-stat-card" (click)="setTypeFilter('development')" [class.active]="typeFilter === 'development'">
+      <div style="font-size:0.7rem; color:var(--text-tertiary); margin-bottom:4px;">Development Loans</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--accent-blue);">{{ developmentCount }}</div>
+      <div style="font-size:0.7rem; color:var(--text-tertiary);">Standard</div>
+    </div>
+    <div class="type-stat-card" (click)="setTypeFilter('school')" [class.active]="typeFilter === 'school'">
+      <div style="font-size:0.7rem; color:var(--text-tertiary); margin-bottom:4px;">School Fees</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--accent-purple);">{{ schoolCount }}</div>
+      <div style="font-size:0.7rem; color:var(--text-tertiary);">Seasonal</div>
+    </div>
+    <div class="type-stat-card" (click)="setTypeFilter('business')" [class.active]="typeFilter === 'business'">
+      <div style="font-size:0.7rem; color:var(--text-tertiary); margin-bottom:4px;">Business Loans</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--accent-orange);">{{ businessCount }}</div>
+      <div style="font-size:0.7rem; color:var(--text-tertiary);">Long-term</div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="glass-card mb-4">
+    <div class="glass-card-body">
+      <div style="display:flex; gap:var(--spacing-md); flex-wrap:wrap; align-items:center;">
+        <div style="flex:1; min-width:280px; position:relative;">
+          <i class="bi bi-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-tertiary);"></i>
+          <input type="text" class="form-input" style="padding-left:44px;" [(ngModel)]="searchQuery" placeholder="Search by member name, application ID, member ID, or amount...">
+        </div>
+        <div style="display:flex; gap:var(--spacing-sm); flex-wrap:wrap;">
+          <select class="form-input" style="width:auto;" [(ngModel)]="sortOrder" (change)="applySortOrder($any($event).target.value)">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="amount-desc">Highest Amount</option>
+            <option value="amount-asc">Lowest Amount</option>
+            <option value="priority">Priority</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" (click)="searchQuery = ''; typeFilter = 'all'; sortOrder = 'date-desc'">
+            <i class="bi bi-x-circle"></i> Clear
+          </button>
+        </div>
+      </div>
+      @if (typeFilter !== 'all') {
+        <div style="margin-top:var(--spacing-sm); display:flex; gap:var(--spacing-sm); align-items:center;">
+          <span style="font-size:0.8rem; color:var(--text-secondary);">Filtered by:</span>
+          <span class="loan-type-badge {{ getLoanTypeClass(typeFilter) }}">
+            <i class="bi {{ typeFilter === 'emergency' ? 'bi-exclamation-triangle-fill' : typeFilter === 'development' ? 'bi-house-door-fill' : typeFilter === 'school' ? 'bi-mortarboard-fill' : 'bi-shop-window' }}"></i>
+            {{ typeFilter | titlecase }}
+          </span>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 8px; font-size:0.7rem;" (click)="setTypeFilter('all')"><i class="bi bi-x"></i></button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="app-tabs">
+    <button class="app-tab" [class.active]="activeTab === 'pending'" (click)="switchTab('pending')">
+      <i class="bi bi-clock"></i> Pending Review
+      <span class="tab-count">{{ pendingCount }}</span>
+    </button>
+    <button class="app-tab" [class.active]="activeTab === 'under-review'" (click)="switchTab('under-review')">
+      <i class="bi bi-search"></i> Under Review
+      <span class="tab-count" style="background:var(--accent-blue);">{{ underReviewCount }}</span>
+    </button>
+    <button class="app-tab" [class.active]="activeTab === 'approved'" (click)="switchTab('approved')">
+      <i class="bi bi-check-circle"></i> Approved
+    </button>
+    <button class="app-tab" [class.active]="activeTab === 'rejected'" (click)="switchTab('rejected')">
+      <i class="bi bi-x-circle"></i> Rejected
+    </button>
+    <button class="app-tab" [class.active]="activeTab === 'all'" (click)="switchTab('all')">
+      <i class="bi bi-list"></i> All Applications
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-pane active">
+    <div class="glass-card mb-4">
+      <div class="glass-card-header">
+        <div class="flex-between" style="flex-wrap:wrap; gap:var(--spacing-md);">
+          <h3 style="font-size:1.1rem; font-weight:700;">
+            <i class="bi {{ getStatusIcon(activeTab === 'all' ? 'pending' : activeTab) }}" style="color:var(--primary-green); margin-right:8px;"></i>
+            {{ activeTab === 'pending' ? 'Applications Awaiting Review' : activeTab === 'under-review' ? 'Applications Under Review' : activeTab === 'approved' ? 'Approved Applications' : activeTab === 'rejected' ? 'Rejected Applications' : 'All Applications' }}
+            ({{ filteredApplications.length }})
+          </h3>
+          <div style="display:flex; gap:var(--spacing-sm); flex-wrap:wrap;">
+            @if (activeTab === 'pending') {
+              <button class="btn btn-outline btn-sm" (click)="bulkApprove()">
+                <i class="bi bi-check-all"></i> Bulk Approve
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="glass-card-body">
+        @if (filteredApplications.length === 0) {
+          <div style="text-align:center; padding:var(--spacing-2xl);">
+            <div style="width:80px; height:80px; border-radius:50%; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; margin:0 auto var(--spacing-md);">
+              <i class="bi bi-inbox" style="font-size:2rem; color:var(--text-tertiary);"></i>
+            </div>
+            <h4 style="color:var(--text-secondary); margin-bottom:var(--spacing-sm);">No applications found</h4>
+            <p style="color:var(--text-tertiary); font-size:0.9rem;">Try adjusting your search or filter criteria</p>
+          </div>
+        }
+        @for (app of filteredApplications; track app.id) {
+          <div class="loan-card {{ getLoanCardBorderClass(app) }}" (click)="openModal('viewApplication', app)">
+            <input type="checkbox" (click)="stopPropagation($event)" style="accent-color:var(--primary-green); align-self:flex-start; margin-top:4px;">
+            <div class="loan-avatar" [style.background]="app.avatarGradient">{{ app.initials }}</div>
+            <div style="flex:1; min-width:0;">
+              <div class="flex-between mb-1" style="flex-wrap:wrap; gap:var(--spacing-sm);">
+                <div>
+                  <h4 style="font-size:1rem; font-weight:700; margin-bottom:2px;">{{ app.memberName }}</h4>
+                  <p style="font-size:0.75rem; color:var(--text-tertiary); margin:0;">{{ app.id }} &bull; Member ID: {{ app.memberId }} &bull; Submitted {{ app.submittedAgo }}</p>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:1.4rem; font-weight:700; color:var(--text-primary);">{{ formatCurrency(app.amount) }}</div>
+                  <div style="font-size:0.75rem; color:var(--text-secondary);">{{ app.termMonths }} months @ {{ app.interestRate }}% p.a.</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:var(--spacing-sm); flex-wrap:wrap; margin-bottom:var(--spacing-sm);">
+                <span class="loan-type-badge {{ getLoanTypeClass(app.type) }}">
+                  <i class="bi {{ app.typeIcon }}"></i> {{ app.typeLabel }}
+                </span>
+                @if (app.priority === 'urgent') {
+                  <span class="badge badge-danger"><i class="bi bi-bolt"></i> {{ app.priorityLabel }}</span>
+                }
+                <span class="badge {{ app.guarantorsConfirmed >= app.guarantorsTotal ? 'badge-success' : 'badge-warning' }}">
+                  <i class="bi {{ app.guarantorsConfirmed >= app.guarantorsTotal ? 'bi-shield-check' : 'bi-person-clock' }}"></i>
+                  {{ app.guarantorsConfirmed }}/{{ app.guarantorsTotal }} Guarantors
+                </span>
+                <span class="badge badge-info"><i class="bi bi-graph-up"></i> Credit Score: {{ app.creditScore }}</span>
+                @if (app.documentsComplete) {
+                  <span class="badge badge-success"><i class="bi bi-file-check"></i> Documents Complete</span>
+                } @else {
+                  <span class="badge badge-warning"><i class="bi bi-file-earmark-excel"></i> Docs Pending</span>
+                }
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:var(--spacing-sm); font-size:0.75rem; color:var(--text-secondary);">
+                <div><strong>Loan-to-Value:</strong> {{ app.loanToValue }}%</div>
+                <div><strong>Monthly Payment:</strong> {{ formatCurrency(app.monthlyPayment) }}</div>
+                <div><strong>Existing Loans:</strong> {{ app.existingLoans }} ({{ formatCurrency(app.existingLoansAmount) }})</div>
+                <div><strong>Share Balance:</strong> {{ formatCurrency(app.shareBalance) }}</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:var(--spacing-sm); flex-shrink:0; align-self:center;" (click)="stopPropagation($event)">
+              @if (app.status === 'pending' || app.status === 'under-review') {
+                <button class="btn btn-primary btn-sm" (click)="approveApplication(app.id)">
+                  <i class="bi bi-check-lg"></i> Approve
+                </button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--status-danger);" (click)="rejectApplication(app.id)">
+                  <i class="bi bi-x-lg"></i> Reject
+                </button>
+              }
+              @if (app.status === 'approved') {
+                <span class="badge badge-success" style="padding:8px 14px;"><i class="bi bi-check-circle"></i> Approved</span>
+              }
+              @if (app.status === 'rejected') {
+                <span class="badge badge-danger" style="padding:8px 14px;"><i class="bi bi-x-circle"></i> Rejected</span>
+              }
+              <button class="btn btn-icon btn-ghost" (click)="openModal('viewApplication', app)" title="View Details">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+</div>

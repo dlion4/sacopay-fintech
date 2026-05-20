@@ -1,1 +1,614 @@
-<p>notifications works!</p>
+<section class="notification-page">
+  @if (toast) {
+  <div class="toast-container" [class.toast-info]="toast.type === 'info'"
+    [class.toast-warning]="toast.type === 'warning'" [class.toast-danger]="toast.type === 'danger'">
+    <div class="toast-box">
+      <span class="toast-dot"></span>
+      <span>{{ toast.message }}</span>
+    </div>
+  </div>
+  }
+
+  <nav class="breadcrumb-row" aria-label="Breadcrumb">
+    <button type="button" class="breadcrumb-link">Home</button>
+    <span>/</span>
+    <button type="button" class="breadcrumb-link">Settings</button>
+    <span>/</span>
+    <span class="breadcrumb-current">Notifications</span>
+  </nav>
+
+  <header class="page-header">
+    <div class="title-block">
+      <h1>Notifications &amp; OTP Center</h1>
+      <p>Manage urgent OTP approvals, member service requests, system alerts and read notifications.</p>
+      <div class="live-row">
+        <span class="live-dot"></span>
+        <span>Live Notifications</span>
+        <span>Last updated: <strong>{{ lastUpdated }}</strong></span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline" (click)="markAllRead()">
+        <span class="btn-code">RD</span>
+        <span>Mark All Read</span>
+      </button>
+      <button type="button" class="btn btn-outline" (click)="refresh()">
+        <span class="btn-code">RF</span>
+        <span>Refresh</span>
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openSettings()">
+        <span class="btn-code">SET</span>
+        <span>Notification Settings</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="notif-stats" aria-label="Notification summary">
+    @for (card of statCards; track card.key) {
+    <button type="button" class="ns-card" [ngClass]="card.className" (click)="setTabFromStat(card.tab)">
+      <span class="ns-pulse"></span>
+      <span class="ns-value">{{ card.value }}</span>
+      <span class="ns-label">{{ card.label }}</span>
+    </button>
+    }
+  </section>
+
+  <section class="glass-card-static control-panel">
+    <div class="search-filter-row">
+      <label class="search-box">
+        <span>Search Notifications</span>
+        <input type="text" placeholder="Search by member, OTP, service, alert..." [(ngModel)]="searchTerm" />
+      </label>
+
+      <label class="priority-filter">
+        <span>Priority</span>
+        <select [(ngModel)]="selectedPriority">
+          <option>All Priorities</option>
+          <option>Urgent</option>
+          <option>High</option>
+          <option>Normal</option>
+          <option>Alert</option>
+        </select>
+      </label>
+
+      <div class="notification-health">
+        <span class="health-dot"></span>
+        <span>OTP gateway online</span>
+      </div>
+    </div>
+
+    <div class="notif-tabs" role="tablist" aria-label="Notification tabs">
+      @for (tab of tabs; track tab.key) {
+      <button type="button" role="tab" [class.active]="activeTab === tab.key" (click)="setTab(tab.key)">
+        <span>{{ tab.label }}</span>
+        <strong>{{ tab.count }}</strong>
+      </button>
+      }
+    </div>
+  </section>
+
+  @if (inlineStatus) {
+  <div class="inline-status">
+    <span>{{ inlineStatus }}</span>
+    <button type="button" (click)="inlineStatus = ''">Dismiss</button>
+  </div>
+  }
+
+  <section class="glass-card-static content-panel">
+    @if (activeTab === 'all') {
+    <div class="panel-heading">
+      <div>
+        <h2>All Notifications</h2>
+        <p>Urgent OTPs, service requests and system alerts in one queue.</p>
+      </div>
+      <span>{{ visibleNotifications.length }} visible</span>
+    </div>
+
+    <div class="notification-list">
+      @for (item of visibleNotifications; track item.id) {
+      <article class="notif-item" [class.unread]="item.unread"
+        [class.urgent-item]="item.priority === 'urgent' || item.priority === 'alert'"
+        [class.otp-item]="item.kind === 'otp'">
+        <div class="notif-icon-wrap" [ngClass]="item.iconClass">{{ item.iconClass.slice(0, 2).toUpperCase() }}</div>
+        <div class="notif-body">
+          <div class="notif-title-row">
+            <h3>
+              @if (item.priority) {
+              <span class="priority-badge" [ngClass]="item.priority">{{ item.priority | uppercase }}</span>
+              }
+              {{ item.title }}
+            </h3>
+            <span class="notif-time mobile-time">{{ item.timeAgo }}</span>
+          </div>
+          <p>{{ item.message }}</p>
+          @if (item.otpCode) {
+          <div class="otp-inline-row">
+            <button type="button" class="otp-code" (click)="copyOtp(item.otpCode || '')">{{ item.otpCode }}
+              <span>Copy</span></button>
+            <span class="timer-chip">{{ item.expires }}</span>
+          </div>
+          }
+          <div class="notif-meta">
+            @for (tag of item.tags; track tag) {
+            <span>{{ tag }}</span>
+            }
+            <span>{{ item.date }}</span>
+          </div>
+        </div>
+        <div class="notif-actions">
+          <span class="notif-time desktop-time">{{ item.timeAgo }}</span>
+          <button type="button" class="action-btn" (click)="openDetail(item)">Details</button>
+          @if (item.kind === 'otp') {
+          <button type="button" class="action-btn success" (click)="openApproveFromNotification(item)">Approve</button>
+          <button type="button" class="action-btn danger" (click)="openRejectFromNotification(item)">Reject</button>
+          }
+          @if (item.kind === 'request') {
+          <button type="button" class="action-btn accent" (click)="setTab('requests')">Review</button>
+          }
+          @if (item.unread) {
+          <button type="button" class="action-btn ghost" (click)="markRead(item)">Mark Read</button>
+          }
+        </div>
+      </article>
+      } @empty {
+      <div class="empty-state">No notifications match the current filters.</div>
+      }
+    </div>
+    }
+
+    @if (activeTab === 'otp') {
+    <div class="panel-heading">
+      <div>
+        <h2>OTP Verification Queue</h2>
+        <p><strong>{{ pendingOtpRows.length }} OTP verifications pending</strong> your approval. OTPs expire after 10
+          minutes. Expired OTPs require the member to re-initiate.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="center-table otp-table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Service</th>
+            <th>Amount / Action</th>
+            <th>OTP Code</th>
+            <th>Expires</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (otp of otpApprovals; track otp.id) {
+          <tr [class.resolved-row]="otp.status !== 'pending'">
+            <td>
+              <div class="member-cell">
+                <span class="avatar">{{ otp.initials }}</span>
+                <span><strong>{{ otp.member }}</strong><small>{{ otp.memberId }}</small></span>
+              </div>
+            </td>
+            <td>{{ otp.service }}</td>
+            <td>{{ otp.amountAction }}</td>
+            <td><button type="button" class="otp-code table-code" (click)="copyOtp(otp.code)">{{ otp.code }}</button>
+            </td>
+            <td><span class="timer-chip">{{ otp.expires }}</span></td>
+            <td>
+              <div class="table-actions">
+                @if (otp.status === 'pending') {
+                <button type="button" class="action-btn success" (click)="openApproveOtp(otp)">Approve</button>
+                <button type="button" class="action-btn danger" (click)="openRejectOtp(otp)">Reject</button>
+                } @else {
+                <span class="status-pill" [class.rejected]="otp.status === 'rejected'">{{ otp.status | titlecase
+                  }}</span>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+
+    @if (activeTab === 'requests') {
+    <div class="panel-heading">
+      <div>
+        <h2>Service Requests</h2>
+        <p>Service requests from members awaiting admin review.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="center-table request-table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Request Type</th>
+            <th>Details</th>
+            <th>Submitted</th>
+            <th>Priority</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (request of filteredRequests; track request.id) {
+          <tr>
+            <td>
+              <div class="member-cell">
+                <span class="avatar">{{ request.initials }}</span>
+                <span><strong>{{ request.member }}</strong><small>{{ request.status | titlecase }}</small></span>
+              </div>
+            </td>
+            <td><span class="request-type">{{ request.requestType }}</span></td>
+            <td>{{ request.details }}</td>
+            <td>{{ request.submitted }}</td>
+            <td><span class="priority-chip" [class.high]="request.priority === 'High'">{{ request.priority }}</span>
+            </td>
+            <td>
+              <div class="table-actions">
+                <button type="button" class="action-btn" (click)="openRequestModal(request, 'review')">Review</button>
+                <button type="button" class="action-btn success"
+                  (click)="openRequestModal(request, 'approve')">Approve</button>
+                <button type="button" class="action-btn danger"
+                  (click)="openRequestModal(request, 'decline')">Decline</button>
+              </div>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6" class="empty-table-cell">No service requests match the current search.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+
+    @if (activeTab === 'system') {
+    <div class="panel-heading">
+      <div>
+        <h2>System Alerts</h2>
+        <p>Compliance, AML, backup and platform health notifications.</p>
+      </div>
+    </div>
+
+    <div class="notification-list compact-list">
+      @for (item of visibleNotifications; track item.id) {
+      <article class="notif-item" [class.unread]="item.unread" [class.urgent-item]="item.priority === 'alert'">
+        <div class="notif-icon-wrap" [ngClass]="item.iconClass">{{ item.iconClass.slice(0, 2).toUpperCase() }}</div>
+        <div class="notif-body">
+          <h3>
+            @if (item.priority) {
+            <span class="priority-badge" [ngClass]="item.priority">{{ item.priority | uppercase }}</span>
+            }
+            {{ item.title }}
+          </h3>
+          <p>{{ item.message }}</p>
+        </div>
+        <div class="notif-actions">
+          <span class="notif-time">{{ item.timeAgo }}</span>
+          <button type="button" class="action-btn" (click)="openDetail(item)">Details</button>
+        </div>
+      </article>
+      }
+    </div>
+    }
+
+    @if (activeTab === 'read') {
+    <div class="panel-heading">
+      <div>
+        <h2>Read Notifications</h2>
+        <p>Previously handled approvals, member notices and completed system messages.</p>
+      </div>
+    </div>
+
+    <div class="read-list">
+      @for (item of visibleNotifications; track item.id) {
+      <article class="read-item">
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.message }}</p>
+        <span>{{ item.date }}</span>
+      </article>
+      } @empty {
+      <div class="empty-state">No read notifications found.</div>
+      }
+    </div>
+    }
+  </section>
+
+  @if (showDetailModal && activeNotification) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark">DT</span> Notification Details</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="detail-hero">
+          <div class="notif-icon-wrap large" [ngClass]="activeNotification.iconClass">{{
+            activeNotification.iconClass.slice(0, 2).toUpperCase() }}</div>
+          <div>
+            <h3>{{ activeNotification.title }}</h3>
+            <p>{{ activeNotification.message }}</p>
+            <div class="notif-meta detail-meta">
+              @for (tag of activeNotification.tags; track tag) {
+              <span>{{ tag }}</span>
+              }
+              <span>{{ activeNotification.date }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (activeNotification.otpCode) {
+        <div class="otp-detail-card">
+          <div>
+            <small>OTP Code</small>
+            <button type="button" class="otp-code" (click)="copyOtp(activeNotification.otpCode || '')">{{
+              activeNotification.otpCode }} <span>Copy</span></button>
+          </div>
+          <div>
+            <small>Expires In</small>
+            <strong>{{ activeNotification.expires }}</strong>
+          </div>
+          <div>
+            <small>Member</small>
+            <strong>{{ activeNotification.memberName }} {{ activeNotification.memberId }}</strong>
+          </div>
+          <div>
+            <small>Amount / Action</small>
+            <strong>{{ activeNotification.amountAction }}</strong>
+          </div>
+        </div>
+        }
+
+        <div class="audit-block">
+          <h4>Delivery & Audit Trail</h4>
+          <div class="audit-row"><span>Delivered to</span><strong>Admin Console, Push, SMS fallback</strong></div>
+          <div class="audit-row"><span>Security Level</span><strong>{{ activeNotification.priority ?
+              (activeNotification.priority | titlecase) : 'Normal' }}</strong></div>
+          <div class="audit-row"><span>Created</span><strong>{{ activeNotification.date }}</strong></div>
+          <div class="audit-row"><span>Status</span><strong>{{ activeNotification.unread ? 'Unread' : 'Read' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeModals()">Close</button>
+        @if (activeNotification.kind === 'otp') {
+        <button type="button" class="btn btn-outline" (click)="openRejectFromNotification(activeNotification)">Reject
+          OTP</button>
+        <button type="button" class="btn btn-primary" (click)="openApproveFromNotification(activeNotification)">Approve
+          OTP</button>
+        }
+      </footer>
+    </div>
+  </div>
+  }
+
+  @if (showOtpApproveModal && activeOtp) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark">OK</span> Approve OTP Request</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
+      <div class="modal-body">
+        <div class="alert-banner warning">
+          <span>!</span>
+          <p>Confirm this OTP only after verifying the member, service and amount. The action will be logged.</p>
+        </div>
+
+        <div class="approval-summary">
+          <div><small>Member</small><strong>{{ activeOtp.member }}</strong><span>{{ activeOtp.memberId }}</span></div>
+          <div><small>Service</small><strong>{{ activeOtp.service }}</strong><span>{{ activeOtp.amountAction }}</span>
+          </div>
+          <div><small>Expires</small><strong>{{ activeOtp.expires }}</strong><span>One-time approval</span></div>
+        </div>
+
+        <label class="form-group">
+          <span>Enter OTP Code *</span>
+          <input type="text" maxlength="6" [(ngModel)]="approveOtpInput" />
+          <small>Expected code: {{ activeOtp.code }}</small>
+        </label>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canApproveOtp" (click)="confirmApproveOtp()">Approve
+          Request</button>
+      </footer>
+    </div>
+  </div>
+  }
+
+  @if (showOtpRejectModal && activeOtp) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark danger">RJ</span> Reject OTP Request</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
+      <div class="modal-body">
+        <div class="alert-banner danger">
+          <span>!</span>
+          <p>Rejecting this OTP blocks the current approval attempt and asks the member or staff user to re-initiate.
+          </p>
+        </div>
+
+        <div class="approval-summary single">
+          <div><small>Request</small><strong>{{ activeOtp.service }} - {{ activeOtp.amountAction }}</strong><span>{{
+              activeOtp.member }} ({{ activeOtp.memberId }})</span></div>
+        </div>
+
+        <label class="form-group">
+          <span>Reason for Rejection *</span>
+          <textarea rows="4" placeholder="Enter reason for audit log..." [(ngModel)]="rejectReason"></textarea>
+          <small>Minimum 8 characters required.</small>
+        </label>
+
+        <label class="form-check">
+          <input type="checkbox" [(ngModel)]="notifyMemberOnReject" />
+          <span>Notify member or staff user about this rejection</span>
+        </label>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-danger" [disabled]="!canRejectOtp" (click)="confirmRejectOtp()">Reject
+          OTP</button>
+      </footer>
+    </div>
+  </div>
+  }
+
+  @if (showRequestModal && activeRequest) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark">RQ</span> Service Request Review</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
+      <div class="modal-body">
+        <div class="request-summary-card">
+          <span class="avatar">{{ activeRequest.initials }}</span>
+          <div>
+            <h3>{{ activeRequest.member }}</h3>
+            <p>{{ activeRequest.requestType }} - {{ activeRequest.details }}</p>
+            <small>Submitted {{ activeRequest.submitted }}</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-group">
+            <span>Review Action</span>
+            <select [(ngModel)]="requestAction">
+              <option value="review">Send to Review</option>
+              <option value="approve">Approve Request</option>
+              <option value="decline">Decline Request</option>
+            </select>
+          </label>
+          <label class="form-group">
+            <span>Priority</span>
+            <select [(ngModel)]="requestDraftPriority">
+              <option>Normal</option>
+              <option>High</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="form-group">
+          <span>Assigned Department</span>
+          <select [(ngModel)]="requestDraftAssignee">
+            <option>Credit Department</option>
+            <option>Membership Desk</option>
+            <option>Operations</option>
+            <option>Compliance Office</option>
+          </select>
+        </label>
+
+        <label class="form-group">
+          <span>Review Notes</span>
+          <textarea rows="4" [(ngModel)]="requestDraftNotes"></textarea>
+        </label>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveRequestReview()">Save Request</button>
+      </footer>
+    </div>
+  </div>
+  }
+
+  @if (showSettingsModal) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark">ST</span> Notification Settings</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="settings-tabs">
+          <button type="button" [class.active]="settingsTab === 'channels'"
+            (click)="settingsTab = 'channels'">Channels</button>
+          <button type="button" [class.active]="settingsTab === 'otp-policy'" (click)="settingsTab = 'otp-policy'">OTP
+            Policy</button>
+          <button type="button" [class.active]="settingsTab === 'templates'"
+            (click)="settingsTab = 'templates'">Templates</button>
+        </div>
+
+        @if (settingsTab === 'channels') {
+        <div class="settings-grid">
+          <label class="toggle-row">
+            <span><strong>Push Notifications</strong><small>Real-time admin console and browser alerts</small></span>
+            <input type="checkbox" [(ngModel)]="settings.pushEnabled" />
+          </label>
+          <label class="toggle-row">
+            <span><strong>SMS Fallback</strong><small>Send SMS when push confirmation fails</small></span>
+            <input type="checkbox" [(ngModel)]="settings.smsEnabled" />
+          </label>
+          <label class="toggle-row">
+            <span><strong>Email Notifications</strong><small>Daily and urgent email summaries</small></span>
+            <input type="checkbox" [(ngModel)]="settings.emailEnabled" />
+          </label>
+          <label class="toggle-row">
+            <span><strong>Urgent Sound</strong><small>Play a sound for urgent OTP approvals</small></span>
+            <input type="checkbox" [(ngModel)]="settings.urgentSound" />
+          </label>
+        </div>
+        }
+
+        @if (settingsTab === 'otp-policy') {
+        <div class="form-row">
+          <label class="form-group">
+            <span>OTP Expiry (minutes)</span>
+            <input type="number" [(ngModel)]="settings.otpExpiryMinutes" />
+          </label>
+          <label class="form-group">
+            <span>Max Attempts</span>
+            <input type="number" [(ngModel)]="settings.otpMaxAttempts" />
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="form-group">
+            <span>Withdrawal Alert Threshold (KES)</span>
+            <input type="number" [(ngModel)]="settings.withdrawalThreshold" />
+          </label>
+          <label class="form-group">
+            <span>Loan Alert Threshold (KES)</span>
+            <input type="number" [(ngModel)]="settings.loanThreshold" />
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="form-group">
+            <span>Escalation Time (minutes)</span>
+            <input type="number" [(ngModel)]="settings.escalationMinutes" />
+          </label>
+          <label class="form-group">
+            <span>Admin Recipient</span>
+            <input type="email" [(ngModel)]="settings.adminRecipient" />
+          </label>
+        </div>
+        }
+
+        @if (settingsTab === 'templates') {
+        <label class="form-group">
+          <span>SMS OTP Template</span>
+          <textarea rows="4" [(ngModel)]="settings.smsTemplate"></textarea>
+          <small>Available placeholders: {{ '{' }}{{ '{' }}code{{ '}' }}{{ '}' }}, {{ '{' }}{{ '{' }}minutes{{ '}' }}{{
+            '}' }}</small>
+        </label>
+        <label class="form-group">
+          <span>Email Notification Template</span>
+          <textarea rows="4" [(ngModel)]="settings.emailTemplate"></textarea>
+        </label>
+        }
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveSettings()">Save Settings</button>
+      </footer>
+    </div>
+  </div>
+  }
+</section>

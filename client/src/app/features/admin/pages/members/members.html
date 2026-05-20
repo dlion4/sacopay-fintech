@@ -1,1 +1,1310 @@
-<p>members works!</p>
+<div class="members-page">
+
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div class="toast-container" [class.has-toast]="toast.visible">
+    <div class="toast-item" [ngClass]="'toast-' + toast.type" *ngIf="toast.visible">
+      <div class="toast-icon">
+        <svg *ngIf="toast.type==='success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg *ngIf="toast.type==='danger'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <svg *ngIf="toast.type==='warning'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <svg *ngIf="toast.type==='info'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </div>
+      <div class="toast-body">
+        <span class="toast-title">{{ toast.title }}</span>
+        <span class="toast-msg">{{ toast.message }}</span>
+      </div>
+      <button class="toast-close" (click)="hideToast()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div>
+        <h1 class="page-title">Member Directory</h1>
+        <p class="page-subtitle">Manage all SACCO members, registrations &amp; accounts</p>
+      </div>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline" (click)="openModal('export')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+      <button class="btn btn-outline" (click)="openModal('bulkImport')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Bulk Import
+      </button>
+      <button class="btn btn-primary" (click)="openModal('addMember')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Member
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== STATS OVERVIEW ===== -->
+  <div class="stats-grid">
+    <div class="stat-card stat-card--green">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-label">Total Members</span>
+        <span class="stat-value">2,847</span>
+        <span class="stat-change stat-change--up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          +48 this month
+        </span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--blue">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-label">Pending Approval</span>
+        <span class="stat-value">34</span>
+        <span class="stat-change stat-change--warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          Requires action
+        </span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--teal">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-label">Active Members</span>
+        <span class="stat-value">2,631</span>
+        <span class="stat-change stat-change--up">92.4% active rate</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--orange">
+      <div class="stat-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-label">Total Share Capital</span>
+        <span class="stat-value">KES 14.2M</span>
+        <span class="stat-change stat-change--up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          +8.2% this quarter
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FILTER & SEARCH BAR ===== -->
+  <div class="filter-bar glass-card">
+    <div class="filter-bar-left">
+      <div class="search-input-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" placeholder="Search by name, ID, phone, email..." [(ngModel)]="searchQuery" (input)="applyFilters()">
+        <button class="search-clear" *ngIf="searchQuery" (click)="clearSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="filter-bar-right">
+      <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="pending">Pending</option>
+        <option value="suspended">Suspended</option>
+        <option value="dormant">Dormant</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="filterBranch" (change)="applyFilters()">
+        <option value="">All Branches</option>
+        <option value="main">Main Branch</option>
+        <option value="kiboswa">Kiboswa</option>
+        <option value="migori">Migori</option>
+        <option value="awendo">Awendo</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="filterGender" (change)="applyFilters()">
+        <option value="">All Genders</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+      <button class="btn btn-ghost" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Reset
+      </button>
+      <button class="btn btn-ghost" (click)="toggleView()">
+        <svg *ngIf="viewMode==='table'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <svg *ngIf="viewMode==='grid'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== BULK ACTIONS BAR ===== -->
+  <div class="bulk-action-bar" *ngIf="selectedMembers.length > 0">
+    <div class="bulk-info">
+      <div class="bulk-count">{{ selectedMembers.length }} member(s) selected</div>
+    </div>
+    <div class="bulk-actions">
+      <button class="btn btn-sm btn-success" (click)="bulkAction('approve')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve
+      </button>
+      <button class="btn btn-sm btn-warning" (click)="bulkAction('suspend')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        Suspend
+      </button>
+      <button class="btn btn-sm btn-danger" (click)="bulkAction('delete')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        Delete
+      </button>
+      <button class="btn btn-sm btn-ghost" (click)="clearSelection()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===== TABLE VIEW ===== -->
+  <div class="glass-card table-card" *ngIf="viewMode==='table'">
+    <div class="table-card-header">
+      <div class="table-card-title">
+        <h3>Member Records</h3>
+        <span class="record-count">{{ filteredMembers.length }} of {{ members.length }} members</span>
+      </div>
+      <div class="table-header-actions">
+        <button class="btn btn-ghost btn-sm" (click)="openModal('columnSettings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          Columns
+        </button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th class="th-check">
+              <label class="checkbox-wrap">
+                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
+                <span class="checkmark"></span>
+              </label>
+            </th>
+            <th (click)="sortBy('id')" class="th-sortable">
+              Member ID
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </th>
+            <th (click)="sortBy('name')" class="th-sortable">
+              Member
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </th>
+            <th>Contact</th>
+            <th (click)="sortBy('shares')" class="th-sortable">
+              Shares
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th (click)="sortBy('joinDate')" class="th-sortable">
+              Join Date
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </th>
+            <th class="th-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let member of paginatedMembers; trackBy: trackMember"
+              class="member-row"
+              [class.selected]="isSelected(member.id)">
+            <td class="td-check">
+              <label class="checkbox-wrap">
+                <input type="checkbox" [checked]="isSelected(member.id)" (change)="toggleSelect(member.id, $event)">
+                <span class="checkmark"></span>
+              </label>
+            </td>
+            <td class="td-id">
+              <span class="member-id-badge">{{ member.id }}</span>
+            </td>
+            <td class="td-member">
+              <div class="member-info">
+                <div class="member-avatar" [style.background]="member.avatarColor">
+                  {{ member.initials }}
+                </div>
+                <div class="member-details">
+                  <span class="member-name">{{ member.name }}</span>
+                  <span class="member-national-id">ID: {{ member.nationalId }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="td-contact">
+              <div class="contact-info">
+                <span class="contact-phone">{{ member.phone }}</span>
+                <span class="contact-email">{{ member.email }}</span>
+              </div>
+            </td>
+            <td class="td-shares">
+              <div class="shares-info">
+                <span class="shares-value">{{ member.shares | number }}</span>
+                <span class="shares-amount">KES {{ member.shareAmount | number }}</span>
+              </div>
+            </td>
+            <td class="td-branch">
+              <span class="branch-badge">{{ member.branch }}</span>
+            </td>
+            <td class="td-status">
+              <span class="status-pill" [ngClass]="'status-' + member.status">
+                <span class="status-dot"></span>
+                {{ member.status | titlecase }}
+              </span>
+            </td>
+            <td class="td-date">
+              <span class="date-text">{{ member.joinDate }}</span>
+            </td>
+            <td class="td-actions">
+              <div class="action-btns">
+                <button class="action-btn action-btn--view" title="View Profile" (click)="openMemberDetail(member)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn action-btn--edit" title="Edit Member" (click)="openEditMember(member)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="action-btn action-btn--loan" title="View Loans" (click)="openModal('loanHistory')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </button>
+                <div class="action-dropdown-wrap">
+                  <button class="action-btn action-btn--more" title="More" (click)="toggleDropdown(member.id)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                  <div class="action-dropdown" *ngIf="activeDropdown === member.id">
+                    <button (click)="approveMember(member); closeDropdown()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      Approve
+                    </button>
+                    <button (click)="openModal('sendMessage')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                      Send Message
+                    </button>
+                    <button (click)="openModal('statement')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      Statement
+                    </button>
+                    <button class="dropdown-danger" (click)="confirmDelete(member); closeDropdown()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedMembers.length === 0">
+            <td colspan="9" class="empty-state">
+              <div class="empty-state-inner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                <p>No members found matching your search.</p>
+                <button class="btn btn-primary btn-sm" (click)="resetFilters()">Clear Filters</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination-bar">
+      <div class="pagination-info">
+        Showing {{ pageStart }} – {{ pageEnd }} of {{ filteredMembers.length }} members
+      </div>
+      <div class="pagination-controls">
+        <select class="page-size-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option [value]="10">10 per page</option>
+          <option [value]="25">25 per page</option>
+          <option [value]="50">50 per page</option>
+        </select>
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+        </button>
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="page-numbers">
+          <button *ngFor="let p of visiblePages" class="page-num-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+        </div>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GRID VIEW ===== -->
+  <div class="members-grid" *ngIf="viewMode==='grid'">
+    <div class="member-card glass-card" *ngFor="let member of paginatedMembers; trackBy: trackMember">
+      <div class="member-card-header">
+        <div class="member-card-avatar" [style.background]="member.avatarColor">{{ member.initials }}</div>
+        <div class="member-card-status">
+          <span class="status-pill" [ngClass]="'status-' + member.status">
+            <span class="status-dot"></span>{{ member.status | titlecase }}
+          </span>
+        </div>
+      </div>
+      <div class="member-card-body">
+        <h4 class="member-card-name">{{ member.name }}</h4>
+        <p class="member-card-id">{{ member.id }}</p>
+        <div class="member-card-meta">
+          <div class="meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.11 7.16A16 16 0 0014.84 15.89l1.22-1.14a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 17z"/></svg><span>{{ member.phone }}</span></div>
+          <div class="meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>{{ member.branch }}</span></div>
+        </div>
+        <div class="member-card-shares">
+          <div class="shares-stat">
+            <span class="shares-stat-label">Shares</span>
+            <span class="shares-stat-val">{{ member.shares | number }}</span>
+          </div>
+          <div class="shares-stat">
+            <span class="shares-stat-label">Capital</span>
+            <span class="shares-stat-val">KES {{ member.shareAmount | number }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="member-card-footer">
+        <button class="btn btn-ghost btn-sm" (click)="openMemberDetail(member)">View</button>
+        <button class="btn btn-outline btn-sm" (click)="openEditMember(member)">Edit</button>
+        <button class="btn btn-primary btn-sm" (click)="openModal('loanHistory')">Loans</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PENDING APPROVALS SECTION ===== -->
+  <div class="glass-card pending-section">
+    <div class="pending-header">
+      <div class="pending-title">
+        <div class="pending-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <h3>Pending Registrations</h3>
+          <p>Members awaiting approval</p>
+        </div>
+      </div>
+      <span class="badge badge-warning">34 Pending</span>
+    </div>
+    <div class="pending-list">
+      <div class="pending-item" *ngFor="let p of pendingMembers; trackBy: trackPending">
+        <div class="pending-avatar" [style.background]="p.avatarColor">{{ p.initials }}</div>
+        <div class="pending-info">
+          <span class="pending-name">{{ p.name }}</span>
+          <span class="pending-meta">{{ p.nationalId }} · Applied {{ p.appliedDate }}</span>
+        </div>
+        <div class="pending-docs">
+          <span class="doc-badge" [ngClass]="p.docsComplete ? 'doc-ok' : 'doc-missing'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path *ngIf="p.docsComplete" d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline *ngIf="p.docsComplete" points="22 4 12 14.01 9 11.01"/>
+              <circle *ngIf="!p.docsComplete" cx="12" cy="12" r="10"/><line *ngIf="!p.docsComplete" x1="12" y1="8" x2="12" y2="12"/><line *ngIf="!p.docsComplete" x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ p.docsComplete ? 'Docs OK' : 'Docs Missing' }}
+          </span>
+        </div>
+        <div class="pending-actions">
+          <button class="btn btn-sm btn-success" (click)="approveItem(p)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Approve
+          </button>
+          <button class="btn btn-sm btn-ghost" (click)="openPendingDetail(p)">Review</button>
+          <button class="btn btn-sm btn-danger" (click)="rejectItem(p)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- MODAL BACKDROP -->
+<div class="modal-backdrop" *ngIf="activeModal" (click)="closeModal()"></div>
+
+<!-- ===== ADD MEMBER MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'addMember'">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </div>
+        <div>
+          <h3>Register New Member</h3>
+          <p>Fill all required fields to complete registration</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Registration Tabs -->
+    <div class="reg-tabs">
+      <button class="reg-tab" [class.active]="regTab==='personal'" (click)="regTab='personal'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Personal
+      </button>
+      <button class="reg-tab" [class.active]="regTab==='financial'" (click)="regTab='financial'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Financial
+      </button>
+      <button class="reg-tab" [class.active]="regTab==='documents'" (click)="regTab='documents'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Documents
+      </button>
+    </div>
+
+    <div class="modal-body modal-scrollable">
+      <!-- Personal Tab -->
+      <div *ngIf="regTab==='personal'" class="form-tab-content">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">First Name <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.firstName" placeholder="Enter first name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Middle Name</label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.middleName" placeholder="Enter middle name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.lastName" placeholder="Enter last name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">National ID <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.nationalId" placeholder="Enter National ID number">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth <span class="required">*</span></label>
+            <input type="date" class="form-input" [(ngModel)]="newMember.dob">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="newMember.gender">
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Marital Status</label>
+            <select class="form-input" [(ngModel)]="newMember.maritalStatus">
+              <option value="">Select status</option>
+              <option value="single">Single</option>
+              <option value="married">Married</option>
+              <option value="divorced">Divorced</option>
+              <option value="widowed">Widowed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number <span class="required">*</span></label>
+            <input type="tel" class="form-input" [(ngModel)]="newMember.phone" placeholder="+254 7XX XXX XXX">
+          </div>
+          <div class="form-group form-group--full">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" [(ngModel)]="newMember.email" placeholder="member@email.com">
+          </div>
+          <div class="form-group form-group--full">
+            <label class="form-label">Physical Address</label>
+            <textarea class="form-input form-textarea" [(ngModel)]="newMember.address" placeholder="Street, Town, County" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Branch <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="newMember.branch">
+              <option value="">Select branch</option>
+              <option value="Main Branch">Main Branch</option>
+              <option value="Kiboswa">Kiboswa</option>
+              <option value="Migori">Migori</option>
+              <option value="Awendo">Awendo</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-tab-footer">
+          <button class="btn btn-primary" (click)="regTab='financial'">Next: Financial Info
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Financial Tab -->
+      <div *ngIf="regTab==='financial'" class="form-tab-content">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Occupation <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.occupation" placeholder="e.g. Teacher, Farmer">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Employer</label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.employer" placeholder="Employer name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Income Range <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="newMember.incomeRange">
+              <option value="">Select range</option>
+              <option value="0-20000">Below KES 20,000</option>
+              <option value="20000-50000">KES 20,000 – 50,000</option>
+              <option value="50000-100000">KES 50,000 – 100,000</option>
+              <option value="100000+">Above KES 100,000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Share Purchase <span class="required">*</span></label>
+            <input type="number" class="form-input" [(ngModel)]="newMember.initialShares" placeholder="Number of shares (min 5)">
+            <small class="form-hint">Minimum 5 shares · KES 200 per share</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Next of Kin Name <span class="required">*</span></label>
+            <input type="text" class="form-input" [(ngModel)]="newMember.kinName" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Next of Kin Phone <span class="required">*</span></label>
+            <input type="tel" class="form-input" [(ngModel)]="newMember.kinPhone" placeholder="+254 7XX XXX XXX">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Relationship <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="newMember.kinRelationship">
+              <option value="">Select relationship</option>
+              <option value="spouse">Spouse</option>
+              <option value="parent">Parent</option>
+              <option value="child">Child</option>
+              <option value="sibling">Sibling</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select class="form-input" [(ngModel)]="newMember.paymentMethod">
+              <option value="mpesa">M-Pesa</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="cash">Cash</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-tab-footer modal-tab-footer--split">
+          <button class="btn btn-ghost" (click)="regTab='personal'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" (click)="regTab='documents'">Next: Documents
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Documents Tab -->
+      <div *ngIf="regTab==='documents'" class="form-tab-content">
+        <div class="docs-grid">
+          <div class="doc-upload-card">
+            <div class="doc-upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <h5>National ID Copy <span class="required">*</span></h5>
+            <p>Upload front and back of National ID</p>
+            <label class="upload-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M5 20h14"/></svg>
+              Choose File
+              <input type="file" accept="image/*,.pdf" (change)="onFileUpload($event, 'nationalId')" style="display:none">
+            </label>
+            <span class="upload-status" *ngIf="uploads['nationalId']">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Uploaded
+            </span>
+          </div>
+          <div class="doc-upload-card">
+            <div class="doc-upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h5>Passport Photo <span class="required">*</span></h5>
+            <p>Recent passport-size photograph</p>
+            <label class="upload-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M5 20h14"/></svg>
+              Choose File
+              <input type="file" accept="image/*" (change)="onFileUpload($event, 'photo')" style="display:none">
+            </label>
+            <span class="upload-status" *ngIf="uploads['photo']">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Uploaded
+            </span>
+          </div>
+          <div class="doc-upload-card">
+            <div class="doc-upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <h5>KRA PIN Certificate</h5>
+            <p>Optional but recommended</p>
+            <label class="upload-btn upload-btn--optional">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M5 20h14"/></svg>
+              Choose File
+              <input type="file" accept="image/*,.pdf" (change)="onFileUpload($event, 'kra')" style="display:none">
+            </label>
+            <span class="upload-status" *ngIf="uploads['kra']">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Uploaded
+            </span>
+          </div>
+          <div class="doc-upload-card">
+            <div class="doc-upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <h5>Proof of Residence</h5>
+            <p>Utility bill, lease agreement, etc.</p>
+            <label class="upload-btn upload-btn--optional">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M5 20h14"/></svg>
+              Choose File
+              <input type="file" accept="image/*,.pdf" (change)="onFileUpload($event, 'residence')" style="display:none">
+            </label>
+            <span class="upload-status" *ngIf="uploads['residence']">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Uploaded
+            </span>
+          </div>
+        </div>
+        <div class="terms-check-wrap">
+          <label class="terms-label">
+            <input type="checkbox" [(ngModel)]="newMember.termsAccepted">
+            <span class="checkmark"></span>
+            I confirm that all information provided is accurate and agree to the SACCO terms and conditions
+          </label>
+        </div>
+        <div class="modal-tab-footer modal-tab-footer--split">
+          <button class="btn btn-ghost" (click)="regTab='financial'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" (click)="submitNewMember()" [disabled]="!newMember.termsAccepted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Submit Registration
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MEMBER DETAIL MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'memberDetail'">
+  <div class="modal modal-xl" (click)="$event.stopPropagation()" *ngIf="selectedMember">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-member-avatar" [style.background]="selectedMember.avatarColor">{{ selectedMember.initials }}</div>
+        <div>
+          <h3>{{ selectedMember.name }}</h3>
+          <p>{{ selectedMember.id }} · {{ selectedMember.branch }}</p>
+        </div>
+      </div>
+      <div class="modal-header-right">
+        <span class="status-pill" [ngClass]="'status-' + selectedMember.status">
+          <span class="status-dot"></span>{{ selectedMember.status | titlecase }}
+        </span>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body modal-scrollable">
+      <!-- Detail Tabs -->
+      <div class="detail-tabs">
+        <button class="detail-tab" [class.active]="detailTab==='overview'" (click)="detailTab='overview'">Overview</button>
+        <button class="detail-tab" [class.active]="detailTab==='shares'" (click)="detailTab='shares'">Shares</button>
+        <button class="detail-tab" [class.active]="detailTab==='loans'" (click)="detailTab='loans'">Loans</button>
+        <button class="detail-tab" [class.active]="detailTab==='savings'" (click)="detailTab='savings'">Savings</button>
+        <button class="detail-tab" [class.active]="detailTab==='activity'" (click)="detailTab='activity'">Activity</button>
+      </div>
+
+      <!-- Overview Tab -->
+      <div *ngIf="detailTab==='overview'" class="detail-content">
+        <div class="detail-grid">
+          <div class="detail-section">
+            <h4 class="detail-section-title">Personal Information</h4>
+            <div class="detail-fields">
+              <div class="detail-field"><span class="detail-field-label">Full Name</span><span class="detail-field-val">{{ selectedMember.name }}</span></div>
+              <div class="detail-field"><span class="detail-field-label">National ID</span><span class="detail-field-val">{{ selectedMember.nationalId }}</span></div>
+              <div class="detail-field"><span class="detail-field-label">Phone</span><span class="detail-field-val">{{ selectedMember.phone }}</span></div>
+              <div class="detail-field"><span class="detail-field-label">Email</span><span class="detail-field-val">{{ selectedMember.email }}</span></div>
+              <div class="detail-field"><span class="detail-field-label">Branch</span><span class="detail-field-val">{{ selectedMember.branch }}</span></div>
+              <div class="detail-field"><span class="detail-field-label">Join Date</span><span class="detail-field-val">{{ selectedMember.joinDate }}</span></div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4 class="detail-section-title">Financial Summary</h4>
+            <div class="detail-summary-cards">
+              <div class="summary-stat-card summary-green">
+                <span class="summary-label">Shares</span>
+                <span class="summary-val">{{ selectedMember.shares | number }}</span>
+                <span class="summary-sub">KES {{ selectedMember.shareAmount | number }}</span>
+              </div>
+              <div class="summary-stat-card summary-blue">
+                <span class="summary-label">Savings</span>
+                <span class="summary-val">KES 45,200</span>
+                <span class="summary-sub">4 accounts</span>
+              </div>
+              <div class="summary-stat-card summary-orange">
+                <span class="summary-label">Active Loans</span>
+                <span class="summary-val">2</span>
+                <span class="summary-sub">KES 120,000</span>
+              </div>
+              <div class="summary-stat-card summary-teal">
+                <span class="summary-label">Dividends</span>
+                <span class="summary-val">KES 8,400</span>
+                <span class="summary-sub">FY 2023–24</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shares Tab -->
+      <div *ngIf="detailTab==='shares'" class="detail-content">
+        <div class="detail-shares-stats">
+          <div class="share-stat"><span>Total Shares</span><strong>{{ selectedMember.shares | number }}</strong></div>
+          <div class="share-stat"><span>Share Value</span><strong>KES {{ selectedMember.shareAmount | number }}</strong></div>
+          <div class="share-stat"><span>Share Class</span><strong>Ordinary A</strong></div>
+        </div>
+        <table class="detail-table">
+          <thead><tr><th>Date</th><th>Type</th><th>Shares</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Jan 15, 2024</td><td>Purchase</td><td>50</td><td>KES 10,000</td><td><span class="status-pill status-active"><span class="status-dot"></span>Completed</span></td></tr>
+            <tr><td>Mar 02, 2024</td><td>Dividend</td><td>10</td><td>KES 2,000</td><td><span class="status-pill status-active"><span class="status-dot"></span>Completed</span></td></tr>
+            <tr><td>Jun 10, 2024</td><td>Purchase</td><td>100</td><td>KES 20,000</td><td><span class="status-pill status-active"><span class="status-dot"></span>Completed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loans Tab -->
+      <div *ngIf="detailTab==='loans'" class="detail-content">
+        <div class="loans-summary-row">
+          <div class="loan-sum-card"><span>Active Loans</span><strong>2</strong></div>
+          <div class="loan-sum-card"><span>Total Outstanding</span><strong>KES 120,000</strong></div>
+          <div class="loan-sum-card"><span>Monthly Repayment</span><strong>KES 8,500</strong></div>
+        </div>
+        <table class="detail-table">
+          <thead><tr><th>Loan ID</th><th>Type</th><th>Amount</th><th>Balance</th><th>Due Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>LN-2024-0891</td><td>Normal</td><td>KES 80,000</td><td>KES 65,000</td><td>Dec 2025</td><td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td></tr>
+            <tr><td>LN-2024-1102</td><td>Emergency</td><td>KES 40,000</td><td>KES 55,000</td><td>Jun 2025</td><td><span class="status-pill status-pending"><span class="status-dot"></span>Overdue</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Savings Tab -->
+      <div *ngIf="detailTab==='savings'" class="detail-content">
+        <table class="detail-table">
+          <thead><tr><th>Account</th><th>Type</th><th>Balance</th><th>Rate</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>SAV-001</td><td>Regular</td><td>KES 25,000</td><td>4.5%</td><td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td></tr>
+            <tr><td>SAV-002</td><td>Fixed Deposit</td><td>KES 15,000</td><td>7.2%</td><td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td></tr>
+            <tr><td>SAV-003</td><td>Junior</td><td>KES 5,200</td><td>3.5%</td><td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Activity Tab -->
+      <div *ngIf="detailTab==='activity'" class="detail-content">
+        <div class="activity-timeline">
+          <div class="activity-item" *ngFor="let act of memberActivity">
+            <div class="activity-dot" [ngClass]="'act-' + act.type"></div>
+            <div class="activity-info">
+              <span class="activity-text">{{ act.text }}</span>
+              <span class="activity-time">{{ act.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+      <button class="btn btn-outline" (click)="openModal('statement')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Statement
+      </button>
+      <button class="btn btn-primary" (click)="openEditMember(selectedMember!)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Member
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EDIT MEMBER MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'editMember'">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()" *ngIf="editMemberData">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div>
+          <h3>Edit Member</h3>
+          <p>Update member information</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body modal-scrollable">
+      <div class="form-section-title">Personal Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name <span class="required">*</span></label>
+          <input type="text" class="form-input" [(ngModel)]="editMemberData.name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">National ID</label>
+          <input type="text" class="form-input" [(ngModel)]="editMemberData.nationalId">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number <span class="required">*</span></label>
+          <input type="tel" class="form-input" [(ngModel)]="editMemberData.phone">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" [(ngModel)]="editMemberData.email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Branch <span class="required">*</span></label>
+          <select class="form-input" [(ngModel)]="editMemberData.branch">
+            <option value="Main Branch">Main Branch</option>
+            <option value="Kiboswa">Kiboswa</option>
+            <option value="Migori">Migori</option>
+            <option value="Awendo">Awendo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" [(ngModel)]="editMemberData.status">
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+            <option value="dormant">Dormant</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section-title">Account Settings</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Membership Tier</label>
+          <select class="form-input">
+            <option>Silver</option>
+            <option>Gold</option>
+            <option>Platinum</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Share Class</label>
+          <select class="form-input">
+            <option>Ordinary A</option>
+            <option>Ordinary B</option>
+            <option>Preference</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group form-group--full">
+        <label class="form-label">Admin Notes</label>
+        <textarea class="form-input form-textarea" rows="3" placeholder="Internal notes about this member..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveEditMember()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPORT MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'export'">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div><h3>Export Members</h3><p>Select format and data scope</p></div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="export-options">
+        <div class="export-option" [class.selected]="exportFormat==='csv'" (click)="exportFormat='csv'">
+          <div class="export-option-icon">📊</div>
+          <div class="export-option-info">
+            <strong>CSV / Excel</strong>
+            <span>Spreadsheet format</span>
+          </div>
+        </div>
+        <div class="export-option" [class.selected]="exportFormat==='pdf'" (click)="exportFormat='pdf'">
+          <div class="export-option-icon">📄</div>
+          <div class="export-option-info">
+            <strong>PDF Report</strong>
+            <span>Printable document</span>
+          </div>
+        </div>
+        <div class="export-option" [class.selected]="exportFormat==='json'" (click)="exportFormat='json'">
+          <div class="export-option-icon">🔗</div>
+          <div class="export-option-info">
+            <strong>JSON</strong>
+            <span>API / developer format</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:1.25rem">
+        <label class="form-label">Data Scope</label>
+        <select class="form-input">
+          <option>All Members (2,847)</option>
+          <option>Filtered View ({{ filteredMembers.length }})</option>
+          <option>Active Only</option>
+          <option>Pending Only</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Columns to Include</label>
+        <div class="checkbox-group">
+          <label class="check-item"><input type="checkbox" checked> Member ID</label>
+          <label class="check-item"><input type="checkbox" checked> Full Name</label>
+          <label class="check-item"><input type="checkbox" checked> Contact</label>
+          <label class="check-item"><input type="checkbox" checked> Shares</label>
+          <label class="check-item"><input type="checkbox" checked> Status</label>
+          <label class="check-item"><input type="checkbox"> Branch</label>
+          <label class="check-item"><input type="checkbox"> Join Date</label>
+          <label class="check-item"><input type="checkbox"> Loans</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="doExport()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export {{ exportFormat.toUpperCase() }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BULK IMPORT MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'bulkImport'">
+  <div class="modal modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div><h3>Bulk Import Members</h3><p>Upload a CSV/Excel file to import multiple members</p></div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="import-template-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>Download the import template first</span>
+        <button class="btn btn-ghost btn-sm">Download Template</button>
+      </div>
+      <div class="dropzone" (dragover)="$event.preventDefault()" (drop)="onImportDrop($event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M5 20h14"/></svg>
+        <p>Drag &amp; drop your file here</p>
+        <span>or</span>
+        <label class="btn btn-outline">
+          Browse File
+          <input type="file" accept=".csv,.xlsx,.xls" style="display:none">
+        </label>
+        <small>Supports .CSV, .XLS, .XLSX — Max 10MB</small>
+      </div>
+      <div class="import-rules">
+        <h5>Import Rules:</h5>
+        <ul>
+          <li>First row must be column headers</li>
+          <li>Required fields: First Name, Last Name, National ID, Phone</li>
+          <li>Duplicate IDs will be skipped</li>
+          <li>Maximum 500 records per import</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="processBulkImport()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Process Import
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SEND MESSAGE MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'sendMessage'">
+  <div class="modal modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div><h3>Send Message</h3><p>Send SMS or notification to member</p></div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Channel</label>
+        <div class="radio-group">
+          <label class="radio-item" [class.selected]="messageChannel==='sms'" (click)="messageChannel='sms'">
+            <input type="radio" name="channel" value="sms" [(ngModel)]="messageChannel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            SMS
+          </label>
+          <label class="radio-item" [class.selected]="messageChannel==='email'" (click)="messageChannel='email'">
+            <input type="radio" name="channel" value="email" [(ngModel)]="messageChannel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+            Email
+          </label>
+          <label class="radio-item" [class.selected]="messageChannel==='push'" (click)="messageChannel='push'">
+            <input type="radio" name="channel" value="push" [(ngModel)]="messageChannel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            Push
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Template</label>
+        <select class="form-input" [(ngModel)]="messageTemplate" (change)="applyTemplate()">
+          <option value="">— Select template —</option>
+          <option value="welcome">Welcome Message</option>
+          <option value="reminder">Loan Repayment Reminder</option>
+          <option value="dividend">Dividend Notice</option>
+          <option value="custom">Custom Message</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject <span *ngIf="messageChannel==='email'" class="required">*</span></label>
+        <input type="text" class="form-input" [(ngModel)]="messageSubject" placeholder="Message subject">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message <span class="required">*</span></label>
+        <textarea class="form-input form-textarea" rows="5" [(ngModel)]="messageBody" placeholder="Type your message here..."></textarea>
+        <div class="char-count">{{ messageBody.length }}/160 characters</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Message
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATEMENT MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'statement'">
+  <div class="modal modal-md" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div><h3>Generate Statement</h3><p>Account statement for member</p></div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Statement Type</label>
+          <select class="form-input">
+            <option>Full Account Statement</option>
+            <option>Shares Statement</option>
+            <option>Loan Statement</option>
+            <option>Savings Statement</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Format</label>
+          <select class="form-input">
+            <option>PDF</option>
+            <option>Excel</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">From Date</label>
+          <input type="date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">To Date</label>
+          <input type="date" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="check-item">
+          <input type="checkbox" checked>
+          Include watermark / official letterhead
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="check-item">
+          <input type="checkbox">
+          Send to member's email
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="generateStatement()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Generate Statement
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOAN HISTORY MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'loanHistory'">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div><h3>Loan History</h3><p>All loan records for this member</p></div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body modal-scrollable">
+      <div class="loans-summary-row" style="margin-bottom:1.5rem">
+        <div class="loan-sum-card"><span>Total Loans</span><strong>4</strong></div>
+        <div class="loan-sum-card"><span>Total Borrowed</span><strong>KES 320,000</strong></div>
+        <div class="loan-sum-card"><span>Outstanding</span><strong>KES 120,000</strong></div>
+        <div class="loan-sum-card"><span>Repaid</span><strong>KES 200,000</strong></div>
+      </div>
+      <table class="detail-table">
+        <thead><tr><th>Loan ID</th><th>Type</th><th>Amount</th><th>Issued</th><th>Balance</th><th>Due</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>LN-2024-0891</td><td>Normal</td><td>KES 80,000</td><td>Jan 2024</td><td>KES 65,000</td><td>Dec 2025</td><td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td></tr>
+          <tr><td>LN-2024-1102</td><td>Emergency</td><td>KES 40,000</td><td>Mar 2024</td><td>KES 55,000</td><td>Jun 2025</td><td><span class="status-pill status-suspended"><span class="status-dot"></span>Overdue</span></td></tr>
+          <tr><td>LN-2023-0455</td><td>Business</td><td>KES 120,000</td><td>Jun 2023</td><td>KES 0</td><td>Dec 2023</td><td><span class="status-pill status-dormant"><span class="status-dot"></span>Cleared</span></td></tr>
+          <tr><td>LN-2022-0188</td><td>Normal</td><td>KES 80,000</td><td>Jan 2022</td><td>KES 0</td><td>Dec 2022</td><td><span class="status-pill status-dormant"><span class="status-dot"></span>Cleared</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+      <button class="btn btn-primary" (click)="closeModal()">Apply New Loan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DELETE CONFIRM MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'deleteConfirm'">
+  <div class="modal modal-sm modal-danger" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-icon modal-icon--red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </div>
+        <div><h3>Confirm Deletion</h3><p>This action cannot be undone</p></div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="danger-warn-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <p>You are about to permanently delete <strong>{{ memberToDelete?.name }}</strong>. All their data including shares, loans, and savings records will be removed.</p>
+      </div>
+      <div class="form-group" style="margin-top:1rem">
+        <label class="form-label">Type <strong>DELETE</strong> to confirm</label>
+        <input type="text" class="form-input" [(ngModel)]="deleteConfirmText" placeholder="Type DELETE">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-danger" [disabled]="deleteConfirmText !== 'DELETE'" (click)="deleteMember()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        Delete Member
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PENDING MEMBER DETAIL MODAL ===== -->
+<div class="modal-wrap" [class.modal-open]="activeModal === 'pendingDetail'">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()" *ngIf="pendingDetail">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-member-avatar" [style.background]="pendingDetail.avatarColor">{{ pendingDetail.initials }}</div>
+        <div>
+          <h3>{{ pendingDetail.name }}</h3>
+          <p>Registration Review · Applied {{ pendingDetail.appliedDate }}</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body modal-scrollable">
+      <div class="pending-review-grid">
+        <div class="detail-section">
+          <h4 class="detail-section-title">Applicant Details</h4>
+          <div class="detail-fields">
+            <div class="detail-field"><span class="detail-field-label">National ID</span><span class="detail-field-val">{{ pendingDetail.nationalId }}</span></div>
+            <div class="detail-field"><span class="detail-field-label">Phone</span><span class="detail-field-val">+254 712 345 678</span></div>
+            <div class="detail-field"><span class="detail-field-label">Occupation</span><span class="detail-field-val">Teacher</span></div>
+            <div class="detail-field"><span class="detail-field-label">Initial Shares</span><span class="detail-field-val">10 shares (KES 2,000)</span></div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4 class="detail-section-title">Document Verification</h4>
+          <div class="doc-check-list">
+            <div class="doc-check-item" [class.ok]="pendingDetail.docsComplete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              National ID Copy
+            </div>
+            <div class="doc-check-item" [class.ok]="pendingDetail.docsComplete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Passport Photo
+            </div>
+            <div class="doc-check-item" [class.missing]="!pendingDetail.docsComplete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              KRA PIN Certificate
+            </div>
+            <div class="doc-check-item" [class.ok]="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Proof of Residence
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Review Notes</label>
+        <textarea class="form-input form-textarea" rows="3" placeholder="Add review notes or rejection reason..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-danger" (click)="rejectItem(pendingDetail!)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Reject
+      </button>
+      <button class="btn btn-success" (click)="approveItem(pendingDetail!)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve Member
+      </button>
+    </div>
+  </div>
+</div>
