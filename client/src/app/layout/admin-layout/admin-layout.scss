@@ -60,7 +60,7 @@ app-admin-sidebar {
 
 .admin-page-body {
   flex: 1;
-  padding: 1.5rem;
+  padding: 0.5rem;
   overflow-x: hidden;
   background: linear-gradient(135deg, #f8fafb 0%, #e6faf4 100%);
   min-height: calc(100vh - 70px);
@@ -136,7 +136,7 @@ app-admin-sidebar {
 
 @media (min-width: 1400px) {
   .admin-page-body {
-    padding: 2rem;
+    padding: 0.02rem;
   }
 }
 

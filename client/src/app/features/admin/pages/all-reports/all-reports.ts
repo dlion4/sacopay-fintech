@@ -1,1304 +1,533 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
 
-/* ══════════════════════════════════════════════════════════════════════════
-  INTERFACES
-══════════════════════════════════════════════════════════════════════════ */
+// ═════════════════════════════════════════════════════════════════════════════
+//  INTERFACES
+// ═════════════════════════════════════════════════════════════════════════════
+export interface NavItem { section?: string; label?: string; icon?: string; badge?: number; active?: boolean; }
 
-interface ReportTemplate {
+export interface ReportItem {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  iconBg: string;
+  category: string;
+  tag?: string;
+}
+
+export interface ReportGroup {
   id: string;
   title: string;
-  description: string;
+  subtitle: string;
   icon: string;
-  iconColor: string;
+  iconBg: string;
+  color: string;
+  count: number;
+  reports: ReportItem[];
+}
+
+export interface GeneratedReport {
+  id: string;
+  name: string;
   category: string;
-  lastGenerated: string;
-  downloadCount: number;
-}
-
-interface FinancialReport {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  format: string;
-  frequency: string;
-}
-
-interface LoanReport {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  formats: string[];
-  lastGenerated: string;
-  selectedPeriod: string;
-}
-
-interface MemberReportCategory {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  reportCount: number;
-}
-
-interface RegulatoryReport {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  authority: string;
-  frequency: string;
-  dueDate: string;
-  lastSubmitted: string;
-  urgency: string;
-  urgencyClass: string;
-  isDuesSoon: boolean;
-}
-
-interface RecentReport {
-  id: string;
-  name: string;
-  icon: string;
-  iconColor: string;
-  category: string;
-  generatedBy: string;
-  generatedByInitials: string;
-  generatedAt: string;
-  format: string;
+  catColor: string;
+  format: 'PDF' | 'Excel' | 'CSV';
   size: string;
-  status: string;
-  statusLabel: string;
+  generated: string;
+  generatedBy: string;
+  period?: string;
 }
 
-interface CustomReportType {
-  value: string;
-  label: string;
-  icon: string;
-}
-
-interface DataSource {
-  value: string;
-  label: string;
-  description: string;
-  icon: string;
-  selected: boolean;
-}
-
-interface ReportField {
-  id: string;
-  label: string;
-  type: string;
-}
-
-interface SavedCustomReport {
+export interface ScheduledReport {
   id: string;
   name: string;
-  lastGenerated: string;
+  subtitle: string;
+  frequency: 'Daily' | 'Weekly' | 'Monthly' | 'Quarterly';
+  freqColor: string;
+  recipients: string;
+  nextRun: string;
   format: string;
 }
 
-interface ScheduledReport {
+export interface HistoryRecord {
   id: string;
   name: string;
-  description: string;
-  icon: string;
-  color: string;
-  frequency: string;
-  nextRun: string;
-  recipients: string;
-  active: boolean;
+  category: string;
+  catColor: string;
+  format: 'PDF' | 'Excel' | 'CSV';
+  size: string;
+  generatedOn: string;
+  generatedBy: string;
+  period: string;
+  status: 'Completed' | 'Processing' | 'Failed';
 }
 
-interface CustomReportConfig {
-  type: string;
-  dateFrom: string;
-  dateTo: string;
-  memberCategory: string;
-  transactionType: string;
-  amountMin: number | null;
-  amountMax: number | null;
-  name: string;
-  formatPDF: boolean;
-  formatExcel: boolean;
-  formatCSV: boolean;
-  groupBy: string;
-  sortBy: string;
-}
+export interface CustomReportField { key: string; label: string; selected: boolean; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-  COMPONENT
-══════════════════════════════════════════════════════════════════════════ */
+export interface ReportPreviewRow { description: string; current: string; previous: string; variance: string; pct: string; positive: boolean; }
 
+// ═════════════════════════════════════════════════════════════════════════════
+//  COMPONENT
+// ═════════════════════════════════════════════════════════════════════════════
 @Component({
-  selector: 'app-reports',
+  selector: 'app-all-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './all-reports.html',
-  styleUrl: './all-reports.scss'
+  styleUrls: ['./all-reports.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReportsComponent implements OnInit, OnDestroy {
+export class ReportsComponent {
 
-  /* ──────────────────────────────────────────────────────────────────────
-    STATE MANAGEMENT
-  ────────────────────────────────────────────────────────────────────── */
+  // ────────── SIDEBAR NAV ──────────
+  readonly navItems: NavItem[] = [
+    { section: 'MAIN MENU' },
+    { label: 'Dashboard', icon: '⊞' },
+    { label: 'Analytics', icon: '↗' },
+    { section: 'MEMBERS & KYC' },
+    { label: 'Members', icon: '👥' },
+    { label: 'KYC Verification', icon: '⊙' },
+    { section: 'FINANCIAL OPERATIONS' },
+    { label: 'Transactions', icon: '⇄' },
+    { label: 'Loan Disbursements', icon: '⊕' },
+    { label: 'Loan Repayments', icon: '↺' },
+    { label: 'Savings', icon: '⊓' },
+    { label: 'SACCOPay Wallet', icon: '◈' },
+    { section: 'REPORTS & COMPLIANCE' },
+    { label: 'Reports Center', icon: '📊', active: true },
+    { label: 'Compliance & Regulatory', icon: '◉' },
+    { label: 'Audit Trail', icon: '⌖' },
+    { section: 'SETTINGS' },
+    { label: 'Settings', icon: '⚙' },
+  ];
 
-  // Quick Stats
-  totalReportsGenerated = 156;
-  scheduledReportsCount = 12;
-  totalDownloads = 847;
-  storageUsed = '2.4 GB';
-  storageTotal = '10 GB';
+  // ────────── REPORT GROUPS ──────────
+  readonly REPORT_GROUPS: ReportGroup[] = [
+    {
+      id: 'financial',
+      title: 'Financial Reports',
+      subtitle: 'Income, expenses, balance sheets',
+      icon: '💹',
+      iconBg: '#e6faf4',
+      color: '#00d084',
+      count: 5,
+      reports: [
+        { id: 'fin-summary', name: 'Financial Summary', description: 'P&L, revenue, expenses overview', icon: '📈', iconBg: '#e6faf4', category: 'Financial' },
+        { id: 'balance-sheet', name: 'Balance Sheet', description: 'Assets, liabilities, equity', icon: '⚖', iconBg: '#e3f2fd', category: 'Financial' },
+        { id: 'income-statement', name: 'Income Statement', description: 'Revenue & expenditure analysis', icon: '💰', iconBg: '#e8f5e9', category: 'Financial' },
+        { id: 'cashflow', name: 'Cash Flow Statement', description: 'Inflows & outflows analysis', icon: '🔄', iconBg: '#fff3e0', category: 'Financial' },
+        { id: 'trial-balance', name: 'Trial Balance', description: 'All ledger account balances', icon: '📋', iconBg: '#f3e5f5', category: 'Financial' },
+      ],
+    },
+    {
+      id: 'loan',
+      title: 'Loan Reports',
+      subtitle: 'Portfolio, disbursements, aging',
+      icon: '🏦',
+      iconBg: '#e3f2fd',
+      color: '#2196f3',
+      count: 6,
+      reports: [
+        { id: 'loan-portfolio', name: 'Loan Portfolio Summary', description: 'Active loans, amounts, PAR analysis', icon: '📊', iconBg: '#e3f2fd', category: 'Loan' },
+        { id: 'disbursement', name: 'Disbursement Report', description: 'All loans disbursed by period', icon: '💸', iconBg: '#e8f5e9', category: 'Loan' },
+        { id: 'loan-aging', name: 'Loan Aging Report', description: 'Overdue analysis by aging bucket', icon: '⏰', iconBg: '#fff8e1', category: 'Loan' },
+        { id: 'collection', name: 'Collection & Repayment', description: 'Repayments received, efficiency', icon: '✅', iconBg: '#e6faf4', category: 'Loan' },
+        { id: 'interest-income', name: 'Interest Income Report', description: 'Interest earned & projected', icon: '📈', iconBg: '#f3e5f5', category: 'Loan' },
+        { id: 'writeoff', name: 'Write-Off & Provisions', description: 'Written off loans & provisioning', icon: '🔴', iconBg: '#ffebee', category: 'Loan' },
+      ],
+    },
+    {
+      id: 'savings',
+      title: 'Savings Reports',
+      subtitle: 'Deposits, withdrawals, interest',
+      icon: '💎',
+      iconBg: '#e8f5e9',
+      color: '#4caf50',
+      count: 5,
+      reports: [
+        { id: 'savings-portfolio', name: 'Savings Portfolio', description: 'All savings by type & balance', icon: '💰', iconBg: '#e8f5e9', category: 'Savings' },
+        { id: 'deposit-report', name: 'Deposit Report', description: 'All deposits by period & channel', icon: '⬇', iconBg: '#e3f2fd', category: 'Savings' },
+        { id: 'withdrawal-report', name: 'Withdrawal Report', description: 'All withdrawals by period', icon: '⬆', iconBg: '#fff3e0', category: 'Savings' },
+        { id: 'share-capital', name: 'Share Capital Register', description: 'All shareholders & holdings', icon: '🏛', iconBg: '#f3e5f5', category: 'Savings' },
+        { id: 'interest-dividends', name: 'Interest & Dividends', description: 'Interest accrued & dividends paid', icon: '✨', iconBg: '#e6faf4', category: 'Savings' },
+      ],
+    },
+    {
+      id: 'member',
+      title: 'Member Reports',
+      subtitle: 'Membership, KYC, activity',
+      icon: '👥',
+      iconBg: '#fff3e0',
+      color: '#ff9800',
+      count: 4,
+      reports: [
+        { id: 'member-register', name: 'Member Register', description: 'Complete member list with details', icon: '📋', iconBg: '#fff3e0', category: 'Member' },
+        { id: 'kyc-status', name: 'KYC Status Report', description: 'Verification status of all members', icon: '🔐', iconBg: '#e6faf4', category: 'Member' },
+        { id: 'member-statement', name: 'Individual Member Statement', description: 'Full financial statement per member', icon: '📄', iconBg: '#e3f2fd', category: 'Member' },
+        { id: 'membership-growth', name: 'Membership Growth', description: 'New, exited, active members trend', icon: '📈', iconBg: '#e8f5e9', category: 'Member' },
+      ],
+    },
+    {
+      id: 'compliance',
+      title: 'Compliance & Regulatory',
+      subtitle: 'SASRA, CBK, tax reports',
+      icon: '📋',
+      iconBg: '#e3f2fd',
+      color: '#2196f3',
+      count: 3,
+      reports: [
+        { id: 'sasra-quarterly', name: 'SASRA Quarterly Return', description: 'Regulatory compliance report', icon: '🏛', iconBg: '#e3f2fd', category: 'Compliance' },
+        { id: 'tax-withholding', name: 'Tax & Withholding Report', description: 'Withholding tax on interest/dividends', icon: '📊', iconBg: '#fff3e0', category: 'Compliance' },
+        { id: 'aml-ctf', name: 'AML / CTF Suspicious Activity', description: 'Anti-money laundering flag report', icon: '🛡', iconBg: '#ffebee', category: 'Compliance' },
+      ],
+    },
+    {
+      id: 'operational',
+      title: 'Operational Reports',
+      subtitle: 'Transactions, audit, system',
+      icon: '⚙',
+      iconBg: '#f3e5f5',
+      color: '#9c27b0',
+      count: 2,
+      reports: [
+        { id: 'transaction-report', name: 'Transaction Report', description: 'All transactions by type & channel', icon: '⇄', iconBg: '#f3e5f5', category: 'Operational' },
+        { id: 'audit-trail', name: 'Audit Trail', description: 'Admin actions & system log', icon: '⌖', iconBg: '#e6faf4', category: 'Operational' },
+      ],
+    },
+  ];
 
-  // Tab State
-  activeReportTab: 'all' | 'financial' | 'loans' | 'members' | 'regulatory' | 'custom' = 'all';
+  // ────────── GENERATED REPORTS ──────────
+  readonly GENERATED_REPORTS: GeneratedReport[] = [
+    { id: 'g1', name: 'Financial Summary — December 2024', category: 'Financial', catColor: '#00d084', format: 'PDF', size: '1.2 MB', generated: 'Today, 2:30 PM', generatedBy: 'James Kariuki', period: 'December 2024' },
+    { id: 'g2', name: 'Loan Portfolio Summary — Q4 2024', category: 'Loan', catColor: '#2196f3', format: 'Excel', size: '845 KB', generated: 'Today, 8:00 AM', generatedBy: 'Auto-generated (Quarterly)', period: 'Q4 2024' },
+    { id: 'g3', name: 'Member Register — Full Export', category: 'Member', catColor: '#ff9800', format: 'CSV', size: '2.1 MB', generated: 'Yesterday', generatedBy: 'James Kariuki', period: 'Current' },
+    { id: 'g4', name: 'Loan Aging Report — December 2024', category: 'Loan', catColor: '#2196f3', format: 'PDF', size: '680 KB', generated: 'Dec 16', generatedBy: 'James Kariuki', period: 'December 2024' },
+    { id: 'g5', name: 'SASRA Quarterly Return — Q3 2024', category: 'Compliance', catColor: '#f44336', format: 'PDF', size: '1.5 MB', generated: 'Dec 14', generatedBy: 'James Kariuki', period: 'Q3 2024' },
+    { id: 'g6', name: 'Daily Transactions — Dec 17', category: 'Operational', catColor: '#9c27b0', format: 'PDF', size: '420 KB', generated: 'Dec 17, 6:00 AM', generatedBy: 'Auto-generated (Daily)', period: 'Dec 17' },
+    { id: 'g7', name: 'Balance Sheet — November 2024', category: 'Financial', catColor: '#00d084', format: 'PDF', size: '890 KB', generated: 'Dec 1', generatedBy: 'James Kariuki', period: 'November 2024' },
+    { id: 'g8', name: 'KYC Status Report', category: 'Member', catColor: '#ff9800', format: 'Excel', size: '1.8 MB', generated: 'Dec 10', generatedBy: 'Grace Njeri', period: 'Current' },
+  ];
 
-  // Search & Filter State
-  searchQuery = '';
-  filterCategory = 'all';
-  filterPeriod = 'all';
+  // ────────── SCHEDULED REPORTS ──────────
+  readonly SCHEDULED_REPORTS: ScheduledReport[] = [
+    { id: 's1', name: 'Daily Transaction Report', subtitle: 'Every day at 6:00 AM — admin@rongosacco.co.ke', frequency: 'Daily', freqColor: '#00d084', recipients: 'admin@rongosacco.co.ke', nextRun: 'Dec 19, 6:00 AM', format: 'PDF' },
+    { id: 's2', name: 'Weekly Loan Collection', subtitle: 'Every Monday 8:00 AM — credit@rongosacco.co.ke', frequency: 'Weekly', freqColor: '#2196f3', recipients: 'credit@rongosacco.co.ke', nextRun: 'Dec 23, 8:00 AM', format: 'Excel' },
+    { id: 's3', name: 'Monthly Financial Summary', subtitle: '1st of each month — board@rongosacco.co.ke', frequency: 'Monthly', freqColor: '#9c27b0', recipients: 'board@rongosacco.co.ke', nextRun: 'Jan 1, 7:00 AM', format: 'PDF' },
+    { id: 's4', name: 'SASRA Quarterly Return', subtitle: 'Every quarter-end — compliance@rongosacco.co.ke', frequency: 'Quarterly', freqColor: '#ff9800', recipients: 'compliance@rongosacco.co.ke', nextRun: 'Mar 31, 9:00 AM', format: 'PDF' },
+  ];
 
-  // Modal States
-  showGenerateReportModal = false;
-  showScheduledReportsModal = false;
+  // ────────── HISTORY (all reports ever generated) ──────────
+  readonly HISTORY_RECORDS: HistoryRecord[] = [
+    { id: 'h1', name: 'Financial Summary — December 2024', category: 'Financial', catColor: '#00d084', format: 'PDF', size: '1.2 MB', generatedOn: 'Dec 18, 2024 · 2:30 PM', generatedBy: 'James Kariuki', period: 'December 2024', status: 'Completed' },
+    { id: 'h2', name: 'Loan Portfolio Summary — Q4 2024', category: 'Loan', catColor: '#2196f3', format: 'Excel', size: '845 KB', generatedOn: 'Dec 18, 2024 · 8:00 AM', generatedBy: 'Auto-generated', period: 'Q4 2024', status: 'Completed' },
+    { id: 'h3', name: 'Member Register — Full Export', category: 'Member', catColor: '#ff9800', format: 'CSV', size: '2.1 MB', generatedOn: 'Dec 17, 2024 · 3:45 PM', generatedBy: 'James Kariuki', period: 'Current', status: 'Completed' },
+    { id: 'h4', name: 'Loan Aging Report — December 2024', category: 'Loan', catColor: '#2196f3', format: 'PDF', size: '680 KB', generatedOn: 'Dec 16, 2024 · 11:00 AM', generatedBy: 'James Kariuki', period: 'December 2024', status: 'Completed' },
+    { id: 'h5', name: 'SASRA Quarterly Return — Q3 2024', category: 'Compliance', catColor: '#f44336', format: 'PDF', size: '1.5 MB', generatedOn: 'Dec 14, 2024 · 9:30 AM', generatedBy: 'James Kariuki', period: 'Q3 2024', status: 'Completed' },
+    { id: 'h6', name: 'Daily Transactions — Dec 17', category: 'Operational', catColor: '#9c27b0', format: 'PDF', size: '420 KB', generatedOn: 'Dec 17, 2024 · 6:00 AM', generatedBy: 'Auto-generated', period: 'Dec 17', status: 'Completed' },
+    { id: 'h7', name: 'Balance Sheet — November 2024', category: 'Financial', catColor: '#00d084', format: 'PDF', size: '890 KB', generatedOn: 'Dec 1, 2024 · 10:00 AM', generatedBy: 'James Kariuki', period: 'November 2024', status: 'Completed' },
+    { id: 'h8', name: 'KYC Status Report', category: 'Member', catColor: '#ff9800', format: 'Excel', size: '1.8 MB', generatedOn: 'Dec 10, 2024 · 2:15 PM', generatedBy: 'Grace Njeri', period: 'Current', status: 'Completed' },
+    { id: 'h9', name: 'Cash Flow Statement — Q3 2024', category: 'Financial', catColor: '#00d084', format: 'PDF', size: '1.1 MB', generatedOn: 'Nov 30, 2024 · 4:00 PM', generatedBy: 'James Kariuki', period: 'Q3 2024', status: 'Completed' },
+    { id: 'h10', name: 'AML/CTF Suspicious Activity — Nov 2024', category: 'Compliance', catColor: '#f44336', format: 'PDF', size: '560 KB', generatedOn: 'Nov 28, 2024 · 9:00 AM', generatedBy: 'Compliance System', period: 'November 2024', status: 'Completed' },
+    { id: 'h11', name: 'Interest & Dividends — FY 2024', category: 'Savings', catColor: '#4caf50', format: 'PDF', size: '940 KB', generatedOn: 'Nov 25, 2024 · 11:30 AM', generatedBy: 'James Kariuki', period: 'FY 2024', status: 'Completed' },
+    { id: 'h12', name: 'Trial Balance — October 2024', category: 'Financial', catColor: '#00d084', format: 'Excel', size: '720 KB', generatedOn: 'Nov 2, 2024 · 8:45 AM', generatedBy: 'Auto-generated', period: 'October 2024', status: 'Completed' },
+  ];
 
-  // Generate Report Modal State
-  selectedReportTemplate = '';
-  reportPeriod = 'month';
-  customReportDateFrom = '';
-  customReportDateTo = '';
-  outputFormatPDF = true;
-  outputFormatExcel = false;
-  outputFormatCSV = false;
-  emailReportAfterGeneration = false;
-  reportEmailAddress = '';
+  // ────────── CUSTOM REPORT BUILDER ──────────
+  readonly DATA_SOURCES = ['Financial Data', 'Loan Data', 'Member Data', 'Savings Data', 'Compliance Data', 'Operational Data'];
+  readonly PERIODS = ['This Month', 'Last Month', 'This Quarter', 'Last Quarter', 'This Year', 'Last Year', 'Custom Range'];
+  readonly GROUP_BY_OPTIONS = ['None', 'Branch', 'Product', 'Status', 'Month', 'Quarter', 'Member Category'];
+  readonly SORT_BY_OPTIONS = ['Member Name (A-Z)', 'Member Name (Z-A)', 'Balance (High-Low)', 'Balance (Low-High)', 'Date (Newest)', 'Date (Oldest)'];
+  readonly FORMATS = ['PDF', 'Excel', 'CSV'];
+  readonly FILTER_OPTIONS = ['All Members', 'Active Members', 'Loan Defaulters', 'New Members (30 days)', 'Expiring KYC', 'Diaspora Members'];
+  readonly FREQUENCIES = ['Daily', 'Weekly', 'Monthly', 'Quarterly'];
+  readonly SCHEDULE_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '5:00 PM'];
+  readonly EMAIL_RECIPIENTS_LIST = ['admin@rongosacco.co.ke', 'board@rongosacco.co.ke', 'credit@rongosacco.co.ke', 'compliance@rongosacco.co.ke', 'finance@rongosacco.co.ke'];
 
-  // Custom Report Builder State
-  customReportConfig: CustomReportConfig = {
-    type: '',
-    dateFrom: '',
-    dateTo: '',
-    memberCategory: 'all',
-    transactionType: 'all',
-    amountMin: null,
-    amountMax: null,
+  readonly CUSTOM_FIELDS: CustomReportField[] = [
+    { key: 'memberName', label: 'Member Name', selected: true },
+    { key: 'memberId', label: 'Member ID', selected: true },
+    { key: 'savingsBalance', label: 'Savings Balance', selected: true },
+    { key: 'loanBalance', label: 'Loan Balance', selected: true },
+    { key: 'shareCapital', label: 'Share Capital', selected: true },
+    { key: 'kycStatus', label: 'KYC Status', selected: true },
+    { key: 'phoneNumber', label: 'Phone Number', selected: false },
+    { key: 'joinDate', label: 'Join Date', selected: false },
+    { key: 'lastActivity', label: 'Last Activity', selected: false },
+    { key: 'loanStatus', label: 'Loan Status', selected: false },
+    { key: 'branch', label: 'Branch', selected: false },
+    { key: 'guarantors', label: 'Guarantors', selected: false },
+  ];
+
+  readonly PREVIEW_ROWS: ReportPreviewRow[] = [
+    { description: 'Total Income', current: 'KES 4,280,000', previous: 'KES 3,950,000', variance: '+330,000', pct: '+8.4%', positive: true },
+    { description: 'Interest on Loans', current: 'KES 3,120,000', previous: 'KES 2,890,000', variance: '+230,000', pct: '+8.0%', positive: true },
+    { description: 'Fees & Charges', current: 'KES 480,000', previous: 'KES 440,000', variance: '+40,000', pct: '+9.1%', positive: true },
+    { description: 'Total Expenses', current: 'KES 2,150,000', previous: 'KES 2,080,000', variance: '+70,000', pct: '+3.4%', positive: false },
+    { description: 'Net Surplus', current: 'KES 2,130,000', previous: 'KES 1,870,000', variance: '+260,000', pct: '+13.9%', positive: true },
+  ];
+
+  // ────────── MODAL STATE SIGNALS ──────────
+  showScheduledModal   = signal(false);
+  showHistoryModal     = signal(false);
+  showCustomBuilder    = signal(false);
+  showNewSchedule      = signal(false);
+  showEditSchedule     = signal<ScheduledReport | null>(null);
+  showDeleteSchedule   = signal<ScheduledReport | null>(null);
+  showGenerateReport   = signal<ReportItem | null>(null);
+  showReportPreview    = signal<ReportItem | null>(null);
+  showGeneratedDetail  = signal<GeneratedReport | null>(null);
+  showHistoryDetail    = signal<HistoryRecord | null>(null);
+  showEmailReport      = signal<GeneratedReport | null>(null);
+  showDeleteReport     = signal<GeneratedReport | null>(null);
+  showGroupDetail      = signal<ReportGroup | null>(null);
+  showViewAllGenerated = signal(false);
+  showEmailSchedule    = signal<ScheduledReport | null>(null);
+  showPauseSchedule    = signal<ScheduledReport | null>(null);
+
+  // Report generation options
+  reportOptions = signal({
+    period: 'This Month (December 2024)',
+    format: 'PDF Report',
+    includeHeader: true,
+    includeComparison: true,
+    includeCharts: false,
+    includeSignatures: false,
+  });
+
+  // Custom report builder state
+  customReport = signal({
     name: '',
-    formatPDF: true,
-    formatExcel: false,
-    formatCSV: false,
-    groupBy: '',
-    sortBy: 'date_desc'
-  };
-
-  // Period Options
-  periodOptions = [
-    'Today',
-    'This Week',
-    'This Month',
-    'Last Month',
-    'This Quarter',
-    'Last Quarter',
-    'This Year',
-    'Custom'
-  ];
-
-  // Toast State
-  toastVisible = false;
-  toastMessage = '';
-  toastType: 'success' | 'info' | 'warning' | 'danger' = 'success';
-  toastTimer: any;
-
-  /* ──────────────────────────────────────────────────────────────────────
-    REPORT TEMPLATES DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  reportTemplates: ReportTemplate[] = [
-    {
-      id: 'rt-001',
-      title: 'Balance Sheet',
-      description: 'Complete statement of financial position with assets, liabilities, and equity breakdown.',
-      icon: 'bi-file-earmark-spreadsheet',
-      iconColor: 'linear-gradient(135deg, #28a745, #20c997)',
-      category: 'financial',
-      lastGenerated: '2 hours ago',
-      downloadCount: 124
-    },
-    {
-      id: 'rt-002',
-      title: 'Income Statement',
-      description: 'Comprehensive income and expenditure report with detailed revenue and cost analysis.',
-      icon: 'bi-file-earmark-bar-graph',
-      iconColor: 'linear-gradient(135deg, #007bff, #0056b3)',
-      category: 'financial',
-      lastGenerated: '1 day ago',
-      downloadCount: 98
-    },
-    {
-      id: 'rt-003',
-      title: 'Loan Portfolio Report',
-      description: 'Detailed breakdown of all active loans by type, status, and performance metrics.',
-      icon: 'bi-wallet2',
-      iconColor: 'linear-gradient(135deg, #ffc107, #fd7e14)',
-      category: 'loans',
-      lastGenerated: '4 hours ago',
-      downloadCount: 156
-    },
-    {
-      id: 'rt-004',
-      title: 'Member Statement',
-      description: 'Individual or bulk member account statements with full transaction history.',
-      icon: 'bi-person-badge',
-      iconColor: 'linear-gradient(135deg, #6610f2, #520dc2)',
-      category: 'members',
-      lastGenerated: '3 hours ago',
-      downloadCount: 342
-    },
-    {
-      id: 'rt-005',
-      title: 'Cash Flow Statement',
-      description: 'Cash inflows and outflows with liquidity analysis and projections.',
-      icon: 'bi-cash-coin',
-      iconColor: 'linear-gradient(135deg, #17a2b8, #138496)',
-      category: 'financial',
-      lastGenerated: '1 day ago',
-      downloadCount: 67
-    },
-    {
-      id: 'rt-006',
-      title: 'Loan Aging Analysis',
-      description: 'Portfolio aging report showing overdue loans by bracket with PAR analysis.',
-      icon: 'bi-clock-history',
-      iconColor: 'linear-gradient(135deg, #dc3545, #c82333)',
-      category: 'loans',
-      lastGenerated: '6 hours ago',
-      downloadCount: 89
-    },
-    {
-      id: 'rt-007',
-      title: 'SASRA Returns',
-      description: 'Regulatory returns for SASRA compliance including all required data filings.',
-      icon: 'bi-shield-check',
-      iconColor: 'linear-gradient(135deg, #28a745, #155724)',
-      category: 'regulatory',
-      lastGenerated: '7 days ago',
-      downloadCount: 24
-    },
-    {
-      id: 'rt-008',
-      title: 'Membership Register',
-      description: 'Complete member directory with demographics, shares, and activity status.',
-      icon: 'bi-people',
-      iconColor: 'linear-gradient(135deg, #007bff, #6610f2)',
-      category: 'members',
-      lastGenerated: '2 days ago',
-      downloadCount: 56
-    },
-    {
-      id: 'rt-009',
-      title: 'Disbursement Report',
-      description: 'All loan disbursements with approval details and channel breakdown.',
-      icon: 'bi-cash-stack',
-      iconColor: 'linear-gradient(135deg, #fd7e14, #e83e8c)',
-      category: 'loans',
-      lastGenerated: '1 hour ago',
-      downloadCount: 112
-    },
-    {
-      id: 'rt-010',
-      title: 'Trial Balance',
-      description: 'Chart of accounts trial balance with debit and credit totals.',
-      icon: 'bi-calculator',
-      iconColor: 'linear-gradient(135deg, #495057, #212529)',
-      category: 'financial',
-      lastGenerated: '5 hours ago',
-      downloadCount: 45
-    },
-    {
-      id: 'rt-011',
-      title: 'KRA Tax Returns',
-      description: 'Kenya Revenue Authority tax filing with withholding tax and VAT computations.',
-      icon: 'bi-building',
-      iconColor: 'linear-gradient(135deg, #dc3545, #6f0000)',
-      category: 'regulatory',
-      lastGenerated: '15 days ago',
-      downloadCount: 18
-    },
-    {
-      id: 'rt-012',
-      title: 'Contribution Summary',
-      description: 'Member savings contributions analysis with trends and projections.',
-      icon: 'bi-piggy-bank',
-      iconColor: 'linear-gradient(135deg, #20c997, #17a2b8)',
-      category: 'members',
-      lastGenerated: '1 day ago',
-      downloadCount: 78
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    FINANCIAL REPORTS DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  financialReports: FinancialReport[] = [
-    {
-      id: 'fr-001',
-      name: 'Balance Sheet',
-      description: 'Statement of financial position',
-      icon: 'bi-file-earmark-spreadsheet',
-      color: 'linear-gradient(135deg, #28a745, #20c997)',
-      format: 'PDF / Excel',
-      frequency: 'Monthly'
-    },
-    {
-      id: 'fr-002',
-      name: 'Income & Expenditure',
-      description: 'Revenue and cost analysis',
-      icon: 'bi-file-earmark-bar-graph',
-      color: 'linear-gradient(135deg, #007bff, #0056b3)',
-      format: 'PDF / Excel',
-      frequency: 'Monthly'
-    },
-    {
-      id: 'fr-003',
-      name: 'Cash Flow Statement',
-      description: 'Cash inflows and outflows',
-      icon: 'bi-cash-coin',
-      color: 'linear-gradient(135deg, #17a2b8, #138496)',
-      format: 'PDF',
-      frequency: 'Monthly'
-    },
-    {
-      id: 'fr-004',
-      name: 'Trial Balance',
-      description: 'Chart of accounts summary',
-      icon: 'bi-calculator',
-      color: 'linear-gradient(135deg, #6610f2, #520dc2)',
-      format: 'Excel / CSV',
-      frequency: 'Monthly'
-    },
-    {
-      id: 'fr-005',
-      name: 'General Ledger',
-      description: 'Detailed journal entries',
-      icon: 'bi-journal-text',
-      color: 'linear-gradient(135deg, #ffc107, #fd7e14)',
-      format: 'Excel',
-      frequency: 'On Demand'
-    },
-    {
-      id: 'fr-006',
-      name: 'Budget vs Actuals',
-      description: 'Budget variance analysis',
-      icon: 'bi-bar-chart-line',
-      color: 'linear-gradient(135deg, #e83e8c, #c2185b)',
-      format: 'PDF / Excel',
-      frequency: 'Quarterly'
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    LOAN REPORTS DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  loanReports: LoanReport[] = [
-    {
-      id: 'lr-001',
-      name: 'Portfolio Summary',
-      description: 'Overview of active loan portfolio with key metrics',
-      icon: 'bi-wallet2',
-      color: '#007bff',
-      formats: ['PDF', 'Excel'],
-      lastGenerated: 'Today, 10:30 AM',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-002',
-      name: 'Disbursement Report',
-      description: 'All loan disbursements with approval history',
-      icon: 'bi-cash-stack',
-      color: '#28a745',
-      formats: ['PDF', 'Excel', 'CSV'],
-      lastGenerated: 'Today, 8:15 AM',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-003',
-      name: 'Repayment Schedule',
-      description: 'Expected vs actual repayment tracking',
-      icon: 'bi-calendar-check',
-      color: '#17a2b8',
-      formats: ['PDF', 'Excel'],
-      lastGenerated: 'Yesterday',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-004',
-      name: 'Arrears Report',
-      description: 'All overdue loans with aging analysis',
-      icon: 'bi-exclamation-triangle',
-      color: '#dc3545',
-      formats: ['PDF', 'Excel'],
-      lastGenerated: 'Today, 9:00 AM',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-005',
-      name: 'Aging Analysis',
-      description: 'Portfolio at risk breakdown by age bracket',
-      icon: 'bi-clock-history',
-      color: '#ffc107',
-      formats: ['PDF', 'Excel'],
-      lastGenerated: 'Today, 7:30 AM',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-006',
-      name: 'Guarantor Report',
-      description: 'Guarantor exposure and liability analysis',
-      icon: 'bi-people',
-      color: '#6610f2',
-      formats: ['PDF', 'Excel'],
-      lastGenerated: '2 days ago',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-007',
-      name: 'Interest Income Report',
-      description: 'Interest earned on loan portfolio',
-      icon: 'bi-percent',
-      color: '#fd7e14',
-      formats: ['PDF', 'Excel', 'CSV'],
-      lastGenerated: 'Yesterday',
-      selectedPeriod: 'This Month'
-    },
-    {
-      id: 'lr-008',
-      name: 'Write-Off Report',
-      description: 'Loans written off or provisioned',
-      icon: 'bi-x-circle',
-      color: '#e83e8c',
-      formats: ['PDF'],
-      lastGenerated: 'Last week',
-      selectedPeriod: 'This Quarter'
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    MEMBER REPORT CATEGORIES DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  memberReportCategories: MemberReportCategory[] = [
-    {
-      id: 'mc-001',
-      name: 'Registration & KYC',
-      description: 'Member registration, KYC compliance, and documentation',
-      icon: 'bi-person-vcard',
-      color: 'linear-gradient(135deg, #007bff, #0056b3)',
-      reportCount: 6
-    },
-    {
-      id: 'mc-002',
-      name: 'Savings & Deposits',
-      description: 'Individual and aggregate savings, contributions, and deposits',
-      icon: 'bi-piggy-bank',
-      color: 'linear-gradient(135deg, #28a745, #20c997)',
-      reportCount: 8
-    },
-    {
-      id: 'mc-003',
-      name: 'Shares & Equity',
-      description: 'Share capital, dividends, and member equity positions',
-      icon: 'bi-graph-up-arrow',
-      color: 'linear-gradient(135deg, #ffc107, #fd7e14)',
-      reportCount: 4
-    },
-    {
-      id: 'mc-004',
-      name: 'Demographics & Analytics',
-      description: 'Member demographics, age, gender, and geographic analysis',
-      icon: 'bi-bar-chart',
-      color: 'linear-gradient(135deg, #6610f2, #520dc2)',
-      reportCount: 5
-    },
-    {
-      id: 'mc-005',
-      name: 'Activity & Engagement',
-      description: 'Transaction frequency, app usage, and engagement metrics',
-      icon: 'bi-activity',
-      color: 'linear-gradient(135deg, #17a2b8, #138496)',
-      reportCount: 4
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    REGULATORY REPORTS DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  regulatoryReports: RegulatoryReport[] = [
-    {
-      id: 'rr-001',
-      name: 'SASRA Monthly Returns',
-      description: 'Monthly regulatory returns including financial statements, loan portfolio quality, and liquidity ratios.',
-      icon: 'bi-shield-check',
-      color: 'linear-gradient(135deg, #28a745, #155724)',
-      authority: 'SASRA',
-      frequency: 'Monthly',
-      dueDate: 'Dec 15, 2024',
-      lastSubmitted: 'Nov 12, 2024',
-      urgency: 'Upcoming',
-      urgencyClass: 'badge-upcoming',
-      isDuesSoon: true
-    },
-    {
-      id: 'rr-002',
-      name: 'KRA Tax Returns',
-      description: 'Withholding tax on interest income, VAT returns, and annual income tax filing.',
-      icon: 'bi-building',
-      color: 'linear-gradient(135deg, #dc3545, #6f0000)',
-      authority: 'KRA',
-      frequency: 'Monthly / Annual',
-      dueDate: 'Dec 20, 2024',
-      lastSubmitted: 'Nov 18, 2024',
-      urgency: 'Normal',
-      urgencyClass: 'badge-normal',
-      isDuesSoon: false
-    },
-    {
-      id: 'rr-003',
-      name: 'AML/CFT Report',
-      description: 'Anti-money laundering compliance report including suspicious transaction reports (STRs).',
-      icon: 'bi-shield-exclamation',
-      color: 'linear-gradient(135deg, #ffc107, #fd7e14)',
-      authority: 'FRC',
-      frequency: 'Quarterly',
-      dueDate: 'Dec 31, 2024',
-      lastSubmitted: 'Sep 28, 2024',
-      urgency: 'Normal',
-      urgencyClass: 'badge-normal',
-      isDuesSoon: false
-    },
-    {
-      id: 'rr-004',
-      name: 'Annual Audited Accounts',
-      description: 'Audited financial statements including auditor\'s report and management letter.',
-      icon: 'bi-file-earmark-check',
-      color: 'linear-gradient(135deg, #007bff, #0056b3)',
-      authority: 'SASRA / Commissioner',
-      frequency: 'Annual',
-      dueDate: 'Mar 31, 2025',
-      lastSubmitted: 'Mar 25, 2024',
-      urgency: 'Normal',
-      urgencyClass: 'badge-normal',
-      isDuesSoon: false
-    },
-    {
-      id: 'rr-005',
-      name: 'Liquidity Report',
-      description: 'Liquidity ratio compliance report showing liquid assets vs short-term liabilities.',
-      icon: 'bi-droplet',
-      color: 'linear-gradient(135deg, #17a2b8, #138496)',
-      authority: 'SASRA',
-      frequency: 'Monthly',
-      dueDate: 'Dec 10, 2024',
-      lastSubmitted: 'Nov 8, 2024',
-      urgency: 'Urgent',
-      urgencyClass: 'badge-urgent',
-      isDuesSoon: true
-    },
-    {
-      id: 'rr-006',
-      name: 'Credit Reference Bureau',
-      description: 'CRB data submission for all active borrowers with repayment performance data.',
-      icon: 'bi-database-check',
-      color: 'linear-gradient(135deg, #6610f2, #520dc2)',
-      authority: 'CRB',
-      frequency: 'Monthly',
-      dueDate: 'Dec 5, 2024',
-      lastSubmitted: 'Nov 3, 2024',
-      urgency: 'Urgent',
-      urgencyClass: 'badge-urgent',
-      isDuesSoon: true
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    RECENT REPORTS DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  recentReports: RecentReport[] = [
-    {
-      id: 'rh-001',
-      name: 'Balance Sheet - November 2024',
-      icon: 'bi-file-earmark-spreadsheet',
-      iconColor: '#28a745',
-      category: 'financial',
-      generatedBy: 'Admin User',
-      generatedByInitials: 'AU',
-      generatedAt: 'Dec 1, 2024 10:30 AM',
-      format: 'PDF',
-      size: '2.4 MB',
-      status: 'completed',
-      statusLabel: 'Completed'
-    },
-    {
-      id: 'rh-002',
-      name: 'Loan Portfolio Report',
-      icon: 'bi-wallet2',
-      iconColor: '#ffc107',
-      category: 'loans',
-      generatedBy: 'James Kariuki',
-      generatedByInitials: 'JK',
-      generatedAt: 'Dec 1, 2024 9:15 AM',
-      format: 'Excel',
-      size: '1.8 MB',
-      status: 'completed',
-      statusLabel: 'Completed'
-    },
-    {
-      id: 'rh-003',
-      name: 'Member Statement - Bulk',
-      icon: 'bi-person-badge',
-      iconColor: '#6610f2',
-      category: 'members',
-      generatedBy: 'Admin User',
-      generatedByInitials: 'AU',
-      generatedAt: 'Dec 1, 2024 8:00 AM',
-      format: 'PDF',
-      size: '15.2 MB',
-      status: 'processing',
-      statusLabel: 'Processing'
-    },
-    {
-      id: 'rh-004',
-      name: 'SASRA Monthly Returns',
-      icon: 'bi-shield-check',
-      iconColor: '#28a745',
-      category: 'regulatory',
-      generatedBy: 'Mary Wanjiku',
-      generatedByInitials: 'MW',
-      generatedAt: 'Nov 30, 2024 4:45 PM',
-      format: 'PDF',
-      size: '3.1 MB',
-      status: 'completed',
-      statusLabel: 'Completed'
-    },
-    {
-      id: 'rh-005',
-      name: 'Cash Flow Statement',
-      icon: 'bi-cash-coin',
-      iconColor: '#17a2b8',
-      category: 'financial',
-      generatedBy: 'Admin User',
-      generatedByInitials: 'AU',
-      generatedAt: 'Nov 30, 2024 2:30 PM',
-      format: 'Excel',
-      size: '890 KB',
-      status: 'completed',
-      statusLabel: 'Completed'
-    },
-    {
-      id: 'rh-006',
-      name: 'Arrears Report',
-      icon: 'bi-exclamation-triangle',
-      iconColor: '#dc3545',
-      category: 'loans',
-      generatedBy: 'Peter Omondi',
-      generatedByInitials: 'PO',
-      generatedAt: 'Nov 30, 2024 11:20 AM',
-      format: 'PDF',
-      size: '1.2 MB',
-      status: 'completed',
-      statusLabel: 'Completed'
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    CUSTOM REPORT BUILDER DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  customReportTypes: CustomReportType[] = [
-    { value: 'tabular', label: 'Tabular Report', icon: 'bi-table' },
-    { value: 'summary', label: 'Summary Report', icon: 'bi-card-list' },
-    { value: 'chart', label: 'Chart Report', icon: 'bi-bar-chart' },
-    { value: 'detailed', label: 'Detailed Report', icon: 'bi-file-text' },
-    { value: 'comparison', label: 'Comparison Report', icon: 'bi-arrow-left-right' }
-  ];
-
-  dataSources: DataSource[] = [
-    { value: 'members', label: 'Members', description: 'Member profiles and demographics', icon: 'bi-people', selected: false },
-    { value: 'savings', label: 'Savings', description: 'All savings accounts and deposits', icon: 'bi-piggy-bank', selected: false },
-    { value: 'loans', label: 'Loans', description: 'Loan applications and portfolio', icon: 'bi-wallet2', selected: false },
-    { value: 'transactions', label: 'Transactions', description: 'All financial transactions', icon: 'bi-arrow-left-right', selected: false },
-    { value: 'shares', label: 'Shares', description: 'Share capital and dividends', icon: 'bi-graph-up-arrow', selected: false },
-    { value: 'accounting', label: 'Accounting', description: 'General ledger and journals', icon: 'bi-journal-text', selected: false }
-  ];
-
-  availableFields: ReportField[] = [
-    { id: 'f-001', label: 'Member Name', type: 'text' },
-    { id: 'f-002', label: 'Member ID', type: 'text' },
-    { id: 'f-003', label: 'Account Number', type: 'text' },
-    { id: 'f-004', label: 'Transaction Date', type: 'date' },
-    { id: 'f-005', label: 'Transaction Type', type: 'text' },
-    { id: 'f-006', label: 'Amount', type: 'number' },
-    { id: 'f-007', label: 'Balance', type: 'number' },
-    { id: 'f-008', label: 'Channel', type: 'text' },
-    { id: 'f-009', label: 'Reference', type: 'text' },
-    { id: 'f-010', label: 'Status', type: 'text' },
-    { id: 'f-011', label: 'Phone Number', type: 'text' },
-    { id: 'f-012', label: 'Email', type: 'text' },
-    { id: 'f-013', label: 'Branch', type: 'text' },
-    { id: 'f-014', label: 'Loan Type', type: 'text' },
-    { id: 'f-015', label: 'Interest Rate', type: 'number' },
-    { id: 'f-016', label: 'Loan Term', type: 'number' },
-    { id: 'f-017', label: 'Repayment Amount', type: 'number' },
-    { id: 'f-018', label: 'Outstanding Balance', type: 'number' }
-  ];
-
-  selectedFields: ReportField[] = [];
-
-  savedCustomReports: SavedCustomReport[] = [
-    {
-      id: 'sc-001',
-      name: 'Monthly Active Members Summary',
-      lastGenerated: 'Nov 30, 2024',
-      format: 'PDF, Excel'
-    },
-    {
-      id: 'sc-002',
-      name: 'High-Value Transaction Report',
-      lastGenerated: 'Nov 28, 2024',
-      format: 'Excel'
-    },
-    {
-      id: 'sc-003',
-      name: 'Dormant Accounts Analysis',
-      lastGenerated: 'Nov 25, 2024',
-      format: 'PDF'
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    SCHEDULED REPORTS DATA
-  ────────────────────────────────────────────────────────────────────── */
-
-  scheduledReportsList: ScheduledReport[] = [
-    {
-      id: 'sr-001',
-      name: 'Daily Transaction Summary',
-      description: 'Auto-generated summary of all transactions',
-      icon: 'bi-arrow-left-right',
-      color: 'linear-gradient(135deg, #28a745, #20c997)',
-      frequency: 'Daily at 11:00 PM',
-      nextRun: 'Today, 11:00 PM',
-      recipients: 'admin@sacco.com',
-      active: true
-    },
-    {
-      id: 'sr-002',
-      name: 'Weekly Loan Portfolio Report',
-      description: 'Weekly overview of loan performance',
-      icon: 'bi-wallet2',
-      color: 'linear-gradient(135deg, #007bff, #0056b3)',
-      frequency: 'Every Monday at 7:00 AM',
-      nextRun: 'Next Monday, 7:00 AM',
-      recipients: 'admin@sacco.com, manager@sacco.com',
-      active: true
-    },
-    {
-      id: 'sr-003',
-      name: 'Monthly Financial Statements',
-      description: 'Balance Sheet, P&L, and Cash Flow',
-      icon: 'bi-file-earmark-bar-graph',
-      color: 'linear-gradient(135deg, #ffc107, #fd7e14)',
-      frequency: '1st of every month at 6:00 AM',
-      nextRun: 'Jan 1, 2025, 6:00 AM',
-      recipients: 'board@sacco.com',
-      active: true
-    },
-    {
-      id: 'sr-004',
-      name: 'SASRA Regulatory Returns',
-      description: 'Monthly SASRA compliance returns',
-      icon: 'bi-shield-check',
-      color: 'linear-gradient(135deg, #dc3545, #c82333)',
-      frequency: '10th of every month',
-      nextRun: 'Dec 10, 2024',
-      recipients: 'compliance@sacco.com',
-      active: true
-    },
-    {
-      id: 'sr-005',
-      name: 'Dormant Account Alert',
-      description: 'Weekly report on inactive accounts',
-      icon: 'bi-person-dash',
-      color: 'linear-gradient(135deg, #6c757d, #495057)',
-      frequency: 'Every Friday at 9:00 AM',
-      nextRun: 'This Friday, 9:00 AM',
-      recipients: 'admin@sacco.com',
-      active: false
-    }
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────
-    CONSTRUCTOR & LIFECYCLE
-  ────────────────────────────────────────────────────────────────────── */
-
-  constructor(private router: Router) {}
-
-  ngOnInit(): void {
-    console.log('Reports page initialized');
-    this.initializeDates();
-  }
-
-  ngOnDestroy(): void {
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-  }
-
-  initializeDates(): void {
-    const today = new Date();
-    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    this.customReportDateFrom = this.formatDate(firstOfMonth);
-    this.customReportDateTo = this.formatDate(today);
-    this.customReportConfig.dateFrom = this.formatDate(firstOfMonth);
-    this.customReportConfig.dateTo = this.formatDate(today);
-  }
-
-  formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    COMPUTED PROPERTIES
-  ══════════════════════════════════════════════════════════════════════ */
-
-  get filteredReportTemplates(): ReportTemplate[] {
-    let result = [...this.reportTemplates];
-
-    if (this.filterCategory !== 'all') {
-      result = result.filter(r => r.category === this.filterCategory);
-    }
-
-    if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase();
-      result = result.filter(r =>
-        r.title.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
-        r.category.toLowerCase().includes(q)
-      );
-    }
-
-    return result;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    MODAL MANAGEMENT
-  ══════════════════════════════════════════════════════════════════════ */
-
-  openGenerateReportModal(): void {
-    this.showGenerateReportModal = true;
-  }
-
-  closeGenerateReportModal(): void {
-    this.showGenerateReportModal = false;
-  }
-
-  openScheduledReports(): void {
-    this.showScheduledReportsModal = true;
-  }
-
-  closeScheduledReportsModal(): void {
-    this.showScheduledReportsModal = false;
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    REPORT GENERATION
-  ══════════════════════════════════════════════════════════════════════ */
-
-  previewReport(report: ReportTemplate): void {
-    this.showToast(`Previewing: ${report.title}`, 'info');
-  }
-
-  generateReport(report: ReportTemplate): void {
-    this.showToast(`Generating: ${report.title}...`, 'info');
-    setTimeout(() => {
-      this.totalReportsGenerated++;
-      this.showToast(`${report.title} generated successfully!`, 'success');
-    }, 1500);
-  }
-
-  confirmGenerateReport(): void {
-    if (!this.selectedReportTemplate) {
-      this.showToast('Please select a report template', 'warning');
-      return;
-    }
-
-    this.closeGenerateReportModal();
-    this.showToast('Generating report...', 'info');
-
-    setTimeout(() => {
-      this.totalReportsGenerated++;
-      this.showToast('Report generated successfully!', 'success');
-
-      if (this.emailReportAfterGeneration && this.reportEmailAddress) {
-        this.showToast(`Report emailed to ${this.reportEmailAddress}`, 'success');
-      }
-    }, 2000);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    FINANCIAL REPORT ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  quickGenerate(report: FinancialReport): void {
-    this.showToast(`Quick generating: ${report.name}...`, 'info');
-    setTimeout(() => {
-      this.showToast(`${report.name} ready for download!`, 'success');
-    }, 1500);
-  }
-
-  scheduleReport(report: FinancialReport): void {
-    this.showToast(`Setting up schedule for: ${report.name}`, 'info');
-  }
-
-  configureReport(report: FinancialReport): void {
-    this.showToast(`Opening configuration for: ${report.name}`, 'info');
-  }
-
-  generateBalanceSheet(): void {
-    this.showToast('Generating Balance Sheet...', 'info');
-    setTimeout(() => this.showToast('Balance Sheet generated!', 'success'), 1500);
-  }
-
-  generateIncomeStatement(): void {
-    this.showToast('Generating Income Statement...', 'info');
-    setTimeout(() => this.showToast('Income Statement generated!', 'success'), 1500);
-  }
-
-  generateCashFlow(): void {
-    this.showToast('Generating Cash Flow Statement...', 'info');
-    setTimeout(() => this.showToast('Cash Flow Statement generated!', 'success'), 1500);
-  }
-
-  generateTrialBalance(): void {
-    this.showToast('Generating Trial Balance...', 'info');
-    setTimeout(() => this.showToast('Trial Balance generated!', 'success'), 1500);
-  }
-
-  openBulkGenerate(category: string): void {
-    this.showToast(`Bulk generate: ${category} reports`, 'info');
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    LOAN REPORT ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  generatePortfolioReport(): void {
-    this.showToast('Generating Portfolio Report...', 'info');
-    setTimeout(() => this.showToast('Portfolio Report generated!', 'success'), 1500);
-  }
-
-  generatePerformanceReport(): void {
-    this.showToast('Generating Performance Report...', 'info');
-    setTimeout(() => this.showToast('Performance Report generated!', 'success'), 1500);
-  }
-
-  generateArrearsReport(): void {
-    this.showToast('Generating Arrears Report...', 'info');
-    setTimeout(() => this.showToast('Arrears Report generated!', 'success'), 1500);
-  }
-
-  generateDisbursementReport(): void {
-    this.showToast('Generating Disbursement Report...', 'info');
-    setTimeout(() => this.showToast('Disbursement Report generated!', 'success'), 1500);
-  }
-
-  generateLoanReport(report: LoanReport): void {
-    this.showToast(`Generating: ${report.name} (${report.selectedPeriod})...`, 'info');
-    setTimeout(() => this.showToast(`${report.name} generated!`, 'success'), 1500);
-  }
-
-  downloadLoanReport(report: LoanReport): void {
-    this.showToast(`Downloading: ${report.name}`, 'success');
-    this.totalDownloads++;
-  }
-
-  scheduleLoanReport(report: LoanReport): void {
-    this.showToast(`Scheduling: ${report.name}`, 'info');
-  }
-
-  exportLoanReports(): void {
-    this.showToast('Exporting all loan reports...', 'info');
-    setTimeout(() => this.showToast('All loan reports exported!', 'success'), 2000);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    MEMBER REPORT ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  generateMemberListReport(): void {
-    this.showToast('Generating Member List Report...', 'info');
-    setTimeout(() => this.showToast('Member List Report generated!', 'success'), 1500);
-  }
-
-  generateNewMembersReport(): void {
-    this.showToast('Generating New Members Report...', 'info');
-    setTimeout(() => this.showToast('New Members Report generated!', 'success'), 1500);
-  }
-
-  generateDormantReport(): void {
-    this.showToast('Generating Dormant Accounts Report...', 'info');
-    setTimeout(() => this.showToast('Dormant Accounts Report generated!', 'success'), 1500);
-  }
-
-  generateVIPReport(): void {
-    this.showToast('Generating VIP Members Report...', 'info');
-    setTimeout(() => this.showToast('VIP Members Report generated!', 'success'), 1500);
-  }
-
-  generateMemberStatement(): void {
-    this.showToast('Generating Member Statement...', 'info');
-    setTimeout(() => this.showToast('Member Statement generated!', 'success'), 1500);
-  }
-
-  generateAgeAnalysis(): void {
-    this.showToast('Generating Age Analysis...', 'info');
-    setTimeout(() => this.showToast('Age Analysis generated!', 'success'), 1500);
-  }
-
-  generateContributionReport(): void {
-    this.showToast('Generating Contribution Report...', 'info');
-    setTimeout(() => this.showToast('Contribution Report generated!', 'success'), 1500);
-  }
-
-  openCategoryReports(category: MemberReportCategory): void {
-    this.showToast(`Opening: ${category.name} reports`, 'info');
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    REGULATORY REPORT ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  generateRegulatoryReport(report: RegulatoryReport): void {
-    this.showToast(`Generating: ${report.name}...`, 'info');
-    setTimeout(() => this.showToast(`${report.name} generated!`, 'success'), 2000);
-  }
-
-  viewGuidelines(report: RegulatoryReport): void {
-    this.showToast(`Opening ${report.authority} guidelines...`, 'info');
-  }
-
-  openComplianceCenter(): void {
-    this.showToast('Opening Compliance Center...', 'info');
-    this.router.navigate(['/admin', 'compliance']);
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    CUSTOM REPORT BUILDER ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  updateSelectedSources(): void {
-    const selected = this.dataSources.filter(s => s.selected).map(s => s.label);
-    console.log('Selected sources:', selected);
-  }
-
-  addField(field: ReportField): void {
-    if (!this.selectedFields.find(f => f.id === field.id)) {
-      this.selectedFields.push({ ...field });
-      this.showToast(`Added: ${field.label}`, 'success');
-    } else {
-      this.showToast(`${field.label} already selected`, 'warning');
-    }
-  }
-
-  removeField(index: number): void {
-    const removed = this.selectedFields.splice(index, 1);
-    this.showToast(`Removed: ${removed[0].label}`, 'info');
-  }
-
-  saveCustomReport(): void {
-    if (!this.customReportConfig.name) {
-      this.showToast('Please enter a report name', 'warning');
-      return;
-    }
-
-    this.savedCustomReports.push({
-      id: 'sc-' + Date.now(),
-      name: this.customReportConfig.name,
-      lastGenerated: 'Never',
-      format: this.getSelectedFormats()
+    dataSource: 'Financial Data',
+    period: 'This Month',
+    groupBy: 'None',
+    sortBy: 'Member Name (A-Z)',
+    format: 'PDF',
+    filter: 'All Members',
+    fields: [...this.CUSTOM_FIELDS],
+  });
+
+  // New schedule form
+  newScheduleForm = signal({
+    reportName: '',
+    frequency: 'Weekly',
+    time: '08:00',
+    recipients: '',
+    format: 'PDF',
+    paused: false,
+  });
+
+  // Edit schedule form
+  editScheduleForm = signal({
+    frequency: 'Weekly',
+    time: '05:00',
+    recipients: '',
+    paused: false,
+  });
+
+  // Email form
+  emailForm = signal({
+    to: '',
+    subject: '',
+    message: 'Please find the attached report generated by SACCOPay Reports Center.',
+  });
+
+  // Search & filter
+  searchQuery = signal('');
+  historyFilter = signal('All');
+  historyPage = signal(1);
+  readonly HIST_PAGE_SIZE = 6;
+
+  // Preview shown inside generate modal
+  showPreviewInModal = signal(false);
+
+  // ────────── COMPUTED ──────────
+  filteredHistory = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    const f = this.historyFilter();
+    return this.HISTORY_RECORDS.filter(r => {
+      const matchQ = !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
+      const matchF = f === 'All' || r.category === f;
+      return matchQ && matchF;
     });
+  });
 
-    this.showToast(`Custom report "${this.customReportConfig.name}" saved!`, 'success');
+  historyTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredHistory().length / this.HIST_PAGE_SIZE)));
+
+  paginatedHistory = computed(() => {
+    const p = this.historyPage();
+    return this.filteredHistory().slice((p - 1) * this.HIST_PAGE_SIZE, p * this.HIST_PAGE_SIZE);
+  });
+
+  historyPageNumbers = computed(() => Array.from({ length: this.historyTotalPages() }, (_, i) => i + 1));
+
+  selectedFieldCount = computed(() => this.customReport().fields.filter(f => f.selected).length);
+
+  allScheduledData = computed(() => this.SCHEDULED_REPORTS);
+
+  // ────────── TOAST (sparingly used) ──────────
+  toast = signal<{ msg: string; type: 'success' | 'error' } | null>(null);
+  private toastTimer: any;
+  showToast(msg: string, type: 'success' | 'error' = 'success') {
+    this.toast.set({ msg, type });
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => this.toast.set(null), 4000);
   }
 
-  previewCustomReport(): void {
-    if (this.selectedFields.length === 0) {
-      this.showToast('Please select at least one field', 'warning');
-      return;
-    }
-    this.showToast('Generating preview...', 'info');
+  // ────────── ACTIONS ──────────
+  openScheduledModal()   { this.showScheduledModal.set(true); }
+  closeScheduledModal()  { this.showScheduledModal.set(false); }
+  openHistoryModal()     { this.showHistoryModal.set(true); this.historyPage.set(1); }
+  closeHistoryModal()    { this.showHistoryModal.set(false); }
+  openCustomBuilder()    { this.showCustomBuilder.set(true); }
+  closeCustomBuilder()   { this.showCustomBuilder.set(false); }
+  openNewSchedule()      { this.showNewSchedule.set(true); }
+  closeNewSchedule()     { this.showNewSchedule.set(false); }
+
+  openEditSchedule(s: ScheduledReport) {
+    this.editScheduleForm.set({ frequency: s.frequency, time: '05:00', recipients: s.recipients, paused: false });
+    this.showEditSchedule.set(s);
+  }
+  closeEditSchedule() { this.showEditSchedule.set(null); }
+
+  openDeleteSchedule(s: ScheduledReport) { this.showDeleteSchedule.set(s); }
+  closeDeleteSchedule() { this.showDeleteSchedule.set(null); }
+
+  openGenerateReport(r: ReportItem) {
+    this.showPreviewInModal.set(false);
+    this.showGenerateReport.set(r);
+  }
+  closeGenerateReport() { this.showGenerateReport.set(null); }
+
+  openGroupDetail(g: ReportGroup) { this.showGroupDetail.set(g); }
+  closeGroupDetail() { this.showGroupDetail.set(null); }
+
+  openGeneratedDetail(r: GeneratedReport) { this.showGeneratedDetail.set(r); }
+  closeGeneratedDetail() { this.showGeneratedDetail.set(null); }
+
+  openHistoryDetail(r: HistoryRecord) { this.showHistoryDetail.set(r); }
+  closeHistoryDetail() { this.showHistoryDetail.set(null); }
+
+  openEmailReport(r: GeneratedReport) {
+    this.emailForm.set({ to: 'board@rongosacco.co.ke', subject: r.name + ' — Rongo SACCO', message: 'Please find the attached report generated by SACCOPay Reports Center.' });
+    this.showEmailReport.set(r);
+  }
+  closeEmailReport() { this.showEmailReport.set(null); }
+
+  openDeleteReport(r: GeneratedReport) { this.showDeleteReport.set(r); }
+  closeDeleteReport() { this.showDeleteReport.set(null); }
+
+  openViewAllGenerated() { this.showViewAllGenerated.set(true); }
+  closeViewAllGenerated() { this.showViewAllGenerated.set(false); }
+
+  openEmailSchedule(s: ScheduledReport) {
+    this.emailForm.set({ to: s.recipients, subject: 'Scheduled Report: ' + s.name, message: 'This is the scheduled report as per your subscription.' });
+    this.showEmailSchedule.set(s);
+  }
+  closeEmailSchedule() { this.showEmailSchedule.set(null); }
+
+  openPauseSchedule(s: ScheduledReport) { this.showPauseSchedule.set(s); }
+  closePauseSchedule() { this.showPauseSchedule.set(null); }
+
+  // Form helpers
+  onInput(form: 'newSchedule' | 'editSchedule' | 'email' | 'options', key: string, e: Event) {
+    const v = (e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+    if (form === 'newSchedule') this.newScheduleForm.update(f => ({ ...f, [key]: v }));
+    if (form === 'editSchedule') this.editScheduleForm.update(f => ({ ...f, [key]: v }));
+    if (form === 'email') this.emailForm.update(f => ({ ...f, [key]: v }));
+    if (form === 'options') this.reportOptions.update(f => ({ ...f, [key]: v }));
   }
 
-  generateCustomReport(): void {
-    if (this.selectedFields.length === 0) {
-      this.showToast('Please select at least one field', 'warning');
-      return;
-    }
-
-    this.showToast('Generating custom report...', 'info');
-    setTimeout(() => {
-      this.totalReportsGenerated++;
-      this.showToast('Custom report generated successfully!', 'success');
-    }, 2000);
+  onCheckInput(form: 'newSchedule' | 'editSchedule', key: string, e: Event) {
+    const v = (e.target as HTMLInputElement).checked;
+    if (form === 'newSchedule') this.newScheduleForm.update(f => ({ ...f, [key]: v }));
+    if (form === 'editSchedule') this.editScheduleForm.update(f => ({ ...f, [key]: v }));
   }
 
-  resetBuilder(): void {
-    this.customReportConfig = {
-      type: '',
-      dateFrom: '',
-      dateTo: '',
-      memberCategory: 'all',
-      transactionType: 'all',
-      amountMin: null,
-      amountMax: null,
-      name: '',
-      formatPDF: true,
-      formatExcel: false,
-      formatCSV: false,
-      groupBy: '',
-      sortBy: 'date_desc'
-    };
-    this.selectedFields = [];
-    this.dataSources.forEach(s => s.selected = false);
-    this.showToast('Report builder reset', 'info');
+  onOptionCheck(key: string, e: Event) {
+    const v = (e.target as HTMLInputElement).checked;
+    this.reportOptions.update(f => ({ ...f, [key]: v }));
   }
 
-  editCustomReport(report: SavedCustomReport): void {
-    this.showToast(`Editing: ${report.name}`, 'info');
+  onCustomInput(key: string, e: Event) {
+    const v = (e.target as HTMLInputElement | HTMLSelectElement).value;
+    this.customReport.update(f => ({ ...f, [key]: v }));
   }
 
-  deleteCustomReport(report: SavedCustomReport): void {
-    if (confirm(`Delete "${report.name}"?`)) {
-      this.savedCustomReports = this.savedCustomReports.filter(r => r.id !== report.id);
-      this.showToast(`"${report.name}" deleted`, 'success');
-    }
+  toggleField(idx: number) {
+    this.customReport.update(cr => {
+      const fields = [...cr.fields];
+      fields[idx] = { ...fields[idx], selected: !fields[idx].selected };
+      return { ...cr, fields };
+    });
   }
 
-  runCustomReport(report: SavedCustomReport): void {
-    this.showToast(`Running: ${report.name}...`, 'info');
-    setTimeout(() => {
-      report.lastGenerated = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      this.showToast(`${report.name} generated!`, 'success');
-    }, 1500);
+  setHistoryFilter(f: string) { this.historyFilter.set(f); this.historyPage.set(1); }
+  setHistoryPage(p: number) { if (p >= 1 && p <= this.historyTotalPages()) this.historyPage.set(p); }
+
+  onSearchInput(e: Event) { this.searchQuery.set((e.target as HTMLInputElement).value); }
+
+  // Submit actions
+  submitNewSchedule() {
+    if (!this.newScheduleForm().reportName) return;
+    this.closeNewSchedule();
+    this.showToast('Schedule created successfully.', 'success');
   }
 
-  getSelectedFormats(): string {
-    const formats: string[] = [];
-    if (this.customReportConfig.formatPDF) formats.push('PDF');
-    if (this.customReportConfig.formatExcel) formats.push('Excel');
-    if (this.customReportConfig.formatCSV) formats.push('CSV');
-    return formats.join(', ') || 'PDF';
+  submitEditSchedule() {
+    this.closeEditSchedule();
+    this.showToast('Schedule updated.', 'success');
   }
 
-  /* ══════════════════════════════════════════════════════════════════════
-    SCHEDULED REPORT ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  editSchedule(schedule: ScheduledReport): void {
-    this.showToast(`Editing schedule: ${schedule.name}`, 'info');
+  confirmDeleteSchedule() {
+    this.closeDeleteSchedule();
+    this.showToast('Schedule deleted.', 'success');
   }
 
-  runScheduleNow(schedule: ScheduledReport): void {
-    this.showToast(`Running: ${schedule.name}...`, 'info');
-    setTimeout(() => this.showToast(`${schedule.name} completed!`, 'success'), 1500);
+  confirmDeleteReport() {
+    this.closeDeleteReport();
+    this.showToast('Report deleted.', 'success');
   }
 
-  deleteSchedule(schedule: ScheduledReport): void {
-    if (confirm(`Delete schedule "${schedule.name}"?`)) {
-      this.scheduledReportsList = this.scheduledReportsList.filter(s => s.id !== schedule.id);
-      this.scheduledReportsCount--;
-      this.showToast(`Schedule "${schedule.name}" deleted`, 'success');
-    }
+  generateAndDownload() {
+    this.closeGenerateReport();
+    this.showToast('Report generated and downloading…', 'success');
   }
 
-  createNewSchedule(): void {
-    this.closeScheduledReportsModal();
-    this.showToast('Opening schedule builder...', 'info');
+  generateCustom(asPreview = false) {
+    if (asPreview) { this.showPreviewInModal.set(true); return; }
+    this.closeCustomBuilder();
+    this.showToast('Custom report generated successfully.', 'success');
   }
 
-  /* ══════════════════════════════════════════════════════════════════════
-    RECENT REPORTS ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  downloadReport(report: RecentReport): void {
-    this.showToast(`Downloading: ${report.name}`, 'success');
-    this.totalDownloads++;
+  sendEmail() {
+    if (!this.emailForm().to) return;
+    this.closeEmailReport();
+    this.closeEmailSchedule();
+    this.showToast('Report emailed successfully.', 'success');
   }
 
-  shareReport(report: RecentReport): void {
-    this.showToast(`Share link copied for: ${report.name}`, 'success');
+  confirmPauseSchedule() {
+    this.closePauseSchedule();
+    this.showToast('Schedule paused.', 'success');
   }
 
-  deleteReport(report: RecentReport): void {
-    if (confirm(`Delete "${report.name}"?`)) {
-      this.recentReports = this.recentReports.filter(r => r.id !== report.id);
-      this.showToast(`"${report.name}" deleted`, 'success');
-    }
+  // Helpers
+  format(n: number) { return n.toLocaleString(); }
+  trackById(_: number, item: { id: string }) { return item.id; }
+  trackByIndex(i: number) { return i; }
+
+  freqColor(freq: string): string {
+    return { Daily: '#00d084', Weekly: '#2196f3', Monthly: '#9c27b0', Quarterly: '#ff9800' }[freq] || '#64748b';
   }
 
-  viewAllReports(): void {
-    this.showToast('Loading all reports...', 'info');
+  formatIcon(fmt: string): string {
+    return { PDF: '📄', Excel: '📊', CSV: '📋' }[fmt] || '📄';
   }
 
-  /* ══════════════════════════════════════════════════════════════════════
-    FILTER ACTIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  applyFilters(): void {
-    this.showToast('Filters applied', 'success');
-  }
-
-  resetFilters(): void {
-    this.searchQuery = '';
-    this.filterCategory = 'all';
-    this.filterPeriod = 'all';
-    this.showToast('Filters reset', 'info');
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
-    TOAST NOTIFICATIONS
-  ══════════════════════════════════════════════════════════════════════ */
-
-  showToast(message: string, type: 'success' | 'info' | 'warning' | 'danger' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.toastVisible = true;
-
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-
-    this.toastTimer = setTimeout(() => {
-      this.toastVisible = false;
-    }, 3000);
-  }
-
-  hideToast(): void {
-    this.toastVisible = false;
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-  }
+  catColors: Record<string, string> = {
+    Financial: '#00d084', Loan: '#2196f3', Savings: '#4caf50',
+    Member: '#ff9800', Compliance: '#f44336', Operational: '#9c27b0',
+  };
 }

@@ -4,6 +4,7 @@ import { AuthLayoutComponent } from './layout/auth-layout/auth-layout';
 // 1. Added the missing import for MemberLayout
 import { MemberLayoutComponent } from './layout/member-layout/member-layout';
 import { AdminLayoutComponent } from './layout/admin-layout/admin-layout';
+import { SharesCapitalComponent } from './features/admin/pages/share-capital/share-capital';
 
 export const routes: Routes = [
     // --- AUTHENTICATION ROUTES (Uses AuthLayout) ---
@@ -165,14 +166,14 @@ export const routes: Routes = [
         { path: 'loan-applications', loadComponent: () => import('./features/admin/pages/loan-applications/loan-applications').then(m => m.LoanApplicationsComponent) },
 
         // Shares & Capital
-        { path: 'shares', loadComponent: () => import('./features/admin/pages/share-capital/share-capital').then(m => m.ShareCapitalComponent) },
+        { path: 'shares', loadComponent: () => import('./features/admin/pages/share-capital/share-capital').then(m => m.SharesCapitalComponent) },
 
         // Transactions & Wallet
         { path: 'transactions', loadComponent: () => import('./features/admin/pages/transactions/transactions').then(m => m.TransactionsComponent) },
         { path: 'saccopay-wallet', loadComponent: () => import('./features/admin/pages/saccopay-wallet/saccopay-wallet').then(m => m.SaccopayWalletComponent) },
 
         // // Reconciliation & Compliance
-        // { path: 'reconciliation', loadComponent: () => import('./features/admin/pages/reconciliation/reconciliation').then(m => m.ReconciliationComponent) },
+        { path: 'reconciliation', loadComponent: () => import('./features/admin/pages/reconciliation/reconciliation').then(m => m.ReconciliationComponent) },
         { path: 'compliance', loadComponent: () => import('./features/admin/pages/compliance/compliance').then(m => m.ComplianceComponent) },
 
         // Reports
@@ -180,12 +181,16 @@ export const routes: Routes = [
 
         // Staff & Management
         { path: 'staff-management', loadComponent: () => import('./features/admin/pages/staff-management/staff-management').then(m => m.StaffManagementComponent) },
-        // { path: 'notifications', loadComponent: () => import('./features/admin/pages/notifications/notifications').then(m => m.NotificationsComponent) },
+        { path: 'notifications', loadComponent: () => import('./features/admin/pages/notifications/notifications').then(m => m.NotificationsComponent) },
 
         // // Settings
         { path: 'onboarding', loadComponent: () => import('./features/admin/pages/onboarding/onboarding').then(m => m.OnboardingComponent) },
         { path: 'notifications', loadComponent: () => import('./features/admin/pages/notifications/notifications').then(m => m.NotificationsComponent) },
         { path: 'sacco-settings', loadComponent: () => import('./features/admin/pages/sacco-settings/sacco-settings').then(m => m.SaccoSettingsComponent) },
+        
+        //subscription
+        { path: 'subscription', loadComponent: () => import('./features/admin/pages/subscription/subscription').then(m => m.SubscriptionComponent) },
+ 
     ]
 },
     // Fallback Route

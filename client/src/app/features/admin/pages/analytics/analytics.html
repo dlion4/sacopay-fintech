@@ -1,1323 +1,682 @@
-<!-- ══════════════════════════════════════════════════════════════════════════
-  SACCO ANALYTICS - MAIN BODY CONTENT ONLY
-  Original Theme Preserved with Full Functionality
-══════════════════════════════════════════════════════════════════════════ -->
+<section class="analytics-wrapper">
+  @if (toast) {
+  <div class="toast-container" [class.toast-info]="toast.type === 'info'"
+    [class.toast-warning]="toast.type === 'warning'" [class.toast-danger]="toast.type === 'danger'">
+    <div class="toast-box">
+      <span class="toast-dot"></span>
+      <span>{{ toast.message }}</span>
+    </div>
+  </div>
+  }
 
-<div class="analytics-wrapper">
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    PAGE HEADER WITH FILTERS
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="page-header-section">
+  <header class="page-header-section">
     <div class="page-header-content">
       <div class="header-left">
         <div class="page-icon-badge">
           <i class="bi bi-graph-up-arrow"></i>
         </div>
         <div class="page-title-group">
-          <h1 class="page-title">Analytics & Reports</h1>
+          <!-- <h1 class="page-title">Analytics &amp; Reports</h1> -->
           <p class="page-subtitle">Comprehensive financial insights and performance metrics</p>
+          <div class="live-row">
+            <span class="live-dot"></span>
+            <span>Live analytics</span>
+            <span>Period: <strong>{{ selectedDateRange }}</strong></span>
+          </div>
         </div>
       </div>
-      
+
       <div class="header-right-actions">
         <div class="date-range-selector">
-          <button class="date-range-btn" (click)="toggleDateRangePicker()">
+          <button type="button" class="date-range-btn" (click)="toggleDateRangePicker()">
             <i class="bi bi-calendar3"></i>
-            <span>{{selectedDateRange}}</span>
+            <span>{{ selectedDateRange }}</span>
             <i class="bi bi-chevron-down"></i>
           </button>
-          
-          <!-- Date Range Dropdown -->
+
           <div class="date-range-dropdown" [class.show]="showDateRangePicker">
             <div class="dropdown-section">
               <h4 class="dropdown-title">Quick Ranges</h4>
-              <button class="range-option" 
-                      *ngFor="let range of quickDateRanges"
-                      [class.active]="selectedDateRange === range"
-                      (click)="selectDateRange(range)">
-                {{range}}
+              @for (range of quickDateRanges; track range) {
+              <button type="button" class="range-option" [class.active]="selectedDateRange === range"
+                (click)="selectDateRange(range)">
+                {{ range }}
               </button>
+              }
             </div>
             <div class="dropdown-section">
               <h4 class="dropdown-title">Custom Range</h4>
               <div class="custom-date-inputs">
-                <div class="date-input-group">
-                  <label>From</label>
-                  <input type="date" [(ngModel)]="customDateFrom" class="date-input">
-                </div>
-                <div class="date-input-group">
-                  <label>To</label>
-                  <input type="date" [(ngModel)]="customDateTo" class="date-input">
-                </div>
+                <label class="date-input-group">
+                  <span>From</span>
+                  <input type="date" [(ngModel)]="customDateFrom" class="date-input" />
+                </label>
+                <label class="date-input-group">
+                  <span>To</span>
+                  <input type="date" [(ngModel)]="customDateTo" class="date-input" />
+                </label>
               </div>
-              <button class="btn-apply-custom" (click)="applyCustomDateRange()">
-                Apply Custom Range
-              </button>
+              <button type="button" class="btn-apply-custom" (click)="applyCustomDateRange()">Apply Custom
+                Range</button>
             </div>
           </div>
         </div>
 
-        <button class="icon-btn" (click)="refreshAnalytics()" title="Refresh Data">
+        <button type="button" class="icon-btn" (click)="refreshAnalytics()" title="Refresh Data">
           <i class="bi bi-arrow-clockwise"></i>
         </button>
-        <button class="icon-btn" (click)="openExportModal()" title="Export Report">
+        <button type="button" class="icon-btn" (click)="openExportModal()" title="Export Report">
           <i class="bi bi-download"></i>
         </button>
-        <button class="btn-primary" (click)="openAdvancedFilters()">
+        <button type="button" class="btn-primary" (click)="openAdvancedFilters()">
           <i class="bi bi-sliders"></i>
           <span>Advanced Filters</span>
         </button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    KEY PERFORMANCE INDICATORS (KPIs)
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="kpi-grid">
-    <div class="kpi-card revenue-kpi">
+  <section class="kpi-grid" aria-label="Key performance indicators">
+    @for (kpi of kpiCards; track kpi.key) {
+    <article class="kpi-card" [ngClass]="kpi.tone + '-kpi'">
       <div class="kpi-header">
         <div class="kpi-icon">
-          <i class="bi bi-cash-stack"></i>
+          <i class="bi" [ngClass]="kpi.icon"></i>
         </div>
         <div class="kpi-trend-badge positive">
-          <i class="bi bi-arrow-up"></i> 15.3%
+          <i class="bi bi-arrow-up"></i>
+          {{ kpi.trend }}
         </div>
       </div>
       <div class="kpi-body">
-        <h3 class="kpi-value">KES 12.4M</h3>
-        <p class="kpi-label">Total Revenue</p>
+        <h3 class="kpi-value">{{ kpi.value }}</h3>
+        <p class="kpi-label">{{ kpi.label }}</p>
         <div class="kpi-comparison">
-          <span class="comparison-label">vs Previous Period:</span>
-          <span class="comparison-value positive">+KES 1.6M</span>
+          <span class="comparison-label">{{ kpi.comparisonLabel }}</span>
+          <span class="comparison-value positive">{{ kpi.comparisonValue }}</span>
         </div>
       </div>
       <div class="kpi-sparkline">
         <div class="sparkline-chart">
-          <div class="spark-bar" *ngFor="let val of revenueSparkline" [style.height]="val + '%'"></div>
+          @for (val of kpi.sparkline; track $index) {
+          <div class="spark-bar" [style.height]="val + '%'"></div>
+          }
         </div>
       </div>
-    </div>
+    </article>
+    }
+  </section>
 
-    <div class="kpi-card loans-kpi">
-      <div class="kpi-header">
-        <div class="kpi-icon">
-          <i class="bi bi-wallet2"></i>
-        </div>
-        <div class="kpi-trend-badge positive">
-          <i class="bi bi-arrow-up"></i> 8.7%
-        </div>
-      </div>
-      <div class="kpi-body">
-        <h3 class="kpi-value">KES 45.2M</h3>
-        <p class="kpi-label">Active Loans Portfolio</p>
-        <div class="kpi-comparison">
-          <span class="comparison-label">Disbursed this period:</span>
-          <span class="comparison-value">KES 8.3M</span>
-        </div>
-      </div>
-      <div class="kpi-sparkline">
-        <div class="sparkline-chart">
-          <div class="spark-bar" *ngFor="let val of loansSparkline" [style.height]="val + '%'"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="kpi-card savings-kpi">
-      <div class="kpi-header">
-        <div class="kpi-icon">
-          <i class="bi bi-piggy-bank"></i>
-        </div>
-        <div class="kpi-trend-badge positive">
-          <i class="bi bi-arrow-up"></i> 12.1%
-        </div>
-      </div>
-      <div class="kpi-body">
-        <h3 class="kpi-value">KES 78.9M</h3>
-        <p class="kpi-label">Total Savings</p>
-        <div class="kpi-comparison">
-          <span class="comparison-label">Average per member:</span>
-          <span class="comparison-value">KES 63,205</span>
-        </div>
-      </div>
-      <div class="kpi-sparkline">
-        <div class="sparkline-chart">
-          <div class="spark-bar" *ngFor="let val of savingsSparkline" [style.height]="val + '%'"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="kpi-card members-kpi">
-      <div class="kpi-header">
-        <div class="kpi-icon">
-          <i class="bi bi-people"></i>
-        </div>
-        <div class="kpi-trend-badge positive">
-          <i class="bi bi-arrow-up"></i> 6.4%
-        </div>
-      </div>
-      <div class="kpi-body">
-        <h3 class="kpi-value">1,248</h3>
-        <p class="kpi-label">Active Members</p>
-        <div class="kpi-comparison">
-          <span class="comparison-label">New this month:</span>
-          <span class="comparison-value positive">+76</span>
-        </div>
-      </div>
-      <div class="kpi-sparkline">
-        <div class="sparkline-chart">
-          <div class="spark-bar" *ngFor="let val of membersSparkline" [style.height]="val + '%'"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    ANALYTICS TABS
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="analytics-tabs-section">
-    <div class="tabs-nav">
-      <button class="tab-nav-btn" 
-              [class.active]="activeAnalyticsTab === 'overview'"
-              (click)="activeAnalyticsTab = 'overview'">
+  <section class="analytics-tabs-section">
+    <nav class="tabs-nav" aria-label="Analytics sections">
+      <button type="button" class="tab-nav-btn" [class.active]="activeAnalyticsTab === 'overview'"
+        (click)="setTab('overview')">
         <i class="bi bi-grid"></i>
-        Overview
+        <span>Overview</span>
       </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeAnalyticsTab === 'revenue'"
-              (click)="activeAnalyticsTab = 'revenue'">
+      <button type="button" class="tab-nav-btn" [class.active]="activeAnalyticsTab === 'revenue'"
+        (click)="setTab('revenue')">
         <i class="bi bi-graph-up"></i>
-        Revenue Analysis
+        <span>Revenue Analysis</span>
       </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeAnalyticsTab === 'loans'"
-              (click)="activeAnalyticsTab = 'loans'">
+      <button type="button" class="tab-nav-btn" [class.active]="activeAnalyticsTab === 'loans'"
+        (click)="setTab('loans')">
         <i class="bi bi-cash-coin"></i>
-        Loans Performance
+        <span>Loans Performance</span>
       </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeAnalyticsTab === 'members'"
-              (click)="activeAnalyticsTab = 'members'">
+      <button type="button" class="tab-nav-btn" [class.active]="activeAnalyticsTab === 'members'"
+        (click)="setTab('members')">
         <i class="bi bi-person-badge"></i>
-        Member Insights
+        <span>Member Insights</span>
       </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeAnalyticsTab === 'comparison'"
-              (click)="activeAnalyticsTab = 'comparison'">
+      <button type="button" class="tab-nav-btn" [class.active]="activeAnalyticsTab === 'comparison'"
+        (click)="setTab('comparison')">
         <i class="bi bi-bar-chart-line"></i>
-        Period Comparison
+        <span>Period Comparison</span>
       </button>
-    </div>
+    </nav>
 
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: OVERVIEW
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeAnalyticsTab === 'overview'">
-      <div class="content-grid-2col">
-        
-        <!-- Revenue Trends Chart -->
-        <div class="content-card chart-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-graph-up"></i>
-              Revenue Trends
-            </h3>
-            <div class="card-header-actions">
-              <select class="chart-period-select" [(ngModel)]="revenuePeriod">
-                <option>Daily</option>
-                <option>Weekly</option>
-                <option selected>Monthly</option>
-                <option>Quarterly</option>
-              </select>
-              <button class="icon-btn-sm" (click)="toggleChartType('revenue')">
-                <i class="bi bi-{{revenueChartType === 'bar' ? 'graph-up' : 'bar-chart'}}"></i>
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="line-chart-container">
-              <div class="line-chart">
-                <div class="chart-grid">
-                  <div class="grid-line" *ngFor="let line of [0,1,2,3,4]"></div>
-                </div>
-                <div class="chart-bars">
-                  <div class="chart-bar-group" *ngFor="let data of revenueChartData">
-                    <div class="chart-bar" 
-                         [style.height]="data.height"
-                         [title]="data.label + ': ' + data.value">
-                      <div class="bar-fill deposits"></div>
-                    </div>
-                    <span class="bar-label">{{data.label}}</span>
+    <div class="tab-content-panel">
+      @if (activeAnalyticsTab === 'overview') {
+      <div class="tab-pane overview-pane">
+        <div class="overview-grid">
+          <article class="analytics-card chart-card wide-card">
+            <header class="card-header">
+              <div>
+                <h2>Revenue Trend</h2>
+                <p>Monthly revenue performance across the current year</p>
+              </div>
+              <div class="chart-controls">
+                <button type="button" [class.active]="revenueChartType === 'bar'"
+                  (click)="revenueChartType = 'bar'">Bar</button>
+                <button type="button" [class.active]="revenueChartType === 'line'"
+                  (click)="revenueChartType = 'line'">Line</button>
+              </div>
+            </header>
+
+            <div class="revenue-chart" [class.line-mode]="revenueChartType === 'line'">
+              @for (bar of revenueChartData; track bar.label) {
+              <div class="chart-column">
+                <div class="chart-bar-wrap">
+                  <div class="chart-bar" [style.height]="bar.height">
+                    <span>{{ bar.value }}</span>
                   </div>
                 </div>
+                <strong>{{ bar.label }}</strong>
+              </div>
+              }
+            </div>
+          </article>
+
+          <article class="analytics-card distribution-card">
+            <header class="card-header compact">
+              <div>
+                <h2>Income Distribution</h2>
+                <p>Revenue contribution by stream</p>
+              </div>
+            </header>
+            <div class="donut-visual">
+              <div class="donut-ring"></div>
+              <div class="donut-center">
+                <strong>KES 12.4M</strong>
+                <span>Total</span>
               </div>
             </div>
-            <div class="chart-legend-row">
-              <div class="legend-item">
-                <span class="legend-dot deposits"></span>
-                <span>Deposits</span>
+            <div class="distribution-list">
+              @for (item of incomeDistribution; track item.label) {
+              <div class="distribution-row">
+                <span class="legend-dot" [style.background]="item.color"></span>
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+                <em>{{ item.percent }}</em>
               </div>
-              <div class="legend-item">
-                <span class="legend-dot repayments"></span>
-                <span>Loan Repayments</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-dot fees"></span>
-                <span>Fees & Charges</span>
-              </div>
+              }
             </div>
-          </div>
+          </article>
         </div>
 
-        <!-- Income Distribution Pie -->
-        <div class="content-card chart-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-pie-chart"></i>
-              Income Distribution
-            </h3>
-            <button class="icon-btn-sm" (click)="openIncomeBreakdown()">
-              <i class="bi bi-arrows-fullscreen"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="donut-chart-wrapper">
-              <div class="donut-chart-lg" [style.background]="getIncomeDonutGradient()">
-                <div class="donut-center">
-                  <span class="donut-total-label">Total Income</span>
-                  <span class="donut-total-value">KES 12.4M</span>
-                  <span class="donut-period">This Month</span>
-                </div>
-              </div>
+        <div class="transaction-trends-grid">
+          @for (trend of transactionTrends; track trend.label) {
+          <article class="trend-card" [ngClass]="trend.tone">
+            <div class="trend-card-top">
+              <span>{{ trend.label }}</span>
+              <strong [class.negative]="!trend.positive">{{ trend.change }}</strong>
             </div>
-            <div class="pie-legend-grid">
-              <div class="legend-item-detailed" *ngFor="let segment of incomeDistribution">
-                <div class="legend-color" [style.background]="segment.color"></div>
-                <div class="legend-info">
-                  <span class="legend-label">{{segment.label}}</span>
-                  <span class="legend-value">{{segment.value}}</span>
-                </div>
-                <div class="legend-percentage">{{segment.percent}}</div>
-              </div>
+            <h3>{{ trend.value }}</h3>
+            <div class="mini-chart">
+              @for (point of trend.data; track $index) {
+              <span [style.height]="point + '%'"></span>
+              }
             </div>
-          </div>
+          </article>
+          }
         </div>
 
-        <!-- Transaction Volume -->
-        <div class="content-card stats-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-arrow-left-right"></i>
-              Transaction Volume
-            </h3>
-            <button class="icon-btn-sm" (click)="openVolumeAnalysis()">
-              <i class="bi bi-three-dots"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="volume-stats-grid">
-              <div class="volume-stat-item">
-                <div class="stat-icon deposits-icon">
-                  <i class="bi bi-box-arrow-in-down"></i>
-                </div>
-                <div class="stat-content">
-                  <h4 class="stat-number">2,847</h4>
-                  <p class="stat-label">Total Deposits</p>
-                  <span class="stat-amount">KES 8.9M</span>
-                </div>
-                <div class="stat-chart-mini">
-                  <div class="mini-line-chart">
-                    <div class="line-point" *ngFor="let p of depositTrend" [style.height]="p + '%'"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="volume-stat-item">
-                <div class="stat-icon withdrawals-icon">
-                  <i class="bi bi-box-arrow-up"></i>
-                </div>
-                <div class="stat-content">
-                  <h4 class="stat-number">1,523</h4>
-                  <p class="stat-label">Total Withdrawals</p>
-                  <span class="stat-amount">KES 4.2M</span>
-                </div>
-                <div class="stat-chart-mini">
-                  <div class="mini-line-chart">
-                    <div class="line-point" *ngFor="let p of withdrawalTrend" [style.height]="p + '%'"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="volume-stat-item">
-                <div class="stat-icon loans-icon">
-                  <i class="bi bi-cash-stack"></i>
-                </div>
-                <div class="stat-content">
-                  <h4 class="stat-number">384</h4>
-                  <p class="stat-label">Loan Repayments</p>
-                  <span class="stat-amount">KES 3.1M</span>
-                </div>
-                <div class="stat-chart-mini">
-                  <div class="mini-line-chart">
-                    <div class="line-point" *ngFor="let p of repaymentTrend" [style.height]="p + '%'"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="volume-stat-item">
-                <div class="stat-icon transfers-icon">
-                  <i class="bi bi-arrow-repeat"></i>
-                </div>
-                <div class="stat-content">
-                  <h4 class="stat-number">892</h4>
-                  <p class="stat-label">Internal Transfers</p>
-                  <span class="stat-amount">KES 2.7M</span>
-                </div>
-                <div class="stat-chart-mini">
-                  <div class="mini-line-chart">
-                    <div class="line-point" *ngFor="let p of transferTrend" [style.height]="p + '%'"></div>
-                  </div>
-                </div>
-              </div>
+        <article class="analytics-card top-members-card">
+          <header class="card-header">
+            <div>
+              <h2>Top Performing Members</h2>
+              <p>Ranked by savings, loans, or activity levels</p>
             </div>
-          </div>
-        </div>
-
-        <!-- Top Performers -->
-        <div class="content-card ranking-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-trophy"></i>
-              Top Performing Members
-            </h3>
-            <div class="ranking-tabs">
-              <button class="ranking-tab" 
-                      [class.active]="rankingBy === 'savings'"
-                      (click)="rankingBy = 'savings'">
-                Savings
-              </button>
-              <button class="ranking-tab" 
-                      [class.active]="rankingBy === 'loans'"
-                      (click)="rankingBy = 'loans'">
-                Loans
-              </button>
-              <button class="ranking-tab" 
-                      [class.active]="rankingBy === 'activity'"
-                      (click)="rankingBy = 'activity'">
-                Activity
-              </button>
+            <select [(ngModel)]="rankingBy" class="soft-select">
+              <option value="savings">Savings</option>
+              <option value="loans">Loans</option>
+              <option value="activity">Activity</option>
+            </select>
+          </header>
+          <div class="top-members-list">
+            @for (member of topMembers; track member.id; let index = $index) {
+            <div class="member-row">
+              <span class="rank-badge">{{ index + 1 }}</span>
+              <span class="member-avatar" [ngClass]="member.color">{{ member.initials }}</span>
+              <span class="member-info">
+                <strong>{{ member.name }}</strong>
+                <small>{{ member.id }}</small>
+              </span>
+              <span class="member-amount">{{ member.amount }}</span>
+              <span class="member-trend" [class.negative]="member.trend < 0">{{ member.trendPercent }}</span>
             </div>
+            }
           </div>
-          <div class="card-body">
-            <div class="ranking-list">
-              <div class="ranking-item" *ngFor="let member of topMembers; let i = index">
-                <div class="rank-badge" [class.top-three]="i < 3">
-                  <span *ngIf="i === 0" class="gold-medal">🥇</span>
-                  <span *ngIf="i === 1" class="silver-medal">🥈</span>
-                  <span *ngIf="i === 2" class="bronze-medal">🥉</span>
-                  <span *ngIf="i > 2">{{i + 1}}</span>
-                </div>
-                <div class="member-avatar" [ngClass]="member.color">
-                  {{member.initials}}
-                </div>
-                <div class="member-details">
-                  <h5 class="member-name">{{member.name}}</h5>
-                  <span class="member-id">{{member.id}}</span>
-                </div>
-                <div class="member-value">
-                  <span class="value-amount">{{member.amount}}</span>
-                  <span class="value-trend" [class.positive]="member.trend > 0">
-                    <i class="bi bi-arrow-{{member.trend > 0 ? 'up' : 'down'}}"></i>
-                    {{member.trendPercent}}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        </article>
       </div>
-    </div>
+      }
 
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: REVENUE ANALYSIS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeAnalyticsTab === 'revenue'">
-      <div class="content-grid-full">
-        
-        <!-- Revenue Breakdown Table -->
-        <div class="content-card table-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-table"></i>
-              Detailed Revenue Breakdown
-            </h3>
-            <div class="card-header-actions">
-              <button class="icon-btn-sm" (click)="exportRevenueData()">
-                <i class="bi bi-download"></i>
-              </button>
-              <button class="icon-btn-sm" (click)="printRevenueReport()">
-                <i class="bi bi-printer"></i>
-              </button>
+      @if (activeAnalyticsTab === 'revenue') {
+      <div class="tab-pane revenue-pane">
+        <article class="analytics-card full-card">
+          <header class="card-header">
+            <div>
+              <h2>Revenue Breakdown</h2>
+              <p>Current vs previous period with targets and trends</p>
             </div>
+            <select [(ngModel)]="revenuePeriod" class="soft-select">
+              <option>Daily</option>
+              <option>Weekly</option>
+              <option>Monthly</option>
+              <option>Quarterly</option>
+            </select>
+          </header>
+
+          <div class="table-responsive">
+            <table class="analytics-table">
+              <thead>
+                <tr>
+                  <th>Revenue Source</th>
+                  <th>Current</th>
+                  <th>Previous</th>
+                  <th>Change</th>
+                  <th>Target</th>
+                  <th>Achievement</th>
+                  <th>Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of revenueBreakdown; track row.source) {
+                <tr [class.highlight-row]="row.highlight">
+                  <td>
+                    <div class="source-cell">
+                      <span class="source-icon" [style.background]="row.color"><i class="bi"
+                          [ngClass]="row.icon"></i></span>
+                      <strong>{{ row.source }}</strong>
+                    </div>
+                  </td>
+                  <td>{{ row.current }}</td>
+                  <td>{{ row.previous }}</td>
+                  <td><span class="change-pill" [class.negative]="!row.changePositive">{{ row.change }} {{
+                      row.percentChange }}</span></td>
+                  <td>{{ row.target }}</td>
+                  <td><span class="achievement-pill">{{ row.achievement }}</span></td>
+                  <td>
+                    <div class="table-sparkline">
+                      @for (point of row.trendData; track $index) {
+                      <span [style.height]="point + '%'"></span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
           </div>
-          <div class="card-body">
-            <div class="data-table-wrapper">
-              <table class="analytics-table">
+        </article>
+
+        <div class="revenue-secondary-grid">
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Revenue by Category</h2>
+            </header>
+            <div class="category-bars">
+              @for (cat of revenueByCategory; track cat.category) {
+              <div class="category-row">
+                <div class="category-label">
+                  <span class="legend-dot" [style.background]="cat.color"></span>
+                  <strong>{{ cat.category }}</strong>
+                  <em>{{ cat.amount }}</em>
+                </div>
+                <div class="progress-track"><span [style.width]="cat.percentage" [style.background]="cat.color"></span>
+                </div>
+                <small>{{ cat.percentage }}</small>
+              </div>
+              }
+            </div>
+          </article>
+
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Weekly Revenue</h2>
+            </header>
+            <div class="weekly-chart">
+              @for (day of weeklyRevenueData; track day.day) {
+              <div class="weekly-column">
+                <div class="weekly-bar" [style.height]="day.height"><span>{{ day.value }}</span></div>
+                <strong>{{ day.day }}</strong>
+                <small>{{ day.transactions }} txns</small>
+              </div>
+              }
+            </div>
+          </article>
+        </div>
+      </div>
+      }
+
+      @if (activeAnalyticsTab === 'loans') {
+      <div class="tab-pane loans-pane">
+        <div class="loan-metrics-grid">
+          @for (metric of loanPerformanceMetrics; track metric.name) {
+          <article class="loan-metric-card">
+            <span class="metric-dot" [style.background]="metric.color"></span>
+            <h3>{{ metric.value }}</h3>
+            <p>{{ metric.name }}</p>
+            <strong [class.negative]="!metric.changePositive">{{ metric.change }}</strong>
+          </article>
+          }
+        </div>
+
+        <div class="loans-layout-grid">
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Loan Type Distribution</h2>
+            </header>
+            <div class="loan-type-list">
+              @for (loan of loanTypeDistribution; track loan.type) {
+              <div class="loan-type-row">
+                <div>
+                  <span class="legend-dot" [style.background]="loan.color"></span>
+                  <strong>{{ loan.type }}</strong>
+                </div>
+                <span>{{ loan.count }} loans</span>
+                <em>{{ loan.percent }}</em>
+              </div>
+              }
+            </div>
+          </article>
+
+          <article class="analytics-card aging-card">
+            <header class="card-header compact">
+              <h2>Loan Aging Analysis</h2>
+            </header>
+            <div class="table-responsive">
+              <table class="analytics-table compact-table">
                 <thead>
                   <tr>
-                    <th>Revenue Source</th>
-                    <th>Current Period</th>
-                    <th>Previous Period</th>
-                    <th>Change</th>
-                    <th>% Change</th>
-                    <th>Target</th>
-                    <th>Achievement</th>
-                    <th>Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let row of revenueBreakdown" [class.highlight]="row.highlight">
-                    <td class="source-cell">
-                      <i class="{{row.icon}}" [style.color]="row.color"></i>
-                      <strong>{{row.source}}</strong>
-                    </td>
-                    <td class="amount-cell">{{row.current}}</td>
-                    <td class="amount-cell">{{row.previous}}</td>
-                    <td class="change-cell" [class.positive]="row.changePositive">
-                      {{row.change}}
-                    </td>
-                    <td class="percent-cell">
-                      <span class="percent-badge" [class.positive]="row.changePositive">
-                        <i class="bi bi-arrow-{{row.changePositive ? 'up' : 'down'}}"></i>
-                        {{row.percentChange}}
-                      </span>
-                    </td>
-                    <td class="amount-cell">{{row.target}}</td>
-                    <td class="achievement-cell">
-                      <div class="progress-bar-container">
-                        <div class="progress-bar-fill" 
-                             [style.width]="row.achievement"
-                             [class.achieved]="parseFloat(row.achievement) >= 100"></div>
-                        <span class="progress-label">{{row.achievement}}</span>
-                      </div>
-                    </td>
-                    <td class="trend-cell">
-                      <div class="mini-trend-chart">
-                        <div class="trend-bar" *ngFor="let val of row.trendData" [style.height]="val + '%'"></div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr class="totals-row">
-                    <td><strong>TOTAL REVENUE</strong></td>
-                    <td class="amount-cell"><strong>KES 12.4M</strong></td>
-                    <td class="amount-cell"><strong>KES 10.8M</strong></td>
-                    <td class="change-cell positive"><strong>+KES 1.6M</strong></td>
-                    <td class="percent-cell">
-                      <span class="percent-badge positive">
-                        <i class="bi bi-arrow-up"></i>
-                        <strong>+15.3%</strong>
-                      </span>
-                    </td>
-                    <td class="amount-cell"><strong>KES 12.0M</strong></td>
-                    <td class="achievement-cell">
-                      <div class="progress-bar-container">
-                        <div class="progress-bar-fill achieved" style="width: 103%"></div>
-                        <span class="progress-label"><strong>103%</strong></span>
-                      </div>
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Revenue by Category Chart -->
-        <div class="content-grid-2col">
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-bar-chart-fill"></i>
-                Revenue by Category
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="horizontal-bar-chart">
-                <div class="h-bar-item" *ngFor="let item of revenueByCategoryData">
-                  <div class="h-bar-label">
-                    <span class="category-name">{{item.category}}</span>
-                    <span class="category-amount">{{item.amount}}</span>
-                  </div>
-                  <div class="h-bar-track">
-                    <div class="h-bar-fill" 
-                         [style.width]="item.percentage"
-                         [style.background]="item.color"></div>
-                  </div>
-                  <div class="h-bar-percentage">{{item.percentage}}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-calendar-week"></i>
-                Revenue by Day of Week
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="weekly-revenue-chart">
-                <div class="week-day-bar" *ngFor="let day of weeklyRevenueData">
-                  <div class="day-bar-container">
-                    <div class="day-bar" [style.height]="day.height">
-                      <span class="bar-value">{{day.value}}</span>
-                    </div>
-                  </div>
-                  <span class="day-label">{{day.day}}</span>
-                  <span class="day-count">{{day.transactions}} txns</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: LOANS PERFORMANCE
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeAnalyticsTab === 'loans'">
-      <div class="content-grid-full">
-        
-        <!-- Loan Portfolio Overview -->
-        <div class="portfolio-overview-grid">
-          <div class="portfolio-card outstanding">
-            <div class="portfolio-icon">
-              <i class="bi bi-wallet2"></i>
-            </div>
-            <div class="portfolio-content">
-              <h3 class="portfolio-value">KES 45.2M</h3>
-              <p class="portfolio-label">Outstanding Portfolio</p>
-              <div class="portfolio-meta">
-                <span class="meta-item">
-                  <i class="bi bi-file-text"></i>
-                  384 active loans
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="portfolio-card disbursed">
-            <div class="portfolio-icon">
-              <i class="bi bi-cash-stack"></i>
-            </div>
-            <div class="portfolio-content">
-              <h3 class="portfolio-value">KES 8.3M</h3>
-              <p class="portfolio-label">Disbursed This Period</p>
-              <div class="portfolio-meta">
-                <span class="meta-item">
-                  <i class="bi bi-graph-up-arrow"></i>
-                  +18% from last period
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="portfolio-card repaid">
-            <div class="portfolio-icon">
-              <i class="bi bi-arrow-down-circle"></i>
-            </div>
-            <div class="portfolio-content">
-              <h3 class="portfolio-value">KES 3.1M</h3>
-              <p class="portfolio-label">Repayments Received</p>
-              <div class="portfolio-meta">
-                <span class="meta-item">
-                  <i class="bi bi-check-circle"></i>
-                  98.5% collection rate
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="portfolio-card arrears">
-            <div class="portfolio-icon">
-              <i class="bi bi-exclamation-triangle"></i>
-            </div>
-            <div class="portfolio-content">
-              <h3 class="portfolio-value">KES 467K</h3>
-              <p class="portfolio-label">In Arrears</p>
-              <div class="portfolio-meta">
-                <span class="meta-item">
-                  <i class="bi bi-percent"></i>
-                  1.03% PAR ratio
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loan Performance Charts -->
-        <div class="content-grid-2col">
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-pie-chart-fill"></i>
-                Portfolio by Loan Type
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="loan-type-distribution">
-                <div class="loan-type-chart">
-                  <div class="donut-chart-lg" [style.background]="getLoanTypeDonutGradient()">
-                    <div class="donut-center">
-                      <span class="donut-total-value">384</span>
-                      <span class="donut-total-label">Active Loans</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="loan-type-legend">
-                  <div class="legend-item-detailed" *ngFor="let type of loanTypeDistribution">
-                    <div class="legend-color" [style.background]="type.color"></div>
-                    <div class="legend-info">
-                      <span class="legend-label">{{type.type}}</span>
-                      <span class="legend-count">{{type.count}} loans</span>
-                    </div>
-                    <div class="legend-percentage">{{type.percent}}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-graph-up"></i>
-                Loan Performance Trends
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="multi-line-chart">
-                <div class="chart-grid-bg">
-                  <div class="grid-line" *ngFor="let i of [0,1,2,3,4,5]"></div>
-                </div>
-                <div class="chart-lines">
-                  <!-- This would be replaced with actual charting library -->
-                  <div class="performance-metrics-list">
-                    <div class="metric-row" *ngFor="let metric of loanPerformanceMetrics">
-                      <div class="metric-indicator" [style.background]="metric.color"></div>
-                      <span class="metric-name">{{metric.name}}</span>
-                      <span class="metric-value">{{metric.value}}</span>
-                      <span class="metric-change" [class.positive]="metric.changePositive">
-                        <i class="bi bi-arrow-{{metric.changePositive ? 'up' : 'down'}}"></i>
-                        {{metric.change}}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loan Aging Analysis -->
-        <div class="content-card table-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-clock-history"></i>
-              Loan Aging Analysis
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="aging-table-wrapper">
-              <table class="analytics-table aging-table">
-                <thead>
-                  <tr>
-                    <th>Age Bracket</th>
-                    <th>Number of Loans</th>
-                    <th>Outstanding Amount</th>
-                    <th>% of Portfolio</th>
-                    <th>Expected Collections</th>
+                    <th>Bracket</th>
+                    <th>Count</th>
+                    <th>Amount</th>
+                    <th>Percent</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let bracket of loanAgingData" [class.alert]="bracket.alert">
-                    <td class="bracket-cell">
-                      <strong>{{bracket.bracket}}</strong>
-                    </td>
-                    <td>{{bracket.count}}</td>
-                    <td class="amount-cell">{{bracket.amount}}</td>
-                    <td>
-                      <div class="percentage-bar-inline">
-                        <div class="bar-fill-inline" [style.width]="bracket.percent"></div>
-                        <span>{{bracket.percent}}</span>
-                      </div>
-                    </td>
-                    <td class="amount-cell">{{bracket.expected}}</td>
-                    <td>
-                      <span class="status-badge-sm" [ngClass]="bracket.statusClass">
-                        {{bracket.status}}
-                      </span>
-                    </td>
+                  @for (loan of loanAgingData; track loan.bracket) {
+                  <tr [class.alert-row]="loan.alert">
+                    <td>{{ loan.bracket }}</td>
+                    <td>{{ loan.count }}</td>
+                    <td>{{ loan.amount }}</td>
+                    <td>{{ loan.percent }}</td>
+                    <td><span class="status-pill" [ngClass]="loan.statusClass">{{ loan.status }}</span></td>
                   </tr>
+                  }
                 </tbody>
               </table>
             </div>
-          </div>
+          </article>
+        </div>
+      </div>
+      }
+
+      @if (activeAnalyticsTab === 'members') {
+      <div class="tab-pane members-pane">
+        <div class="members-grid">
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Age Distribution</h2>
+            </header>
+            <div class="age-bars">
+              @for (age of ageDistribution; track age.range) {
+              <div class="age-row">
+                <span>{{ age.range }}</span>
+                <div class="progress-track"><span [style.width]="age.percent"></span></div>
+                <strong>{{ age.count }}</strong>
+                <em>{{ age.percent }}</em>
+              </div>
+              }
+            </div>
+          </article>
+
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Engagement Factors</h2>
+            </header>
+            <div class="engagement-list">
+              @for (factor of engagementFactors; track factor.label) {
+              <div class="engagement-row">
+                <span><i class="bi" [ngClass]="factor.icon"></i> {{ factor.label }}</span>
+                <div class="progress-track"><span [style.width]="factor.score + '%'"></span></div>
+                <strong>{{ factor.score }}%</strong>
+              </div>
+              }
+            </div>
+          </article>
         </div>
 
+        <article class="analytics-card segment-card">
+          <header class="card-header">
+            <div>
+              <h2>Member Segments</h2>
+              <p>Behavioral groups for targeted engagement</p>
+            </div>
+          </header>
+          <div class="segments-grid">
+            @for (segment of memberSegments; track segment.name) {
+            <article class="segment-item">
+              <span class="segment-icon" [style.background]="segment.color"><i class="bi"
+                  [ngClass]="segment.icon"></i></span>
+              <h3>{{ segment.name }}</h3>
+              <p>{{ segment.description }}</p>
+              <div class="segment-stats">
+                <span><small>Count</small><strong>{{ segment.count }}</strong></span>
+                <span><small>Avg Savings</small><strong>{{ segment.avgSavings }}</strong></span>
+                <span><small>Avg Loans</small><strong>{{ segment.avgLoans }}</strong></span>
+                <span><small>Activity</small><strong>{{ segment.activityScore }}%</strong></span>
+              </div>
+            </article>
+            }
+          </div>
+        </article>
       </div>
+      }
+
+      @if (activeAnalyticsTab === 'comparison') {
+      <div class="tab-pane comparison-pane">
+        <article class="analytics-card comparison-controls-card">
+          <header class="card-header">
+            <div>
+              <h2>Period Comparison</h2>
+              <p>Compare activity, revenue, and member behavior between two periods</p>
+            </div>
+            <div class="comparison-selects">
+              <select [(ngModel)]="comparisonPeriod1" class="soft-select">
+                <option>This Month</option>
+                <option>Last Month</option>
+                <option>This Quarter</option>
+                <option>This Year</option>
+              </select>
+              <select [(ngModel)]="comparisonPeriod2" class="soft-select">
+                <option>Last Month</option>
+                <option>Previous Quarter</option>
+                <option>Last Year</option>
+              </select>
+            </div>
+          </header>
+        </article>
+
+        <div class="comparison-grid">
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Revenue Comparison</h2>
+            </header>
+            <div class="comparison-bars">
+              @for (item of revenueComparisonData; track item.label) {
+              <div class="comparison-column">
+                <div class="dual-bars">
+                  <span class="bar-one" [style.height]="item.period1Height"><em>{{ item.period1Value }}</em></span>
+                  <span class="bar-two" [style.height]="item.period2Height"><em>{{ item.period2Value }}</em></span>
+                </div>
+                <strong>{{ item.label }}</strong>
+              </div>
+              }
+            </div>
+          </article>
+
+          <article class="analytics-card">
+            <header class="card-header compact">
+              <h2>Activity Comparison</h2>
+            </header>
+            <div class="activity-comparison-list">
+              @for (item of activityComparisonData; track item.label) {
+              <div class="activity-row">
+                <span><i class="bi" [ngClass]="item.icon"></i> {{ item.label }}</span>
+                <div class="activity-values">
+                  <strong>{{ item.period1Value }}</strong>
+                  <small>{{ item.period2Value }}</small>
+                </div>
+                <em [class.negative]="!item.changePositive">{{ item.change }}</em>
+              </div>
+              }
+            </div>
+          </article>
+        </div>
+
+        <article class="analytics-card full-card">
+          <header class="card-header compact">
+            <h2>Comparison Metrics</h2>
+          </header>
+          <div class="comparison-metrics-grid">
+            @for (metric of comparisonMetrics; track metric.name) {
+            <article class="comparison-metric-card">
+              <span class="source-icon" [style.background]="metric.color"><i class="bi"
+                  [ngClass]="metric.icon"></i></span>
+              <h3>{{ metric.name }}</h3>
+              <div class="metric-values">
+                <span><small>{{ comparisonPeriod1 }}</small><strong>{{ metric.period1 }}</strong></span>
+                <span><small>{{ comparisonPeriod2 }}</small><strong>{{ metric.period2 }}</strong></span>
+              </div>
+              <strong class="variance" [class.negative]="!metric.variancePositive">{{ metric.variance }} {{
+                metric.percentChange }}</strong>
+              <div class="table-sparkline wide">
+                @for (point of metric.trendData; track $index) {
+                <span [style.height]="point + '%'"></span>
+                }
+              </div>
+            </article>
+            }
+          </div>
+        </article>
+      </div>
+      }
     </div>
+  </section>
 
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: MEMBER INSIGHTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeAnalyticsTab === 'members'">
-      <div class="content-grid-full">
-        
-        <!-- Member Demographics -->
-        <div class="content-grid-3col">
-          <div class="content-card stat-card">
-            <div class="card-header-mini">
-              <h4 class="card-title-sm">
-                <i class="bi bi-people-fill"></i>
-                Member Growth
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="growth-stat">
-                <h2 class="growth-number">1,248</h2>
-                <p class="growth-label">Total Active Members</p>
-                <div class="growth-chart">
-                  <div class="growth-bar" *ngFor="let val of memberGrowthData" [style.height]="val + '%'"></div>
-                </div>
-                <div class="growth-meta">
-                  <span class="meta-positive">
-                    <i class="bi bi-arrow-up"></i> +76 this month
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card stat-card">
-            <div class="card-header-mini">
-              <h4 class="card-title-sm">
-                <i class="bi bi-gender-ambiguous"></i>
-                Gender Distribution
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="gender-distribution">
-                <div class="gender-chart">
-                  <div class="gender-segment male" style="width: 58%">
-                    <span>58%</span>
-                  </div>
-                  <div class="gender-segment female" style="width: 42%">
-                    <span>42%</span>
-                  </div>
-                </div>
-                <div class="gender-stats">
-                  <div class="gender-stat-item">
-                    <span class="gender-icon male-icon">♂</span>
-                    <div class="gender-info">
-                      <strong>724</strong>
-                      <span>Male</span>
-                    </div>
-                  </div>
-                  <div class="gender-stat-item">
-                    <span class="gender-icon female-icon">♀</span>
-                    <div class="gender-info">
-                      <strong>524</strong>
-                      <span>Female</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card stat-card">
-            <div class="card-header-mini">
-              <h4 class="card-title-sm">
-                <i class="bi bi-calendar-range"></i>
-                Age Distribution
-              </h4>
-            </div>
-            <div class="card-body">
-              <div class="age-distribution">
-                <div class="age-bar-chart">
-                  <div class="age-bar-item" *ngFor="let age of ageDistributionData">
-                    <div class="age-bar" [style.height]="age.percent">
-                      <span class="age-count">{{age.count}}</span>
-                    </div>
-                    <span class="age-label">{{age.range}}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Member Engagement -->
-        <div class="content-grid-2col">
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-activity"></i>
-                Member Engagement Score
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="engagement-score-display">
-                <div class="score-circle">
-                  <svg viewBox="0 0 200 200">
-                    <circle cx="100" cy="100" r="90" class="score-bg"></circle>
-                    <circle cx="100" cy="100" r="90" class="score-fill" 
-                            [style.stroke-dashoffset]="calculateScoreDashOffset(8.4)"></circle>
-                  </svg>
-                  <div class="score-center">
-                    <span class="score-value">8.4</span>
-                    <span class="score-max">/10</span>
-                  </div>
-                </div>
-                <div class="engagement-breakdown">
-                  <div class="engagement-item" *ngFor="let item of engagementFactors">
-                    <div class="engagement-label">
-                      <i class="{{item.icon}}"></i>
-                      <span>{{item.label}}</span>
-                    </div>
-                    <div class="engagement-bar">
-                      <div class="engagement-fill" [style.width]="item.score + '%'"></div>
-                      <span class="engagement-score">{{item.score}}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card table-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-star-fill"></i>
-                Member Segmentation
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="segmentation-list">
-                <div class="segment-item" *ngFor="let segment of memberSegments">
-                  <div class="segment-header">
-                    <div class="segment-icon" [style.background]="segment.color">
-                      <i class="{{segment.icon}}"></i>
-                    </div>
-                    <div class="segment-info">
-                      <h5 class="segment-name">{{segment.name}}</h5>
-                      <p class="segment-description">{{segment.description}}</p>
-                    </div>
-                    <div class="segment-count">
-                      <strong>{{segment.count}}</strong>
-                      <span>members</span>
-                    </div>
-                  </div>
-                  <div class="segment-metrics">
-                    <div class="segment-metric">
-                      <span class="metric-label">Avg. Savings</span>
-                      <span class="metric-value">{{segment.avgSavings}}</span>
-                    </div>
-                    <div class="segment-metric">
-                      <span class="metric-label">Avg. Loans</span>
-                      <span class="metric-value">{{segment.avgLoans}}</span>
-                    </div>
-                    <div class="segment-metric">
-                      <span class="metric-label">Activity Score</span>
-                      <span class="metric-value">{{segment.activityScore}}/10</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: PERIOD COMPARISON
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeAnalyticsTab === 'comparison'">
-      <div class="content-grid-full">
-        
-        <!-- Comparison Header -->
-        <div class="comparison-controls">
-          <div class="period-selector">
-            <label>Compare:</label>
-            <select class="period-select" [(ngModel)]="comparisonPeriod1">
-              <option>This Month</option>
-              <option>Last Month</option>
-              <option>This Quarter</option>
-              <option>Last Quarter</option>
-              <option>This Year</option>
-              <option>Last Year</option>
-            </select>
-          </div>
-          <div class="period-separator">
-            <i class="bi bi-arrow-left-right"></i>
-          </div>
-          <div class="period-selector">
-            <label>With:</label>
-            <select class="period-select" [(ngModel)]="comparisonPeriod2">
-              <option>Last Month</option>
-              <option selected>Previous Month</option>
-              <option>Same Period Last Year</option>
-              <option>Last Quarter</option>
-              <option>Last Year</option>
-            </select>
-          </div>
-          <button class="btn-apply-comparison" (click)="applyComparison()">
-            <i class="bi bi-arrow-repeat"></i>
-            Compare Periods
-          </button>
-        </div>
-
-        <!-- Comparison Table -->
-        <div class="content-card table-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-bar-chart-line"></i>
-              Period-over-Period Comparison
-            </h3>
-            <button class="icon-btn-sm" (click)="exportComparisonData()">
-              <i class="bi bi-download"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="comparison-table-wrapper">
-              <table class="analytics-table comparison-table">
-                <thead>
-                  <tr>
-                    <th>Metric</th>
-                    <th>{{comparisonPeriod1}}</th>
-                    <th>{{comparisonPeriod2}}</th>
-                    <th>Variance</th>
-                    <th>% Change</th>
-                    <th>Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let metric of comparisonMetrics">
-                    <td class="metric-name-cell">
-                      <i class="{{metric.icon}}" [style.color]="metric.color"></i>
-                      <strong>{{metric.name}}</strong>
-                    </td>
-                    <td class="amount-cell primary-period">
-                      <strong>{{metric.period1}}</strong>
-                    </td>
-                    <td class="amount-cell">{{metric.period2}}</td>
-                    <td class="variance-cell" [class.positive]="metric.variancePositive">
-                      {{metric.variance}}
-                    </td>
-                    <td class="percent-cell">
-                      <span class="percent-badge-lg" [class.positive]="metric.variancePositive">
-                        <i class="bi bi-arrow-{{metric.variancePositive ? 'up' : 'down'}}"></i>
-                        {{metric.percentChange}}
-                      </span>
-                    </td>
-                    <td class="trend-cell">
-                      <div class="comparison-trend-chart">
-                        <div class="trend-line" *ngFor="let point of metric.trendData" 
-                             [style.height]="point + '%'"
-                             [class.period1]="metric.trendData.indexOf(point) < metric.trendData.length / 2"
-                             [class.period2]="metric.trendData.indexOf(point) >= metric.trendData.length / 2">
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Visual Comparison Charts -->
-        <div class="content-grid-2col">
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-graph-up"></i>
-                Revenue Comparison
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="dual-bar-chart">
-                <div class="dual-bar-group" *ngFor="let data of revenueComparisonData">
-                  <div class="dual-bars">
-                    <div class="bar period1" [style.height]="data.period1Height">
-                      <span class="bar-value">{{data.period1Value}}</span>
-                    </div>
-                    <div class="bar period2" [style.height]="data.period2Height">
-                      <span class="bar-value">{{data.period2Value}}</span>
-                    </div>
-                  </div>
-                  <span class="bar-group-label">{{data.label}}</span>
-                </div>
-              </div>
-              <div class="chart-legend-row">
-                <div class="legend-item">
-                  <span class="legend-dot period1"></span>
-                  <span>{{comparisonPeriod1}}</span>
-                </div>
-                <div class="legend-item">
-                  <span class="legend-dot period2"></span>
-                  <span>{{comparisonPeriod2}}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="content-card chart-card">
-            <div class="card-header">
-              <h3 class="card-title">
-                <i class="bi bi-people"></i>
-                Member Activity Comparison
-              </h3>
-            </div>
-            <div class="card-body">
-              <div class="activity-comparison">
-                <div class="activity-metric" *ngFor="let activity of activityComparisonData">
-                  <div class="activity-label">
-                    <i class="{{activity.icon}}"></i>
-                    <span>{{activity.label}}</span>
-                  </div>
-                  <div class="activity-bars">
-                    <div class="activity-bar-row period1">
-                      <span class="period-label">{{comparisonPeriod1}}</span>
-                      <div class="activity-bar-track">
-                        <div class="activity-bar-fill" [style.width]="activity.period1Percent"></div>
-                      </div>
-                      <span class="activity-value">{{activity.period1Value}}</span>
-                    </div>
-                    <div class="activity-bar-row period2">
-                      <span class="period-label">{{comparisonPeriod2}}</span>
-                      <div class="activity-bar-track">
-                        <div class="activity-bar-fill" [style.width]="activity.period2Percent"></div>
-                      </div>
-                      <span class="activity-value">{{activity.period2Value}}</span>
-                    </div>
-                  </div>
-                  <div class="activity-change" [class.positive]="activity.changePositive">
-                    <i class="bi bi-arrow-{{activity.changePositive ? 'up' : 'down'}}"></i>
-                    {{activity.change}}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════════════════
-  MODALS
-══════════════════════════════════════════════════════════════════════════ -->
-
-<!-- Export Modal -->
-<div class="modal-backdrop" [class.show]="showExportModal" (click)="closeExportModal()">
-  <div class="modal-dialog" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="bi bi-download"></i>
-          Export Analytics Report
-        </h3>
-        <button class="modal-close-btn" (click)="closeExportModal()">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
+  @if (showExportModal) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark">EX</span> Export Analytics Report</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Report Type</label>
-          <select class="form-select" [(ngModel)]="exportReportType">
+        <div class="alert-banner info">
+          <span>i</span>
+          <p>Select the report type, format, and delivery preferences.</p>
+        </div>
+        <label class="form-group">
+          <span>Report Type</span>
+          <select [(ngModel)]="exportReportType">
             <option>Complete Analytics Report</option>
-            <option>Revenue Summary</option>
-            <option>Loan Performance Report</option>
-            <option>Member Insights Report</option>
-            <option>Period Comparison Report</option>
+            <option>Revenue Analysis</option>
+            <option>Loans Performance</option>
+            <option>Member Insights</option>
+            <option>Period Comparison</option>
           </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Export Format</label>
-          <div class="format-options">
-            <label class="format-option">
-              <input type="radio" name="format" value="PDF" [(ngModel)]="exportFormat">
-              <div class="format-box">
-                <i class="bi bi-file-pdf"></i>
-                <span>PDF</span>
-              </div>
-            </label>
-            <label class="format-option">
-              <input type="radio" name="format" value="Excel" [(ngModel)]="exportFormat">
-              <div class="format-box">
-                <i class="bi bi-file-excel"></i>
-                <span>Excel</span>
-              </div>
-            </label>
-            <label class="format-option">
-              <input type="radio" name="format" value="CSV" [(ngModel)]="exportFormat">
-              <div class="format-box">
-                <i class="bi bi-filetype-csv"></i>
-                <span>CSV</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Include Charts</label>
-          <div class="checkbox-group">
-            <label class="checkbox-option">
-              <input type="checkbox" [(ngModel)]="includeCharts">
-              <span>Include all charts and graphs</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Email Report To</label>
-          <input type="email" class="form-control" [(ngModel)]="exportEmail" placeholder="email@example.com">
-        </div>
+        </label>
+        <label class="form-group">
+          <span>Export Format</span>
+          <select [(ngModel)]="exportFormat">
+            <option>PDF</option>
+            <option>Excel</option>
+            <option>CSV</option>
+          </select>
+        </label>
+        <label class="form-check">
+          <input type="checkbox" [(ngModel)]="includeCharts" />
+          <span>Include charts and visual summaries</span>
+        </label>
+        <label class="form-group">
+          <span>Email Copy To</span>
+          <input type="email" placeholder="manager@rongosacco.co.ke" [(ngModel)]="exportEmail" />
+        </label>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="closeExportModal()">Cancel</button>
-        <button class="btn-primary" (click)="confirmExport()">
-          <i class="bi bi-download"></i>
-          Export Report
-        </button>
-      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Cancel</button>
+        <button type="button" class="btn-primary" (click)="exportReport()">Export Report</button>
+      </footer>
     </div>
   </div>
-</div>
+  }
 
-<!-- Advanced Filters Modal -->
-<div class="modal-backdrop" [class.show]="showAdvancedFilters" (click)="closeAdvancedFilters()">
-  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="bi bi-sliders"></i>
-          Advanced Filters
-        </h3>
-        <button class="modal-close-btn" (click)="closeAdvancedFilters()">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
+  @if (showAdvancedFilters) {
+  <div class="modal-overlay" (click)="closeModals()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><span class="modal-mark">FL</span> Advanced Filters</h2>
+        <button type="button" class="modal-close" (click)="closeModals()">x</button>
+      </header>
       <div class="modal-body">
         <div class="filter-grid">
-          <div class="form-group">
-            <label class="form-label">Account Type</label>
-            <select class="form-select" [(ngModel)]="filterAccountType">
+          <label class="form-group">
+            <span>Account Type</span>
+            <select [(ngModel)]="filterAccountType">
               <option>All Account Types</option>
-              <option>Savings Accounts</option>
-              <option>Fixed Deposits</option>
+              <option>Savings</option>
               <option>Share Capital</option>
+              <option>Loan Account</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Transaction Channel</label>
-            <select class="form-select" [(ngModel)]="filterChannel">
+          </label>
+          <label class="form-group">
+            <span>Channel</span>
+            <select [(ngModel)]="filterChannel">
               <option>All Channels</option>
               <option>M-Pesa</option>
-              <option>Bank Transfer</option>
+              <option>Bank</option>
               <option>Cash</option>
-              <option>Cheque</option>
+              <option>Mobile App</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Member Category</label>
-            <select class="form-select" [(ngModel)]="filterMemberCategory">
+          </label>
+          <label class="form-group">
+            <span>Member Category</span>
+            <select [(ngModel)]="filterMemberCategory">
               <option>All Members</option>
-              <option>Regular Members</option>
-              <option>Premium Members</option>
-              <option>VIP Members</option>
-              <option>Dormant Members</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Loan Status</label>
-            <select class="form-select" [(ngModel)]="filterLoanStatus">
-              <option>All Loans</option>
               <option>Active</option>
-              <option>Fully Paid</option>
-              <option>In Arrears</option>
-              <option>Written Off</option>
+              <option>Dormant</option>
+              <option>New Members</option>
+              <option>High Value</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Amount Range</label>
-            <div class="range-inputs">
-              <input type="number" class="form-control" [(ngModel)]="filterAmountMin" placeholder="Min">
-              <span class="range-separator">to</span>
-              <input type="number" class="form-control" [(ngModel)]="filterAmountMax" placeholder="Max">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Branch/Location</label>
-            <select class="form-select" [(ngModel)]="filterBranch">
+          </label>
+          <label class="form-group">
+            <span>Loan Status</span>
+            <select [(ngModel)]="filterLoanStatus">
+              <option>All Loans</option>
+              <option>Current</option>
+              <option>Overdue</option>
+              <option>Defaulted</option>
+              <option>Closed</option>
+            </select>
+          </label>
+          <label class="form-group">
+            <span>Min Amount</span>
+            <input type="number" placeholder="0" [(ngModel)]="filterAmountMin" />
+          </label>
+          <label class="form-group">
+            <span>Max Amount</span>
+            <input type="number" placeholder="1000000" [(ngModel)]="filterAmountMax" />
+          </label>
+          <label class="form-group full-field">
+            <span>Branch</span>
+            <select [(ngModel)]="filterBranch">
               <option>All Branches</option>
-              <option>Main Branch</option>
-              <option>Westlands Branch</option>
-              <option>Eastleigh Branch</option>
-              <option>Online</option>
+              <option>Rongo Main</option>
+              <option>Awendo</option>
+              <option>Migori</option>
             </select>
-          </div>
+          </label>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="resetAdvancedFilters()">
-          <i class="bi bi-arrow-counterclockwise"></i>
-          Reset All
-        </button>
-        <button class="btn-primary" (click)="applyAdvancedFilters()">
-          <i class="bi bi-check-lg"></i>
-          Apply Filters
-        </button>
-      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="resetAdvancedFilters()">Reset</button>
+        <button type="button" class="btn-primary" (click)="applyAdvancedFilters()">Apply Filters</button>
+      </footer>
     </div>
   </div>
-</div>
-
-<!-- Toast Notification -->
-<div class="toast-notification" [class.show]="toastVisible" [attr.data-type]="toastType">
-  <div class="toast-icon">
-    <i class="bi bi-check-circle-fill" *ngIf="toastType === 'success'"></i>
-    <i class="bi bi-info-circle-fill" *ngIf="toastType === 'info'"></i>
-    <i class="bi bi-exclamation-triangle-fill" *ngIf="toastType === 'warning'"></i>
-    <i class="bi bi-x-circle-fill" *ngIf="toastType === 'danger'"></i>
-  </div>
-  <div class="toast-content">
-    <span class="toast-message">{{toastMessage}}</span>
-  </div>
-  <button class="toast-close" (click)="hideToast()">
-    <i class="bi bi-x"></i>
-  </button>
-</div>
+  }
+</section>

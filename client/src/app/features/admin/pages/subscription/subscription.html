@@ -1,0 +1,803 @@
+<!-- ═══════════════════════════════════════════════════════════════════
+     SACCOPay Admin — Subscription & Billing Page
+     Neo-Green Glassmorphic Light Theme · Angular v21 Standalone
+     ═══════════════════════════════════════════════════════════════════ -->
+
+
+
+
+  <!-- ────────────────────── MAIN CONTENT ────────────────────────── -->
+  <div class="">
+
+    
+
+    <!-- ── Page Content ──────────────────────────────────────── -->
+    <div class="page-content">
+
+      <!-- ═══════ ACTIVE SUBSCRIPTION BANNER ═══════ -->
+      <div class="active-sub-banner">
+        <div class="active-sub-left">
+          <div class="active-sub-label">Active Subscription</div>
+          <div class="active-sub-title">Growth Plan — Contract Ends May 31, 2026</div>
+          <div class="active-sub-next">Next billing: <strong>KES 52,500</strong> on May 1, 2026.</div>
+        </div>
+        <div class="active-sub-stats">
+          <div class="active-stat">
+            <div class="active-stat-value">KES 97.0K</div>
+            <div class="active-stat-label">Monthly</div>
+          </div>
+          <div class="active-stat-divider"></div>
+          <div class="active-stat">
+            <div class="active-stat-value">3-Mo</div>
+            <div class="active-stat-label">Contract</div>
+          </div>
+          <div class="active-stat-divider"></div>
+          <div class="active-stat">
+            <div class="active-stat-value">5</div>
+            <div class="active-stat-label">Add-ons</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ AUTO SUGGEST BAR ═══════ -->
+      <div class="auto-suggest-bar">
+        <div class="auto-suggest-left">
+          <span class="auto-suggest-icon">💡</span>
+          <div>
+            <div class="auto-suggest-title">Not sure which package fits your SACCO?</div>
+            <div class="auto-suggest-sub">Based on your profile — 1,284 members, 3 branches, Kenya-based — we can suggest the best plan.</div>
+          </div>
+        </div>
+        <button class="btn-auto-suggest" (click)="openAutoSuggest()">Auto-Suggest My Package</button>
+      </div>
+
+      <!-- ═══════ STAT STRIP (Tabs + Stats) ═══════ -->
+      <div class="stat-strip-card">
+        <div class="stat-strip-tabs">
+          <div class="tab-group">
+            @for (tab of ['Manage Subscription', 'Billing History']; track tab) {
+              <button class="strip-tab" [class.active]="mainTab() === tab" (click)="setMainTab($any(tab))">{{ tab }}</button>
+            }
+          </div>
+          <button class="compare-plans-btn">Compare Plans</button>
+        </div>
+        <div class="stat-strip-row">
+          <div class="strip-stat"><div class="strip-stat-val green">KES 97.0K</div><div class="strip-stat-label">Current Monthly</div></div>
+          <div class="strip-stat-divider"></div>
+          <div class="strip-stat"><div class="strip-stat-val">Growth</div><div class="strip-stat-label">Active Plan</div></div>
+          <div class="strip-stat-divider"></div>
+          <div class="strip-stat"><div class="strip-stat-val">5</div><div class="strip-stat-label">Active Add-ons</div></div>
+          <div class="strip-stat-divider"></div>
+          <div class="strip-stat"><div class="strip-stat-val teal">May 31</div><div class="strip-stat-label">Contract Ends</div></div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════
+           TAB: MANAGE SUBSCRIPTION
+           ════════════════════════════════════════════════════════ -->
+      @if (mainTab() === 'Manage Subscription') {
+
+        <!-- ═══════ TIER FEATURES ═══════ -->
+        <div class="glass-card tier-features-card">
+          <div class="tier-features-header">
+            <h2 class="section-title">What is Included in Each Tier</h2>
+            <p class="section-sub">See exactly what you get at every level. No hidden costs.</p>
+          </div>
+          <div class="tier-tabs">
+            @for (tier of tierNames; track tier) {
+              <button class="tier-tab" [class.active]="activeTier() === tier" (click)="activeTier.set(tier)">{{ tier }}</button>
+            }
+          </div>
+          <div class="tier-features-grid">
+            @for (category of objectKeys(tierFeatures[activeTier()]); track category) {
+              <div class="tier-feature-col">
+                <div class="tier-feature-category">{{ category }}</div>
+                <ul class="tier-feature-list">
+                  @for (item of tierFeatures[activeTier()][category]; track item) {
+                    <li class="tier-feature-item"><span class="tier-feature-check">✓</span> {{ item }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+          @if (activeTier() === 'Free / Core') {
+            <div class="tier-free-badge"><span class="tier-free-dot"></span> Free Core: Included in every plan at no extra charge.</div>
+          }
+        </div>
+
+        <!-- ═══════ STEP WIZARD BAR ═══════ -->
+        <div class="wizard-bar glass-card">
+          <div class="wizard-steps">
+            @for (ws of [{num:1, label:'Select Plan', sub:'Choose base subscription'},{num:2, label:'Add-ons & Extras', sub:'Customize features'},{num:3, label:'Contract Terms', sub:'Duration & payment'},{num:4, label:'Checkout', sub:'Review & pay'}]; track ws.num; let last = $last) {
+              <div class="wizard-step-wrap">
+                <div class="wizard-step" [class.active]="step() === ws.num" [class.done]="step() > ws.num">
+                  <div class="wizard-step-circle">{{ step() > ws.num ? '✓' : ws.num }}</div>
+                  <div class="wizard-step-text">
+                    <div class="wizard-step-label">{{ ws.label }}</div>
+                    <div class="wizard-step-sub">{{ ws.sub }}</div>
+                  </div>
+                </div>
+                @if (!last) { <div class="wizard-connector" [class.done]="step() > ws.num"></div> }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- ═══════ STEP CONTENT ═══════ -->
+        <div class="step-content-area">
+
+          <!-- ────── STEP 1: SELECT PLAN ────── -->
+          @if (step() === 1) {
+            <div class="step-layout">
+              <div class="step-main">
+                <div class="step-header-row">
+                  <div>
+                    <h3 class="step-section-title">Choose Your Base Plan</h3>
+                    <p class="step-section-sub">All plans include core banking, member management, and loan processing. <span class="text-green">More features. Less cost.</span></p>
+                  </div>
+                  <div class="plan-cat-tabs">
+                    <button class="plan-cat-tab" [class.active]="planCatTab() === 'sacco'" (click)="setPlanCatTab('sacco')">🏦 Official SACCOs</button>
+                    <button class="plan-cat-tab" [class.active]="planCatTab() === 'micro'" (click)="setPlanCatTab('micro')">🤝 Chamas & Groups</button>
+                  </div>
+                </div>
+                @if (planCatTab() === 'micro') {
+                  <div class="micro-notice">
+                    <span class="micro-notice-icon">💡</span>
+                    <div><strong>No Official Registration Required.</strong> These plans are designed for chamas, village groups, investment clubs, and small informal SACCOs that need a proper system to manage contributions, loans, and members — without the complexity or upfront cost of a full SACCO licence.</div>
+                  </div>
+                }
+                <div class="plans-list">
+                  @for (plan of filteredPlans(); track plan.id) {
+                    <div class="plan-row" [class.selected]="selectedPlan()?.id === plan.id" [class.popular]="plan.popular" (click)="selectPlan(plan)">
+                      @if (plan.popular) { <div class="plan-popular-ribbon">⭐ Most Popular</div> }
+                      @if (plan.tag && !plan.popular) {
+                        <div class="plan-tag-pill" [style.background]="getTagBg(plan.tagColor || 'green')" [style.color]="getTagColor(plan.tagColor || 'green')" [style.border-color]="getTagBorder(plan.tagColor || 'green')">{{ plan.tag }}</div>
+                      }
+                      <div class="plan-row-left">
+                        <div class="plan-row-radio">
+                          <div class="radio-circle" [class.checked]="selectedPlan()?.id === plan.id">
+                            @if (selectedPlan()?.id === plan.id) { <div class="radio-dot"></div> }
+                          </div>
+                        </div>
+                        <div class="plan-row-info">
+                          <div class="plan-row-name">{{ plan.name }}</div>
+                          <div class="plan-row-members">{{ plan.memberLimit }}</div>
+                          <div class="plan-row-desc">{{ plan.description }}</div>
+                        </div>
+                      </div>
+                      <div class="plan-row-features">
+                        @for (f of plan.features.slice(0, 4); track f) {
+                          <div class="plan-feat-item"><span class="plan-feat-check">✓</span> {{ f }}</div>
+                        }
+                        @if (plan.features.length > 4) { <div class="plan-feat-more">+{{ plan.features.length - 4 }} more features</div> }
+                      </div>
+                      <div class="plan-row-price">
+                        @if (plan.price === 0) {
+                          <div class="plan-price-free">FREE</div>
+                          <div class="plan-price-note">+ KES 1,000 activation</div>
+                        } @else {
+                          <div class="plan-price-amount"><span class="plan-price-currency">KES</span><span class="plan-price-num">{{ (plan.price / 1000) | number:'1.0-0' }}K</span></div>
+                          <div class="plan-price-period">{{ plan.billingLabel }}</div>
+                        }
+                        <button class="plan-select-btn" [class.selected]="selectedPlan()?.id === plan.id" (click)="selectPlan(plan); stopProp($event)">{{ getSelectBtnLabel(plan) }}</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+              <!-- Order Summary Sidebar -->
+              <div class="step-sidebar">
+                <ng-container *ngTemplateOutlet="orderSummaryTpl"></ng-container>
+              </div>
+            </div>
+          }
+
+          <!-- ────── STEP 2: ADD-ONS & EXTRAS ────── -->
+          @if (step() === 2) {
+            <div class="step-layout">
+              <div class="step-main">
+                <div class="addons-header-row">
+                  <div>
+                    <h3 class="step-section-title">Premium Add-ons</h3>
+                    <p class="step-section-sub">Billed separately. Select only what you need.</p>
+                  </div>
+                  <div class="addons-active-badge">{{ selectedAddonIds().length }} Active</div>
+                </div>
+                <div class="addon-cat-filter">
+                  @for (c of addonCategories; track c) {
+                    <button class="addon-cat-btn" [class.active]="addonCatFilter() === c" (click)="addonCatFilter.set(c)">{{ c }}</button>
+                  }
+                </div>
+                <div class="addons-grid">
+                  @for (addon of filteredAddons(); track addon.id) {
+                    <div class="addon-card" [class.selected]="isAddonSelected(addon.id)" (click)="toggleAddon(addon.id)">
+                      @if (isAddonSelected(addon.id)) { <div class="addon-selected-ribbon">✓ Added to your plan</div> }
+                      <div class="addon-card-top">
+                        <div class="addon-cat-tag">{{ addon.category }}</div>
+                        <div class="addon-price">KES {{ addon.price | number }}<span>/mo</span></div>
+                      </div>
+                      <div class="addon-name">{{ addon.name }}</div>
+                      <div class="addon-desc">{{ addon.description }}</div>
+                      <div class="addon-card-footer">
+                        <button class="addon-detail-btn" (click)="openAddonDetail(addon, $event)">Learn more</button>
+                        <button class="addon-toggle-btn" [class.add]="!isAddonSelected(addon.id)" [class.remove]="isAddonSelected(addon.id)" (click)="toggleAddonStop(addon.id, $event)">
+                          {{ isAddonSelected(addon.id) ? '− Remove' : '+ Add' }}
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Regions Section -->
+                <div class="regions-section glass-card" style="margin-top: 2rem;">
+                  <div class="regions-header">
+                    <h3 class="step-section-title">Transaction Region Setup</h3>
+                    <p class="step-section-sub">Tell us where your SACCO will receive member transactions from.</p>
+                  </div>
+                  <div class="regions-layout">
+                    <div class="regions-list">
+                      <div class="regions-list-label">Where will you receive transactions?</div>
+                      @for (region of regions; track region.id) {
+                        <div class="region-item" [class.selected]="isRegionSelected(region.id)" [class.included]="region.included" (click)="!region.included && toggleRegion(region.id)">
+                          <div class="region-check" [class.checked]="isRegionSelected(region.id)">
+                            @if (isRegionSelected(region.id)) { <span>✓</span> }
+                          </div>
+                          <div class="region-info">
+                            <div class="region-name">{{ region.name }}</div>
+                            <div class="region-desc">{{ region.description }}</div>
+                          </div>
+                          <div class="region-price" [class.included]="region.included">
+                            {{ region.included ? 'Included' : '+ KES ' + (region.extra | number) + '/mo' }}
+                          </div>
+                        </div>
+                      }
+                    </div>
+                    <div class="regions-config">
+                      <div class="region-config-item">
+                        <label class="region-config-label">Current Active Members</label>
+                        <div class="region-config-hint">Growth plan supports up to 2,500. Extra: KES 20/member/mo.</div>
+                        <div class="region-member-display">{{ memberCount() | number }}</div>
+                        <input type="range" [min]="10" [max]="5000" [step]="10" [ngModel]="memberCount()" (ngModelChange)="memberCount.set($event)" class="region-slider" />
+                      </div>
+                      <div class="region-config-item">
+                        <label class="region-config-label">Number of Branches / Offices</label>
+                        <div class="region-config-hint">First 3 branches free on Growth. Extra: KES 2,000/branch/mo.</div>
+                        <div class="region-branch-controls">
+                          <button class="branch-ctrl-btn" (click)="decrementBranch()">−</button>
+                          <div class="branch-count-display">{{ branchCount() }}</div>
+                          <button class="branch-ctrl-btn" (click)="incrementBranch()">+</button>
+                        </div>
+                      </div>
+                      <div class="region-config-item">
+                        <label class="region-config-label">Primary Currency</label>
+                        <select class="region-currency-select" [ngModel]="currency()" (ngModelChange)="currency.set($event)">
+                          <option value="KES">Kenyan Shilling (KES)</option>
+                          <option value="USD">US Dollar (USD)</option>
+                          <option value="GBP">British Pound (GBP)</option>
+                          <option value="EUR">Euro (EUR)</option>
+                          <option value="UGX">Ugandan Shilling (UGX)</option>
+                          <option value="TZS">Tanzanian Shilling (TZS)</option>
+                        </select>
+                      </div>
+                      <div class="regional-fee-note">
+                        <span>ℹ️</span> Regional Fee Note: Fees cover compliance, international routing, and partner bank charges. You only pay for regions you actively use.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="step-sidebar">
+                <ng-container *ngTemplateOutlet="orderSummaryTpl"></ng-container>
+              </div>
+            </div>
+          }
+
+          <!-- ────── STEP 3: CONTRACT TERMS ────── -->
+          @if (step() === 3) {
+            <div class="step-layout">
+              <div class="step-main">
+                <!-- Contract Duration -->
+                <div class="glass-card contract-section">
+                  <h3 class="step-section-title">Contract Duration</h3>
+                  <p class="step-section-sub">Longer commitments earn greater discounts. A 30-day notice period applies.</p>
+                  <div class="duration-grid">
+                    @for (dur of contractDurations; track dur.months) {
+                      <div class="duration-card" [class.selected]="contractMonths() === dur.months" (click)="setDuration(dur.months)">
+                        @if (dur.tag) { <div class="duration-tag">{{ dur.tag }}</div> }
+                        <div class="duration-label">{{ dur.label }}</div>
+                        <div class="duration-discount">
+                          @if (dur.discount > 0) { <span class="discount-pill">{{ dur.discount }}% off</span> }
+                          @else { <span class="no-discount">No discount</span> }
+                        </div>
+                        <div class="duration-total">KES {{ durationTotal(dur) }}K total</div>
+                        <div class="duration-radio" [class.checked]="contractMonths() === dur.months">
+                          @if (contractMonths() === dur.months) { <span>✓</span> }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  <div class="contract-terms-grid">
+                    <div class="contract-terms-col">
+                      <div class="contract-terms-heading">What You Commit To:</div>
+                      <ul class="contract-terms-list">
+                        <li>Pay agreed monthly fee for contract duration</li>
+                        <li>30-day written notice for early termination</li>
+                        <li>Maintain accurate member count declarations</li>
+                      </ul>
+                    </div>
+                    <div class="contract-terms-col">
+                      <div class="contract-terms-heading guarantee">What We Guarantee:</div>
+                      <ul class="contract-terms-list guarantee">
+                        <li>Price lock — no increases during contract term</li>
+                        <li>99.9% uptime SLA with service credits</li>
+                        <li>Free feature upgrades during your term</li>
+                        <li>Full data export anytime, free of charge</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="contract-exit-note">Early exit within minimum term: <strong>10% fee</strong> on remaining value. After minimum term: 30-day notice, zero penalty.</div>
+                  <button class="view-full-terms" (click)="openTermsModal()">View Full Terms & Conditions →</button>
+                </div>
+
+                <!-- PAYG Toggle -->
+                <div class="glass-card payg-section">
+                  <div class="payg-header-row">
+                    <div>
+                      <h3 class="step-section-title">Pay As You Go — Flexible Billing</h3>
+                      <p class="step-section-sub">Split your contract payment into installments. A signed contract is still required.</p>
+                    </div>
+                    <div class="payg-toggle-wrap">
+                      <span class="payg-toggle-label">Enable PAYG installments</span>
+                      <button class="toggle-switch" [class.on]="enablePayg()" (click)="togglePayg()"><span class="toggle-thumb"></span></button>
+                    </div>
+                  </div>
+                  @if (enablePayg()) {
+                    <div class="payg-content">
+                      <div class="payg-schedule-label">PAYG Schedule ({{ numInstallments() }} installments)</div>
+                      <table class="payg-table">
+                        <thead><tr><th>Payment</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          @for (inst of installments(); track inst.num) {
+                            <tr><td>Installment {{ inst.num }}/{{ numInstallments() }}</td><td>{{ inst.date }}</td><td>KES {{ inst.amount | number:'1.0-0' }}</td></tr>
+                          }
+                        </tbody>
+                      </table>
+                      <div class="payg-auto-note"><span>💡</span> Enable auto-debit from SACCOPay Wallet or M-Pesa to waive the PAYG fee (1.5%) entirely.</div>
+                      @if (paygFee() > 0) {
+                        <div class="payg-fee-note">PAYG fee (1.5%): <strong>+ KES {{ paygFee() | number:'1.0-0' }}</strong></div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="step-sidebar">
+                <ng-container *ngTemplateOutlet="orderSummaryTpl"></ng-container>
+              </div>
+            </div>
+          }
+
+          <!-- ────── STEP 4: CHECKOUT ────── -->
+          @if (step() === 4) {
+            <div class="checkout-layout">
+              <!-- Bill Breakdown -->
+              <div class="checkout-left glass-card">
+                <h3 class="step-section-title">Bill Breakdown</h3>
+                <div class="bill-section">
+                  <div class="bill-row"><span>{{ contractMonths() }} Month{{ contractMonths() > 1 ? 's' : '' }} Plan (Base)</span><span>KES {{ baseTotal() | number }}</span></div>
+                  @if (discount() > 0) {
+                    <div class="bill-row discount"><span>Contract Discount ({{ discount() }}%)</span><span>− KES {{ discountAmt() | number:'1.0-0' }}</span></div>
+                  }
+                </div>
+                @if (addonObjs().length > 0) {
+                  <div class="bill-section">
+                    <div class="bill-section-label">ADD-ONS ({{ addonObjs().length }})</div>
+                    @for (a of addonObjs(); track a.id) {
+                      <div class="bill-row"><span>{{ a.name }}</span><span>KES {{ a.price | number }}</span></div>
+                    }
+                  </div>
+                }
+                @if (regionObjs().length > 0) {
+                  <div class="bill-section">
+                    <div class="bill-section-label">REGIONS</div>
+                    @for (r of regionObjs(); track r.id) {
+                      <div class="bill-row"><span>{{ r.name }}</span><span>KES {{ (r.extra || 0) | number }}</span></div>
+                    }
+                  </div>
+                }
+                @if (paygFee() > 0) {
+                  <div class="bill-row payg-fee"><span>PAYG Fee (1.5% on installments)</span><span>KES {{ paygFee() | number:'1.0-0' }}</span></div>
+                }
+                <div class="bill-totals">
+                  <div class="bill-row monthly-base"><span><strong>Monthly Base Total</strong></span><span><strong>KES {{ monthlyTotal() | number }}</strong></span></div>
+                  <div class="bill-row grand-total"><span>Grand Total ({{ contractMonths() }} month{{ contractMonths() > 1 ? 's' : '' }})</span><span>KES {{ grandTotal() | number:'1.0-0' }}</span></div>
+                </div>
+                <div class="price-lock-note">🔒 Price locked for {{ contractMonths() }} Month{{ contractMonths() > 1 ? 's' : '' }}. No increases during contract term.</div>
+                <div class="amount-due-box">
+                  <div class="amount-due-label">Amount Due Today</div>
+                  <div class="amount-due-value">KES {{ amountDueToday() | number:'1.0-0' }}</div>
+                  <div class="amount-due-note">{{ upfrontPct() }}% upfront of KES {{ grandTotal() | number:'1.0-0' }} grand total</div>
+                </div>
+              </div>
+
+              <!-- Payment Method -->
+              <div class="checkout-right glass-card">
+                <h3 class="step-section-title">Payment Method</h3>
+                <div class="pay-methods">
+                  @for (pm of payMethods; track pm.id) {
+                    <div class="pay-method-item" [class.selected]="payMethod() === pm.id" (click)="payMethod.set(pm.id)">
+                      <div class="pay-radio" [class.checked]="payMethod() === pm.id">
+                        @if (payMethod() === pm.id) { <div class="pay-radio-dot"></div> }
+                      </div>
+                      <span class="pay-method-icon">{{ pm.icon }}</span>
+                      <div><div class="pay-method-label">{{ pm.label }}</div><div class="pay-method-sub">{{ pm.sub }}</div></div>
+                    </div>
+                  }
+                </div>
+                @if (payMethod() === 'mpesa') {
+                  <div class="mpesa-details">
+                    <div class="mpesa-label">M-Pesa Details</div>
+                    <label class="mpesa-field-label">M-Pesa Phone Number</label>
+                    <input type="tel" class="mpesa-phone-input" [ngModel]="mpesaPhone()" (ngModelChange)="mpesaPhone.set($event)" placeholder="+254 7XX XXX XXX" />
+                    <p class="mpesa-hint">An STK push will be sent to this number. Enter your M-Pesa PIN to confirm.</p>
+                  </div>
+                }
+                @if (payMethod() === 'bank') {
+                  <div class="bank-details">
+                    <div class="bank-detail-row"><span>Bank</span><span>Equity Bank Kenya</span></div>
+                    <div class="bank-detail-row"><span>Account Name</span><span>SACCOPay Ltd</span></div>
+                    <div class="bank-detail-row"><span>Account No.</span><span>0290263840808</span></div>
+                    <div class="bank-detail-row"><span>Reference</span><span>{{ bankRef() }}</span></div>
+                    <div class="bank-note">Upload payment confirmation after transfer to expedite verification.</div>
+                  </div>
+                }
+                @if (payMethod() === 'wallet') {
+                  <div class="wallet-details">
+                    <div class="wallet-balance-row"><span>SACCOPay Wallet Balance</span><span class="wallet-balance">KES 124,650</span></div>
+                    <div class="wallet-balance-row"><span>Amount to Deduct</span><span>KES {{ amountDueToday() | number:'1.0-0' }}</span></div>
+                    <div class="wallet-status" [class.ok]="amountDueToday() <= 124650" [class.insufficient]="amountDueToday() > 124650">
+                      {{ amountDueToday() <= 124650 ? '✓ Sufficient balance' : '⚠ Insufficient balance — top up required' }}
+                    </div>
+                  </div>
+                }
+                <div class="terms-agree-row">
+                  <label class="terms-agree-label">
+                    <input type="checkbox" [ngModel]="agreeTerms()" (ngModelChange)="agreeTerms.set($event)" class="terms-agree-check" />
+                    I agree to the <span class="terms-link">Terms of Service</span> and <span class="terms-link">Privacy Policy</span>
+                  </label>
+                </div>
+                <button class="pay-now-btn" [class.disabled]="!agreeTerms()" [disabled]="!agreeTerms()" (click)="handlePay()">Pay KES {{ amountDueToday() | number:'1.0-0' }} Today</button>
+                <p class="pay-now-sub">By proceeding you agree to our Terms of Service and Privacy Policy.</p>
+              </div>
+            </div>
+          }
+
+        </div><!-- /step-content-area -->
+
+        <!-- Bottom nav bar -->
+        @if (step() < 4) {
+          <div class="bottom-nav-bar">
+            @if (step() > 1) { <button class="btn-ghost" (click)="prevStep()">← Previous</button> }
+            <div style="flex:1;"></div>
+            <button class="btn-primary bottom-nav-primary" [disabled]="!selectedPlan()" (click)="nextStep()">{{ stepBtnLabel() }}</button>
+          </div>
+        }
+
+      }<!-- /Manage Subscription -->
+
+      <!-- ════════════════════════════════════════════════════════
+           TAB: BILLING HISTORY
+           ════════════════════════════════════════════════════════ -->
+      @if (mainTab() === 'Billing History') {
+        <div class="billing-history-wrap">
+          <!-- Summary Cards -->
+          <div class="billing-summary-cards">
+            <div class="billing-summ-card">
+              <div class="billing-summ-icon" style="background:#e6faf4;color:#00d084;">💰</div>
+              <div><div class="billing-summ-val">KES 410,575</div><div class="billing-summ-label">Total Paid (2026)</div></div>
+            </div>
+            <div class="billing-summ-card">
+              <div class="billing-summ-icon" style="background:#fff3e0;color:#ff9800;">⏳</div>
+              <div><div class="billing-summ-val">KES 15,500</div><div class="billing-summ-label">Pending Amount</div></div>
+            </div>
+            <div class="billing-summ-card">
+              <div class="billing-summ-icon" style="background:#e3f2fd;color:#2196f3;">📄</div>
+              <div><div class="billing-summ-val">12</div><div class="billing-summ-label">Total Invoices</div></div>
+            </div>
+            <div class="billing-summ-card">
+              <div class="billing-summ-icon" style="background:#f3e5f5;color:#9c27b0;">📅</div>
+              <div><div class="billing-summ-val">May 1, 2026</div><div class="billing-summ-label">Next Due Date</div></div>
+            </div>
+          </div>
+
+          <!-- Table Card -->
+          <div class="glass-card billing-table-card">
+            <div class="billing-table-header">
+              <div><h2 class="section-title">Billing History & Invoices</h2><p class="section-sub">View and download your past invoices and contracts.</p></div>
+              <div class="billing-header-actions">
+                <div class="billing-status-filters">
+                  @for (s of billingStatuses; track s) {
+                    <button class="status-filter-btn" [class.active]="billingStatusFilter() === s" (click)="setBillingFilter(s)">{{ s }}</button>
+                  }
+                </div>
+                <button class="btn-outline" (click)="openExportModal()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Export All
+                </button>
+              </div>
+            </div>
+            <div class="billing-table-wrap">
+              <table class="billing-table">
+                <thead><tr><th>Description</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                  @for (item of paginatedBilling(); track item.id) {
+                    <tr class="billing-table-row">
+                      <td>
+                        <div class="billing-desc">
+                          <div class="billing-desc-main">{{ item.description }}</div>
+                          <div class="billing-desc-meta">
+                            Invoice #{{ item.invoiceRef }}
+                            @if (item.contractRef) { · Contract #{{ item.contractRef }} }
+                            @if (item.paymentMethod) { · {{ item.paymentMethod }} }
+                            @if (item.note) { · {{ item.note }} }
+                          </div>
+                        </div>
+                      </td>
+                      <td class="billing-amount">KES {{ item.amount | number }}</td>
+                      <td class="billing-date">{{ item.date }}</td>
+                      <td>
+                        <span class="billing-status-badge" [style.color]="getStatusColor(item.status)" [style.background]="getStatusBg(item.status)" [style.border-color]="getStatusBorder(item.status)">{{ item.status }}</span>
+                      </td>
+                      <td>
+                        <div class="billing-actions">
+                          <button class="billing-action-btn" title="View Invoice" (click)="viewInvoice(item)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          </button>
+                          <button class="billing-action-btn" title="Download PDF">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          </button>
+                          @if (item.status === 'Pending') {
+                            <button class="billing-action-btn pay" title="Pay Now">
+                              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="billing-pagination">
+              <div class="pagination-info">Showing {{ billingShowFrom() }}–{{ billingShowTo() }} of {{ filteredBilling().length }} transactions</div>
+              <div class="pagination-controls">
+                <button class="page-btn" [disabled]="billingPage() === 1" (click)="prevBillingPage()">Previous</button>
+                @for (p of billingPagesArray(); track p) {
+                  <button class="page-btn num" [class.active]="billingPage() === p" (click)="setBillingPage(p)">{{ p }}</button>
+                }
+                <button class="page-btn" [disabled]="billingPage() === totalBillingPages()" (click)="nextBillingPage()">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════ HELP FOOTER ═══════ -->
+      <div class="help-footer glass-card">
+        <h3 class="help-title">Need Help?</h3>
+        <div class="help-items">
+          @for (h of helpItems; track h.label) {
+            <button class="help-item" [style.background]="h.color" [style.border-color]="h.border">
+              <span class="help-item-icon">{{ h.icon }}</span>
+              <div><div class="help-item-label">{{ h.label }}</div><div class="help-item-sub">{{ h.sub }}</div></div>
+            </button>
+          }
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /admin-main -->
+
+  <!-- ════════════════════════════════════════════════════════════
+       MODALS
+       ════════════════════════════════════════════════════════════ -->
+
+  <!-- ── Auto-Suggest Modal ── -->
+  @if (showAutoSuggest()) {
+    <div class="modal-overlay" (click)="closeAutoSuggest()">
+      <div class="modal-box modal-lg" (click)="stopProp($event)">
+        <div class="modal-header"><h3 class="modal-title">🤖 AI Package Recommendation</h3><button class="modal-close" (click)="closeAutoSuggest()">✕</button></div>
+        <div class="modal-body">
+          <div class="autosuggest-profile">
+            <div class="autosuggest-row"><span>SACCO Profile</span><strong>Rongo SACCO</strong></div>
+            <div class="autosuggest-row"><span>Active Members</span><strong>1,284</strong></div>
+            <div class="autosuggest-row"><span>Branches</span><strong>3</strong></div>
+            <div class="autosuggest-row"><span>Region</span><strong>Kenya (+ UK Diaspora)</strong></div>
+            <div class="autosuggest-row"><span>Monthly Transactions</span><strong>~KES 4.2M</strong></div>
+          </div>
+          <div class="autosuggest-result">
+            <div class="autosuggest-result-label">🎯 Recommended Plan</div>
+            <div class="autosuggest-plan-name">Growth Plan — KES 75,000/mo</div>
+            <div class="autosuggest-reason">Based on your 1,284 members (within 2,500 limit), 3 branches (within Growth allowance), and UK diaspora transactions, the Growth Plan is the most cost-effective option. Add the <strong>UK / Europe Region</strong> (+KES 3,000/mo) and <strong>WhatsApp Business API</strong> for member communication.</div>
+            <div class="autosuggest-addons-label">Recommended Add-ons:</div>
+            <div class="autosuggest-addons">
+              <span class="addon-chip">📱 WhatsApp Business API</span>
+              <span class="addon-chip">📊 Advanced BI Dashboard</span>
+              <span class="addon-chip">🔐 IPRS Live Verification</span>
+              <span class="addon-chip">💳 M-Pesa Paybill</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" (click)="closeAutoSuggest()">Dismiss</button>
+          <button class="btn-primary" (click)="applyRecommendation()">Apply Recommendation</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Add-on Detail Modal ── -->
+  @if (detailAddon()) {
+    <div class="modal-overlay" (click)="closeAddonDetail()">
+      <div class="modal-box" (click)="stopProp($event)">
+        <div class="modal-header">
+          <div><div class="modal-cat-tag">{{ detailAddon()!.category }}</div><h3 class="modal-title">{{ detailAddon()!.name }}</h3></div>
+          <button class="modal-close" (click)="closeAddonDetail()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-price-row"><span class="modal-price">KES {{ detailAddon()!.price | number }}<span>/mo</span></span></div>
+          <p class="modal-desc">{{ detailAddon()!.details }}</p>
+          <div class="modal-benefit-list">
+            <div class="modal-benefit">✓ No setup fees</div>
+            <div class="modal-benefit">✓ Cancel anytime</div>
+            <div class="modal-benefit">✓ Pro-rated billing</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" (click)="closeAddonDetail()">Close</button>
+          <button class="btn-primary" (click)="addFromDetail()">{{ isAddonSelected(detailAddon()!.id) ? 'Remove Add-on' : 'Add to Plan' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Terms Modal ── -->
+  @if (showTermsModal()) {
+    <div class="modal-overlay" (click)="closeTermsModal()">
+      <div class="modal-box modal-lg" (click)="stopProp($event)">
+        <div class="modal-header"><h3 class="modal-title">Terms & Conditions — SACCOPay Subscription</h3><button class="modal-close" (click)="closeTermsModal()">✕</button></div>
+        <div class="modal-body modal-scrollable">
+          <div class="terms-section"><h4>1. Contract Commitment</h4><p>By selecting a contract term, you agree to pay the agreed monthly fee for the full duration of the contract. Early termination within the minimum term attracts a 10% fee on the remaining contract value.</p></div>
+          <div class="terms-section"><h4>2. Price Lock Guarantee</h4><p>SACCOPay guarantees that the subscription price will not increase during your active contract term. Price changes only apply at renewal.</p></div>
+          <div class="terms-section"><h4>3. PAYG Installments</h4><p>When PAYG is enabled, a 1.5% processing fee applies to the total contract value. This fee is waived when auto-debit via SACCOPay Wallet or M-Pesa is enabled.</p></div>
+          <div class="terms-section"><h4>4. Termination Notice</h4><p>After the minimum contract term, either party may terminate with 30 days written notice. No penalty applies for post-term termination.</p></div>
+          <div class="terms-section"><h4>5. Data & Export Rights</h4><p>You retain full ownership of your SACCO data. Full data export in CSV/Excel/PDF format is available at any time, free of charge.</p></div>
+          <div class="terms-section"><h4>6. SLA & Uptime</h4><p>SACCOPay guarantees 99.9% platform uptime. Service credits apply for downtime exceeding this threshold, calculated on a pro-rated monthly basis.</p></div>
+        </div>
+        <div class="modal-footer"><button class="btn-ghost" (click)="closeTermsModal()">Close</button><button class="btn-primary" (click)="closeTermsModal()">I Understand</button></div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Invoice Detail Modal ── -->
+  @if (selectedInvoice()) {
+    <div class="modal-overlay" (click)="closeInvoice()">
+      <div class="modal-box" (click)="stopProp($event)">
+        <div class="modal-header">
+          <div><div class="modal-invoice-num">Invoice #{{ selectedInvoice()!.invoiceRef }}</div><h3 class="modal-title">{{ selectedInvoice()!.description }}</h3></div>
+          <button class="modal-close" (click)="closeInvoice()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="invoice-detail-grid">
+            <div class="invoice-detail-row"><span>Status</span><span class="billing-status-badge" [style.color]="getStatusColor(selectedInvoice()!.status)" [style.background]="getStatusBg(selectedInvoice()!.status)" [style.border-color]="getStatusBorder(selectedInvoice()!.status)">{{ selectedInvoice()!.status }}</span></div>
+            <div class="invoice-detail-row"><span>Amount</span><strong>KES {{ selectedInvoice()!.amount | number }}</strong></div>
+            <div class="invoice-detail-row"><span>Date</span><span>{{ selectedInvoice()!.date }}</span></div>
+            @if (selectedInvoice()!.contractRef) { <div class="invoice-detail-row"><span>Contract Ref</span><span>#{{ selectedInvoice()!.contractRef }}</span></div> }
+            @if (selectedInvoice()!.paymentMethod) { <div class="invoice-detail-row"><span>Payment Method</span><span>{{ selectedInvoice()!.paymentMethod }}</span></div> }
+            @if (selectedInvoice()!.note) { <div class="invoice-detail-row"><span>Notes</span><span>{{ selectedInvoice()!.note }}</span></div> }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-ghost" (click)="closeInvoice()">Close</button>
+          <button class="btn-outline">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PDF
+          </button>
+          @if (selectedInvoice()!.status === 'Pending') { <button class="btn-primary">Pay Now</button> }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Export Modal ── -->
+  @if (showExportModal()) {
+    <div class="modal-overlay" (click)="closeExportModal()">
+      <div class="modal-box" (click)="stopProp($event)">
+        <div class="modal-header"><h3 class="modal-title">Export Billing History</h3><button class="modal-close" (click)="closeExportModal()">✕</button></div>
+        <div class="modal-body">
+          <p class="export-intro">Choose your export format and date range.</p>
+          <div class="export-format-row">
+            @for (fmt of ['PDF','CSV','Excel']; track fmt) {
+              <button class="export-format-btn" [class.active]="exportFormat() === fmt" (click)="exportFormat.set(fmt)">{{ fmt }}</button>
+            }
+          </div>
+          <div class="export-date-row">
+            <div class="export-date-field"><label>From</label><input type="date" class="export-date-input" [ngModel]="exportFrom()" (ngModelChange)="exportFrom.set($event)" /></div>
+            <div class="export-date-field"><label>To</label><input type="date" class="export-date-input" [ngModel]="exportTo()" (ngModelChange)="exportTo.set($event)" /></div>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn-ghost" (click)="closeExportModal()">Cancel</button><button class="btn-primary" (click)="closeExportModal()">Export Now</button></div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Payment Success Modal ── -->
+  @if (showPaySuccess()) {
+    <div class="modal-overlay" (click)="closePaySuccess()">
+      <div class="modal-box" (click)="stopProp($event)">
+        <div class="modal-body" style="text-align:center;padding:2.5rem;">
+          <div class="pay-success-icon">✓</div>
+          <h3 class="pay-success-title">Payment Submitted!</h3>
+          <p class="pay-success-sub">Your {{ selectedPlan()?.name }} Plan subscription is being processed. You will receive an M-Pesa STK push or confirmation within 2 minutes.</p>
+          <div class="pay-success-ref">Reference: {{ paySuccessRef }}</div>
+        </div>
+        <div class="modal-footer" style="justify-content:center;"><button class="btn-primary" (click)="closePaySuccess()">View Billing History</button></div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Global Toast ── -->
+  @if (toast()) {
+    <div class="global-toast" [class.success]="toast()!.type === 'success'" [class.error]="toast()!.type === 'error'">
+      <span>{{ toast()!.type === 'success' ? '✓' : '✕' }}</span> {{ toast()!.msg }}
+    </div>
+  }
+
+
+
+
+<!-- ════════════════════════════════════════════════════════════
+     TEMPLATE: Order Summary (reusable ng-template)
+     ════════════════════════════════════════════════════════════ -->
+<ng-template #orderSummaryTpl>
+  <div class="order-summary-card glass-card">
+    <div class="order-summary-header">
+      <h3 class="order-summary-title">Order Summary</h3>
+      <span class="order-summary-sub">Review your selections</span>
+    </div>
+    <div class="order-summary-body">
+      <div class="os-section-label">BASE PLAN</div>
+      <div class="os-row"><span>{{ selectedPlan()?.name || '—' }}</span><span>{{ selectedPlan() ? 'KES ' + (selectedPlan()!.price | number) : '—' }}</span></div>
+      <div class="os-row sub"><span>Monthly subscription</span><span></span></div>
+      @if (discount() > 0) {
+        <div class="os-row discount"><span>Quarterly Review Discount ({{ discount() }}%)</span><span>− KES {{ (baseMonthly() * contractMonths() * discount() / 100) | number:'1.0-0' }}</span></div>
+      }
+      @if (addonObjs().length > 0) {
+        <div class="os-section-label" style="margin-top:1rem;">ADD-ONS ({{ addonObjs().length }})</div>
+        @for (a of addonObjs(); track a.id) {
+          <div class="os-row"><span>{{ a.name }}</span><span>KES {{ a.price | number }}</span></div>
+        }
+      }
+      @if (regionObjs().length > 0) {
+        <div class="os-section-label" style="margin-top:1rem;">REGIONS</div>
+        @for (r of regionObjs(); track r.id) {
+          <div class="os-row"><span>{{ r.name }}</span><span>KES {{ (r.extra || 0) | number }}</span></div>
+        }
+      }
+      @if (enablePayg()) {
+        <div class="os-row payg" style="margin-top:0.5rem;"><span>PAYG Fee (1.5% on installments)</span><span class="payg-orange">KES {{ paygFee() | number:'1.0-0' }}</span></div>
+      }
+      <div class="os-divider"></div>
+      <div class="os-row total"><span>Monthly Total</span><span>KES {{ monthlyTotal() | number }}</span></div>
+      <div class="os-row sub"><span>{{ contractMonths() }} month contract · Grand Total: KES {{ grandTotal() | number:'1.0-0' }}</span><span></span></div>
+      <div class="os-price-lock">🔒 Price locked for {{ contractMonths() }} Month{{ contractMonths() > 1 ? 's' : '' }}. No increases during term.</div>
+      <div class="os-amount-due">
+        <div class="os-due-label">Amount Due Today ({{ enablePayg() ? '1/' + numInstallments() + ' installment' : '60% upfront' }})</div>
+        <div class="os-due-value">KES {{ amountDueToday() | number:'1.0-0' }}</div>
+      </div>
+    </div>
+    <div class="os-footer">
+      @if (step() > 1) { <button class="btn-ghost" (click)="prevStep()">← Previous</button> }
+      @if (step() < 4) { <button class="btn-primary" [disabled]="!selectedPlan()" (click)="nextStep()">{{ osBtnLabel() }}</button> }
+    </div>
+  </div>
+</ng-template>

@@ -1,171 +1,682 @@
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-type Tab = 'all' | 'pending' | 'limits' | 'quick' | 'analytics';
-type ModalKey = 'processWithdrawal' | 'editLimits' | 'configRules' | 'viewDetail' | 'reviewFlagged' | null;
-
 interface Withdrawal {
-  id: string; date: string; name: string; initials: string; av: string; mid: string;
-  acctType: string; acctTone: string; method: string; methodIcon: string;
-  amount: string; amountRaw: number; reference: string;
-  status: 'Completed' | 'Pending' | 'Failed' | 'Processing';
+  id: string;
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  memberPhone: string;
+  amount: number;
+  fee: number;
+  channel: string;
+  account: string;
+  status: 'Completed' | 'Pending' | 'Flagged' | 'Rejected' | 'Reversed';
+  timestamp: string;
+  riskScore: number;
+  flagReason: string | null;
+  narration: string;
+  referenceNo: string;
 }
 
-interface PendingItem {
-  name: string; id: string; mid: string; amount: string; time: string;
-  tags: string[]; detail: string; initials: string; av: string;
+interface ChannelFloat {
+  id: string;
+  name: string;
+  balance: number;
+  limit: number;
+  dailyVolume: number;
+  status: 'Online' | 'Offline' | 'Delayed';
+  icon: string;
 }
 
-interface FlaggedItem {
-  member: string; amount: string; reason: string; risk: string; riskTone: string;
+interface MemberInfo {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  savingsBalance: number;
+  tier: string;
+  dailyLimit: number;
+  dailyRemaining: number;
+  riskScore: number;
+  activeLoans: number;
+}
+
+interface WithdrawalRule {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  value: string;
+  category: 'limit' | 'security' | 'workflow';
+}
+
+interface ToastMessage {
+  id: string;
+  text: string;
+  type: 'success' | 'error' | 'info' | 'warning';
 }
 
 @Component({
-  selector: 'app-finance-withdrawals',
+  selector: 'app-withdrawals',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './withdrawals.html',
-  styleUrl: './withdrawals.scss',
+  templateUrl:'/withdrawals.html',
+  styleUrls: ['./withdrawals.scss']
 })
-export class WithdrawalsComponent {
-  tab: Tab = 'all';
-  modal: ModalKey = null;
-  toast: { msg: string } | null = null;
-  private toastTimer?: number;
+export class WithdrawalsComponent implements OnInit {
+  // Navigation & Tab state
+  activeTab: 'all' | 'pending' | 'limits' | 'quick' | 'analytics' = 'all';
 
-  statusF = 'all';
-  methodF = 'all';
-  typeF = 'all';
+  // Toast notifications
+  toasts: ToastMessage[] = [];
 
-  selectedW: Withdrawal | null = null;
-
-  pForm = { member: '', amount: '50000', account: '', method: '', reason: '', notes: '', autoApprove: false, sms: true };
-
-  readonly kpiCards = [
-    { icon: '💰', label: "Today's Withdrawals", value: 'KES 3.8M', sub: '↓ 567 withdrawals', subTone: 'green' },
-    { icon: '📅', label: 'This Month', value: 'KES 92M', sub: '↑ +12.3% vs last month', subTone: 'green' },
-    { icon: '⏳', label: 'Pending Approval', value: '28', sub: '🔴 KES 8.2M awaiting', subTone: 'red' },
-    { icon: '✅', label: 'Success Rate', value: '98.6%', sub: '🌿 Excellent', subTone: 'green' },
+  // Channels state
+  channels: ChannelFloat[] = [
+    { id: 'mpesa', name: 'M-Pesa Express', balance: 120450, limit: 150000, dailyVolume: 45200, status: 'Online', icon: 'wallet' },
+    { id: 'bank', name: 'Bank RTGS Gateway', balance: 350000, limit: 500000, dailyVolume: 122800, status: 'Online', icon: 'credit_card' },
+    { id: 'pesalink', name: 'Pesalink Transfer', balance: 85000, limit: 100000, dailyVolume: 15300, status: 'Delayed', icon: 'activity' },
+    { id: 'cash', name: 'FOSA Branch Cash', balance: 95000, limit: 100000, dailyVolume: 22100, status: 'Online', icon: 'database' }
   ];
 
-  readonly methodCards = [
-    { icon: '📱', label: 'M-Pesa', value: 'KES 2.1M', sub: '378 withdrawals', tone: 'blue' },
-    { icon: '🏦', label: 'Bank Transfer', value: 'KES 1.2M', sub: '95 withdrawals', tone: 'teal' },
-    { icon: '💵', label: 'Cash', value: 'KES 450K', sub: '73 withdrawals', tone: 'green' },
-    { icon: '📄', label: 'Cheque', value: 'KES 50K', sub: '22 withdrawals', tone: 'gray' },
+  // Members repository for lookups
+  members: MemberInfo[] = [
+    { id: 'M-10294', name: 'Sarah Jenkins', email: 'sarah.j@gmail.com', phone: '+254 711 223 344', savingsBalance: 14250, tier: 'Premium (Tier 3)', dailyLimit: 10000, dailyRemaining: 9500, riskScore: 5, activeLoans: 0 },
+    { id: 'M-38291', name: 'Michael K. Kiprop', email: 'm.kiprop@saccopay.net', phone: '+254 722 890 123', savingsBalance: 2840, tier: 'Standard (Tier 2)', dailyLimit: 5000, dailyRemaining: 1200, riskScore: 12, activeLoans: 1 },
+    { id: 'M-88210', name: 'David Ochieng', email: 'ochieng.d@outlook.com', phone: '+254 733 445 566', savingsBalance: 48000, tier: 'VIP (Tier 4)', dailyLimit: 50000, dailyRemaining: 45000, riskScore: 45, activeLoans: 2 },
+    { id: 'M-55102', name: 'Anita Patel', email: 'anita.patel@yahoo.com', phone: '+254 701 556 778', savingsBalance: 850, tier: 'Basic (Tier 1)', dailyLimit: 1000, dailyRemaining: 150, riskScore: 82, activeLoans: 0 }
   ];
 
-  readonly tabs: Array<{ key: Tab; label: string }> = [
-    { key: 'all', label: 'All Withdrawals' },
-    { key: 'pending', label: 'Pending (28)' },
-    { key: 'limits', label: 'Limits & Rules' },
-    { key: 'quick', label: 'Quick Process' },
-    { key: 'analytics', label: 'Analytics' },
+  // Withdrawal rules
+  rules: WithdrawalRule[] = [
+    { id: 'rule-1', name: 'Dual Authorization Threshold', description: 'Requires approval from both Manager and Auditor for transactions exceeding $10,000.', enabled: true, value: '$10,000', category: 'workflow' },
+    { id: 'rule-2', name: 'Night Window Restrictions', description: 'Auto-flag withdrawals initiated between 11:00 PM and 5:00 AM.', enabled: true, value: '23:00 - 05:00', category: 'security' },
+    { id: 'rule-3', name: 'Velocity Guard', description: 'Block transfers if a member requests more than 3 withdrawals within 10 minutes.', enabled: true, value: '3 requests / 10m', category: 'security' },
+    { id: 'rule-4', name: 'IP Whitelist Mandate', description: 'Enforce staff portal access to registered organizational IP blocks only.', enabled: false, value: 'Staff Only', category: 'workflow' },
+    { id: 'rule-5', name: 'Maximum Daily Cash Dispensation', description: 'Cap total Branch counter withdrawals at $5,000 per member.', enabled: true, value: '$5,000', category: 'limit' }
   ];
 
+  // Global Limits settings
+  globalLimits = {
+    tier1Daily: 1000,
+    tier1Single: 500,
+    tier2Daily: 5000,
+    tier2Single: 2500,
+    tier3Daily: 15000,
+    tier3Single: 10000,
+    tier4Daily: 50000,
+    tier4Single: 25000,
+  };
+
+  // Primary withdrawals dataset
   withdrawals: Withdrawal[] = [
-    { id: 'WDR-2026-00892', date: 'Today, 3:15 PM', name: 'David Kipkorir', initials: 'DK', av: 'c1', mid: 'R-00045', acctType: 'Savings', acctTone: 'green', method: 'M-Pesa', methodIcon: '📱', amount: 'KES 80,000', amountRaw: 80000, reference: 'XYZ8MK2PQ', status: 'Completed' },
-    { id: 'WDR-2026-00891', date: 'Today, 2:50 PM', name: 'Sarah Akinyi', initials: 'SA', av: 'c6', mid: 'R-00123', acctType: 'Share Redemption', acctTone: 'orange', method: 'Cash', methodIcon: '💵', amount: 'KES 120,000', amountRaw: 120000, reference: 'CASH-2891', status: 'Pending' },
-    { id: 'WDR-2026-00890', date: 'Today, 2:20 PM', name: 'Mary Wanjiku', initials: 'MW', av: 'c4', mid: 'R-00034', acctType: 'Savings', acctTone: 'green', method: 'Bank', methodIcon: '🏦', amount: 'KES 350,000', amountRaw: 350000, reference: 'FT261066134', status: 'Completed' },
-    { id: 'WDR-2026-00889', date: 'Today, 1:45 PM', name: 'John Otieno', initials: 'JO', av: 'c3', mid: 'R-00136', acctType: 'Fixed Deposit', acctTone: 'cyan', method: 'M-Pesa', methodIcon: '📱', amount: 'KES 25,000', amountRaw: 25000, reference: '-', status: 'Failed' },
-    { id: 'WDR-2026-00888', date: 'Today, 1:10 PM', name: 'Grace Muthoni', initials: 'GM', av: 'c5', mid: 'R-00678', acctType: 'Savings', acctTone: 'green', method: 'Cheque', methodIcon: '📄', amount: 'KES 45,000', amountRaw: 45000, reference: 'CHQ-78234', status: 'Processing' },
+    { id: 'TXN-2026-9042', memberId: 'M-38291', memberName: 'Michael K. Kiprop', memberEmail: 'm.kiprop@saccopay.net', memberPhone: '+254 722 890 123', amount: 1650, fee: 15, channel: 'M-Pesa Express', account: '0722890123', status: 'Pending', timestamp: '2026-03-24 10:14 AM', riskScore: 12, flagReason: null, narration: 'Savings withdrawal for school fees', referenceNo: 'MPESA-W8D29S0' },
+    { id: 'TXN-2026-9041', memberId: 'M-10294', memberName: 'Sarah Jenkins', memberEmail: 'sarah.j@gmail.com', memberPhone: '+254 711 223 344', amount: 4800, fee: 35, channel: 'Bank RTGS Gateway', account: '0110928341900', status: 'Pending', timestamp: '2026-03-24 09:30 AM', riskScore: 8, flagReason: null, narration: 'EFT Transfer to Co-op Account', referenceNo: 'RTGS-89104A1' },
+    { id: 'TXN-2026-9040', memberId: 'M-88210', memberName: 'David Ochieng', memberEmail: 'ochieng.d@outlook.com', memberPhone: '+254 733 445 566', amount: 15000, fee: 75, channel: 'Bank RTGS Gateway', account: '0220918349100', status: 'Flagged', timestamp: '2026-03-24 09:05 AM', riskScore: 78, flagReason: 'High Amount Velocity Limit Exceeded', narration: 'Business supplier settlement', referenceNo: 'RTGS-90214B8' },
+    { id: 'TXN-2026-9039', memberId: 'M-55102', memberName: 'Anita Patel', memberEmail: 'anita.patel@yahoo.com', memberPhone: '+254 701 556 778', amount: 800, fee: 10, channel: 'M-Pesa Express', account: '0701556778', status: 'Flagged', timestamp: '2026-03-24 08:44 AM', riskScore: 92, flagReason: 'Suspicious Device Fingerprint & IP', narration: 'Personal emergency funds', referenceNo: 'MPESA-U9G31M2' },
+    { id: 'TXN-2026-9038', memberId: 'M-10294', memberName: 'Sarah Jenkins', memberEmail: 'sarah.j@gmail.com', memberPhone: '+254 711 223 344', amount: 2500, fee: 20, channel: 'Pesalink Transfer', account: '0711223344', status: 'Completed', timestamp: '2026-03-23 04:12 PM', riskScore: 5, flagReason: null, narration: 'Transfer to family member', referenceNo: 'PLNK-77810C3' },
+    { id: 'TXN-2026-9037', memberId: 'M-38291', memberName: 'Michael K. Kiprop', memberEmail: 'm.kiprop@saccopay.net', memberPhone: '+254 722 890 123', amount: 500, fee: 5, channel: 'M-Pesa Express', account: '0722890123', status: 'Completed', timestamp: '2026-03-23 02:40 PM', riskScore: 10, flagReason: null, narration: 'Airtime purchase request', referenceNo: 'MPESA-Q0L81J4' },
+    { id: 'TXN-2026-9036', memberId: 'M-88210', memberName: 'David Ochieng', memberEmail: 'ochieng.d@outlook.com', memberPhone: '+254 733 445 566', amount: 20000, fee: 100, channel: 'FOSA Branch Cash', account: 'FOSA-88210', status: 'Completed', timestamp: '2026-03-23 11:15 AM', riskScore: 15, flagReason: null, narration: 'Counter cash withdrawal', referenceNo: 'CASH-99120Z0' },
+    { id: 'TXN-2026-9035', memberId: 'M-55102', memberName: 'Anita Patel', memberEmail: 'anita.patel@yahoo.com', memberPhone: '+254 701 556 778', amount: 950, fee: 10, channel: 'M-Pesa Express', account: '0701556778', status: 'Rejected', timestamp: '2026-03-23 09:20 AM', riskScore: 85, flagReason: 'Exceeded Monthly Transaction Limit', narration: 'FOSA transfer to mobile wallet', referenceNo: 'MPESA-V8E11X7' },
+    { id: 'TXN-2026-9034', memberId: 'M-10294', memberName: 'Sarah Jenkins', memberEmail: 'sarah.j@gmail.com', memberPhone: '+254 711 223 344', amount: 12000, fee: 60, channel: 'Bank RTGS Gateway', account: '0110928341900', status: 'Reversed', timestamp: '2026-03-22 03:50 PM', riskScore: 7, flagReason: null, narration: 'Mortgage deposit payment', referenceNo: 'RTGS-55214D1' },
+    { id: 'TXN-2026-9033', memberId: 'M-38291', memberName: 'Michael K. Kiprop', memberEmail: 'm.kiprop@saccopay.net', memberPhone: '+254 722 890 123', amount: 300, fee: 5, channel: 'M-Pesa Express', account: '0722890123', status: 'Completed', timestamp: '2026-03-22 01:10 PM', riskScore: 14, flagReason: null, narration: 'Utility bill payment', referenceNo: 'MPESA-K5N99P2' }
   ];
 
-  pendingItems: PendingItem[] = [
-    { name: 'Sarah Akinyi', id: 'WDR-2026-00891', mid: 'R-00123', amount: 'KES 120,000', time: 'Today, 2:50 PM', tags: ['Share Redemption', 'Cash', 'Pending Approval'], detail: 'Ref: CASH-2891 • Available Balance: KES 1.2M • By: Branch Teller', initials: 'SA', av: 'c6' },
-    { name: 'Peter Njoroge', id: 'WDR-2026-00885', mid: 'R-00882', amount: 'KES 200,000', time: 'Today, 12:15 PM', tags: ['Savings', 'Bank Transfer', 'Pending Verification'], detail: 'Bank: KCB Bank • Account: 1234***890 • Available: KES 850K', initials: 'PN', av: 'c3' },
-    { name: 'Alice Kamau', id: 'WDR-2026-00882', mid: 'R-00134', amount: 'KES 75,000', time: 'Today, 11:30 AM', tags: ['Savings', 'M-Pesa', 'Limit Check'], detail: 'Phone: 0722***345 • Daily Limit: 3/5 withdrawals • Available: KES 450K', initials: 'AK', av: 'c4' },
-  ];
+  // Filters State
+  searchTerm: string = '';
+  channelFilter: string = 'All';
+  statusFilter: string = 'All';
+  minAmount: string = '';
+  selectedBatchIds: string[] = [];
 
-  flaggedItems: FlaggedItem[] = [
-    { member: 'James Omondi', amount: 'KES 950,000', reason: 'Amount exceeds 90% of available balance', risk: 'Medium Risk', riskTone: 'warning' },
-    { member: 'Jane Nyambura', amount: 'KES 150,000', reason: '5th withdrawal today - exceeds daily frequency', risk: 'High Risk', riskTone: 'danger' },
-  ];
+  // Modals active state
+  activeModal: string | null = null;
+  selectedWithdrawal: Withdrawal | null = null;
 
-  readonly limitsData = [
-    { label: 'Single Transaction Limit', value: 'KES 500,000' },
-    { label: 'Daily Member Limit', value: 'KES 1,000,000' },
-    { label: 'Monthly Member Limit', value: 'KES 5,000,000' },
-    { label: 'Daily SACCO Limit', value: 'KES 50,000,000' },
-  ];
+  // Modal 1: Process Form
+  procMemberId: string = '';
+  procAmount: string = '';
+  procChannel: string = 'M-Pesa Express';
+  procAccount: string = '';
+  procNarration: string = '';
+  procLimitCheckPassed: boolean | null = null;
+  procOTP: string = '';
+  procStep: number = 1;
 
-  readonly rulesData = [
-    { label: 'M-Pesa (< KES 50K)', sub: 'Instant processing for small M-Pesa withdrawals', badge: 'Auto-Approve', tone: 'green' },
-    { label: 'Cash (> KES 100K)', sub: 'Requires branch manager approval', badge: 'Manual Review', tone: 'orange' },
-    { label: 'Share Redemption', sub: 'Requires board approval & notice period', badge: 'Always Manual', tone: 'red' },
-    { label: 'Fixed Deposit (Matured)', sub: 'Automatic after maturity date', badge: 'Auto-Approve', tone: 'green' },
-  ];
+  // Modal 3: Reject Form
+  rejectReason: string = 'Insufficient Float';
+  rejectMemo: string = '';
 
-  readonly trendData = [
-    { day: 'Mon', value: 'KES 2.8M', h: 52 }, { day: 'Tue', value: 'KES 3.2M', h: 60 },
-    { day: 'Wed', value: 'KES 3.8M', h: 71 }, { day: 'Thu', value: 'KES 5.2M', h: 97 },
-    { day: 'Fri', value: 'KES 4.5M', h: 84 }, { day: 'Sat', value: 'KES 1.8M', h: 34 },
-    { day: 'Sun', value: 'KES 750K', h: 14 },
-  ];
+  // Modal 5: Edit Metadata Form
+  editReference: string = '';
+  editNarration: string = '';
+  editInternalNotes: string = '';
 
-  readonly sourceCards = [
-    { label: 'Savings', amount: 'KES 65M', pct: 71, icon: '💰', color: '#00d084' },
-    { label: 'Share Redemption', amount: 'KES 18M', pct: 20, icon: '🏷', color: '#ff9800' },
-    { label: 'Fixed Deposit', amount: 'KES 7M', pct: 8, icon: '🔒', color: '#c62828' },
-    { label: 'Emergency Fund', amount: 'KES 2M', pct: 1, icon: '🟡', color: '#ffc107' },
-  ];
+  // Modal 6: Email Form
+  emailTemplate: string = 'Withdrawal Complete';
+  emailSubject: string = 'SaccoPay Transaction Alert: Withdrawal Success';
+  emailBody: string = '';
 
-  readonly topWithdrawers = [
-    { rank: 1, name: 'David Kipkorir', total: 'KES 1.8M', freq: '12 withdrawals', avg: 'KES 150,000', tone: 'gold' },
-    { rank: 2, name: 'Sarah Akinyi', total: 'KES 1.5M', freq: '8 withdrawals', avg: 'KES 187,500', tone: 'silver' },
-    { rank: 3, name: 'Mary Wanjiku', total: 'KES 1.2M', freq: '15 withdrawals', avg: 'KES 80,000', tone: 'bronze' },
-    { rank: 4, name: 'John Otieno', total: 'KES 950K', freq: '10 withdrawals', avg: 'KES 95,000', tone: '' },
-    { rank: 5, name: 'Grace Muthoni', total: 'KES 720K', freq: '18 withdrawals', avg: 'KES 40,000', tone: '' },
-  ];
+  // Modal 7: SMS Form
+  smsTemplate: string = 'Withdrawal Code';
+  smsBody: string = '';
 
-  readonly recentActivity = [
-    { name: 'David Kipkorir', amount: 'KES 80,000', method: 'M-Pesa', time: '5 min ago', tone: 'green' },
-    { name: 'Sarah Akinyi', amount: 'KES 120,000', method: 'Cash', time: '15 min ago', tone: 'orange' },
-    { name: 'Mary Wanjiku', amount: 'KES 350,000', method: 'Bank', time: '45 min ago', tone: 'blue' },
-    { name: 'John Otieno', amount: 'KES 25,000', method: 'M-Pesa', time: '1 hour ago', tone: 'red' },
-  ];
+  // Modal 8: Reversal Form
+  revSupervisorPin: string = '';
+  revReason: string = 'Customer Request';
+  revEscrow: boolean = false;
 
-  readonly amountPresets = ['KES 10K', 'KES 25K', 'KES 50K', 'KES 100K', 'KES 250K'];
+  // Modal 9: Float Form
+  floatActionChannel: string = 'mpesa';
+  floatTopUpAmount: string = '';
 
-  get filteredWithdrawals(): Withdrawal[] {
-    return this.withdrawals.filter(w => {
-      if (this.statusF !== 'all' && w.status !== this.statusF) return false;
-      if (this.methodF !== 'all' && w.method !== this.methodF) return false;
-      if (this.typeF !== 'all' && w.acctType !== this.typeF) return false;
-      return true;
+  // Modal 10: Edit Limits Form
+  limitTier: 'tier1' | 'tier2' | 'tier3' | 'tier4' = 'tier1';
+  tempLimitDaily: number = 1000;
+  tempLimitSingle: number = 500;
+
+  // Modal 12: Review Flagged Form
+  flaggedActionNotes: string = '';
+
+  // Modal 13: Export Form
+  exportFormat: 'CSV' | 'Excel' | 'PDF' = 'CSV';
+  exportDateRange: string = 'Today';
+  isExporting: boolean = false;
+  exportProgress: number = 0;
+
+  // Modal 14: Check Limits Form
+  lookupMemberId: string = '';
+  searchedMember: MemberInfo | null = null;
+
+  // Modal 15: Batch Processes Form
+  batchActionType: 'Approve' | 'Reject' = 'Approve';
+  batchNotes: string = '';
+
+  ngOnInit() {
+    this.refreshKPIs();
+  }
+
+  // Toast System
+  showToast(text: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') {
+    const id = Math.random().toString(36).substr(2, 9);
+    this.toasts.push({ id, text, type });
+    setTimeout(() => {
+      this.toasts = this.toasts.filter(t => t.id !== id);
+    }, 4000);
+  }
+
+  // Filtered computed list helper
+  getFilteredWithdrawals(): Withdrawal[] {
+    return this.withdrawals.filter(item => {
+      const matchesSearch = 
+        item.id.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.memberName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.memberId.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        item.referenceNo.toLowerCase().includes(this.searchTerm.toLowerCase());
+      
+      const matchesChannel = this.channelFilter === 'All' || item.channel === this.channelFilter;
+      const matchesStatus = this.statusFilter === 'All' || item.status === this.statusFilter;
+      
+      let matchesAmount = true;
+      if (this.minAmount) {
+        matchesAmount = item.amount >= parseFloat(this.minAmount);
+      }
+
+      const matchesTab = this.activeTab === 'all' || item.status === 'Pending';
+
+      return matchesSearch && matchesChannel && matchesStatus && matchesAmount && matchesTab;
     });
   }
 
-  get amtNum(): number { return Number(this.pForm.amount || 0); }
-  get fee(): number { return this.amtNum > 0 ? Math.round(this.amtNum * 0.01) : 0; }
-  get tax(): number { return this.amtNum > 0 ? Math.round(this.fee * 0.2) : 0; }
-  get totalDeducted(): number { return this.amtNum + this.fee + this.tax; }
+  // KPI Calculations
+  pendingCount = 0;
+  flaggedCount = 0;
+  totalVolumeToday = 0;
 
-  tagTone(tag: string): string {
-    if (tag.includes('Pending')) return 'warning';
-    if (tag.includes('Cash') || tag.includes('M-Pesa') || tag.includes('Bank')) return 'blue';
-    return 'green';
+  refreshKPIs() {
+    this.pendingCount = this.withdrawals.filter(w => w.status === 'Pending').length;
+    this.flaggedCount = this.withdrawals.filter(w => w.status === 'Flagged').length;
+    this.totalVolumeToday = this.withdrawals
+      .filter(w => w.status === 'Completed' && w.timestamp.includes('2026-03-24'))
+      .reduce((sum, w) => sum + w.amount, 0);
   }
 
-  openModal(key: ModalKey, w?: Withdrawal): void {
-    if (w) this.selectedW = w;
-    this.modal = key;
+  // --- ACTIONS ---
+
+  // Modal handlers
+  openModal(modalName: string, data?: Withdrawal) {
+    this.activeModal = modalName;
+    if (data) {
+      this.selectedWithdrawal = data;
+      // Setup edit details fields
+      this.editReference = data.referenceNo;
+      this.editNarration = data.narration;
+      this.editInternalNotes = 'Standard audit check.';
+      // Setup email/SMS bodies
+      this.handleEmailTemplateChange(this.emailTemplate);
+      this.handleSmsTemplateChange(this.smsTemplate);
+    }
   }
 
-  closeModal(): void { this.modal = null; }
+  closeModal() {
+    this.activeModal = null;
+    this.selectedWithdrawal = null;
+  }
 
-showToast(msg: string): void {
-  this.toast = { msg };
-  if (this.toastTimer) window.clearTimeout(this.toastTimer);
-  this.toastTimer = window.setTimeout((): void => {
-    this.toast = null;
-  }, 2600);
-}
+  // Modal 2: Approve Action
+  approveWithdrawal() {
+    if (!this.selectedWithdrawal) return;
+    
+    const chanIdx = this.channels.findIndex(c => c.name === this.selectedWithdrawal!.channel);
+    if (chanIdx !== -1 && this.channels[chanIdx].balance < this.selectedWithdrawal.amount) {
+      this.showToast(`Approval failed: Insufficient float in channel ${this.selectedWithdrawal.channel}`, 'error');
+      this.closeModal();
+      return;
+    }
 
-  confirmAndClose(msg: string): void { this.closeModal(); this.showToast(msg); }
+    this.withdrawals = this.withdrawals.map(w => {
+      if (w.id === this.selectedWithdrawal!.id) {
+        return { ...w, status: 'Completed' };
+      }
+      return w;
+    });
 
-  setPresetAmount(preset: string): void {
-    this.pForm.amount = preset.replace(/[^0-9]/g, '');
+    if (chanIdx !== -1) {
+      this.channels[chanIdx].balance -= this.selectedWithdrawal.amount;
+      this.channels[chanIdx].dailyVolume += this.selectedWithdrawal.amount;
+    }
+
+    this.showToast(`Withdrawal ${this.selectedWithdrawal.id} successfully approved! Funds disbursed.`, 'success');
+    this.refreshKPIs();
+    this.closeModal();
+  }
+
+  // Modal 3: Reject Action
+  rejectWithdrawal() {
+    if (!this.selectedWithdrawal) return;
+
+    this.withdrawals = this.withdrawals.map(w => {
+      if (w.id === this.selectedWithdrawal!.id) {
+        return { ...w, status: 'Rejected', flagReason: `Rejected by Admin: ${this.rejectReason}. Note: ${this.rejectMemo}` };
+      }
+      return w;
+    });
+
+    this.showToast(`Withdrawal ${this.selectedWithdrawal.id} rejected. Reason: ${this.rejectReason}`, 'warning');
+    this.refreshKPIs();
+    this.closeModal();
+  }
+
+  // Modal 5: Edit Action
+  editDetails() {
+    if (!this.selectedWithdrawal) return;
+
+    this.withdrawals = this.withdrawals.map(w => {
+      if (w.id === this.selectedWithdrawal!.id) {
+        return { ...w, referenceNo: this.editReference, narration: this.editNarration };
+      }
+      return w;
+    });
+
+    this.showToast(`Details updated for transaction ${this.selectedWithdrawal.id}`, 'info');
+    this.closeModal();
+  }
+
+  // Modal 6: Email Action
+  sendEmail() {
+    this.showToast(`Email alert sent to member ${this.selectedWithdrawal?.memberName} successfully!`, 'success');
+    this.closeModal();
+  }
+
+  // Modal 7: SMS Action
+  sendSMS() {
+    this.showToast(`SMS message dispatched to phone ${this.selectedWithdrawal?.memberPhone}`, 'success');
+    this.closeModal();
+  }
+
+  // Modal 8: Reversal Action
+  reverseWithdrawal() {
+    if (!this.selectedWithdrawal) return;
+    if (this.revSupervisorPin !== '1234') {
+      this.showToast('Invalid Supervisor security PIN!', 'error');
+      return;
+    }
+
+    this.withdrawals = this.withdrawals.map(w => {
+      if (w.id === this.selectedWithdrawal!.id) {
+        return { ...w, status: 'Reversed', narration: `[REVERSED] ${w.narration} (${this.revReason})` };
+      }
+      return w;
+    });
+
+    const chanIdx = this.channels.findIndex(c => c.name === this.selectedWithdrawal!.channel);
+    if (chanIdx !== -1) {
+      this.channels[chanIdx].balance += this.selectedWithdrawal.amount;
+      this.channels[chanIdx].dailyVolume = Math.max(0, this.channels[chanIdx].dailyVolume - this.selectedWithdrawal.amount);
+    }
+
+    this.showToast(`Withdrawal ${this.selectedWithdrawal.id} has been fully reversed. Member refunded.`, 'success');
+    this.refreshKPIs();
+    this.closeModal();
+  }
+
+  // Modal 9: Top Up Float Action
+  topUpFloat() {
+    const amount = parseFloat(this.floatTopUpAmount);
+    if (!amount || amount <= 0) {
+      this.showToast('Please enter a valid top-up amount', 'error');
+      return;
+    }
+
+    this.channels = this.channels.map(c => {
+      if (c.id === this.floatActionChannel) {
+        return { ...c, balance: c.balance + amount };
+      }
+      return c;
+    });
+
+    this.showToast(`Successfully added $${amount.toLocaleString()} float.`, 'success');
+    this.floatTopUpAmount = '';
+    this.closeModal();
+  }
+
+  // Modal 10: Edit Limits Action
+  saveTierLimits() {
+    if (this.limitTier === 'tier1') {
+      this.globalLimits.tier1Daily = this.tempLimitDaily;
+      this.globalLimits.tier1Single = this.tempLimitSingle;
+    } else if (this.limitTier === 'tier2') {
+      this.globalLimits.tier2Daily = this.tempLimitDaily;
+      this.globalLimits.tier2Single = this.tempLimitSingle;
+    } else if (this.limitTier === 'tier3') {
+      this.globalLimits.tier3Daily = this.tempLimitDaily;
+      this.globalLimits.tier3Single = this.tempLimitSingle;
+    } else if (this.limitTier === 'tier4') {
+      this.globalLimits.tier4Daily = this.tempLimitDaily;
+      this.globalLimits.tier4Single = this.tempLimitSingle;
+    }
+
+    this.showToast(`Withdrawal limits updated for ${this.limitTier.toUpperCase()} successfully.`, 'success');
+    this.closeModal();
+  }
+
+  selectTierLimit(tier: 'tier1' | 'tier2' | 'tier3' | 'tier4') {
+    this.limitTier = tier;
+    if (tier === 'tier1') {
+      this.tempLimitDaily = this.globalLimits.tier1Daily;
+      this.tempLimitSingle = this.globalLimits.tier1Single;
+    } else if (tier === 'tier2') {
+      this.tempLimitDaily = this.globalLimits.tier2Daily;
+      this.tempLimitSingle = this.globalLimits.tier2Single;
+    } else if (tier === 'tier3') {
+      this.tempLimitDaily = this.globalLimits.tier3Daily;
+      this.tempLimitSingle = this.globalLimits.tier3Single;
+    } else if (tier === 'tier4') {
+      this.tempLimitDaily = this.globalLimits.tier4Daily;
+      this.tempLimitSingle = this.globalLimits.tier4Single;
+    }
+  }
+
+  // Modal 11: Toggle rule policy
+  toggleRule(id: string) {
+    this.rules = this.rules.map(r => {
+      if (r.id === id) {
+        const nextState = !r.enabled;
+        this.showToast(`Rule '${r.name}' ${nextState ? 'enabled' : 'disabled'}`, nextState ? 'success' : 'warning');
+        return { ...r, enabled: nextState };
+      }
+      return r;
+    });
+  }
+
+  // Modal 12: Flagged Decision Action
+  reviewFlaggedDecision(decision: 'whitelist' | 'escalate' | 'reject') {
+    if (!this.selectedWithdrawal) return;
+
+    if (decision === 'whitelist') {
+      this.withdrawals = this.withdrawals.map(w => {
+        if (w.id === this.selectedWithdrawal!.id) {
+          return { ...w, status: 'Pending', riskScore: 10, flagReason: null };
+        }
+        return w;
+      });
+      this.showToast(`Transaction whitelisted. Moving to pending list.`, 'success');
+    } else if (decision === 'escalate') {
+      this.withdrawals = this.withdrawals.map(w => {
+        if (w.id === this.selectedWithdrawal!.id) {
+          return { ...w, narration: `[ESCALATED] ${w.narration}. Internal notes: ${this.flaggedActionNotes}` };
+        }
+        return w;
+      });
+      this.showToast(`Transaction escalated to Chief Security Officer.`, 'info');
+    } else if (decision === 'reject') {
+      this.withdrawals = this.withdrawals.map(w => {
+        if (w.id === this.selectedWithdrawal!.id) {
+          return { ...w, status: 'Rejected', flagReason: `Flagged Rejection: ${this.flaggedActionNotes || 'Security Risk'}` };
+        }
+        return w;
+      });
+      this.showToast(`Transaction rejected as security risk.`, 'error');
+    }
+
+    this.refreshKPIs();
+    this.closeModal();
+  }
+
+  // Modal 13: Export Action
+  startExport() {
+    this.isExporting = true;
+    this.exportProgress = 0;
+
+    const interval = setInterval(() => {
+      this.exportProgress += 20;
+      if (this.exportProgress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          this.isExporting = false;
+          this.showToast(`Exported records to ${this.exportFormat} successfully!`, 'success');
+          this.closeModal();
+        }, 300);
+      }
+    }, 150);
+  }
+
+  // Modal 14: Member limits check lookup
+  lookupMember() {
+    const mem = this.members.find(m => m.id.toUpperCase() === this.lookupMemberId.toUpperCase());
+    if (mem) {
+      this.searchedMember = mem;
+      this.showToast(`Member found: ${mem.name}`, 'success');
+    } else {
+      this.searchedMember = null;
+      this.showToast(`No member found with ID: ${this.lookupMemberId}`, 'error');
+    }
+  }
+
+  // Modal 15: Batch processes
+  processBatch() {
+    if (this.selectedBatchIds.length === 0) {
+      this.showToast('No withdrawals selected for batch processing', 'error');
+      return;
+    }
+
+    if (this.batchActionType === 'Approve') {
+      const targetBatchTxns = this.withdrawals.filter(w => this.selectedBatchIds.includes(w.id));
+      const totalAmount = targetBatchTxns.reduce((sum, w) => sum + w.amount, 0);
+
+      this.withdrawals = this.withdrawals.map(w => {
+        if (this.selectedBatchIds.includes(w.id) && w.status === 'Pending') {
+          return { ...w, status: 'Completed' };
+        }
+        return w;
+      });
+
+      this.showToast(`Successfully batch approved ${this.selectedBatchIds.length} withdrawals totaling $${totalAmount.toLocaleString()}`, 'success');
+    } else {
+      this.withdrawals = this.withdrawals.map(w => {
+        if (this.selectedBatchIds.includes(w.id) && w.status === 'Pending') {
+          return { ...w, status: 'Rejected', flagReason: `Batch Rejected: ${this.batchNotes || 'Audit cleanup'}` };
+        }
+        return w;
+      });
+      this.showToast(`Batch rejected ${this.selectedBatchIds.length} withdrawals`, 'warning');
+    }
+
+    this.selectedBatchIds = [];
+    this.refreshKPIs();
+    this.closeModal();
+  }
+
+  toggleSelectBatch(id: string) {
+    if (this.selectedBatchIds.includes(id)) {
+      this.selectedBatchIds = this.selectedBatchIds.filter(x => x !== id);
+    } else {
+      this.selectedBatchIds.push(id);
+    }
+  }
+
+  toggleSelectAllBatch() {
+    const pendIds = this.getFilteredWithdrawals().filter(w => w.status === 'Pending').map(w => w.id);
+    if (this.selectedBatchIds.length === pendIds.length) {
+      this.selectedBatchIds = [];
+    } else {
+      this.selectedBatchIds = [...pendIds];
+    }
+  }
+
+  // Quick process handlers
+  loadQuickProcessMember(id: string) {
+    this.procMemberId = id;
+    const m = this.members.find(x => x.id.toUpperCase() === id.toUpperCase());
+    if (m) {
+      this.procAccount = m.phone;
+      this.showToast(`Profile loaded: ${m.name} (Savings: $${m.savingsBalance})`, 'info');
+    }
+  }
+
+  runLimitCheck() {
+    const m = this.members.find(x => x.id.toUpperCase() === this.procMemberId.toUpperCase());
+    const amt = parseFloat(this.procAmount);
+
+    if (!m) {
+      this.showToast('Please specify a valid Member ID first', 'error');
+      return;
+    }
+    if (!amt || amt <= 0) {
+      this.showToast('Please specify a valid withdrawal amount', 'error');
+      return;
+    }
+
+    if (amt > m.savingsBalance) {
+      this.procLimitCheckPassed = false;
+      this.showToast('Limit check failed: Amount exceeds savings balance', 'error');
+    } else if (amt > m.dailyRemaining) {
+      this.procLimitCheckPassed = false;
+      this.showToast('Limit check failed: Amount exceeds daily limit threshold', 'error');
+    } else {
+      this.procLimitCheckPassed = true;
+      this.showToast('Limit check passed successfully! All rules clean.', 'success');
+      this.procStep = 3;
+    }
+  }
+
+  executeQuickProcess() {
+    const m = this.members.find(x => x.id.toUpperCase() === this.procMemberId.toUpperCase());
+    if (!m || !this.procAmount) return;
+    if (this.procOTP !== '654321') {
+      this.showToast('Invalid OTP Verification Code! Use 654321 for testing.', 'error');
+      return;
+    }
+
+    const amt = parseFloat(this.procAmount);
+    const newTxnId = `TXN-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newRef = `${this.procChannel.substring(0, 4).toUpperCase()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+    const newTxn: Withdrawal = {
+      id: newTxnId,
+      memberId: m.id,
+      memberName: m.name,
+      memberEmail: m.email,
+      memberPhone: m.phone,
+      amount: amt,
+      fee: amt * 0.005 + 10,
+      channel: this.procChannel,
+      account: this.procAccount,
+      status: 'Completed',
+      timestamp: '2026-03-24 10:30 AM',
+      riskScore: m.riskScore,
+      flagReason: null,
+      narration: this.procNarration || 'Quick Counter Withdrawal',
+      referenceNo: newRef
+    };
+
+    this.withdrawals.unshift(newTxn);
+
+    // Update float
+    const chanIdx = this.channels.findIndex(c => c.name === this.procChannel);
+    if (chanIdx !== -1) {
+      this.channels[chanIdx].balance -= amt;
+      this.channels[chanIdx].dailyVolume += amt;
+    }
+
+    // Update member limits & savings balance
+    this.members = this.members.map(mem => {
+      if (mem.id === m.id) {
+        return { 
+          ...mem, 
+          dailyRemaining: mem.dailyRemaining - amt, 
+          savingsBalance: mem.savingsBalance - amt 
+        };
+      }
+      return mem;
+    });
+
+    this.showToast(`Withdrawal of $${amt} executed. Reference: ${newRef}`, 'success');
+    
+    // Auto-open receipt modal
+    this.openModal('receipt', newTxn);
+
+    // Reset wizard
+    this.procMemberId = '';
+    this.procAmount = '';
+    this.procAccount = '';
+    this.procNarration = '';
+    this.procLimitCheckPassed = null;
+    this.procOTP = '';
+    this.procStep = 1;
+    this.activeTab = 'all';
+    this.refreshKPIs();
+  }
+
+  // Dropdown template synchronization helper
+  handleEmailTemplateChange(tmpl: string) {
+    if (!this.selectedWithdrawal) return;
+    this.emailTemplate = tmpl;
+    if (tmpl === 'Withdrawal Complete') {
+      this.emailSubject = 'SaccoPay Transaction Alert: Withdrawal Success';
+      this.emailBody = `Dear ${this.selectedWithdrawal.memberName},\n\nWe are pleased to inform you that your withdrawal of $${this.selectedWithdrawal.amount.toLocaleString()} via ${this.selectedWithdrawal.channel} was completed successfully. Reference No: ${this.selectedWithdrawal.referenceNo}.\n\nThank you for choosing SaccoPay.`;
+    } else if (tmpl === 'Security Alert') {
+      this.emailSubject = 'URGENT: SaccoPay Withdrawal Security Review';
+      this.emailBody = `Dear ${this.selectedWithdrawal.memberName},\n\nOur automated security system has flagged a pending withdrawal of $${this.selectedWithdrawal.amount.toLocaleString()} via ${this.selectedWithdrawal.channel}.\n\nReason: High Amount Velocity. Please verify this action or call support immediately.`;
+    } else if (tmpl === 'Withdrawal Delayed') {
+      this.emailSubject = 'SaccoPay Notification: Withdrawal Processing Delayed';
+      this.emailBody = `Dear ${this.selectedWithdrawal.memberName},\n\nYour withdrawal request of $${this.selectedWithdrawal.amount.toLocaleString()} is currently delayed due to payment gateway maintenance. We expect it to clear in 2 hours.`;
+    } else if (tmpl === 'Reversal Complete') {
+      this.emailSubject = 'SaccoPay Transaction Alert: Reversal Complete';
+      this.emailBody = `Dear ${this.selectedWithdrawal.memberName},\n\nWe have processed a full reversal for your withdrawal of $${this.selectedWithdrawal.amount.toLocaleString()} on reference ${this.selectedWithdrawal.referenceNo}. The funds have been refunded to your FOSA savings account.`;
+    }
+  }
+
+  handleSmsTemplateChange(tmpl: string) {
+    if (!this.selectedWithdrawal) return;
+    this.smsTemplate = tmpl;
+    if (tmpl === 'Withdrawal Code') {
+      this.smsBody = `SaccoPay Alert: Withdrawal of KES ${this.selectedWithdrawal.amount.toLocaleString()} via ${this.selectedWithdrawal.channel} is successful. Ref: ${this.selectedWithdrawal.referenceNo}. Support: +254 700 000 000.`;
+    } else if (tmpl === 'OTP Request') {
+      this.smsBody = `SaccoPay OTP: 819204 is your verification code for the withdrawal request of $${this.selectedWithdrawal.amount.toLocaleString()}. Expires in 5 minutes.`;
+    } else if (tmpl === 'Fraud Flag') {
+      this.smsBody = `CRITICAL Alert: Security review triggered for withdrawal of $${this.selectedWithdrawal.amount.toLocaleString()}. Call Sacco Support immediately if not you.`;
+    }
   }
 }

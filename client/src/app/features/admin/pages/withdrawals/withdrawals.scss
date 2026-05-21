@@ -3,7 +3,7 @@
  * Identical styling to the React preview in src/index.css
  * Scoped to :host for Angular encapsulation
  */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+// @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 // Copy all styles from src/index.css — scoped under :host
 :host {
@@ -416,7 +416,8 @@ button {
     gap: 10px;
     flex-wrap: wrap;
 
-    select {
+    select,
+    input {
         border: 1px solid #cbd5e1;
         border-radius: var(--radius-full);
         padding: 9px 14px;
@@ -474,6 +475,10 @@ button {
 
 .row-pending {
     background: rgba(255, 243, 224, .5);
+}
+
+.row-flagged {
+    background: rgba(244, 67, 54, .04);
 }
 
 .m-cell {
@@ -572,14 +577,26 @@ button {
     color: #ef6c00;
 }
 
-.st-failed {
+.st-failed,
+.st-rejected {
     background: rgba(244, 67, 54, .12);
     color: #c62828;
+}
+
+.st-flagged {
+    background: rgba(244, 67, 54, .08);
+    color: #c62828;
+    border: 1px dashed rgba(244, 67, 54, .4);
 }
 
 .st-processing {
     background: rgba(0, 188, 212, .13);
     color: #00838f;
+}
+
+.st-reversed {
+    background: rgba(142, 36, 170, .1);
+    color: #6a1b9a;
 }
 
 .positive {
@@ -610,12 +627,15 @@ button {
     display: inline-grid;
     place-items: center;
     transition: background .2s;
+    color: var(--text-secondary);
 
     &:hover {
         background: var(--primary-green-ultra-light);
+        color: var(--primary-green-dark);
     }
 
-    &.danger {
+    &.danger:hover {
+        background: rgba(244, 67, 54, .1);
         color: var(--accent-red);
     }
 }
@@ -746,6 +766,11 @@ button {
     &.warning {
         background: rgba(255, 152, 0, .14);
         color: #ef6c00;
+    }
+
+    &.red {
+        background: rgba(244, 67, 54, .1);
+        color: #c62828;
     }
 }
 
@@ -1114,7 +1139,7 @@ button {
 .bar {
     width: 100%;
     min-width: 40px;
-    background: linear-gradient(180deg, #ff9800, #e65100);
+    background: linear-gradient(180deg, var(--primary-green), var(--accent-teal));
     border-radius: 8px 8px 0 0;
     animation: growBar .8s ease both;
 }
@@ -1292,6 +1317,18 @@ button {
     &.tone-red {
         background: linear-gradient(135deg, #c62828, #f44336);
     }
+
+    &.tone-orange {
+        background: linear-gradient(135deg, #ef6c00, #fb8c00);
+    }
+
+    &.tone-purple {
+        background: linear-gradient(135deg, #6a1b9a, #ab47bc);
+    }
+
+    &.tone-blue {
+        background: linear-gradient(135deg, #1565c0, #42a5f5);
+    }
 }
 
 .modal-close {
@@ -1326,6 +1363,12 @@ button {
     font-size: .84rem;
     color: #e65100;
     font-weight: 700;
+
+    &.danger {
+        background: rgba(244, 67, 54, .06);
+        border-color: rgba(244, 67, 54, .3);
+        color: #c62828;
+    }
 }
 
 .modal-footer {
@@ -1333,8 +1376,7 @@ button {
     justify-content: flex-end;
     gap: 10px;
     border-top: 1px solid var(--border-color);
-    padding-top: 16px;
-    margin-top: 6px;
+    padding: 16px 24px;
 }
 
 .admin-toast {
@@ -1352,6 +1394,7 @@ button {
     box-shadow: var(--shadow-lg);
     color: var(--text-primary);
     font-weight: 800;
+    font-size: .86rem;
     animation: slideInRight .25s ease both;
 
     span {
@@ -1360,6 +1403,124 @@ button {
         border-radius: 999px;
         background: var(--primary-green);
         display: inline-block;
+    }
+
+    &.toast-error span {
+        background: var(--accent-red);
+    }
+
+    &.toast-warning span {
+        background: var(--accent-orange);
+    }
+
+    &.toast-info span {
+        background: var(--accent-blue);
+    }
+}
+
+.progress-bar-track {
+    height: 8px;
+    background: #e9eff5;
+    border-radius: 999px;
+    overflow: hidden;
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-green), var(--accent-teal));
+        border-radius: 999px;
+        transition: width .15s ease;
+    }
+}
+
+// Toggle switch
+.toggle-switch {
+    width: 44px;
+    height: 24px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    border: 0;
+    position: relative;
+    transition: background .2s;
+    flex-shrink: 0;
+
+    &.active {
+        background: var(--primary-green);
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        border-radius: 999px;
+        transition: transform .2s;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
+    }
+
+    &.active::after {
+        transform: translateX(20px);
+    }
+}
+
+// Receipt slip print
+.receipt-slip {
+    background: #fff;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: .82rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
+
+    .receipt-header {
+        text-align: center;
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+
+        h4 {
+            margin: 0;
+            font-weight: 800;
+            color: var(--primary-green-dark);
+            font-size: 1.1rem;
+        }
+
+        p {
+            margin: 4px 0 0;
+            color: var(--text-tertiary);
+            font-size: .74rem;
+        }
+    }
+
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px dotted var(--border-color);
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    .receipt-total {
+        border-top: 2px solid var(--border-color);
+        margin-top: 8px;
+        padding-top: 8px;
+        font-weight: 800;
+        font-size: .94rem;
+    }
+
+    .receipt-footer {
+        text-align: center;
+        border-top: 1px dashed var(--border-color);
+        margin-top: 14px;
+        padding-top: 14px;
+        color: var(--text-tertiary);
+        font-size: .72rem;
     }
 }
 

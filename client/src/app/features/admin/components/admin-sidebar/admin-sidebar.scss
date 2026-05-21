@@ -134,7 +134,7 @@
 .user-badge {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 16px 1.5rem;
   border-bottom: 1px solid #e2e8f0;
@@ -191,6 +191,69 @@
         border-radius: 50%;
         box-shadow: 0 0 8px rgba(0, 208, 132, 0.5);
       }
+    }
+  }
+}
+
+/* ============================================
+   USER DETAILS — NEW: Role, SACCOPay ID, Wallet ID
+   ============================================ */
+
+.user-details {
+  flex-shrink: 0;
+  padding: 0 1.5rem 12px;
+  border-bottom: 1px solid #e2e8f0;
+
+  .detail-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+
+    .detail-value {
+      font-size: 12px;
+      font-weight: 500;
+      color: #1a2332;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.2px;
+    }
+
+    .detail-value-with-copy {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 4px 8px;
+      transition: border-color 0.2s ease;
+
+      &:hover {
+        border-color: rgba(0, 208, 132, 0.4);
+      }
+
+      .detail-value {
+        font-size: 11px;
+        color: #475569;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+     
     }
   }
 }
@@ -380,6 +443,10 @@
     }
   }
 
+  .user-details {
+    display: none;
+  }
+
   .nav-section-title {
     opacity: 0;
     height: 0;
@@ -444,6 +511,10 @@
       display: block !important;
     }
 
+    .user-details {
+      display: block !important;
+    }
+
     .nav-link {
       justify-content: flex-start !important;
       padding-left: 1rem !important;
@@ -477,3 +548,85 @@
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.15);
 }
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+
+
+
+
+.copy-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b; 
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        &:hover {
+          background: #e2e8f0;
+          color: #00a866;
+          
+          .visual-fallback-copy {
+            border-color: #00a866;
+            &::after { border-color: #00a866; }
+          }
+        }
+
+        &.copied {
+          color: #00d084;
+          background: rgba(0, 208, 132, 0.12);
+
+          i {
+            animation: checkPop 0.3s ease;
+          }
+        }
+
+        /* Pure CSS fallback styling if font icons are broken */
+        .visual-fallback-copy {
+          position: relative;
+          display: inline-block;
+          width: 9px;
+          height: 11px;
+          border: 1.5px solid #64748b;
+          border-radius: 1px;
+          margin-top: 2px;
+          margin-left: -2px;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 9px;
+            height: 11px;
+            border: 1.5px solid #64748b;
+            border-radius: 1px;
+            background: #f1f5f9; /* Matches row background */
+          }
+        }
+
+        .visual-fallback-check {
+          display: inline-block;
+          transform: rotate(45deg);
+          height: 10px;
+          width: 5px;
+          border-bottom: 2px solid #00d084;
+          border-right: 2px solid #00d084;
+          margin-bottom: 2px;
+        }
+      }

@@ -1,1 +1,1086 @@
-<p>reconciliation works!</p>
+<section class="repay-page">
+    <!-- TOAST -->
+    <div class="toast-container">
+        @for (t of toasts; track t.id) {
+        <div class="toast-item" [ngClass]="'toast-' + t.type">
+            <span class="toast-icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ?
+                '⚠️' : 'ℹ️' }}</span>
+            <span class="toast-msg">{{ t.message }}</span>
+            <button type="button" class="toast-close" (click)="dismissToast(t.id)">✕</button>
+        </div>
+        }
+    </div>
+
+    <!-- BREADCRUMB -->
+
+
+    <!-- HEADER -->
+    <header class="page-header">
+        <div class="header-left">
+            <!-- <span class="header-icon">🔄</span> -->
+            <div>
+                <!-- <h1>Loan Repayments</h1> -->
+                <p>Track collections, manage repayment schedules, penalties and waivers</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="btn btn-outline" (click)="openAutoDeduct()">⚙ Auto-Deduct Setup</button>
+            <button type="button" class="btn btn-outline" (click)="openReports()">📊 Reports</button>
+            <button type="button" class="btn btn-primary" (click)="openRecord()">+ Record Payment</button>
+        </div>
+    </header>
+
+    <!-- KPI CARDS -->
+    <section class="kpi-grid">
+        <article class="kpi-card kpi-collected">
+            <div class="kpi-icon-wrap green"><span>✓</span></div>
+            <h3>KES 4.82M</h3>
+            <p>Collected This Month</p><span class="kpi-trend up">↑ +14.3% vs last month</span>
+        </article>
+        <article class="kpi-card kpi-expected">
+            <div class="kpi-icon-wrap blue"><span>📅</span></div>
+            <h3>KES 5.67M</h3>
+            <p>Expected This Month</p><span class="kpi-trend info">85% collection rate</span>
+        </article>
+        <article class="kpi-card kpi-overdue" (click)="tableTab = 'overdue'; currentPage = 1">
+            <div class="kpi-icon-wrap red"><span>⚠</span></div>
+            <h3>KES 1.32M</h3>
+            <p>Total Overdue</p><span class="kpi-trend down">↑ +3 loans this week</span>
+        </article>
+        <article class="kpi-card kpi-advance">
+            <div class="kpi-icon-wrap purple"><span>⤴</span></div>
+            <h3>KES 620K</h3>
+            <p>Advance Payments</p><span class="kpi-trend up">12 members paid early</span>
+        </article>
+        <article class="kpi-card kpi-penalty">
+            <div class="kpi-icon-wrap orange"><span>%</span></div>
+            <h3>KES 87K</h3>
+            <p>Penalties Charged</p><span class="kpi-trend down">↓ -8% vs last month</span>
+        </article>
+        <article class="kpi-card kpi-waived" (click)="openWaiverRequests()">
+            <div class="kpi-icon-wrap yellow"><span>⊘</span></div>
+            <h3>KES 34K</h3>
+            <p>Penalties Waived</p><span class="kpi-trend info">5 waivers approved</span>
+        </article>
+    </section>
+
+    <!-- CHARTS ROW: COLLECTION EFFICIENCY + AGING REPORT -->
+    <div class="charts-row">
+        <!-- Collection Efficiency -->
+        <article class="glass-card chart-card">
+            <div class="chart-header">
+                <h2>Collection Efficiency</h2>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openReportDetail('Efficiency Report')">📈
+                    Trends</button>
+            </div>
+            <div class="efficiency-body">
+                <div class="donut-wrap-lg">
+                    <svg viewBox="0 0 200 200" class="donut-svg">
+                        <circle cx="100" cy="100" r="80" fill="none" stroke="#e2e8f0" stroke-width="20" />
+                        <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad1)" stroke-width="20"
+                            stroke-dasharray="427 502" stroke-dashoffset="0" stroke-linecap="round"
+                            transform="rotate(-90 100 100)" />
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#f44336" />
+                                <stop offset="40%" stop-color="#ff9800" />
+                                <stop offset="100%" stop-color="#00d084" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="donut-text"><strong>85%</strong><small>Collection Rate</small></div>
+                </div>
+                <div class="efficiency-stats">
+                    <div class="es-row green"><span class="es-dot"></span>
+                        <div><small>On-Time</small><strong>KES 3.41M (60%)</strong></div>
+                    </div>
+                    <div class="es-row orange"><span class="es-dot"></span>
+                        <div><small>Late (1-7 days)</small><strong>KES 1.41M (25%)</strong></div>
+                    </div>
+                    <div class="es-row red"><span class="es-dot"></span>
+                        <div><small>Overdue (8+)</small><strong>KES 850K (15%)</strong></div>
+                    </div>
+                    <div class="es-row gray"><span class="es-dot"></span>
+                        <div><small>Remaining</small><strong>KES 850K</strong></div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-section-title">Monthly Collection vs Target</div>
+            <div class="monthly-bars">
+                @for (m of monthlyCollections; track m.month) {
+                <div class="mb-col">
+                    <div class="mb-pair">
+                        <div class="mb-bar collected" [style.height]="m.collected + '%'"></div>
+                        <div class="mb-bar target" [style.height]="m.target + '%'"></div>
+                    </div>
+                    <small>{{ m.month }}</small>
+                </div>
+                }
+            </div>
+            <div class="legend-inline"><span><span class="ld"
+                        style="background:#00d084"></span>Collected</span><span><span class="ld"
+                        style="background:#a5d6a7"></span>Target</span></div>
+        </article>
+
+        <!-- Aging Report -->
+        <article class="glass-card aging-card">
+            <div class="aging-tabs">
+                <button type="button" [class.active]="agingTab === 'aging'" (click)="agingTab = 'aging'">Aging
+                    Report</button>
+                <button type="button" [class.active]="agingTab === 'channel'" (click)="agingTab = 'channel'">By
+                    Channel</button>
+                <button type="button" [class.active]="agingTab === 'heatmap'"
+                    (click)="agingTab = 'heatmap'">Heatmap</button>
+            </div>
+
+            @if (agingTab === 'aging') {
+            <div class="aging-alert">⚠ <strong>KES 1.32M</strong> total overdue across <strong>18 loans</strong> · PAR
+                &gt;30 at <strong class="alert-red">2.1%</strong></div>
+            <div class="aging-grid">
+                @for (b of agingBuckets; track b.label) {
+                <div class="aging-bucket" [ngClass]="b.tone">
+                    <strong class="ab-count">{{ b.count }}</strong>
+                    <small class="ab-label">{{ b.label }}</small>
+                    <small class="ab-amount">KES {{ b.amount >= 1000000 ? ((b.amount / 1000000) | number:'1.0-1') + 'M'
+                        : ((b.amount / 1000) | number:'1.0-0') + 'K' }}</small>
+                </div>
+                }
+            </div>
+            <div class="aging-footer">
+                <button type="button" class="btn btn-outline" (click)="openFullAging()">📊 View Full Aging
+                    Table</button>
+            </div>
+            }
+
+            @if (agingTab === 'channel') {
+            <div class="channel-table-wrap">
+                <table class="inner-table">
+                    <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Transactions</th>
+                            <th>Amount</th>
+                            <th>% of Total</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (c of channelStats; track c.channel) {
+                        <tr>
+                            <td><span class="channel-pill" [style.background]="channelColor(c.channel) + '20'"
+                                    [style.color]="channelColor(c.channel)">{{ channelIcon(c.channel) }} {{ c.channel
+                                    }}</span></td>
+                            <td>{{ c.transactions }}</td>
+                            <td>KES {{ c.amount >= 1000000 ? ((c.amount / 1000000) | number:'1.2-2') + 'M' : ((c.amount
+                                / 1000) | number:'1.0-0') + 'K' }}</td>
+                            <td>{{ c.percent }}%</td>
+                            <td><span class="trend-pill" [class.up]="c.trend > 0" [class.down]="c.trend < 0"
+                                    [class.flat]="c.trend === 0">{{ c.trend > 0 ? '↑' : c.trend < 0 ? '↓' : '→' }} {{
+                                        c.trend> 0 ? '+' : '' }}{{ c.trend }}%</span></td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+
+            @if (agingTab === 'heatmap') {
+            <p class="heatmap-title">Repayment activity over the last 30 days — darker = more collections</p>
+            <div class="heatmap-grid">
+                @for (cell of heatmapCells; track $index) {
+                <div class="heatmap-cell" [class.h0]="cell.intensity === 0 && !cell.overdue"
+                    [class.h1]="cell.intensity === 1 && !cell.overdue"
+                    [class.h2]="cell.intensity === 2 && !cell.overdue"
+                    [class.h3]="cell.intensity === 3 && !cell.overdue" [class.h4]="cell.intensity >= 4 && !cell.overdue"
+                    [class.overdue]="cell.overdue"></div>
+                }
+            </div>
+            <div class="heatmap-legend">
+                <span>Less</span>
+                <div class="heatmap-cell h0"></div>
+                <div class="heatmap-cell h1"></div>
+                <div class="heatmap-cell h2"></div>
+                <div class="heatmap-cell h3"></div>
+                <div class="heatmap-cell h4"></div>
+                <span>More</span>
+                <span class="legend-sep">|</span>
+                <div class="heatmap-cell overdue"></div><span>Overdue day</span>
+            </div>
+            }
+        </article>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <article class="quick-actions-card">
+        <h2>⚡ Quick Actions</h2>
+        <div class="qa-grid">
+            <button type="button" class="qa-btn" (click)="openRecord()"><span class="qa-icon">⊕</span><strong>Record
+                    Payment</strong><small>Log a manual repayment</small></button>
+            <button type="button" class="qa-btn" (click)="openReconcile()"><span
+                    class="qa-icon">⇄</span><strong>Reconcile Payments</strong><small>Match M-Pesa
+                    statements</small></button>
+            <button type="button" class="qa-btn" (click)="openBulkReminders()"><span
+                    class="qa-icon">📢</span><strong>Bulk Reminders</strong><small>Send to all overdue
+                    members</small></button>
+            <button type="button" class="qa-btn" (click)="openPenalty()"><span class="qa-icon">⚖</span><strong>Penalty
+                    Config</strong><small>Configure penalty rules</small></button>
+            <button type="button" class="qa-btn" (click)="openWaiverRequests()"><span
+                    class="qa-icon">⊘</span><strong>Waiver Requests</strong><small>Review pending waivers <span
+                        class="qa-badge">3</span></small></button>
+            <button type="button" class="qa-btn" (click)="openGenerateReport()"><span
+                    class="qa-icon">📈</span><strong>Generate Report</strong><small>Export collection
+                    data</small></button>
+            <button type="button" class="qa-btn" (click)="openAutoDeduct()"><span
+                    class="qa-icon">⚙</span><strong>Auto-Deduct</strong><small>Setup standing orders</small></button>
+        </div>
+    </article>
+
+    <!-- TODAY'S DUE + RECENT ACTIVITY -->
+    <div class="dues-activity-row">
+        <article class="glass-card dues-card">
+            <div class="card-section-header">
+                <h2>📅 Today's Due</h2>
+                <span class="date-chip">Dec 18, 2024</span>
+            </div>
+            <div class="dues-summary">
+                <div class="ds-row"><span>Expected Today</span><strong class="accent-blue">KES 385,000</strong></div>
+                <div class="ds-row"><span>Collected So Far</span><strong class="accent-green">KES 248,500</strong></div>
+                <div class="ds-row"><span>Remaining</span><strong class="accent-red">KES 136,500</strong></div>
+            </div>
+            <div class="dues-list-title">Payments Due Today ({{ dueTodayItems.length }})</div>
+            <div class="dues-list">
+                @for (d of dueTodayItems; track d.loanRef) {
+                <div class="due-item">
+                    <div><strong>{{ d.member }}</strong><small>{{ d.loanRef }} • {{ d.installment }}</small></div>
+                    <div class="due-right">
+                        <strong>KES {{ d.amount | number }}</strong>
+                        <span class="status-mini" [class.paid]="d.status === 'Paid'"
+                            [class.pending]="d.status === 'Pending'">{{ d.status }}</span>
+                    </div>
+                </div>
+                }
+            </div>
+        </article>
+
+        <article class="glass-card activity-card">
+            <div class="card-section-header">
+                <h2>🕐 Recent Repayment Activity</h2>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openFullLog()">≡ Full Log</button>
+            </div>
+            <div class="activity-timeline">
+                @for (a of recentActivity; track a.transactionRef) {
+                <div class="activity-item">
+                    <div class="act-dot"></div>
+                    <div class="act-body">
+                        <small class="act-time">{{ a.time }}</small>
+                        <div class="act-main"><span class="channel-pill"
+                                [style.background]="channelColor(a.channel) + '20'"
+                                [style.color]="channelColor(a.channel)">{{ channelIcon(a.channel) }} {{ a.channel
+                                }}</span><strong class="accent-green">KES {{ a.amount | number }}</strong> received from
+                            <strong>{{ a.member }}</strong></div>
+                        <small class="act-sub">{{ a.loanRef }} • {{ a.installment }} • Ref: {{ a.transactionRef
+                            }}</small>
+                        <button type="button" class="link-btn" (click)="openReceipt(repayments[0])">View
+                            Receipt</button>
+                    </div>
+                </div>
+                }
+            </div>
+        </article>
+    </div>
+
+    <!-- ALL REPAYMENT TRANSACTIONS TABLE -->
+    <article class="glass-card transactions-card">
+        <div class="table-header">
+            <div>
+                <h2>All Repayment Transactions</h2>
+                <p>Showing {{ filteredRepayments.length }} of 465 total repayment records</p>
+            </div>
+            <div class="table-header-right">
+                <input type="text" class="search-input" placeholder="Search..." [(ngModel)]="searchTerm"
+                    (input)="currentPage = 1" />
+                <select class="filter-select" [(ngModel)]="filterChannel" (change)="currentPage = 1">
+                    <option value="">All Channels</option>
+                    <option>M-Pesa</option>
+                    <option>Bank</option>
+                    <option>Wallet</option>
+                    <option>Cash</option>
+                    <option>Auto</option>
+                </select>
+                <select class="filter-select" [(ngModel)]="filterStatus" (change)="currentPage = 1">
+                    <option value="">All Status</option>
+                    <option>Confirmed</option>
+                    <option>Pending</option>
+                    <option>Overdue</option>
+                    <option>Failed</option>
+                    <option>Reversed</option>
+                    <option>Advance</option>
+                </select>
+                <input type="date" class="search-input date-input" [(ngModel)]="filterDate" />
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openGenerateReport()">↧ Export</button>
+            </div>
+        </div>
+
+        <div class="table-tabs">
+            @for (tab of ['all','confirmed','pending','overdue','failed','reversed']; track tab) {
+            <button type="button" class="tt-btn" [class.active]="tableTab === tab"
+                (click)="tableTab = tab; currentPage = 1">{{ tab | titlecase }} <strong>{{ tabCount(tab)
+                    }}</strong></button>
+            }
+        </div>
+
+        @if (selectedCount > 0) {
+        <div class="bulk-bar">
+            <span><strong>{{ selectedCount }}</strong> payment(s) selected</span>
+            <div class="bulk-actions">
+                <button type="button" class="btn btn-outline btn-sm" (click)="openBulkReminders()">Send
+                    Reminders</button>
+                <button type="button" class="btn btn-primary btn-sm" (click)="openGenerateReport()">Export
+                    Selected</button>
+            </div>
+        </div>
+        }
+
+        <div class="table-responsive">
+            <table class="repay-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" [(ngModel)]="allSelected" (change)="toggleAll()" /></th>
+                        <th>Receipt #</th>
+                        <th>Member</th>
+                        <th>Loan Ref</th>
+                        <th>Loan Type</th>
+                        <th>Amount</th>
+                        <th>Channel</th>
+                        <th>Installment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (row of paginatedRepayments; track row.receiptNo) {
+                    <tr>
+                        <td><input type="checkbox" [(ngModel)]="row.selected" /></td>
+                        <td><span class="ref-link" (click)="openReceipt(row)">{{ row.receiptNo }}</span></td>
+                        <td>
+                            <div class="member-cell">
+                                <span class="avatar sm" [style.background]="row.avatarColor">{{ row.memberInitials
+                                    }}</span>
+                                <span><strong>{{ row.member }}</strong><small>{{ row.memberId }}</small></span>
+                            </div>
+                        </td>
+                        <td class="ref-link">{{ row.loanRef }}</td>
+                        <td><span class="type-badge">{{ row.loanType }}</span></td>
+                        <td>KES {{ row.amount | number }}</td>
+                        <td><span class="channel-pill" [style.background]="channelColor(row.channel) + '20'"
+                                [style.color]="channelColor(row.channel)">{{ channelIcon(row.channel) }} {{ row.channel
+                                }}</span></td>
+                        <td>
+                            <div class="installment-cell">
+                                <div class="ins-bar">
+                                    <div class="ins-fill" [ngClass]="row.status.toLowerCase()"
+                                        [style.width]="row.installmentPct + '%'"></div>
+                                </div>
+                                <small>{{ row.installment }} <span class="ins-pct">{{ row.installmentPct
+                                        }}%</span></small>
+                            </div>
+                        </td>
+                        <td><span class="status-badge" [ngClass]="row.status.toLowerCase()">● {{ row.status }}</span>
+                        </td>
+                        <td>{{ row.date }}{{ row.time !== '—' ? ', ' + row.time : '' }}</td>
+                        <td>
+                            <div class="row-actions">
+                                @if (row.status === 'Failed') { <button type="button" class="btn btn-outline btn-xs"
+                                    (click)="openRetry(row)">↻ Retry</button> }
+                                @if (row.status === 'Overdue') { <button type="button" class="act-icon-btn"
+                                    title="Remind" (click)="openBulkReminders()">🔔</button> }
+                                @if (row.status === 'Confirmed' || row.status === 'Advance') { <button type="button"
+                                    class="act-icon-btn" title="Reverse" (click)="openReverse(row)">⤺</button> }
+                                <button type="button" class="act-icon-btn" title="Receipt"
+                                    (click)="openReceipt(row)">📄</button>
+                                <button type="button" class="act-icon-btn" title="More"
+                                    (click)="openReceipt(row)">⋮</button>
+                            </div>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="11" class="empty-cell">No repayment transactions match the selected filters.</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-row">
+            <span>Showing {{ (currentPage - 1) * pageSize + 1 }}-{{ pageEnd }} of 465 repayments | {{ selectedCount }}
+                selected</span>
+            <div class="pagination-btns">
+                <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">«</button>
+                @for (p of visiblePages; track p) { <button type="button" [class.active]="p === currentPage"
+                    (click)="goToPage(p)">{{ p }}</button> }
+                <span class="pg-ellipsis">...</span>
+                <button type="button" (click)="goToPage(78)">78</button>
+                <button type="button" [disabled]="currentPage === totalPages"
+                    (click)="goToPage(currentPage + 1)">»</button>
+            </div>
+        </div>
+    </article>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- MODAL: RECORD REPAYMENT -->
+    @if (showRecordModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-green">
+                <h2>⊕ Record Repayment</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="form-grid-2">
+                    <label class="fg"><span>LOAN REFERENCE</span><input [(ngModel)]="recordForm.loanRef"
+                            placeholder="e.g. LN-2024-00845" /></label>
+                    <label class="fg"><span>MEMBER</span><input [(ngModel)]="recordForm.member"
+                            placeholder="Auto-populated" readonly /></label>
+                    <label class="fg"><span>PAYMENT AMOUNT (KES)</span><input type="number"
+                            [(ngModel)]="recordForm.amount" placeholder="Amount" /></label>
+                    <label class="fg"><span>PAYMENT DATE</span><input type="date"
+                            [(ngModel)]="recordForm.date" /></label>
+                    <label class="fg"><span>PAYMENT METHOD</span><select [(ngModel)]="recordForm.method">
+                            <option>M-Pesa</option>
+                            <option>Bank</option>
+                            <option>Wallet</option>
+                            <option>Cash</option>
+                        </select></label>
+                    <label class="fg"><span>TRANSACTION REFERENCE</span><input [(ngModel)]="recordForm.transactionRef"
+                            placeholder="M-Pesa code / Bank ref" /></label>
+                    <label class="fg full"><span>PAYMENT TYPE</span><select [(ngModel)]="recordForm.paymentType">
+                            <option>Regular Installment</option>
+                            <option>Advance Payment</option>
+                            <option>Penalty Payment</option>
+                            <option>Partial Payment</option>
+                        </select></label>
+                    <label class="fg full"><span>NOTES</span><textarea rows="3" [(ngModel)]="recordForm.notes"
+                            placeholder="Optional notes..."></textarea></label>
+                </div>
+                <div class="loan-summary-box">
+                    <h4>ℹ Loan Summary</h4>
+                    <div class="ls-grid">
+                        <div><small>Outstanding</small><strong>KES {{ recordForm.outstanding | number }}</strong></div>
+                        <div><small>Next Due</small><strong>KES {{ recordForm.nextDue | number }}</strong></div>
+                        <div><small>Penalties</small><strong class="accent-red">KES {{ recordForm.penalties | number
+                                }}</strong></div>
+                        <div><small>Installment</small><strong>{{ recordForm.installmentLabel }}</strong></div>
+                    </div>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!recordForm.loanRef || !recordForm.amount"
+                    (click)="submitRecord()">✓ Record Payment</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: AUTO-DEDUCT -->
+    @if (showAutoDeductModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-green">
+                <h2>⚙ Auto-Deduction Configuration</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="form-grid-2">
+                    <label class="fg"><span>DEFAULT DEDUCTION CHANNEL</span><select
+                            [(ngModel)]="autoDeductForm.defaultChannel">
+                            <option>M-Pesa (STK Push)</option>
+                            <option>Bank Standing Order</option>
+                            <option>SACCOPay Wallet</option>
+                        </select></label>
+                    <label class="fg"><span>DEDUCTION TIMING</span><select [(ngModel)]="autoDeductForm.timing">
+                            <option>On Due Date (12:00 PM)</option>
+                            <option>Day Before Due (6:00 PM)</option>
+                            <option>3 Days Before Due</option>
+                        </select></label>
+                    <label class="fg"><span>RETRY ON FAILURE</span><select [(ngModel)]="autoDeductForm.retryPolicy">
+                            <option>Retry after 4 hours</option>
+                            <option>Retry after 24 hours</option>
+                            <option>No retry</option>
+                        </select></label>
+                    <label class="fg"><span>NOTIFICATION BEFORE DEDUCTION</span><select
+                            [(ngModel)]="autoDeductForm.notification">
+                            <option>24 hours before</option>
+                            <option>2 hours before</option>
+                            <option>No notification</option>
+                        </select></label>
+                </div>
+                <div class="auto-deduct-list-title">ACTIVE AUTO-DEDUCTIONS</div>
+                <div class="table-responsive">
+                    <table class="inner-table">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Loan</th>
+                                <th>Amount</th>
+                                <th>Channel</th>
+                                <th>Status</th>
+                                <th>Toggle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (a of autoDeductions; track a.loan) {
+                            <tr>
+                                <td>{{ a.member }}</td>
+                                <td class="ref-link">{{ a.loan }}</td>
+                                <td>KES {{ a.amount | number }}</td>
+                                <td>{{ a.channel }}</td>
+                                <td><span class="status-mini" [class.paid]="a.status === 'Active'"
+                                        [class.pending]="a.status === 'Failed'">{{ a.status }}</span></td>
+                                <td><label class="toggle-switch"><input type="checkbox" [(ngModel)]="a.enabled" /><span
+                                            class="slider"></span></label></td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="saveAutoDeductConfig()">✓ Save
+                    Configuration</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: REPORTS LIST -->
+    @if (showReportsModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-blue">
+                <h2>📊 Repayment Reports</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="reports-grid">
+                    <button type="button" class="report-tile" (click)="openReportDetail('Collection Report')">
+                        <span class="rt-icon" style="background:#e6faf4;color:#00d084">📥</span>
+                        <strong>Collection Report</strong><small>All repayments received</small>
+                    </button>
+                    <button type="button" class="report-tile" (click)="openReportDetail('Aging Analysis')">
+                        <span class="rt-icon" style="background:#fef2f2;color:#f44336">⏱</span>
+                        <strong>Aging Analysis</strong><small>Overdue breakdown by bucket</small>
+                    </button>
+                    <button type="button" class="report-tile" (click)="openReportDetail('Channel Analysis')">
+                        <span class="rt-icon" style="background:#e3f2fd;color:#2196f3">📡</span>
+                        <strong>Channel Analysis</strong><small>Payments by method</small>
+                    </button>
+                    <button type="button" class="report-tile" (click)="openReportDetail('Penalty Report')">
+                        <span class="rt-icon" style="background:#fff8e1;color:#ff9800">%</span>
+                        <strong>Penalty Report</strong><small>Penalties charged & waivers</small>
+                    </button>
+                    <button type="button" class="report-tile" (click)="openReportDetail('Efficiency Report')">
+                        <span class="rt-icon" style="background:#fce4ec;color:#e91e63">📊</span>
+                        <strong>Efficiency Report</strong><small>Collection rate & trends</small>
+                    </button>
+                    <button type="button" class="report-tile" (click)="openReportDetail('Member Statements')">
+                        <span class="rt-icon" style="background:#fff3e0;color:#ff5722">👥</span>
+                        <strong>Member Statements</strong><small>Individual repayment history</small>
+                    </button>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Close</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: REPORT DETAIL -->
+    @if (showReportDetailModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-blue">
+                <h2>📈 {{ activeReportType }}</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner info">ℹ Configure export options for the <strong>{{ activeReportType
+                        }}</strong> report.</div>
+                <div class="form-grid-2">
+                    <label class="fg"><span>FORMAT</span><select [(ngModel)]="reportForm.format">
+                            <option>PDF</option>
+                            <option>Excel</option>
+                            <option>CSV</option>
+                        </select></label>
+                    <label class="fg"><span>DELIVERY</span><select>
+                            <option>Download</option>
+                            <option>Email me</option>
+                            <option>Schedule daily</option>
+                        </select></label>
+                    <label class="fg"><span>DATE FROM</span><input type="date" [(ngModel)]="reportForm.from" /></label>
+                    <label class="fg"><span>DATE TO</span><input type="date" [(ngModel)]="reportForm.to" /></label>
+                </div>
+                <label class="form-check"><input type="checkbox" checked /> Include charts and visualizations</label>
+                <label class="form-check"><input type="checkbox" checked /> Include summary statistics</label>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="generateReport()">↧ Generate &amp;
+                    Download</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: RECONCILE -->
+    @if (showReconcileModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-blue-light">
+                <h2>⇄ Payment Reconciliation</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner info">ℹ Upload M-Pesa or bank statements to auto-match payments to loan
+                    accounts.</div>
+                <div class="form-grid-2">
+                    <label class="fg"><span>SOURCE</span><select [(ngModel)]="reconcileForm.source">
+                            <option>M-Pesa Statement</option>
+                            <option>Bank Statement</option>
+                            <option>Wallet Export</option>
+                        </select></label>
+                    <label class="fg"><span>DATE RANGE</span><select [(ngModel)]="reconcileForm.dateRange">
+                            <option>Today</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>Custom Range</option>
+                        </select></label>
+                </div>
+                <div class="upload-area">
+                    <div class="upload-inner"><span class="upload-icon-lg">☁</span>
+                        <p>Drop CSV/Excel file here or <span class="upload-link">browse</span></p>
+                    </div>
+                </div>
+                <div class="recon-preview">
+                    <strong>Reconciliation Preview</strong>
+                    <div class="recon-grid">
+                        <div><small>Total Entries</small><strong>{{ reconcileResult.total || '—' }}</strong></div>
+                        <div><small>Matched</small><strong class="accent-green">{{ reconcileResult.matched || '—'
+                                }}</strong></div>
+                        <div><small>Unmatched</small><strong class="accent-red">{{ reconcileResult.unmatched || '—'
+                                }}</strong></div>
+                        <div><small>Duplicates</small><strong class="accent-orange">{{ reconcileResult.duplicates || '—'
+                                }}</strong></div>
+                    </div>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="startReconciliation()">⇄ Start
+                    Reconciliation</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: BULK REMINDERS -->
+    @if (showBulkRemindersModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-orange">
+                <h2>📢 Bulk Payment Reminders</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner info"><strong>{{ reminderRecipients.length }} members</strong> have overdue or
+                    upcoming payments. Select recipients below.</div>
+                <div class="form-grid-2">
+                    <label class="fg"><span>TARGET GROUP</span><select [(ngModel)]="reminderForm.targetGroup">
+                            <option>All Overdue (18)</option>
+                            <option>Due Today (8)</option>
+                            <option>Due This Week (24)</option>
+                            <option>Custom Selection</option>
+                        </select></label>
+                    <label class="fg"><span>TEMPLATE</span><select [(ngModel)]="reminderForm.template">
+                            <option>Friendly Reminder</option>
+                            <option>Stern Reminder</option>
+                            <option>Final Notice</option>
+                            <option>Custom Message</option>
+                        </select></label>
+                </div>
+                <div class="table-responsive">
+                    <table class="inner-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" checked /></th>
+                                <th>Member</th>
+                                <th>Amount Due</th>
+                                <th>Days Overdue</th>
+                                <th>Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (r of reminderRecipients; track r.member) {
+                            <tr>
+                                <td><input type="checkbox" [(ngModel)]="r.selected" /></td>
+                                <td><strong>{{ r.member }}</strong></td>
+                                <td>KES {{ r.amountDue | number }}</td>
+                                <td><span class="days-pill" [class.due-today]="r.daysOverdue === 'Today'">{{
+                                        r.daysOverdue }}</span></td>
+                                <td>{{ r.phone }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-warning" (click)="sendBulkReminders()">📢 Send to {{
+                    reminderRecipients.length }} Members</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: PENALTY -->
+    @if (showPenaltyModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-brown">
+                <h2>⚖ Penalty Configuration</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="form-grid-2">
+                    <label class="fg"><span>PENALTY TYPE</span><select [(ngModel)]="penaltyForm.type">
+                            <option>Percentage of Overdue</option>
+                            <option>Fixed Amount</option>
+                            <option>Compound Daily</option>
+                        </select></label>
+                    <label class="fg"><span>RATE / AMOUNT</span><input [(ngModel)]="penaltyForm.rateAmount" /></label>
+                    <label class="fg"><span>GRACE PERIOD (DAYS)</span><input type="number"
+                            [(ngModel)]="penaltyForm.gracePeriod" /></label>
+                    <label class="fg"><span>MAX PENALTY CAP</span><input [(ngModel)]="penaltyForm.maxCap" /></label>
+                    <label class="fg"><span>AUTO-APPLY</span><select [(ngModel)]="penaltyForm.autoApply">
+                            <option>Yes — Auto-calculate daily</option>
+                            <option>No — Manual entry only</option>
+                        </select></label>
+                    <label class="fg"><span>NOTIFICATION</span><select [(ngModel)]="penaltyForm.notification">
+                            <option>Notify member on penalty</option>
+                            <option>No notification</option>
+                        </select></label>
+                </div>
+                <label class="form-check"><input type="checkbox" [(ngModel)]="penaltyForm.compound" /> Compound
+                    penalties (penalty on penalties)</label>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-brown" (click)="savePenaltyConfig()">✓ Save Configuration</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: WAIVER REQUESTS -->
+    @if (showWaiverRequestsModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-purple">
+                <h2>⊘ Waiver Requests</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner info">Pending penalty waiver requests from members. Review and decide.</div>
+                <div class="waiver-list">
+                    @for (w of waiverRequests; track w.id) {
+                    <div class="waiver-card">
+                        <div class="wc-header">
+                            <div><strong>{{ w.member }}</strong><small> · {{ w.loanRef }} · Submitted {{ w.submitted
+                                    }}</small></div>
+                            <span class="status-mini" [class.paid]="w.status === 'Approved'"
+                                [class.pending]="w.status === 'Pending'" [class.failed]="w.status === 'Rejected'">{{
+                                w.status }}</span>
+                        </div>
+                        <div class="wc-amount"><span>Waiver Amount:</span><strong class="accent-orange">KES {{ w.amount
+                                | number }}</strong></div>
+                        <div class="wc-reason"><span>Reason:</span> {{ w.reason }}</div>
+                        @if (w.status === 'Pending') {
+                        <div class="wc-actions">
+                            <button type="button" class="btn btn-outline btn-sm"
+                                (click)="openWaiverDetail(w, 'reject')">Reject</button>
+                            <button type="button" class="btn btn-primary btn-sm"
+                                (click)="openWaiverDetail(w, 'approve')">Approve</button>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Close</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- NESTED WAIVER DECISION -->
+    @if (activeWaiver) {
+    <div class="modal-overlay nested" (click)="activeWaiver = null">
+        <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+            <header class="modal-header" [class.grad-green]="waiverAction === 'approve'"
+                [class.grad-red]="waiverAction === 'reject'">
+                <h2>{{ waiverAction === 'approve' ? '✓ Approve Waiver' : '✕ Reject Waiver' }}</h2><button type="button"
+                    class="modal-close" (click)="activeWaiver = null">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="waiver-summary">
+                    <div><small>MEMBER</small><strong>{{ activeWaiver.member }}</strong></div>
+                    <div><small>LOAN</small><strong>{{ activeWaiver.loanRef }}</strong></div>
+                    <div><small>AMOUNT</small><strong class="accent-orange">KES {{ activeWaiver.amount | number
+                            }}</strong></div>
+                </div>
+                <label class="fg"><span>{{ waiverAction === 'approve' ? 'APPROVAL NOTES' : 'REJECTION REASON *'
+                        }}</span><textarea rows="4" [(ngModel)]="waiverNotes"></textarea></label>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="activeWaiver = null">Cancel</button>
+                <button type="button" [class.btn-primary]="waiverAction === 'approve'"
+                    [class.btn-danger]="waiverAction === 'reject'" class="btn"
+                    [disabled]="waiverAction === 'reject' && !waiverNotes" (click)="confirmWaiverDecision()">{{
+                    waiverAction === 'approve' ? '✓ Approve' : '✕ Reject' }}</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: GENERATE REPORT (from Quick Actions) -->
+    @if (showGenerateReportModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-green">
+                <h2>📈 Generate Report</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="form-grid-2">
+                    <label class="fg"><span>REPORT TYPE</span><select [(ngModel)]="reportForm.type">
+                            <option>Collection Report</option>
+                            <option>Aging Analysis</option>
+                            <option>Channel Analysis</option>
+                            <option>Penalty Report</option>
+                            <option>Efficiency Report</option>
+                            <option>Member Statements</option>
+                        </select></label>
+                    <label class="fg"><span>FORMAT</span><select [(ngModel)]="reportForm.format">
+                            <option>PDF</option>
+                            <option>Excel</option>
+                            <option>CSV</option>
+                        </select></label>
+                    <label class="fg"><span>DATE FROM</span><input type="date" [(ngModel)]="reportForm.from" /></label>
+                    <label class="fg"><span>DATE TO</span><input type="date" [(ngModel)]="reportForm.to" /></label>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="generateReport()">↧ Generate Report</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: FULL AGING TABLE -->
+    @if (showFullAgingModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+            <header class="modal-header">
+                <h2>📊 Full Aging Analysis</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner danger"><strong>KES 1.32M</strong> total overdue across 18 loans · PAR &gt;30
+                    at <strong>2.1%</strong></div>
+                <div class="table-responsive">
+                    <table class="inner-table">
+                        <thead>
+                            <tr>
+                                <th>Bucket</th>
+                                <th>Members</th>
+                                <th>Amount Outstanding</th>
+                                <th>% of Overdue</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (b of fullAgingDetails; track b.bucket) {
+                            <tr>
+                                <td><strong>{{ b.bucket }}</strong></td>
+                                <td>{{ b.members }}</td>
+                                <td class="accent-red">KES {{ b.amount | number }}</td>
+                                <td>{{ b.share }}</td>
+                                <td><button type="button" class="btn btn-outline btn-xs"
+                                        (click)="closeAllModals(); openBulkReminders()">Send Reminders</button></td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Close</button>
+                <button type="button" class="btn btn-primary"
+                    (click)="closeAllModals(); openReportDetail('Aging Analysis')">↧ Export Aging Report</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: FULL LOG -->
+    @if (showFullLogModal) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+            <header class="modal-header">
+                <h2>≡ Full Repayment Activity Log</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="activity-timeline scrollable">
+                    @for (a of recentActivity; track a.transactionRef) {
+                    <div class="activity-item">
+                        <div class="act-dot"></div>
+                        <div class="act-body">
+                            <small class="act-time">{{ a.time }}</small>
+                            <div class="act-main"><span class="channel-pill"
+                                    [style.background]="channelColor(a.channel) + '20'"
+                                    [style.color]="channelColor(a.channel)">{{ channelIcon(a.channel) }} {{ a.channel
+                                    }}</span><strong class="accent-green">KES {{ a.amount | number }}</strong> received
+                                from <strong>{{ a.member }}</strong></div>
+                            <small class="act-sub">{{ a.loanRef }} • {{ a.installment }} • Ref: {{ a.transactionRef
+                                }}</small>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Close</button>
+                <button type="button" class="btn btn-primary" (click)="closeAllModals(); openGenerateReport()">↧ Export
+                    Log</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: RECEIPT -->
+    @if (showReceiptModal && activeRow) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-md" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-green">
+                <h2>📄 Payment Receipt</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="receipt-hero">
+                    <div class="receipt-amount">KES {{ activeRow.amount | number }}</div>
+                    <div class="receipt-status" [class.confirmed]="activeRow.status === 'Confirmed'"
+                        [class.overdue]="activeRow.status === 'Overdue'">{{ activeRow.status === 'Confirmed' ? '✓
+                        Payment Confirmed' : activeRow.status }}</div>
+                </div>
+                <div class="receipt-grid">
+                    <div><small>Receipt No.</small><strong>{{ activeRow.receiptNo }}</strong></div>
+                    <div><small>Member</small><strong>{{ activeRow.member }} ({{ activeRow.memberId }})</strong></div>
+                    <div><small>Loan Ref</small><strong>{{ activeRow.loanRef }}</strong></div>
+                    <div><small>Installment</small><strong>{{ activeRow.installment }}</strong></div>
+                    <div><small>Payment Method</small><strong>{{ channelIcon(activeRow.channel) }} {{ activeRow.channel
+                            }}</strong></div>
+                    <div><small>Transaction Ref</small><strong>{{ activeRow.transactionRef }}</strong></div>
+                    <div><small>Date &amp; Time</small><strong>{{ activeRow.date }} • {{ activeRow.time }}</strong>
+                    </div>
+                    <div><small>Processed By</small><strong>{{ activeRow.processedBy }}</strong></div>
+                </div>
+                <div class="receipt-divider"></div>
+                <div class="receipt-grid">
+                    <div><small>Principal</small><strong>KES {{ activeRow.principal | number }}</strong></div>
+                    <div><small>Interest</small><strong>KES {{ activeRow.interest | number }}</strong></div>
+                    <div><small>Penalty</small><strong>KES {{ activeRow.penalty | number }}</strong></div>
+                    <div><small>Remaining Balance</small><strong class="accent-orange">KES {{ activeRow.remainingBalance
+                            | number }}</strong></div>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Close</button>
+                <button type="button" class="btn btn-outline">🖨 Print</button>
+                <button type="button" class="btn btn-primary">↧ Download PDF</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: RETRY -->
+    @if (showRetryModal && activeRow) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-orange">
+                <h2>↻ Retry Failed Payment</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner warn">⚠ Retry the failed payment for <strong>{{ activeRow.member }}</strong>
+                    (Loan {{ activeRow.loanRef }}).</div>
+                <div class="form-grid-2">
+                    <label class="fg"><span>CHANNEL</span><select [(ngModel)]="retryForm.channel">
+                            <option>M-Pesa</option>
+                            <option>Bank</option>
+                            <option>Wallet</option>
+                        </select></label>
+                    <label class="fg"><span>AMOUNT</span><input type="number" [(ngModel)]="retryForm.amount" /></label>
+                    <label class="fg full"><span>NOTES</span><textarea rows="3" [(ngModel)]="retryForm.notes"
+                            placeholder="Reason for retry..."></textarea></label>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-warning" (click)="confirmRetry()">↻ Retry Payment</button>
+            </footer>
+        </div>
+    </div>
+    }
+
+    <!-- MODAL: REVERSE -->
+    @if (showReverseModal && activeRow) {
+    <div class="modal-overlay" (click)="closeAllModals()">
+        <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+            <header class="modal-header grad-red">
+                <h2>⤺ Reverse Payment</h2><button type="button" class="modal-close"
+                    (click)="closeAllModals()">✕</button>
+            </header>
+            <div class="modal-body">
+                <div class="alert-banner danger">⚠ This will reverse <strong>{{ activeRow.receiptNo }}</strong> (KES {{
+                    activeRow.amount | number }}). This action is logged.</div>
+                <label class="fg"><span>REVERSAL REASON *</span><select [(ngModel)]="reverseForm.reason">
+                        <option value="">Select reason...</option>
+                        <option>Duplicate payment</option>
+                        <option>Wrong loan account</option>
+                        <option>Wrong amount</option>
+                        <option>Member request</option>
+                        <option>System error</option>
+                    </select></label>
+                <label class="fg" style="margin-top:0.75rem"><span>NOTES</span><textarea rows="4"
+                        [(ngModel)]="reverseForm.notes" placeholder="Additional details..."></textarea></label>
+                <label class="form-check"><input type="checkbox" [(ngModel)]="reverseForm.notifyMember" /> Notify member
+                    of reversal</label>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-ghost" (click)="closeAllModals()">Cancel</button>
+                <button type="button" class="btn btn-danger" [disabled]="!reverseForm.reason"
+                    (click)="confirmReverse()">⤺ Confirm Reverse</button>
+            </footer>
+        </div>
+    </div>
+    }
+</section>

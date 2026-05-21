@@ -1,356 +1,1043 @@
+<!-- Withdrawals Portal — Body Content Only (No sidebar, No header) -->
+<div class="wd-page">
+  <div class="wd-shell">
 
-<main class="wd-page">
-  <section class="wd-shell">
+    <!-- Page Heading -->
     <div class="page-heading">
       <div>
-        <nav class="breadcrumbs"><span>Home</span><span>Financial Operations</span><strong>Withdrawals</strong></nav>
-        <h1>Withdrawal Management</h1>
-        <p>Process, approve, and monitor all member withdrawal requests</p>
+     
+        <!-- <h1>💸 Withdrawal Control Center</h1> -->
+        <p>Process, approve, reverse and monitor all member fund disbursements across channels.</p>
       </div>
       <div class="heading-actions">
-        <button class="btn btn-ghost" type="button" (click)="showToast('Data refreshed.')">↻ Refresh</button>
-        <button class="btn btn-outline-warning" type="button" (click)="showToast('Export ready.')">📥 Export</button>
-        <button class="btn btn-outline-success" type="button" (click)="openModal('editLimits')">🔒 Check Limits</button>
-        <button class="btn btn-primary" type="button" (click)="openModal('processWithdrawal')">● Process Withdrawal</button>
+        <button class="btn btn-outline-success btn-sm" (click)="lookupMemberId=''; searchedMember=null; openModal('check_limits')">🔍 Check Limits</button>
+        <button class="btn btn-outline-warning btn-sm" (click)="openModal('float')">💰 Manage Float</button>
+        <button class="btn btn-primary btn-sm" (click)="procStep=1; openModal('process')">➕ New Withdrawal</button>
       </div>
     </div>
 
-    <div class="float-alert">
-      <span>⚠ <strong>Float Alert:</strong> Current SACCO float balance is KES 45M. Daily withdrawal limit: KES 50M. <a href="javascript:void(0)">View Float Management</a></span>
+    <!-- Float Alert Banner -->
+    <div class="float-alert" *ngIf="channels[2].status === 'Delayed'">
+      ⚠️ <strong>Gateway Alert:</strong> Pesalink Transfer channel is currently <strong>delayed</strong>. Expected restoration: 30 minutes.
+      <a (click)="openModal('float')"> Manage Float →</a>
     </div>
 
+    <!-- KPI Summary Cards -->
     <div class="kpi-grid">
-      @for (c of kpiCards; track c.label; let i = $index) {
-        <article class="kpi-card" [style.--delay]="(i * 60) + 'ms'">
-          <span class="kpi-icon">{{ c.icon }}</span>
-          <small>{{ c.label }}</small>
-          <strong>{{ c.value }}</strong>
-          <span class="kpi-sub" [class.green]="c.subTone === 'green'" [class.red]="c.subTone === 'red'">{{ c.sub }}</span>
-        </article>
-      }
+      <div class="kpi-card" style="--delay:0ms">
+        <span class="kpi-icon">💵</span>
+        <small>Today's Disbursements</small>
+        <strong>KES {{totalVolumeToday | number:'1.0-0'}}</strong>
+        <span class="kpi-sub green">↑ 12.4% vs yesterday</span>
+      </div>
+      <div class="kpi-card" style="--delay:80ms" (click)="activeTab='pending'" style="cursor:pointer">
+        <span class="kpi-icon">⏳</span>
+        <small>Pending Verification</small>
+        <strong>{{pendingCount}}</strong>
+        <span class="kpi-sub" style="color:#ef6c00">Needs immediate review</span>
+      </div>
+      <div class="kpi-card" style="--delay:160ms">
+        <span class="kpi-icon">🚨</span>
+        <small>Flagged / High Risk</small>
+        <strong>{{flaggedCount}}</strong>
+        <span class="kpi-sub red">Security velocity alerts</span>
+      </div>
+      <div class="kpi-card" style="--delay:240ms">
+        <span class="kpi-icon">📊</span>
+        <small>Global Limit Usage</small>
+        <strong>42.8%</strong>
+        <div style="height:6px;background:#e9eff5;border-radius:999px;margin-top:8px;overflow:hidden">
+          <div style="height:100%;width:42.8%;background:linear-gradient(90deg,#00d084,#00bcd4);border-radius:999px"></div>
+        </div>
+      </div>
     </div>
 
+    <!-- Channel Float Breakdown -->
     <div class="method-grid">
-      @for (c of methodCards; track c.label; let i = $index) {
-        <article class="method-card" [style.--delay]="(i * 50 + 260) + 'ms'">
-          <span class="method-icon" [class]="'method-icon tone-' + c.tone">{{ c.icon }}</span>
-          <small>{{ c.label }}</small>
-          <strong>{{ c.value }}</strong>
-          <span class="method-sub">{{ c.sub }}</span>
-        </article>
-      }
+      <div class="method-card" *ngFor="let chan of channels" [style]="'--delay:' + (channels.indexOf(chan) * 80) + 'ms'">
+        <div class="method-icon" [ngClass]="{'tone-green': chan.id==='mpesa', 'tone-blue': chan.id==='bank', 'tone-teal': chan.id==='pesalink', 'tone-gray': chan.id==='cash'}">
+          {{chan.id==='mpesa' ? '📱' : chan.id==='bank' ? '🏦' : chan.id==='pesalink' ? '🔗' : '🏧'}}
+        </div>
+        <small>{{chan.name}}</small>
+        <strong>KES {{chan.balance | number}}</strong>
+        <div class="source-bar" style="margin-top:10px">
+          <div [style.width.%]="(chan.balance / chan.limit) * 100"
+               [style.background]="(chan.balance / chan.limit) < 0.2 ? '#f44336' : 'linear-gradient(90deg,#00d084,#00bcd4)'"></div>
+        </div>
+        <span class="method-sub">
+          Vol: KES {{chan.dailyVolume | number}} today ·
+          <span [ngClass]="{'positive': chan.status==='Online', 'warning-text': chan.status==='Delayed', 'danger': chan.status==='Offline'}">{{chan.status}}</span>
+        </span>
+      </div>
     </div>
 
-    <div class="primary-tabs" role="tablist">
-      @for (t of tabs; track t.key) {
-        <button type="button" [class.active]="tab === t.key" (click)="tab = t.key">{{ t.label }}</button>
-      }
+    <!-- Primary Tabs -->
+    <div class="primary-tabs">
+      <button [class.active]="activeTab==='all'" (click)="activeTab='all'">📋 All Withdrawals ({{withdrawals.length}})</button>
+      <button [class.active]="activeTab==='pending'" (click)="activeTab='pending'">⏳ Pending Approvals ({{pendingCount}})</button>
+      <button [class.active]="activeTab==='limits'" (click)="activeTab='limits'">🔒 Limits & Rules</button>
+      <button [class.active]="activeTab==='quick'" (click)="activeTab='quick'">⚡ Quick Process</button>
+      <button [class.active]="activeTab==='analytics'" (click)="activeTab='analytics'">📈 Analytics</button>
     </div>
 
-    <!-- ALL WITHDRAWALS -->
-    @if (tab === 'all') {
-      <section class="glass-card tab-card">
-        <div class="table-head">
-          <h2>🔄 Recent Withdrawals</h2>
-          <div class="table-filters">
-            <select [(ngModel)]="statusF"><option value="all">All Status</option><option>Completed</option><option>Pending</option><option>Failed</option><option>Processing</option></select>
-            <select [(ngModel)]="methodF"><option value="all">All Methods</option><option>M-Pesa</option><option>Bank</option><option>Cash</option><option>Cheque</option></select>
-            <select [(ngModel)]="typeF"><option value="all">All Types</option><option>Savings</option><option>Share Redemption</option><option>Fixed Deposit</option></select>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <table class="wd-table">
-            <thead><tr><th><input type="checkbox" /></th><th>Withdrawal ID</th><th>Date &amp; Time</th><th>Member</th><th>Account Type</th><th>Method</th><th>Amount</th><th>Reference</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>
-              @for (w of filteredWithdrawals; track w.id) {
-                <tr [class.row-pending]="w.status === 'Pending'">
-                  <td><input type="checkbox" /></td>
-                  <td data-label="ID"><code>{{ w.id }}</code></td>
-                  <td data-label="Date">{{ w.date }}</td>
-                  <td data-label="Member"><div class="m-cell"><span class="av" [class]="'av ' + w.av">{{ w.initials }}</span><span><strong>{{ w.name }}</strong><small>{{ w.mid }}</small></span></div></td>
-                  <td data-label="Account"><span class="acct-badge" [class]="'acct-badge tone-' + w.acctTone">{{ w.acctType }}</span></td>
-                  <td data-label="Method"><span>{{ w.methodIcon }} {{ w.method }}</span></td>
-                  <td data-label="Amount"><strong [class.danger]="w.status === 'Failed'" [class.positive]="w.status !== 'Failed'">{{ w.amount }}</strong></td>
-                  <td data-label="Ref"><code class="ref-code">{{ w.reference }}</code></td>
-                  <td data-label="Status"><span class="status-pill" [class]="'status-pill st-' + w.status.toLowerCase()">● {{ w.status }}</span></td>
-                  <td data-label="Actions">
-                    <div class="row-actions">
-                      @if (w.status === 'Pending') { <button class="btn btn-xs btn-primary" type="button" (click)="confirmAndClose('Withdrawal approved.')">✔</button> }
-                      @if (w.status === 'Failed') { <button class="btn btn-xs btn-warning" type="button" (click)="confirmAndClose('Withdrawal retried.')">🔄</button> }
-                      <button class="icon-btn" type="button" (click)="openModal('viewDetail', w)">👁</button>
-                      <button class="icon-btn" type="button" (click)="openModal('viewDetail', w)">🖨</button>
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr><td colspan="10" class="empty">No withdrawals match filters.</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <div class="table-footer">
-          <span>Showing 1-5 of 567 withdrawals</span>
-          <div class="pagination"><button>&lt;</button><button class="active">1</button><button>2</button><button>3</button><button>…</button><button>114</button><button>&gt;</button></div>
-        </div>
-      </section>
-    }
+    <!-- ═══════════ TAB 1 & 2: ALL / PENDING WITHDRAWALS ═══════════ -->
+    <div class="glass-card tab-card" *ngIf="activeTab==='all' || activeTab==='pending'">
+      <h2>{{activeTab==='all' ? '📋 Withdrawal Ledger' : '⏳ Pending Approval Queue'}}</h2>
 
-    <!-- PENDING -->
-    @if (tab === 'pending') {
-      <section class="glass-card tab-card">
-        <div class="table-head">
-          <h2>🟡 Withdrawals Awaiting Approval (28)</h2>
-          <div class="heading-actions">
-            <button class="btn btn-outline-danger btn-sm" type="button" (click)="showToast('Selected rejected.')">⛔ Reject Selected</button>
-            <button class="btn btn-primary btn-sm" type="button" (click)="showToast('Selected approved.')">✔ Approve Selected</button>
-          </div>
+      <!-- Filters -->
+      <div class="table-head">
+        <div class="table-filters">
+          <input type="text" placeholder="🔍 Search member, ID, reference..." [(ngModel)]="searchTerm" />
+          <select [(ngModel)]="channelFilter">
+            <option value="All">All Channels</option>
+            <option value="M-Pesa Express">M-Pesa Express</option>
+            <option value="Bank RTGS Gateway">Bank RTGS</option>
+            <option value="Pesalink Transfer">Pesalink</option>
+            <option value="FOSA Branch Cash">FOSA Cash</option>
+          </select>
+          <select *ngIf="activeTab==='all'" [(ngModel)]="statusFilter">
+            <option value="All">All Statuses</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Flagged">Flagged</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Reversed">Reversed</option>
+          </select>
+          <input type="number" placeholder="Min KES" [(ngModel)]="minAmount" style="min-width:100px" />
         </div>
-        <div class="pending-list">
-          @for (p of pendingItems; track p.id) {
-            <article class="pending-card">
-              <div class="pending-left">
-                <input type="checkbox" />
-                <span class="av" [class]="'av ' + p.av">{{ p.initials }}</span>
-                <div>
-                  <strong>{{ p.name }}</strong>
-                  <small>{{ p.id }} • {{ p.mid }}</small>
-                  <div class="tag-row">
-                    @for (t of p.tags; track t) { <span class="mini-tag" [class]="'mini-tag ' + tagTone(t)">{{ t }}</span> }
-                  </div>
-                  <small class="detail-line">{{ p.detail }}</small>
-                </div>
-              </div>
-              <div class="pending-right">
-                <strong class="positive">{{ p.amount }}</strong>
-                <small>{{ p.time }}</small>
-                <div class="pending-actions">
-                  <button class="btn btn-primary btn-sm" type="button" (click)="confirmAndClose('Withdrawal approved.')">✔ Approve</button>
-                  <button class="icon-btn danger" type="button" (click)="confirmAndClose('Withdrawal rejected.')">✕</button>
-                </div>
-              </div>
-            </article>
-          }
+        <div class="heading-actions">
+          <button class="btn btn-primary btn-xs" *ngIf="selectedBatchIds.length > 0" (click)="batchActionType='Approve'; batchNotes=''; openModal('batch_process')">
+            ✅ Batch ({{selectedBatchIds.length}})
+          </button>
+          <button class="btn btn-outline-success btn-xs" (click)="openModal('export')">📥 Export</button>
         </div>
-        <div class="pending-footer">
-          <span>Showing 3 of 28 pending withdrawals</span>
-          <button class="btn btn-outline-success btn-sm" type="button">Load More ↓</button>
-        </div>
-      </section>
-    }
+      </div>
 
-    <!-- LIMITS & RULES -->
-    @if (tab === 'limits') {
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="wd-table">
+          <thead>
+            <tr>
+              <th *ngIf="activeTab==='pending'" style="width:36px">
+                <input type="checkbox" (change)="toggleSelectAllBatch()" />
+              </th>
+              <th>Transaction</th>
+              <th>Member</th>
+              <th>Channel</th>
+              <th style="text-align:right">Amount</th>
+              <th style="text-align:center">Status</th>
+              <th>Timestamp</th>
+              <th style="text-align:center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of getFilteredWithdrawals(); let i = index"
+                [ngClass]="{'row-pending': item.status==='Pending', 'row-flagged': item.status==='Flagged'}">
+
+              <td *ngIf="activeTab==='pending'" data-label="">
+                <input type="checkbox" [checked]="selectedBatchIds.includes(item.id)" (change)="toggleSelectBatch(item.id)" />
+              </td>
+
+              <td data-label="Transaction">
+                <code>{{item.id}}</code><br>
+                <span class="ref-code">{{item.referenceNo}}</span>
+              </td>
+
+              <td data-label="Member">
+                <div class="m-cell">
+                  <span class="av" [ngClass]="'c' + ((i % 6) + 1)">{{item.memberName.charAt(0)}}</span>
+                  <span>
+                    <strong>{{item.memberName}}</strong>
+                    <small>{{item.memberId}} · {{item.memberPhone}}</small>
+                  </span>
+                </div>
+              </td>
+
+              <td data-label="Channel">
+                <span class="acct-badge" [ngClass]="{'tone-green': item.channel.includes('Pesa'), 'tone-cyan': item.channel.includes('Bank') || item.channel.includes('Pesalink'), 'tone-orange': item.channel.includes('FOSA')}">
+                  {{item.channel}}
+                </span>
+                <small class="detail-line">→ {{item.account}}</small>
+              </td>
+
+              <td data-label="Amount" style="text-align:right">
+                <strong>KES {{item.amount | number}}</strong>
+                <small class="detail-line">Fee: KES {{item.fee}}</small>
+              </td>
+
+              <td data-label="Status" style="text-align:center">
+                <span class="status-pill"
+                      [ngClass]="{
+                        'st-completed': item.status==='Completed',
+                        'st-pending': item.status==='Pending',
+                        'st-flagged': item.status==='Flagged',
+                        'st-rejected': item.status==='Rejected',
+                        'st-reversed': item.status==='Reversed'
+                      }">
+                  {{item.status==='Completed' ? '✅' : item.status==='Pending' ? '⏳' : item.status==='Flagged' ? '🚩' : item.status==='Reversed' ? '🔄' : '❌'}}
+                  {{item.status}}
+                </span>
+                <br>
+                <span class="risk-badge" [ngClass]="item.riskScore > 70 ? 'tone-danger' : 'tone-warning'" *ngIf="item.riskScore > 30">
+                  Risk: {{item.riskScore}}%
+                </span>
+              </td>
+
+              <td data-label="Time" class="muted">{{item.timestamp}}</td>
+
+              <td data-label="Actions">
+                <div class="row-actions">
+                  <button class="icon-btn" title="Receipt" (click)="openModal('receipt', item)">🧾</button>
+
+                  <!-- Approve / Reject for Pending -->
+                  <ng-container *ngIf="item.status==='Pending'">
+                    <button class="icon-btn" title="Approve" (click)="openModal('approve', item)" style="color:#00a866">✅</button>
+                    <button class="icon-btn danger" title="Reject" (click)="rejectReason='Insufficient Float'; rejectMemo=''; openModal('reject', item)">❌</button>
+                  </ng-container>
+
+                  <!-- Review for Flagged -->
+                  <button class="btn btn-xs btn-warning" *ngIf="item.status==='Flagged'" (click)="flaggedActionNotes=''; openModal('review_flagged', item)">
+                    🔍 Review
+                  </button>
+
+                  <button class="icon-btn" title="Edit" (click)="openModal('edit', item)">✏️</button>
+                  <button class="icon-btn" title="Email" (click)="openModal('email', item)">📧</button>
+                  <button class="icon-btn" title="SMS" (click)="openModal('sms', item)">💬</button>
+
+                  <!-- Reverse for Completed -->
+                  <button class="icon-btn danger" title="Reverse" *ngIf="item.status==='Completed'" (click)="revSupervisorPin=''; revEscrow=false; openModal('reverse', item)">🔄</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="getFilteredWithdrawals().length === 0">
+              <td [attr.colspan]="activeTab==='pending' ? 8 : 7" class="empty">No withdrawal records match the filter criteria.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span>Showing {{getFilteredWithdrawals().length}} of {{withdrawals.length}} records</span>
+        <div class="pagination">
+          <button class="active">1</button>
+          <button>2</button>
+          <button>3</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ TAB 3: LIMITS & RULES ═══════════ -->
+    <div class="glass-card tab-card" *ngIf="activeTab==='limits'">
+      <h2>🔒 Withdrawal Limits & Security Rules</h2>
+      <p class="sub-text">Configure member tier limits and automated security enforcement policies.</p>
+
       <div class="limits-grid">
-        <section class="glass-card tab-card">
-          <h2>ℹ Withdrawal Limits</h2>
-          <div class="limits-body">
-            @for (l of limitsData; track l.label) { <div class="limit-row"><span>{{ l.label }}</span><strong>{{ l.value }}</strong></div> }
-            <div class="limit-row highlight"><span>Available Today</span><strong class="positive">KES 46.2M</strong></div>
+        <!-- Tier Limits Panel -->
+        <div>
+          <h3>📊 Member Tier Limits</h3>
+          <div class="primary-tabs" style="margin-bottom:14px">
+            <button *ngFor="let tier of ['tier1','tier2','tier3','tier4']"
+                    [class.active]="limitTier===tier"
+                    (click)="selectTierLimit(tier)">
+              {{tier | uppercase}}
+            </button>
           </div>
-          <button class="btn btn-outline-success full-btn" type="button" (click)="openModal('editLimits')">✏ Edit Limits</button>
-        </section>
-        <section class="glass-card tab-card">
-          <h2>⚠ Auto-Approval Rules</h2>
-          <div class="rules-list">
-            @for (r of rulesData; track r.label) {
-              <div class="rule-row">
-                <div><strong>{{ r.label }}</strong><small>{{ r.sub }}</small></div>
-                <span class="rule-badge" [class]="'rule-badge tone-' + r.tone">{{ r.badge }}</span>
-              </div>
-            }
-          </div>
-          <button class="btn btn-outline-success full-btn" type="button" (click)="openModal('configRules')">⚙ Configure Rules</button>
-        </section>
-      </div>
-      <section class="glass-card tab-card">
-        <h2>🚫 Flagged Withdrawals (Requires Review)</h2>
-        <div class="table-responsive">
-          <table class="wd-table flag-table">
-            <thead><tr><th>Member</th><th>Amount</th><th>Reason</th><th>Risk Level</th><th>Action</th></tr></thead>
-            <tbody>
-              @for (f of flaggedItems; track f.member) {
-                <tr>
-                  <td data-label="Member"><strong>{{ f.member }}</strong></td>
-                  <td data-label="Amount"><strong class="danger">{{ f.amount }}</strong></td>
-                  <td data-label="Reason">{{ f.reason }}</td>
-                  <td data-label="Risk"><span class="risk-badge" [class]="'risk-badge tone-' + f.riskTone">{{ f.risk }}</span></td>
-                  <td data-label="Action"><button class="btn btn-outline-success btn-sm" type="button" (click)="openModal('reviewFlagged')">Review</button></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
-    }
 
-    <!-- QUICK PROCESS -->
-    @if (tab === 'quick') {
-      <div class="quick-grid">
-        <section class="glass-card tab-card">
-          <h2>⚡ Quick Withdrawal Processing</h2>
-          <p class="sub-text">Process withdrawal requests on behalf of members (cash, cheque, or manual M-Pesa)</p>
-          <div class="section-label">👤 Member Information</div>
-          <label class="field-label">Select Member *<select [(ngModel)]="pForm.member"><option value="">-- Search or Select Member --</option><option>David Kipkorir (R-00045)</option><option>Sarah Akinyi (R-00123)</option><option>Mary Wanjiku (R-00034)</option></select></label>
-          <small class="hint">ℹ Type member name or ID to search</small>
-          <div class="section-label">💳 Withdrawal Details</div>
           <div class="form-grid two">
-            <label class="field-label">Source Account *<select [(ngModel)]="pForm.account"><option value="">-- Select Account --</option><option>Savings</option><option>Share Capital</option><option>Fixed Deposit</option></select></label>
-            <label class="field-label">Payment Method *<select [(ngModel)]="pForm.method"><option value="">-- Select Method --</option><option>M-Pesa</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option></select></label>
+            <label class="field-label">
+              Max Daily Limit (KES)
+              <input type="number" [(ngModel)]="tempLimitDaily" />
+            </label>
+            <label class="field-label">
+              Max Single Transaction (KES)
+              <input type="number" [(ngModel)]="tempLimitSingle" />
+            </label>
           </div>
-          <label class="field-label">Amount (KES) *<input type="number" [(ngModel)]="pForm.amount" placeholder="e.g. 50000" /></label>
-          <div class="preset-row">
-            @for (p of amountPresets; track p) { <button type="button" class="preset-btn" (click)="setPresetAmount(p)">{{ p }}</button> }
-          </div>
-          <div class="section-label">📋 Additional Info</div>
-          <label class="field-label">Reason for Withdrawal<select [(ngModel)]="pForm.reason"><option value="">-- Select Reason --</option><option>Personal Expense</option><option>School Fees</option><option>Medical</option><option>Business</option><option>Emergency</option></select></label>
-          <label class="field-label">Notes<textarea [(ngModel)]="pForm.notes" placeholder="Optional notes..."></textarea></label>
-          <label class="checkbox-label"><input type="checkbox" [(ngModel)]="pForm.autoApprove" /> Auto-approve this withdrawal (if within limits)</label>
-          <label class="checkbox-label" [class.checked]="pForm.sms"><input type="checkbox" [(ngModel)]="pForm.sms" /> Send SMS notification to member</label>
-        </section>
-        <div class="quick-sidebar">
-          <section class="glass-card tab-card">
-            <h2>💹 Calculation</h2>
-            <div class="calc-body">
-              <div class="calc-row"><span>Withdrawal Amount</span><strong>KES {{ amtNum | number }}</strong></div>
-              <div class="calc-row"><span>Processing Fee</span><strong>KES {{ fee | number }}</strong></div>
-              <div class="calc-row"><span>Tax (Excise Duty)</span><strong>KES {{ tax | number }}</strong></div>
-              <div class="calc-row total"><span>Deducted from Account</span><strong class="danger">KES {{ totalDeducted | number }}</strong></div>
+
+          <button class="btn btn-primary full-btn" (click)="saveTierLimits()">💾 Save {{limitTier | uppercase}} Limits</button>
+
+          <h3>📋 Current Policy Summary</h3>
+          <div class="limits-body">
+            <div class="limit-row">
+              <span>Tier 1 Basic</span>
+              <strong>Daily: KES {{globalLimits.tier1Daily | number}} · Single: KES {{globalLimits.tier1Single | number}}</strong>
             </div>
-            <small class="hint">ℹ Fees vary by withdrawal method</small>
-          </section>
-          <section class="glass-card tab-card">
-            <h2>🕐 Recent Activity</h2>
-            <div class="recent-list">
-              @for (a of recentActivity; track a.name) {
-                <div class="recent-item">
-                  <span class="recent-dot" [class]="'recent-dot tone-' + a.tone"></span>
-                  <div><strong>{{ a.name }}</strong><small>{{ a.amount }} • {{ a.method }}</small><small class="muted">{{ a.time }}</small></div>
+            <div class="limit-row">
+              <span>Tier 2 Standard</span>
+              <strong>Daily: KES {{globalLimits.tier2Daily | number}} · Single: KES {{globalLimits.tier2Single | number}}</strong>
+            </div>
+            <div class="limit-row highlight">
+              <span>Tier 3 Premium</span>
+              <strong>Daily: KES {{globalLimits.tier3Daily | number}} · Single: KES {{globalLimits.tier3Single | number}}</strong>
+            </div>
+            <div class="limit-row">
+              <span>Tier 4 VIP</span>
+              <strong>Daily: KES {{globalLimits.tier4Daily | number}} · Single: KES {{globalLimits.tier4Single | number}}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Rules Panel -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3>🛡️ Security Rules Engine</h3>
+            <button class="btn btn-outline-success btn-xs" (click)="openModal('configure_rules')">➕ Add Rule</button>
+          </div>
+
+          <div class="rules-list">
+            <div class="rule-row" *ngFor="let rule of rules">
+              <div>
+                <strong>{{rule.name}}</strong>
+                <small>{{rule.description}}</small>
+                <div class="tag-row">
+                  <span class="mini-tag" [ngClass]="{'green': rule.category==='workflow', 'blue': rule.category==='security', 'warning': rule.category==='limit'}">
+                    {{rule.category | uppercase}}
+                  </span>
+                  <span class="mini-tag green">{{rule.value}}</span>
                 </div>
-              }
-            </div>
-          </section>
-        </div>
-      </div>
-    }
-
-    <!-- ANALYTICS -->
-    @if (tab === 'analytics') {
-      <section class="glass-card tab-card">
-        <h2>📊 Withdrawal Trends &amp; Analytics</h2>
-        <div class="chart-section">
-          <h3>7-Day Withdrawal Trend</h3>
-          <div class="bar-chart-lg">
-            @for (d of trendData; track d.day) {
-              <div class="bar-col">
-                <span class="bar-label">{{ d.value }}</span>
-                <div class="bar" [style.height]="d.h + '%'"></div>
-                <span class="bar-day">{{ d.day }}</span>
               </div>
-            }
+              <button class="toggle-switch" [class.active]="rule.enabled" (click)="toggleRule(rule.id)"></button>
+            </div>
           </div>
         </div>
-        <h3>Withdrawals by Source (This Month)</h3>
-        <div class="source-grid">
-          @for (s of sourceCards; track s.label) {
-            <article class="source-card">
-              <div class="source-head"><small>{{ s.label }}</small><span>{{ s.icon }}</span></div>
-              <strong>{{ s.amount }}</strong>
-              <div class="source-bar"><div [style.width]="s.pct + '%'" [style.background]="s.color"></div></div>
-              <small>{{ s.pct }}% of total</small>
-            </article>
-          }
+      </div>
+    </div>
+
+    <!-- ═══════════ TAB 4: QUICK PROCESS WIZARD ═══════════ -->
+    <div class="glass-card tab-card" *ngIf="activeTab==='quick'">
+      <h2>⚡ Manual Counter Withdrawal Wizard</h2>
+      <p class="sub-text">Process over-the-counter withdrawals securely. Step {{procStep}} of 3.</p>
+
+      <div class="quick-grid">
+        <!-- Main Form -->
+        <div>
+          <!-- Step 1: Details -->
+          <div *ngIf="procStep===1">
+            <div class="section-label">📝 Step 1 — Withdrawal Details</div>
+            <div class="form-grid two">
+              <label class="field-label">
+                Member Lookup ID
+                <div style="display:flex;gap:8px">
+                  <input type="text" [(ngModel)]="procMemberId" placeholder="e.g. M-10294" />
+                  <button class="btn btn-outline-success btn-sm" (click)="loadQuickProcessMember(procMemberId)">Load</button>
+                </div>
+                <span class="hint">Test IDs: M-10294, M-38291, M-88210, M-55102</span>
+              </label>
+              <label class="field-label">
+                Payment Channel
+                <select [(ngModel)]="procChannel">
+                  <option value="M-Pesa Express">M-Pesa Express</option>
+                  <option value="Bank RTGS Gateway">Bank RTGS Gateway</option>
+                  <option value="Pesalink Transfer">Pesalink Transfer</option>
+                  <option value="FOSA Branch Cash">FOSA Branch Cash</option>
+                </select>
+              </label>
+              <label class="field-label">
+                Withdrawal Amount (KES)
+                <input type="number" [(ngModel)]="procAmount" placeholder="e.g. 1500" />
+              </label>
+              <label class="field-label">
+                Target Account / Phone
+                <input type="text" [(ngModel)]="procAccount" placeholder="07xxxxxxxx" />
+              </label>
+              <label class="field-label full">
+                Transaction Narration
+                <input type="text" [(ngModel)]="procNarration" placeholder="Purpose of withdrawal..." />
+              </label>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:18px">
+              <button class="btn btn-primary" (click)="procStep=2">Next Step →</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Verification -->
+          <div *ngIf="procStep===2">
+            <div class="section-label">🔍 Step 2 — Pre-Authorization Verification</div>
+            <div class="calc-body">
+              <div class="calc-row"><span>Member:</span> <strong>{{procMemberId}}</strong></div>
+              <div class="calc-row"><span>Withdrawal Amount:</span> <strong>KES {{procAmount}}</strong></div>
+              <div class="calc-row"><span>Target Channel:</span> <strong>{{procChannel}}</strong></div>
+              <div class="calc-row"><span>Channel Float:</span> <strong class="positive">KES {{(channels | slice:0:1)[0]?.balance | number}}</strong></div>
+            </div>
+            <button class="btn btn-outline-success full-btn" (click)="runLimitCheck()">🔄 Run Limits Simulation Check</button>
+            <div style="display:flex;justify-content:space-between;margin-top:18px">
+              <button class="btn btn-ghost" (click)="procStep=1">← Back</button>
+              <button class="btn btn-primary" (click)="procStep=3">Next Step →</button>
+            </div>
+          </div>
+
+          <!-- Step 3: OTP Confirmation -->
+          <div *ngIf="procStep===3">
+            <div class="section-label">🔐 Step 3 — OTP Authorization</div>
+            <div style="text-align:center;padding:18px 0">
+              <p class="sub-text">An OTP code was dispatched. Enter code <strong>654321</strong> to authorize.</p>
+              <label class="field-label" style="max-width:280px;margin:0 auto">
+                One-Time Security Code
+                <input type="text" [(ngModel)]="procOTP" maxlength="6" placeholder="------" style="text-align:center;font-size:1.3rem;letter-spacing:.4em;font-weight:800" />
+              </label>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:18px">
+              <button class="btn btn-ghost" (click)="procStep=2">← Back</button>
+              <button class="btn btn-primary" (click)="executeQuickProcess()">🚀 Finalize & Disburse</button>
+            </div>
+          </div>
         </div>
-        <h3>Top 5 Withdrawers (This Month)</h3>
-        <div class="table-responsive">
-          <table class="wd-table top-table">
-            <thead><tr><th>Rank</th><th>Member</th><th>Total Withdrawals</th><th>Frequency</th><th>Avg. Withdrawal</th></tr></thead>
-            <tbody>
-              @for (t of topWithdrawers; track t.rank) {
-                <tr>
-                  <td data-label="Rank"><span class="rank-circle" [class]="'rank-circle ' + t.tone">{{ t.rank }}</span></td>
-                  <td data-label="Member"><strong>{{ t.name }}</strong></td>
-                  <td data-label="Total"><strong class="positive">{{ t.total }}</strong></td>
-                  <td data-label="Freq">{{ t.freq }}</td>
-                  <td data-label="Avg">{{ t.avg }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+
+        <!-- Quick Sidebar -->
+        <div class="quick-sidebar">
+          <div class="glass-card" style="padding:20px">
+            <h3 style="margin:0 0 12px">📊 Fee Calculator</h3>
+            <div class="calc-body">
+              <div class="calc-row"><span>Principal:</span> <strong>KES {{procAmount || 0}}</strong></div>
+              <div class="calc-row"><span>Service Fee (0.5%):</span> <strong>KES {{(+(procAmount || 0) * 0.005) | number:'1.2-2'}}</strong></div>
+              <div class="calc-row"><span>Platform Fee:</span> <strong>KES 10.00</strong></div>
+              <div class="calc-row total"><span>Net Disbursement:</span> <strong class="positive">KES {{(+(procAmount || 0) - (+(procAmount || 0) * 0.005) - 10) | number:'1.2-2'}}</strong></div>
+            </div>
+          </div>
+
+          <div class="glass-card" style="padding:20px">
+            <h3 style="margin:0 0 12px">📋 Recent Withdrawals</h3>
+            <div class="recent-list">
+              <div class="recent-item" *ngFor="let w of withdrawals | slice:0:4">
+                <span class="recent-dot" [ngClass]="{'tone-green': w.status==='Completed', 'tone-orange': w.status==='Pending', 'tone-red': w.status==='Flagged' || w.status==='Rejected'}"></span>
+                <div>
+                  <strong>KES {{w.amount | number}} — {{w.memberName}}</strong>
+                  <small>{{w.channel}} · {{w.timestamp}}</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-    }
-  </section>
-
-  @if (toast) { <div class="admin-toast"><span></span>✅ {{ toast.msg }}</div> }
-
-  <!-- MODAL: Process Withdrawal -->
-  @if (modal === 'processWithdrawal') {
-    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>● Process New Withdrawal</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
-      <div class="modal-alert">⚠ Ensure member identity verification before processing cash withdrawals</div>
-      <div class="form-grid two">
-        <label class="field-label">Member *<select [(ngModel)]="pForm.member"><option value="">-- Select Member --</option><option>David Kipkorir</option><option>Sarah Akinyi</option><option>Mary Wanjiku</option></select></label>
-        <label class="field-label">Amount (KES) *<input type="number" [(ngModel)]="pForm.amount" placeholder="50000" /></label>
-        <label class="field-label">Source Account *<select [(ngModel)]="pForm.account"><option value="">-- Select --</option><option>Savings</option><option>Share Capital</option><option>Fixed Deposit</option></select></label>
-        <label class="field-label">Payment Method *<select [(ngModel)]="pForm.method"><option value="">-- Select --</option><option>M-Pesa</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option></select></label>
       </div>
-      <label class="field-label full">Reason<select [(ngModel)]="pForm.reason"><option value="">-- Select --</option><option>Personal Expense</option><option>School Fees</option><option>Medical</option><option>Business</option></select></label>
-      <label class="field-label full">Notes<textarea [(ngModel)]="pForm.notes" placeholder="Optional notes..."></textarea></label>
-      <label class="checkbox-label"><input type="checkbox" [(ngModel)]="pForm.autoApprove" /> Auto-approve (if within limits)</label>
-      <label class="checkbox-label" [class.checked]="pForm.sms"><input type="checkbox" [(ngModel)]="pForm.sms" /> Send SMS notification</label>
-      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Withdrawal processed successfully.')">● Process Withdrawal</button></div>
-    </div></section></div>
-  }
+    </div>
 
-  @if (modal === 'viewDetail' && selectedW) {
-    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>Detail — {{ selectedW.id }}</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+    <!-- ═══════════ TAB 5: ANALYTICS ═══════════ -->
+    <div class="glass-card tab-card" *ngIf="activeTab==='analytics'">
+      <h2>📈 Withdrawal Analytics Dashboard</h2>
+      <p class="sub-text">Performance metrics, channel breakdown, and trend analysis for the withdrawal pipeline.</p>
+
+      <!-- Weekly Volume Chart -->
+      <div class="chart-section">
+        <h3 style="margin:0 0 18px">📊 Daily Withdrawal Volume (Last 7 Days)</h3>
+        <div class="bar-chart-lg">
+          <div class="bar-col" *ngFor="let d of [{day:'Mon',val:42},{day:'Tue',val:58},{day:'Wed',val:35},{day:'Thu',val:82},{day:'Fri',val:95},{day:'Sat',val:28},{day:'Sun',val:15}]">
+            <span class="bar-label">KES {{d.val}}K</span>
+            <div class="bar" [style.height.%]="d.val"></div>
+            <span class="bar-day">{{d.day}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channel Source Breakdown -->
+      <h3>📱 Channel Source Breakdown</h3>
+      <div class="source-grid">
+        <div class="source-card">
+          <div class="source-head"><small>M-Pesa Express</small> <span class="mini-tag green">↑ 14%</span></div>
+          <strong>KES 245,800</strong>
+          <div class="source-bar"><div style="width:72%;background:linear-gradient(90deg,#00d084,#00bcd4)"></div></div>
+          <small>72% of total volume · 142 transactions</small>
+        </div>
+        <div class="source-card">
+          <div class="source-head"><small>Bank RTGS</small> <span class="mini-tag blue">↑ 8%</span></div>
+          <strong>KES 168,400</strong>
+          <div class="source-bar"><div style="width:55%;background:linear-gradient(90deg,#2196f3,#64b5f6)"></div></div>
+          <small>55% of total volume · 38 transactions</small>
+        </div>
+        <div class="source-card">
+          <div class="source-head"><small>Pesalink</small> <span class="mini-tag warning">↓ 3%</span></div>
+          <strong>KES 42,100</strong>
+          <div class="source-bar"><div style="width:22%;background:linear-gradient(90deg,#00bcd4,#26c6da)"></div></div>
+          <small>22% of total volume · 28 transactions</small>
+        </div>
+        <div class="source-card">
+          <div class="source-head"><small>FOSA Cash</small> <span class="mini-tag green">↑ 5%</span></div>
+          <strong>KES 89,200</strong>
+          <div class="source-bar"><div style="width:38%;background:linear-gradient(90deg,#4caf50,#81c784)"></div></div>
+          <small>38% of total volume · 15 transactions</small>
+        </div>
+      </div>
+
+      <!-- Failure Breakdown -->
+      <h3>❌ Rejection & Failure Analysis</h3>
+      <div class="summary-card" style="margin-bottom:22px">
+        <p><span>Insufficient Savings Balance</span> <strong>18 (43%)</strong></p>
+        <p><span>Velocity Limit Exceeded</span> <strong>12 (29%)</strong></p>
+        <p><span>Gateway Float Shortage</span> <strong>8 (19%)</strong></p>
+        <p><span>Device Fingerprint Mismatch</span> <strong>4 (9%)</strong></p>
+      </div>
+
+      <!-- Top Withdrawers Table -->
+      <h3>🏆 Top Withdrawal Members (This Month)</h3>
+      <div class="table-responsive">
+        <table class="wd-table top-table">
+          <thead>
+            <tr>
+              <th style="width:50px">Rank</th>
+              <th>Member</th>
+              <th>Tier</th>
+              <th style="text-align:right">Total Withdrawn</th>
+              <th style="text-align:right">Transactions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of members; let idx = index">
+              <td><span class="rank-circle" [ngClass]="{'gold':idx===0,'silver':idx===1,'bronze':idx===2}">{{idx+1}}</span></td>
+              <td>
+                <div class="m-cell">
+                  <span class="av" [ngClass]="'c' + (idx+1)">{{m.name.charAt(0)}}</span>
+                  <span><strong>{{m.name}}</strong><small>{{m.id}}</small></span>
+                </div>
+              </td>
+              <td><span class="mini-tag green">{{m.tier}}</span></td>
+              <td style="text-align:right"><strong>KES {{m.savingsBalance * 2 | number}}</strong></td>
+              <td style="text-align:right">{{idx * 3 + 5}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODALS — All 15 centrally placed, scrollable
+     ═══════════════════════════════════════════════════════════════ -->
+
+<!-- Modal 1: Process Manual Withdrawal -->
+<div class="modal-backdrop" *ngIf="activeModal==='process'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>➕ Process Manual Withdrawal</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid two">
+        <label class="field-label">
+          Member Lookup ID
+          <input type="text" [(ngModel)]="procMemberId" placeholder="e.g. M-10294" />
+        </label>
+        <label class="field-label">
+          Channel
+          <select [(ngModel)]="procChannel">
+            <option value="M-Pesa Express">M-Pesa Express</option>
+            <option value="Bank RTGS Gateway">Bank RTGS</option>
+            <option value="Pesalink Transfer">Pesalink</option>
+            <option value="FOSA Branch Cash">FOSA Cash</option>
+          </select>
+        </label>
+        <label class="field-label">
+          Amount (KES)
+          <input type="number" [(ngModel)]="procAmount" placeholder="e.g. 1500" />
+        </label>
+        <label class="field-label">
+          Target Account / Phone
+          <input type="text" [(ngModel)]="procAccount" placeholder="07xxxxxxxx" />
+        </label>
+        <label class="field-label full">
+          OTP Code (Use 654321)
+          <input type="text" [(ngModel)]="procOTP" placeholder="654321" maxlength="6" style="text-align:center;letter-spacing:.3em;font-weight:800" />
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="procOTP='654321'; executeQuickProcess()">🚀 Execute Withdrawal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Approve Withdrawal -->
+<div class="modal-backdrop" *ngIf="activeModal==='approve'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>✅ Approve Withdrawal</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>You are authorizing a payout of <strong>KES {{selectedWithdrawal?.amount | number}}</strong> to <strong>{{selectedWithdrawal?.memberName}}</strong> via <strong>{{selectedWithdrawal?.channel}}</strong>.</p>
       <div class="summary-card">
-        <p><span>Withdrawal ID</span><strong>{{ selectedW.id }}</strong></p>
-        <p><span>Member</span><strong>{{ selectedW.name }} ({{ selectedW.mid }})</strong></p>
-        <p><span>Account Type</span><strong>{{ selectedW.acctType }}</strong></p>
-        <p><span>Method</span><strong>{{ selectedW.method }}</strong></p>
-        <p><span>Amount</span><strong>{{ selectedW.amount }}</strong></p>
-        <p><span>Date</span><strong>{{ selectedW.date }}</strong></p>
-        <p><span>Reference</span><strong>{{ selectedW.reference }}</strong></p>
-        <p><span>Status</span><strong>{{ selectedW.status }}</strong></p>
+        <p><span>Transaction ID:</span> <strong>{{selectedWithdrawal?.id}}</strong></p>
+        <p><span>Target Account:</span> <strong>{{selectedWithdrawal?.account}}</strong></p>
+        <p><span>Risk Score:</span> <strong>{{selectedWithdrawal?.riskScore}}%</strong></p>
+        <p><span>Narration:</span> <strong>{{selectedWithdrawal?.narration}}</strong></p>
       </div>
-      <div class="modal-footer"><button class="btn btn-primary" (click)="closeModal()">Close</button></div>
-    </div></section></div>
-  }
+      <div class="modal-alert">⚠️ Ensure sufficient float in the channel gateway before approval.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="approveWithdrawal()">✅ Confirm & Disburse</button>
+    </div>
+  </div>
+</div>
 
-  @if (modal === 'editLimits') {
-    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>Edit Withdrawal Limits</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+<!-- Modal 3: Reject Withdrawal -->
+<div class="modal-backdrop" *ngIf="activeModal==='reject'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-red">
+      <h2>❌ Reject Withdrawal</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Reject withdrawal of <strong>KES {{selectedWithdrawal?.amount | number}}</strong> for <strong>{{selectedWithdrawal?.memberName}}</strong>.</p>
+      <label class="field-label">
+        Rejection Category
+        <select [(ngModel)]="rejectReason">
+          <option value="Insufficient Float">Insufficient Channel Float</option>
+          <option value="Signature Discrepancy">Signature / Identity Discrepancy</option>
+          <option value="Suspicious Velocity">High Risk / Suspicious Velocity</option>
+          <option value="Incorrect Target Info">Incorrect Target Account Details</option>
+          <option value="Member Account Frozen">Member Account Frozen by Board</option>
+        </select>
+      </label>
+      <label class="field-label">
+        Auditor Rejection Memo
+        <textarea [(ngModel)]="rejectMemo" placeholder="Write rejection notes to member..."></textarea>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary tone-red" (click)="rejectWithdrawal()">❌ Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 4: Digital Receipt -->
+<div class="modal-backdrop" *ngIf="activeModal==='receipt'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>🧾 Transaction Receipt</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="receipt-slip">
+        <div class="receipt-header">
+          <h4>SACCOPAY FINTECH LTD</h4>
+          <p>MEMBER DISBURSEMENT SLIP</p>
+          <p>{{selectedWithdrawal?.timestamp}}</p>
+        </div>
+        <div class="receipt-row"><span>TRANS ID:</span> <strong>{{selectedWithdrawal?.id}}</strong></div>
+        <div class="receipt-row"><span>REF NO:</span> <strong>{{selectedWithdrawal?.referenceNo}}</strong></div>
+        <div class="receipt-row"><span>MEMBER:</span> <strong>{{selectedWithdrawal?.memberName}} ({{selectedWithdrawal?.memberId}})</strong></div>
+        <div class="receipt-row"><span>CHANNEL:</span> <strong>{{selectedWithdrawal?.channel}}</strong></div>
+        <div class="receipt-row"><span>ACCOUNT:</span> <strong>{{selectedWithdrawal?.account}}</strong></div>
+        <div class="receipt-row"><span>NARRATION:</span> <strong>{{selectedWithdrawal?.narration}}</strong></div>
+        <div class="receipt-row receipt-total"><span>AMOUNT:</span> <strong>KES {{selectedWithdrawal?.amount | number}}.00</strong></div>
+        <div class="receipt-row"><span>FEE:</span> <strong>KES {{selectedWithdrawal?.fee}}.00</strong></div>
+        <div class="receipt-row"><span>STATUS:</span> <strong class="positive">{{selectedWithdrawal?.status}}</strong></div>
+        <div class="receipt-footer">
+          <p>Thank you for banking with SaccoPay.</p>
+          <p>Empowering financial freedom digitally.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="showToast('Receipt shared via WhatsApp', 'info')">📤 Share</button>
+      <button class="btn btn-outline-success" (click)="showToast('Sent to printer spooler...', 'success')">🖨️ Print Slip</button>
+      <button class="btn btn-primary" (click)="closeModal()">Close Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5: Edit Details -->
+<div class="modal-backdrop" *ngIf="activeModal==='edit'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-blue">
+      <h2>✏️ Edit Withdrawal Metadata</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label">
+        Gateway Reference No
+        <input type="text" [(ngModel)]="editReference" />
+      </label>
+      <label class="field-label">
+        Transaction Narration
+        <input type="text" [(ngModel)]="editNarration" />
+      </label>
+      <label class="field-label">
+        Internal Audit Notes
+        <textarea [(ngModel)]="editInternalNotes"></textarea>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="editDetails()">💾 Save Modifications</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 6: Email Member -->
+<div class="modal-backdrop" *ngIf="activeModal==='email'" (click)="closeModal()">
+  <div class="admin-modal wide" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>📧 Compose Email Alert</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label">
+        Template
+        <select [(ngModel)]="emailTemplate" (ngModelChange)="handleEmailTemplateChange($event)">
+          <option value="Withdrawal Complete">Disbursement Complete Notice</option>
+          <option value="Security Alert">Security Flag Warning</option>
+          <option value="Withdrawal Delayed">Gateway Delay Notice</option>
+          <option value="Reversal Complete">Reversal Confirmation</option>
+        </select>
+      </label>
+      <label class="field-label">
+        Recipient
+        <input type="text" [value]="selectedWithdrawal?.memberEmail" disabled />
+      </label>
+      <label class="field-label">
+        Subject
+        <input type="text" [(ngModel)]="emailSubject" />
+      </label>
+      <label class="field-label">
+        Message Body
+        <textarea [(ngModel)]="emailBody" style="min-height:140px;font-family:monospace;font-size:.82rem"></textarea>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="sendEmail()">📨 Dispatch Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 7: SMS Member -->
+<div class="modal-backdrop" *ngIf="activeModal==='sms'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>💬 Compose SMS Notification</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label">
+        SMS Template
+        <select [(ngModel)]="smsTemplate" (ngModelChange)="handleSmsTemplateChange($event)">
+          <option value="Withdrawal Code">Withdrawal Success Notification</option>
+          <option value="OTP Request">Manual OTP Authorization Code</option>
+          <option value="Fraud Flag">Urgent Fraud Verification Warning</option>
+        </select>
+      </label>
+      <label class="field-label">
+        Recipient Phone
+        <input type="text" [value]="selectedWithdrawal?.memberPhone" disabled />
+      </label>
+      <label class="field-label">
+        SMS Message Content
+        <textarea [(ngModel)]="smsBody" maxlength="160" style="font-family:monospace"></textarea>
+        <span class="hint">{{smsBody.length}} / 160 characters (1 SMS credit)</span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="sendSMS()">📤 Send SMS</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 8: Reverse Transaction -->
+<div class="modal-backdrop" *ngIf="activeModal==='reverse'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-purple">
+      <h2>🔄 Initiate Reversal</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert danger">
+        ⚠️ <strong>Critical Operation:</strong> Reversing will credit <strong>KES {{selectedWithdrawal?.amount | number}}</strong> back to FOSA Member <strong>{{selectedWithdrawal?.memberId}}</strong>. This action is audited and irreversible.
+      </div>
+      <label class="field-label">
+        Supervisor PIN (Use 1234)
+        <input type="password" [(ngModel)]="revSupervisorPin" maxlength="4" placeholder="••••" style="text-align:center;letter-spacing:.4em;font-weight:800" />
+      </label>
+      <label class="field-label">
+        Reason for Reversal
+        <select [(ngModel)]="revReason">
+          <option value="Customer Request">Customer Request / Cancelled</option>
+          <option value="Failed Disbursement">API Disbursement Failed</option>
+          <option value="Double Processing">Double Processing Error</option>
+          <option value="Fraudulent Flag">Fraud Investigation Clawback</option>
+        </select>
+      </label>
+      <label class="checkbox-label" [class.checked]="revEscrow">
+        <input type="checkbox" [(ngModel)]="revEscrow" />
+        Hold funds in Escrow instead of FOSA savings
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary tone-red" (click)="reverseWithdrawal()" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc)">🔄 Authorize Reversal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 9: Float Management -->
+<div class="modal-backdrop" *ngIf="activeModal==='float'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-orange">
+      <h2>💰 Channel Float Management</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
       <div class="form-grid two">
-        <label class="field-label">Single Transaction Limit<input value="500000" /></label>
-        <label class="field-label">Daily Member Limit<input value="1000000" /></label>
-        <label class="field-label">Monthly Member Limit<input value="5000000" /></label>
-        <label class="field-label">Daily SACCO Limit<input value="50000000" /></label>
+        <label class="field-label">
+          Target Channel
+          <select [(ngModel)]="floatActionChannel">
+            <option value="mpesa">M-Pesa Express</option>
+            <option value="bank">Bank RTGS Gateway</option>
+            <option value="pesalink">Pesalink Transfer</option>
+            <option value="cash">FOSA Branch Cash</option>
+          </select>
+        </label>
+        <label class="field-label">
+          Top-Up Amount (KES)
+          <input type="number" [(ngModel)]="floatTopUpAmount" placeholder="e.g. 50000" />
+        </label>
       </div>
-      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Limits updated.')">Save Limits</button></div>
-    </div></section></div>
-  }
+      <h3 style="margin:16px 0 8px;font-size:.88rem">Current Float Balances</h3>
+      <div class="calc-body">
+        <div class="calc-row" *ngFor="let c of channels">
+          <span>{{c.name}}</span>
+          <strong>KES {{c.balance | number}}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="topUpFloat()">💰 Verify & Add Float</button>
+    </div>
+  </div>
+</div>
 
-  @if (modal === 'configRules') {
-    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal wide" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-green"><h2>Configure Auto-Approval Rules</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+<!-- Modal 10: Edit Limits -->
+<div class="modal-backdrop" *ngIf="activeModal==='edit_limits'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>📊 Configure Tier Limits</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
       <div class="form-grid two">
-        <label class="field-label">M-Pesa auto-approve threshold<input value="50000" /></label>
-        <label class="field-label">Cash manual review above<input value="100000" /></label>
+        <label class="field-label">
+          Daily Cap (KES)
+          <input type="number" [(ngModel)]="tempLimitDaily" />
+        </label>
+        <label class="field-label">
+          Single Transaction Cap (KES)
+          <input type="number" [(ngModel)]="tempLimitSingle" />
+        </label>
       </div>
-      <label class="checkbox-label checked"><input type="checkbox" checked /> Enable auto-approval for M-Pesa</label>
-      <label class="checkbox-label"><input type="checkbox" /> Enable auto-approval for Bank</label>
-      <label class="checkbox-label"><input type="checkbox" /> Enable auto-approval for Fixed Deposits (matured)</label>
-      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Rules saved.')">Save Rules</button></div>
-    </div></section></div>
-  }
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveTierLimits()">💾 Save Configuration</button>
+    </div>
+  </div>
+</div>
 
-  @if (modal === 'reviewFlagged') {
-    <div class="modal-backdrop" (mousedown)="closeModal()"><section class="admin-modal" (mousedown)="$event.stopPropagation()"><div class="modal-header tone-red"><h2>Review Flagged Withdrawal</h2><button class="modal-close" (click)="closeModal()">✕</button></div><div class="modal-body">
+<!-- Modal 11: Configure Rules -->
+<div class="modal-backdrop" *ngIf="activeModal==='configure_rules'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>🛡️ Add Security Rule Policy</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label">
+        Rule Policy Name
+        <input type="text" placeholder="e.g. New Account Lockout" />
+      </label>
+      <label class="field-label">
+        Rule Condition Description
+        <input type="text" placeholder="Flag withdrawals within first 48 hours of profile creation..." />
+      </label>
+      <div class="form-grid two">
+        <label class="field-label">
+          Trigger Value
+          <input type="text" placeholder="e.g. 48 hours" />
+        </label>
+        <label class="field-label">
+          Category
+          <select>
+            <option value="security">Security Flag</option>
+            <option value="limit">Limits Block</option>
+            <option value="workflow">Workflow Approval</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="showToast('New security rule policy deployed successfully.', 'success'); closeModal()">🚀 Deploy Rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 12: Review Flagged -->
+<div class="modal-backdrop" *ngIf="activeModal==='review_flagged'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-red">
+      <h2>🚩 Security Risk Flag Review</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert danger">
+        🚨 <strong>Velocity Fraud Alert (Score: {{selectedWithdrawal?.riskScore}}%)</strong><br>
+        Flag trigger: <strong>{{selectedWithdrawal?.flagReason}}</strong>
+      </div>
       <div class="summary-card">
-        <p><span>Member</span><strong>James Omondi</strong></p>
-        <p><span>Amount</span><strong class="danger">KES 950,000</strong></p>
-        <p><span>Reason</span><strong>Amount exceeds 90% of available balance</strong></p>
-        <p><span>Risk Level</span><strong class="warning-text">Medium Risk</strong></p>
+        <p><span>Member:</span> <strong>{{selectedWithdrawal?.memberName}} ({{selectedWithdrawal?.memberId}})</strong></p>
+        <p><span>Requested Amount:</span> <strong>KES {{selectedWithdrawal?.amount | number}}</strong></p>
+        <p><span>Channel:</span> <strong>{{selectedWithdrawal?.channel}}</strong></p>
+        <p><span>Phone:</span> <strong>{{selectedWithdrawal?.memberPhone}}</strong></p>
       </div>
-      <div class="modal-footer"><button class="btn btn-ghost" (click)="closeModal()">Cancel</button><button class="btn btn-primary" (click)="confirmAndClose('Flagged withdrawal cleared.')">Approve &amp; Clear</button></div>
-    </div></section></div>
-  }
-</main>
+      <label class="field-label">
+        Auditor Override Notes
+        <textarea [(ngModel)]="flaggedActionNotes" placeholder="State reason for overriding flag or whitelisting member..."></textarea>
+      </label>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-primary tone-red" (click)="reviewFlaggedDecision('reject')">❌ Reject</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" (click)="reviewFlaggedDecision('escalate')">📤 Escalate</button>
+        <button class="btn btn-primary" (click)="reviewFlaggedDecision('whitelist')">✅ Whitelist</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 13: Export -->
+<div class="modal-backdrop" *ngIf="activeModal==='export'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>📥 Export Transaction Ledger</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid two">
+        <label class="field-label">
+          Export Format
+          <select [(ngModel)]="exportFormat">
+            <option value="CSV">Comma Separated (CSV)</option>
+            <option value="Excel">Microsoft Excel (.xlsx)</option>
+            <option value="PDF">Printable Document (PDF)</option>
+          </select>
+        </label>
+        <label class="field-label">
+          Date Range
+          <select [(ngModel)]="exportDateRange">
+            <option value="Today">Today</option>
+            <option value="Yesterday">Yesterday</option>
+            <option value="7Days">Last 7 Days</option>
+            <option value="30Days">Last 30 Days</option>
+          </select>
+        </label>
+      </div>
+      <div *ngIf="isExporting" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px">
+          <span style="color:#64748b">Compiling ledger spreadsheet...</span>
+          <strong style="color:#00a866">{{exportProgress}}%</strong>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" [style.width.%]="exportProgress"></div>
+        </div>
+      </div>
+      <p *ngIf="!isExporting" style="color:#64748b;font-size:.84rem">
+        Exporting <strong>{{getFilteredWithdrawals().length}} records</strong> with full transaction fields.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="startExport()" [disabled]="isExporting">
+        {{isExporting ? '⏳ Exporting...' : '📥 Start Download'}}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 14: Check Member Limits -->
+<div class="modal-backdrop" *ngIf="activeModal==='check_limits'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>🔍 Member Limits Lookup</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px">
+        <label class="field-label" style="flex:1">
+          Member ID
+          <input type="text" [(ngModel)]="lookupMemberId" placeholder="e.g. M-10294, M-38291" />
+        </label>
+        <button class="btn btn-primary btn-sm" style="align-self:flex-end" (click)="lookupMember()">Check</button>
+      </div>
+
+      <div *ngIf="searchedMember" class="summary-card" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:1rem">{{searchedMember.name}}</strong>
+          <span class="mini-tag green">{{searchedMember.tier}}</span>
+        </div>
+        <p><span>Savings Balance:</span> <strong>KES {{searchedMember.savingsBalance | number}}</strong></p>
+        <p><span>Daily Limit:</span> <strong>KES {{searchedMember.dailyLimit | number}}</strong></p>
+        <p><span>Remaining Today:</span> <strong class="positive">KES {{searchedMember.dailyRemaining | number}}</strong></p>
+        <p><span>Active Loans:</span> <strong>{{searchedMember.activeLoans}}</strong></p>
+        <p><span>AML Risk Score:</span> <strong [class.danger]="searchedMember.riskScore > 70">{{searchedMember.riskScore}}%</strong></p>
+        <div class="progress-bar-track" style="margin-top:8px">
+          <div class="progress-bar-fill" [style.width.%]="((searchedMember.dailyLimit - searchedMember.dailyRemaining) / searchedMember.dailyLimit) * 100"></div>
+        </div>
+        <span class="hint">Limit used: {{((searchedMember.dailyLimit - searchedMember.dailyRemaining) / searchedMember.dailyLimit * 100) | number:'1.0-0'}}%</span>
+      </div>
+
+      <p *ngIf="!searchedMember" style="text-align:center;color:#94a3b8;padding:18px 0;font-size:.86rem">
+        Enter a member ID to fetch their active limits and risk profile.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 15: Batch Process -->
+<div class="modal-backdrop" *ngIf="activeModal==='batch_process'" (click)="closeModal()">
+  <div class="admin-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header tone-green">
+      <h2>⚡ Batch Approval Controller</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <h3 style="margin:0 0 10px;font-size:.9rem">Selected Transactions ({{selectedBatchIds.length}})</h3>
+      <div class="calc-body" style="max-height:180px;overflow-y:auto">
+        <div class="calc-row" *ngFor="let bId of selectedBatchIds">
+          <span>{{bId}}</span>
+          <strong>KES{{withdrawals.length}} <!-- lookup inline not possible, showing ID --></strong>
+        </div>
+      </div>
+      <div class="form-grid two" style="margin-top:14px">
+        <label class="field-label">
+          Batch Action
+          <select [(ngModel)]="batchActionType">
+            <option value="Approve">Disburse & Approve All</option>
+            <option value="Reject">Reject & Cancel All</option>
+          </select>
+        </label>
+        <label class="field-label">
+          Audit Notes (Optional)
+          <input type="text" [(ngModel)]="batchNotes" placeholder="Reason for batch action..." />
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="processBatch()">⚡ Process Batch</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="admin-toast" *ngFor="let t of toasts" [ngClass]="{'toast-error': t.type==='error', 'toast-warning': t.type==='warning', 'toast-info': t.type==='info'}">
+  <span></span>
+  {{t.text}}
+</div>

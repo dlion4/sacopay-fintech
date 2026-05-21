@@ -1,27 +1,52 @@
-<aside class="admin-sidebar" [class.show]="isOpen" [class.minimized]="isMinimized" id="adminSidebar">
+<!-- admin-sidebar.component.html -->
+<aside class="admin-sidebar" [class.show]="isOpen" [class.minimized]="isMinimized">
   <!-- Brand Header -->
-  <a routerLink="/admin/dashboard" class="sidebar-brand">
-    <div class="sidebar-brand-logo">SP</div>
-    <div class="sidebar-brand-text" [class.d-none]="isMinimized">
-      <h1>SACCOPay</h1>
-      <p>Admin Panel v6.1</p>
+  <a class="sidebar-brand">
+    <div class="sidebar-brand-logo">S</div>
+    <div class="sidebar-brand-text">
+      <h5>SACCOPay</h5>
+      <!-- <p>Admin Panel v6.1</p> -->
     </div>
-    <button class="minimize-btn d-none d-lg-flex" 
-            (click)="toggleMinimize(); $event.preventDefault(); $event.stopPropagation();"
-            title="{{ isMinimized ? 'Expand' : 'Minimize' }}">
-      <i class="bi" [class.bi-chevron-left]="!isMinimized" [class.bi-chevron-right]="isMinimized"></i>
+    <button class="minimize-btn" (click)="toggleMinimizeEvent.emit()">
+      <i class="icon-chevron-left"></i>
     </button>
   </a>
 
   <!-- User Badge -->
-  <div class="user-badge" [class.justify-content-center]="isMinimized">
-    <div class="user-avatar">{{ userInitials }}</div>
-    <div class="user-info" [class.d-none]="isMinimized">
-      <div class="user-name">{{ userName }}</div>
-      <div class="user-role">{{ userRole }}</div>
-      <div class="user-status">
-        <span class="status-dot"></span>
-        Online
+
+
+  <!-- User Details (IDs with copy) -->
+  <div class="user-details" *ngIf="!isMinimized">
+    <div class="detail-row">
+      <span class="detail-label">Default role</span>
+      <span class="detail-value">{{ userRole }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">saccopay id</span>
+      <div class="detail-value-with-copy">
+        <span class="detail-value">{{ saccopayId }}</span>
+        <button 
+          class="copy-btn" 
+          (click)="copyToClipboard(saccopayId, 'saccopayId')" 
+          [class.copied]="copiedField === 'saccopayId'"
+          title="Copy SACCOPay ID">
+          <i class="icon-copy visual-fallback-copy" *ngIf="copiedField !== 'saccopayId'"></i>
+          <i class="icon-check visual-fallback-check" *ngIf="copiedField === 'saccopayId'"></i>
+        </button>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">saccopay wallet id</span>
+      <div class="detail-value-with-copy">
+        <span class="detail-value">{{ saccopayWalletId }}</span>
+        <button 
+          class="copy-btn" 
+          (click)="copyToClipboard(saccopayWalletId, 'saccopayWalletId')" 
+          [class.copied]="copiedField === 'saccopayWalletId'"
+          title="Copy Wallet ID">
+          <i class="icon-copy visual-fallback-copy" *ngIf="copiedField !== 'saccopayWalletId'"></i>
+          <i class="icon-check visual-fallback-check" *ngIf="copiedField === 'saccopayWalletId'"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -29,18 +54,14 @@
   <!-- Navigation -->
   <nav class="sidebar-nav">
     <div class="nav-section" *ngFor="let section of navSections">
-      <div class="nav-section-title" [class.d-none]="isMinimized">{{ section.title }}</div>
+      <h4 class="nav-section-title" *ngIf="!isMinimized">{{ section.title }}</h4>
       <ul>
         <li class="nav-item" *ngFor="let item of section.items">
-          <a [routerLink]="item.route" 
-             routerLinkActive="active" 
-             class="nav-link" 
-             (click)="onNavLinkClick()"
-             [title]="isMinimized ? item.label : ''">
-            <span class="nav-icon"><i class="bi" [class]="item.icon"></i></span>
-            <span class="nav-label" [class.d-none]="isMinimized">{{ item.label }}</span>
+          <a [routerLink]="item.route" class="nav-link" [class.active]="item.active">
+            <span class="nav-icon"><i [class]="item.icon"></i></span>
+            <span class="nav-label" *ngIf="!isMinimized">{{ item.label }}</span>
             <span class="nav-badge" *ngIf="item.badge && !isMinimized">{{ item.badge }}</span>
-            <span class="nav-badge-dot" *ngIf="item.badge && isMinimized"></span>
+            <span class="nav-badge-dot" *ngIf="item.hasNotification"></span>
           </a>
         </li>
       </ul>
@@ -48,9 +69,7 @@
   </nav>
 
   <!-- Footer -->
-  <div class="sidebar-footer">
-    <div class="sidebar-footer-text" [class.d-none]="isMinimized">
-      SACCOPay © 2026
-    </div>
+  <div class="sidebar-footer" *ngIf="!isMinimized">
+    <span class="sidebar-footer-text">© 2026 SACCOPay</span>
   </div>
 </aside>

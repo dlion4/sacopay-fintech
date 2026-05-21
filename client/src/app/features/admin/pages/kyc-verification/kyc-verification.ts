@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// ==================== INTERFACES ====================
-interface Document {
+interface KycDocument {
   name: string;
   icon: string;
   status: 'verified' | 'pending' | 'rejected' | 'missing';
@@ -34,7 +33,7 @@ interface KycApplication {
   submittedDate: string;
   urgency: 'urgent' | 'normal';
   progress: number;
-  documents: Document[];
+  documents: KycDocument[];
   nextOfKin: NextOfKin;
 }
 
@@ -151,41 +150,36 @@ interface ExportFormat {
   color: string;
 }
 
-// ==================== COMPONENT ====================
 @Component({
   selector: 'app-kyc-verification',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './kyc-verification.html',
-  styleUrls: ['./kyc-verification.scss']
+  styleUrls: ['./kyc-verification.scss'],
 })
 export class KycVerificationComponent implements OnInit {
-  // ==================== STATE ====================
-  activeTab: string = 'pending';
+  activeTab = 'pending';
   toasts: Toast[] = [];
-  
-  // Search & Filters
-  searchTerm: string = '';
-  searchTermApproved: string = '';
-  searchTermRejected: string = '';
-  filterUrgency: string = 'all';
-  filterDocStatus: string = 'all';
-  filterApprovedMonth: string = 'all';
-  filterTier: string = 'all';
-  filterRejectionReason: string = 'all';
-  filterActivityType: string = 'all';
-  sortBy: string = 'newest';
 
-  // Stats
-  pendingCount: number = 24;
-  approvedCount: number = 156;
-  rejectedCount: number = 12;
-  newToday: number = 8;
-  approvalRate: number = 92;
-  urgentCount: number = 5;
-  returnedForResubmission: number = 7;
+  searchTerm = '';
+  searchTermApproved = '';
+  searchTermRejected = '';
+  filterUrgency = 'all';
+  filterDocStatus = 'all';
+  filterApprovedMonth = 'all';
+  filterTier = 'all';
+  filterRejectionReason = 'all';
+  filterActivityType = 'all';
+  sortBy = 'newest';
 
-  // Modals
+  pendingCount = 24;
+  approvedCount = 156;
+  rejectedCount = 12;
+  newToday = 8;
+  approvalRate = 92;
+  urgentCount = 5;
+  returnedForResubmission = 7;
+
   modals: Modals = {
     kycDetails: false,
     approve: false,
@@ -200,49 +194,45 @@ export class KycVerificationComponent implements OnInit {
     requestInfo: false,
     uploadForMember: false,
     editMemberInfo: false,
-    addNote: false
+    addNote: false,
   };
 
-  // Selected items
   selectedKyc: KycApplication | null = null;
-  selectedDocument: Document | null = null;
-  verificationNotes: string = '';
+  selectedDocument: KycDocument | null = null;
+  verificationNotes = '';
 
-  // Forms
-  approvalForm = {
-    tier: 'Bronze',
-    initialShares: 5000,
-    notes: '',
-    sendWelcome: true,
-    confirmVerification: false
+  approvalForm = { tier: 'Bronze', initialShares: 5000, notes: '', sendWelcome: true, confirmVerification: false };
+  rejectionForm = { reason: '', details: '', documentsToResubmit: [] as string[], allowResubmission: true, notifyApplicant: true };
+  exportOptions = { range: 'pending', format: 'pdf' };
+  kycSettings = { reminderDays: 3, expiryCheckDays: 90, maxResubmissions: 3, autoNotify: true, requireAllDocs: true };
+
+  requestInfoSubject = '';
+  requestInfoMessage = '';
+  requestInfoDocs: string[] = [];
+
+  uploadForMemberDocType = '';
+  uploadForMemberFile: File | null = null;
+
+  editMemberActiveTab = 'personal';
+  editMemberTabs: Tab[] = [
+    { id: 'personal', label: 'Personal', icon: '👤' },
+    { id: 'contact', label: 'Contact', icon: '📱' },
+    { id: 'financial', label: 'Financial', icon: '💰' },
+  ];
+  editMemberForm = {
+    firstName: '', middleName: '', lastName: '', nationalId: '', dateOfBirth: '', gender: '', maritalStatus: '',
+    phone: '', altPhone: '', email: '', address: '', county: '', postalCode: '',
+    occupation: '', employer: '', incomeRange: '', kraPin: '',
   };
 
-  rejectionForm = {
-    reason: '',
-    details: '',
-    documentsToResubmit: [] as string[],
-    allowResubmission: true,
-    notifyApplicant: true
-  };
+  addNoteText = '';
+  addNoteCategory = 'general';
 
-  exportOptions = {
-    range: 'pending'
-  };
-
-  kycSettings = {
-    reminderDays: 3,
-    expiryCheckDays: 90,
-    maxResubmissions: 3,
-    autoNotify: true,
-    requireAllDocs: true
-  };
-
-  // ==================== REGISTRATION WIZARD ====================
-  currentStep: number = 1;
-  totalSteps: number = 10;
-  stepNames: string[] = [
+  currentStep = 1;
+  totalSteps = 10;
+  stepNames = [
     'Personal Details', 'Contact Details', 'Residential Details', 'Employment Details',
-    'Next of Kin', 'Documents', 'Shares & Fees', 'Payment', 'Terms & Policies', 'Review & Complete'
+    'Next of Kin', 'Documents', 'Shares & Fees', 'Payment', 'Terms & Policies', 'Review & Complete',
   ];
 
   regForm = {
@@ -257,732 +247,467 @@ export class KycVerificationComponent implements OnInit {
     paymentMethod: 'mpesa', mpesaPhone: '', cashReceipt: '',
     bankName: '', bankAccount: '', bankReference: '',
     cardNumber: '', cardExpiry: '', cardCvv: '',
-    masterDeclaration: false
+    masterDeclaration: false,
   };
 
   contactMethods = [
     { value: 'sms', label: 'SMS', icon: '💬' },
     { value: 'email', label: 'Email', icon: '📧' },
-    { value: 'whatsapp', label: 'WhatsApp', icon: '📱' }
+    { value: 'whatsapp', label: 'WhatsApp', icon: '📱' },
   ];
 
   paymentMethods = [
     { value: 'mpesa', label: 'M-Pesa', icon: '📱' },
     { value: 'cash', label: 'Cash', icon: '💵' },
     { value: 'bank', label: 'Bank Transfer', icon: '🏦' },
-    { value: 'card', label: 'Card Payment', icon: '💳' }
+    { value: 'card', label: 'Card Payment', icon: '💳' },
   ];
 
-  uploadDocuments = [
+  uploadDocuments: UploadDocument[] = [
     { name: 'National ID (Front)', icon: '🪪', required: true, formats: 'PDF, JPG, PNG', maxSize: '5MB', uploaded: false },
     { name: 'National ID (Back)', icon: '🪪', required: true, formats: 'PDF, JPG, PNG', maxSize: '5MB', uploaded: false },
     { name: 'Passport Photo', icon: '📸', required: true, formats: 'JPG, PNG', maxSize: '2MB', uploaded: false },
-    { name: 'KRA PIN Certificate', icon: '📄', required: false, formats: 'PDF', maxSize: '2MB', uploaded: false }
+    { name: 'KRA PIN Certificate', icon: '📄', required: false, formats: 'PDF', maxSize: '2MB', uploaded: false },
   ];
 
-  fees = [
+  fees: Fee[] = [
     { name: 'Minimum Share Capital', amount: 5000, required: true, selected: true, editable: false },
     { name: 'Registration Fee', amount: 500, required: true, selected: true, editable: false },
     { name: 'Onboarding Charge', amount: 200, required: true, selected: true, editable: false },
     { name: 'Membership Card', amount: 150, required: false, selected: true, editable: false },
-    { name: 'Additional Shares', amount: 0, required: false, selected: false, editable: true }
+    { name: 'Additional Shares', amount: 0, required: false, selected: false, editable: true },
   ];
 
-  terms = [
+  terms: Term[] = [
     { id: 1, name: 'SACCO Terms & Conditions', description: 'General terms governing membership, services, and obligations.', accepted: false },
     { id: 2, name: 'SACCOPay Digital Services Terms', description: 'Terms for using mobile banking, USSD, and digital payment services.', accepted: false },
     { id: 3, name: 'Data Protection & Privacy Policy', description: 'How we collect, use, and protect your personal information.', accepted: false },
-    { id: 4, name: 'Loan Policy Agreement', description: 'Terms for loan applications, interest rates, and repayment.', accepted: false },
-    { id: 5, name: 'Savings & Withdrawal Policy', description: 'Rules governing savings accounts and withdrawal procedures.', accepted: false },
-    { id: 6, name: 'Membership Rights & Obligations', description: 'Your rights as a member and responsibilities to the SACCO.', accepted: false },
-    { id: 7, name: 'Electronic Communication Consent', description: 'Consent to receive statements, notices via SMS and email.', accepted: false },
-    { id: 8, name: 'AML/KYC Compliance Declaration', description: 'Declaration of compliance with anti-money laundering regulations.', accepted: false }
+    { id: 4, name: 'Loan Policy Agreement', description: 'Terms for loan applications, interest rates, and repayment schedules.', accepted: false },
+    { id: 5, name: 'Share Capital Policy', description: 'Rules governing share purchases, transfers, and dividend distribution.', accepted: false },
   ];
 
-  get allTermsAccepted(): boolean {
-    return this.terms.every(t => t.accepted);
-  }
-
-  // Bulk Approve
-  bulkApproveList = [
-    { applicationId: 'KYC-2024-0088', name: 'Alice Nyambura', docsVerified: 4, totalDocs: 4, selected: true },
-    { applicationId: 'KYC-2024-0086', name: 'Mary Wambui', docsVerified: 4, totalDocs: 4, selected: true },
-    { applicationId: 'KYC-2024-0084', name: 'Joseph Nderitu', docsVerified: 4, totalDocs: 4, selected: true },
-    { applicationId: 'KYC-2024-0082', name: 'Grace Wanjiru', docsVerified: 4, totalDocs: 4, selected: true }
-  ];
-
-  bulkApprovalForm = {
-    tier: 'Bronze',
-    sendWelcome: true,
-    confirmVerification: false
-  };
-
-  // Request Info Form
-  requestInfoForm = {
-    documents: [
-      { name: 'National ID (Clearer copy)', requested: false },
-      { name: 'Passport Photo', requested: false },
-      { name: 'KRA PIN Certificate', requested: false },
-      { name: 'Proof of Residence', requested: false }
-    ],
-    additionalNotes: '',
-    deadline: '7'
-  };
-
-  // Upload for Member Form
-  uploadForMemberForm = {
-    memberName: '',
-    applicationId: '',
-    documentType: '',
-    notes: '',
-    notifyMember: true
-  };
-
-  // Edit Member Form
-  editMemberTabs = [
-    { id: 'personal', label: 'Personal Info' },
-    { id: 'contact', label: 'Contact' },
-    { id: 'financial', label: 'Financial' }
-  ];
-  editMemberActiveTab: string = 'personal';
-
-  editMemberForm = {
-    firstName: '', middleName: '', lastName: '', nationalId: '',
-    dateOfBirth: '', gender: '', maritalStatus: '',
-    phone: '', altPhone: '', email: '', address: '', county: '', postalCode: '',
-    occupation: '', employer: '', incomeRange: '', kraPin: ''
-  };
-
-  // Add Note Form
-  addNoteForm = {
-    type: 'general',
-    content: '',
-    visibleToMember: false
-  };
-
-  // Tabs
   tabs: Tab[] = [
     { id: 'pending', label: 'Pending KYC', icon: '⏳' },
     { id: 'approved', label: 'Approved', icon: '✅' },
     { id: 'rejected', label: 'Rejected', icon: '❌' },
-    { id: 'history', label: 'Activity Log', icon: '📋' }
+    { id: 'activity', label: 'Activity Log', icon: '📋' },
   ];
 
-  // Required Documents
   requiredDocuments: RequiredDocument[] = [
-    { name: 'National ID (Front & Back)', icon: '🪪', description: 'Valid Kenyan National ID card', required: true, color: '#2196f3', formats: 'JPG, PNG, PDF', maxSize: '5MB', notes: 'Must be clearly visible' },
-    { name: 'Passport Photo', icon: '📸', description: 'Recent passport-size photograph', required: true, color: '#9c27b0', formats: 'JPG, PNG', maxSize: '2MB', notes: 'White background preferred' },
-    { name: 'Proof of Address', icon: '🏠', description: 'Utility bill or bank statement (last 3 months)', required: true, color: '#00d084', formats: 'JPG, PNG, PDF', maxSize: '5MB' },
-    { name: 'KRA PIN Certificate', icon: '📄', description: 'Valid KRA PIN certificate', required: true, color: '#ff9800', formats: 'PDF', maxSize: '2MB' },
-    { name: 'Payslip / Income Proof', icon: '💰', description: 'Latest payslip or income statement', required: false, color: '#22c55e', formats: 'JPG, PNG, PDF', maxSize: '5MB' },
-    { name: 'Next of Kin ID', icon: '👥', description: 'National ID of nominated next of kin', required: false, color: '#64748b', formats: 'JPG, PNG, PDF', maxSize: '5MB' }
+    { name: 'National ID (Front & Back)', icon: '🪪', description: 'Government-issued photo identification.', required: true, color: '#00d084', formats: 'PDF, JPG, PNG', maxSize: '5MB' },
+    { name: 'Passport Photo', icon: '📸', description: 'Recent colour photo with white background.', required: true, color: '#00bcd4', formats: 'JPG, PNG', maxSize: '2MB' },
+    { name: 'KRA PIN Certificate', icon: '📄', description: 'Tax registration certificate from KRA.', required: false, color: '#ff9800', formats: 'PDF', maxSize: '2MB', notes: 'Optional but recommended' },
+    { name: 'Proof of Residence', icon: '🏠', description: 'Utility bill or landlord letter (last 3 months).', required: false, color: '#2196f3', formats: 'PDF, JPG', maxSize: '5MB', notes: 'Required for loans above KES 250K' },
   ];
 
-  // Export Formats
   exportFormats: ExportFormat[] = [
-    { name: 'PDF Report', icon: '📄', desc: 'Formatted report with summary', color: '#ef4444' },
-    { name: 'Excel', icon: '📊', desc: 'Spreadsheet with all data', color: '#22c55e' },
-    { name: 'CSV', icon: '📋', desc: 'Raw data comma-separated', color: '#2196f3' }
+    { name: 'PDF', icon: '📄', desc: 'Printable report format', color: '#f44336' },
+    { name: 'Excel', icon: '📊', desc: 'Spreadsheet format', color: '#4caf50' },
+    { name: 'CSV', icon: '📋', desc: 'Raw comma-separated data', color: '#2196f3' },
   ];
 
-  // Member Transactions (for detail modal)
-  memberTransactions = [
-    { date: 'Jan 12, 2026', type: 'Purchase', shares: '+50', amount: 'KES 25,000' },
-    { date: 'Dec 15, 2025', type: 'Dividend', shares: '-', amount: 'KES 53,125' }
-  ];
+  selectedExportFormat = 'PDF';
 
-  // ==================== DATA ====================
-  pendingKycList: KycApplication[] = [
-    {
-      applicationId: 'KYC-2026-00234',
-      initials: 'JM',
-      name: 'Jane Muthoni',
-      email: 'jane.muthoni@email.com',
-      phone: '+254 712 345 678',
-      idNumber: '32456789',
-      dateOfBirth: 'March 15, 1990',
-      gender: 'Female',
-      address: '123 Moi Avenue, Nairobi',
-      occupation: 'Teacher',
-      employer: 'Rongo High School',
-      submittedDate: 'Jan 14, 2026',
-      urgency: 'urgent',
-      progress: 100,
-      documents: [
-        { name: 'National ID', icon: '🪪', status: 'verified', uploadedDate: 'Jan 14, 2026', fileName: 'id_front.jpg', fileSize: '1.2 MB' },
-        { name: 'Passport Photo', icon: '📸', status: 'verified', uploadedDate: 'Jan 14, 2026', fileName: 'photo.jpg', fileSize: '450 KB' },
-        { name: 'Proof of Address', icon: '🏠', status: 'verified', uploadedDate: 'Jan 14, 2026', fileName: 'utility_bill.pdf', fileSize: '890 KB' },
-        { name: 'KRA PIN', icon: '📄', status: 'verified', uploadedDate: 'Jan 14, 2026', fileName: 'kra_pin.pdf', fileSize: '320 KB' }
-      ],
-      nextOfKin: { name: 'John Muthoni', relationship: 'Spouse', phone: '+254 722 111 222', idNumber: '28765432' }
-    },
-    {
-      applicationId: 'KYC-2026-00235',
-      initials: 'PO',
-      name: 'Peter Ochieng',
-      email: 'peter.ochieng@email.com',
-      phone: '+254 733 456 789',
-      idNumber: '29876543',
-      dateOfBirth: 'July 22, 1985',
-      gender: 'Male',
-      address: '45 Oginga Odinga Street, Kisumu',
-      occupation: 'Business Owner',
-      employer: 'Self Employed',
-      submittedDate: 'Jan 13, 2026',
-      urgency: 'normal',
-      progress: 75,
-      documents: [
-        { name: 'National ID', icon: '🪪', status: 'verified', uploadedDate: 'Jan 13, 2026', fileName: 'national_id.jpg', fileSize: '1.1 MB' },
-        { name: 'Passport Photo', icon: '📸', status: 'verified', uploadedDate: 'Jan 13, 2026', fileName: 'passport_photo.jpg', fileSize: '380 KB' },
-        { name: 'Proof of Address', icon: '🏠', status: 'pending', uploadedDate: 'Jan 13, 2026', fileName: 'address_proof.pdf', fileSize: '720 KB' },
-        { name: 'KRA PIN', icon: '📄', status: 'missing' }
-      ],
-      nextOfKin: { name: 'Mary Ochieng', relationship: 'Wife', phone: '+254 711 333 444', idNumber: '31234567' }
-    },
-    {
-      applicationId: 'KYC-2026-00236',
-      initials: 'AW',
-      name: 'Alice Wanjiku',
-      email: 'alice.wanjiku@email.com',
-      phone: '+254 700 123 456',
-      idNumber: '34567890',
-      dateOfBirth: 'December 5, 1992',
-      gender: 'Female',
-      address: '78 Kenyatta Avenue, Nakuru',
-      occupation: 'Nurse',
-      employer: 'Nakuru Level 5 Hospital',
-      submittedDate: 'Jan 12, 2026',
-      urgency: 'urgent',
-      progress: 50,
-      documents: [
-        { name: 'National ID', icon: '🪪', status: 'verified', uploadedDate: 'Jan 12, 2026', fileName: 'id_card.jpg', fileSize: '980 KB' },
-        { name: 'Passport Photo', icon: '📸', status: 'rejected', uploadedDate: 'Jan 12, 2026', fileName: 'photo_blurry.jpg', fileSize: '200 KB' },
-        { name: 'Proof of Address', icon: '🏠', status: 'missing' },
-        { name: 'KRA PIN', icon: '📄', status: 'pending', uploadedDate: 'Jan 12, 2026', fileName: 'kra.pdf', fileSize: '290 KB' }
-      ],
-      nextOfKin: { name: 'James Wanjiku', relationship: 'Brother', phone: '+254 722 555 666', idNumber: '30987654' }
-    },
-    {
-      applicationId: 'KYC-2026-00237',
-      initials: 'DK',
-      name: 'David Kamau',
-      email: 'david.kamau@email.com',
-      phone: '+254 745 678 901',
-      idNumber: '27654321',
-      dateOfBirth: 'April 18, 1988',
-      gender: 'Male',
-      address: '12 Uhuru Highway, Eldoret',
-      occupation: 'Engineer',
-      employer: 'Kenya Power',
-      submittedDate: 'Jan 11, 2026',
-      urgency: 'normal',
-      progress: 100,
-      documents: [
-        { name: 'National ID', icon: '🪪', status: 'verified', uploadedDate: 'Jan 11, 2026', fileName: 'id_scan.pdf', fileSize: '1.5 MB' },
-        { name: 'Passport Photo', icon: '📸', status: 'verified', uploadedDate: 'Jan 11, 2026', fileName: 'passport.jpg', fileSize: '520 KB' },
-        { name: 'Proof of Address', icon: '🏠', status: 'verified', uploadedDate: 'Jan 11, 2026', fileName: 'electricity_bill.pdf', fileSize: '1.1 MB' },
-        { name: 'KRA PIN', icon: '📄', status: 'verified', uploadedDate: 'Jan 11, 2026', fileName: 'kra_cert.pdf', fileSize: '350 KB' }
-      ],
-      nextOfKin: { name: 'Grace Kamau', relationship: 'Spouse', phone: '+254 733 777 888', idNumber: '29123456' }
-    }
-  ];
+  bulkApproveList: BulkApproveItem[] = [];
+  bulkApproveTier = 'Bronze';
+  bulkApproveSendWelcome = true;
+  bulkApproveConfirm = false;
 
-  approvedKycList: ApprovedKyc[] = [
-    { applicationId: 'KYC-2026-00189', initials: 'SK', name: 'Sarah Kiplagat', email: 'sarah.k@email.com', idNumber: '31234567', approvedDate: 'Jan 10, 2026', approvedBy: 'Admin John', tier: 'Silver', initialShares: 10000 },
-    { applicationId: 'KYC-2026-00188', initials: 'MN', name: 'Michael Njoroge', email: 'michael.n@email.com', idNumber: '28765432', approvedDate: 'Jan 9, 2026', approvedBy: 'Admin Mary', tier: 'Bronze', initialShares: 5000 },
-    { applicationId: 'KYC-2026-00185', initials: 'FW', name: 'Faith Wambui', email: 'faith.w@email.com', idNumber: '30987654', approvedDate: 'Jan 8, 2026', approvedBy: 'Admin John', tier: 'Gold', initialShares: 50000 },
-    { applicationId: 'KYC-2026-00182', initials: 'JO', name: 'Joseph Otieno', email: 'joseph.o@email.com', idNumber: '29456789', approvedDate: 'Jan 7, 2026', approvedBy: 'Admin Mary', tier: 'Bronze', initialShares: 5000 }
-  ];
+  pendingKycList: KycApplication[] = [];
+  approvedKycList: ApprovedKyc[] = [];
+  rejectedKycList: RejectedKyc[] = [];
+  activityLog: ActivityLog[] = [];
 
-  rejectedKycList: RejectedKyc[] = [
-    { applicationId: 'KYC-2026-00201', initials: 'RK', name: 'Robert Kimani', email: 'robert.k@email.com', rejectedDate: 'Jan 12, 2026', rejectionReason: 'Invalid Documents', rejectedBy: 'Admin John', canResubmit: true },
-    { applicationId: 'KYC-2026-00198', initials: 'EN', name: 'Elizabeth Njeri', email: 'elizabeth.n@email.com', rejectedDate: 'Jan 10, 2026', rejectionReason: 'Incomplete Application', rejectedBy: 'Admin Mary', canResubmit: true },
-    { applicationId: 'KYC-2026-00195', initials: 'TM', name: 'Thomas Mwangi', email: 'thomas.m@email.com', rejectedDate: 'Jan 8, 2026', rejectionReason: 'Fraud Suspected', rejectedBy: 'Admin John', canResubmit: false }
-  ];
+  ngOnInit(): void {
+    this.generateData();
+  }
 
-  activityLog: ActivityLog[] = [
-    { id: 1, type: 'approved', actor: 'Admin John', action: 'approved KYC for', target: 'Sarah Kiplagat', timestamp: 'Jan 14, 2026, 2:45 PM', details: 'Tier: Silver, Initial Shares: 10,000' },
-    { id: 2, type: 'rejected', actor: 'Admin Mary', action: 'rejected KYC for', target: 'Robert Kimani', timestamp: 'Jan 14, 2026, 11:30 AM', details: 'Reason: Invalid ID document' },
-    { id: 3, type: 'document', actor: 'System', action: 'received new document from', target: 'Peter Ochieng', timestamp: 'Jan 14, 2026, 10:15 AM', details: 'Document: Proof of Address' },
-    { id: 4, type: 'pending', actor: 'Admin John', action: 'requested resubmission from', target: 'Alice Wanjiku', timestamp: 'Jan 13, 2026, 4:00 PM', details: 'Passport photo is blurry' },
-    { id: 5, type: 'approved', actor: 'Admin Mary', action: 'approved KYC for', target: 'Michael Njoroge', timestamp: 'Jan 13, 2026, 2:30 PM', details: 'Tier: Bronze, Initial Shares: 5,000' }
-  ];
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeAllModals();
+  }
 
-  // ==================== COMPUTED ====================
+  private generateData(): void {
+    const docs = (progress: number): KycDocument[] => [
+      { name: 'National ID (Front)', icon: '🪪', status: progress > 25 ? 'verified' : 'pending', uploadedDate: 'Dec 12, 2024', fileName: 'id_front.jpg', fileSize: '1.2MB' },
+      { name: 'National ID (Back)', icon: '🪪', status: progress > 50 ? 'verified' : progress > 25 ? 'pending' : 'missing', uploadedDate: 'Dec 12, 2024', fileName: 'id_back.jpg', fileSize: '1.1MB' },
+      { name: 'Passport Photo', icon: '📸', status: progress > 75 ? 'verified' : 'pending', uploadedDate: 'Dec 13, 2024', fileName: 'photo.jpg', fileSize: '800KB' },
+      { name: 'KRA PIN', icon: '📄', status: progress === 100 ? 'verified' : progress > 50 ? 'pending' : 'missing' },
+    ];
+
+    const names = [
+      { name: 'James Otieno', initials: 'JO', email: 'james.otieno@email.com', phone: '+254 712 345 678', id: '28456123', urgency: 'urgent' as const },
+      { name: 'Mary Akinyi', initials: 'MA', email: 'mary.akinyi@email.com', phone: '+254 723 456 789', id: '30789456', urgency: 'normal' as const },
+      { name: 'Peter Kamau', initials: 'PK', email: 'peter.kamau@email.com', phone: '+254 734 567 890', id: '25123789', urgency: 'urgent' as const },
+      { name: 'Grace Wanjiru', initials: 'GW', email: 'grace.wanjiru@email.com', phone: '+254 745 678 901', id: '31456012', urgency: 'normal' as const },
+      { name: 'David Mwangi', initials: 'DM', email: 'david.mwangi@email.com', phone: '+254 756 789 012', id: '27890345', urgency: 'normal' as const },
+      { name: 'Faith Njeri', initials: 'FN', email: 'faith.njeri@email.com', phone: '+254 767 890 123', id: '29234678', urgency: 'urgent' as const },
+    ];
+
+    this.pendingKycList = names.map((n, i) => ({
+      applicationId: `KYC-2024-${String(i + 1).padStart(4, '0')}`,
+      initials: n.initials,
+      name: n.name,
+      email: n.email,
+      phone: n.phone,
+      idNumber: n.id,
+      dateOfBirth: `${1985 + i}-0${(i % 9) + 1}-${10 + i}`,
+      gender: i % 2 === 0 ? 'Male' : 'Female',
+      address: `${['Rongo', 'Migori', 'Awendo', 'Kiboswa', 'Nairobi', 'Kisumu'][i]} Town`,
+      occupation: ['Teacher', 'Farmer', 'Nurse', 'Trader', 'Engineer', 'Accountant'][i],
+      employer: ['Ministry of Education', 'Self-employed', 'Migori County Hospital', 'Rongo Market', 'KPLC', 'PWC Kenya'][i],
+      submittedDate: `Dec ${12 + i}, 2024`,
+      urgency: n.urgency,
+      progress: [100, 75, 50, 85, 60, 100][i],
+      documents: docs([100, 75, 50, 85, 60, 100][i]),
+      nextOfKin: { name: `${['Jane', 'John', 'Alice', 'Mark', 'Susan', 'Tom'][i]} ${n.name.split(' ')[1]}`, relationship: ['Spouse', 'Father', 'Sister', 'Brother', 'Mother', 'Spouse'][i], phone: `+254 7${80 + i}0 ${123 + i * 111} ${456 + i * 100}`, idNumber: `${31000000 + i * 123456}` },
+    }));
+
+    this.approvedKycList = [
+      { applicationId: 'KYC-2024-0101', initials: 'SW', name: 'Sarah Wanjiku', email: 'sarah.w@email.com', idNumber: '26789012', approvedDate: 'Dec 10, 2024', approvedBy: 'Admin James', tier: 'Gold', initialShares: 25000 },
+      { applicationId: 'KYC-2024-0102', initials: 'JK', name: 'John Kamau', email: 'john.k@email.com', idNumber: '28456789', approvedDate: 'Dec 8, 2024', approvedBy: 'Admin Grace', tier: 'Silver', initialShares: 10000 },
+      { applicationId: 'KYC-2024-0103', initials: 'LW', name: 'Lucy Wambui', email: 'lucy.w@email.com', idNumber: '30123456', approvedDate: 'Dec 5, 2024', approvedBy: 'Admin James', tier: 'Bronze', initialShares: 5000 },
+      { applicationId: 'KYC-2024-0104', initials: 'PO', name: 'Peter Omondi', email: 'peter.o@email.com', idNumber: '27890123', approvedDate: 'Nov 28, 2024', approvedBy: 'Admin Grace', tier: 'Silver', initialShares: 15000 },
+    ];
+
+    this.rejectedKycList = [
+      { applicationId: 'KYC-2024-0201', initials: 'BK', name: 'Brian Kipkorir', email: 'brian.k@email.com', rejectedDate: 'Dec 11, 2024', rejectionReason: 'Blurry ID photo', rejectedBy: 'Admin James', canResubmit: true },
+      { applicationId: 'KYC-2024-0202', initials: 'RN', name: 'Rose Nyambura', email: 'rose.n@email.com', rejectedDate: 'Dec 9, 2024', rejectionReason: 'Expired national ID', rejectedBy: 'Admin Grace', canResubmit: true },
+      { applicationId: 'KYC-2024-0203', initials: 'SM', name: 'Samuel Maina', email: 'samuel.m@email.com', rejectedDate: 'Dec 7, 2024', rejectionReason: 'Duplicate account detected', rejectedBy: 'Admin James', canResubmit: false },
+    ];
+
+    this.activityLog = [
+      { id: 1, type: 'approved', actor: 'Admin James', action: 'approved KYC for', target: 'Sarah Wanjiku', timestamp: 'Dec 10, 2024 · 2:30 PM', details: 'Gold tier assigned, 25 shares' },
+      { id: 2, type: 'rejected', actor: 'Admin Grace', action: 'rejected KYC for', target: 'Brian Kipkorir', timestamp: 'Dec 11, 2024 · 10:15 AM', details: 'Blurry ID photo — resubmission allowed' },
+      { id: 3, type: 'pending', actor: 'James Otieno', action: 'submitted KYC application', target: 'KYC-2024-0001', timestamp: 'Dec 12, 2024 · 9:00 AM', details: 'Urgent priority' },
+      { id: 4, type: 'document', actor: 'Mary Akinyi', action: 'uploaded document for', target: 'KYC-2024-0002', timestamp: 'Dec 13, 2024 · 11:45 AM', details: 'Passport photo uploaded' },
+      { id: 5, type: 'approved', actor: 'Admin James', action: 'approved KYC for', target: 'John Kamau', timestamp: 'Dec 8, 2024 · 4:00 PM', details: 'Silver tier, 10 shares' },
+      { id: 6, type: 'pending', actor: 'Grace Wanjiru', action: 'submitted KYC application', target: 'KYC-2024-0004', timestamp: 'Dec 15, 2024 · 8:30 AM', details: 'Normal priority' },
+    ];
+
+    this.bulkApproveList = this.pendingKycList.filter(k => k.progress === 100).map(k => ({
+      applicationId: k.applicationId,
+      name: k.name,
+      docsVerified: k.documents.filter(d => d.status === 'verified').length,
+      totalDocs: k.documents.length,
+      selected: true,
+    }));
+  }
+
   get filteredPendingKyc(): KycApplication[] {
-    return this.pendingKycList.filter(kyc => {
-      const matchSearch = !this.searchTerm ||
-        kyc.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        kyc.applicationId.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        kyc.email.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchUrgency = this.filterUrgency === 'all' || kyc.urgency === this.filterUrgency;
-      const matchDocStatus = this.filterDocStatus === 'all' ||
-        (this.filterDocStatus === 'complete' && kyc.progress === 100) ||
-        (this.filterDocStatus === 'incomplete' && kyc.progress < 100);
-      return matchSearch && matchUrgency && matchDocStatus;
-    });
+    let result = [...this.pendingKycList];
+    if (this.searchTerm.trim()) {
+      const q = this.searchTerm.toLowerCase();
+      result = result.filter(k => k.name.toLowerCase().includes(q) || k.applicationId.toLowerCase().includes(q) || k.idNumber.includes(q) || k.email.toLowerCase().includes(q));
+    }
+    if (this.filterUrgency !== 'all') result = result.filter(k => k.urgency === this.filterUrgency);
+    if (this.filterDocStatus !== 'all') {
+      if (this.filterDocStatus === 'complete') result = result.filter(k => k.progress === 100);
+      if (this.filterDocStatus === 'incomplete') result = result.filter(k => k.progress < 100);
+    }
+    return result;
   }
 
   get filteredApprovedKyc(): ApprovedKyc[] {
-    return this.approvedKycList.filter(kyc => {
-      const matchSearch = !this.searchTermApproved ||
-        kyc.name.toLowerCase().includes(this.searchTermApproved.toLowerCase()) ||
-        kyc.applicationId.toLowerCase().includes(this.searchTermApproved.toLowerCase());
-      const matchTier = this.filterTier === 'all' || kyc.tier === this.filterTier;
-      return matchSearch && matchTier;
-    });
+    let result = [...this.approvedKycList];
+    if (this.searchTermApproved.trim()) {
+      const q = this.searchTermApproved.toLowerCase();
+      result = result.filter(k => k.name.toLowerCase().includes(q) || k.applicationId.toLowerCase().includes(q) || k.idNumber.includes(q));
+    }
+    if (this.filterTier !== 'all') result = result.filter(k => k.tier === this.filterTier);
+    return result;
   }
 
   get filteredRejectedKyc(): RejectedKyc[] {
-    return this.rejectedKycList.filter(kyc => {
-      const matchSearch = !this.searchTermRejected ||
-        kyc.name.toLowerCase().includes(this.searchTermRejected.toLowerCase()) ||
-        kyc.applicationId.toLowerCase().includes(this.searchTermRejected.toLowerCase());
-      return matchSearch;
-    });
-  }
-
-  // ==================== LIFECYCLE ====================
-  ngOnInit(): void {
-    // Initialize component
-  }
-
-  // ==================== TOAST METHODS ====================
-  showToast(message: string, type: Toast['type'] = 'success'): void {
-    const id = Date.now() + Math.random();
-    const toast: Toast = { id, message, type, visible: true };
-    this.toasts.push(toast);
-
-    setTimeout(() => {
-      const idx = this.toasts.findIndex(t => t.id === id);
-      if (idx > -1) {
-        this.toasts[idx].visible = false;
-        setTimeout(() => {
-          this.toasts = this.toasts.filter(t => t.id !== id);
-        }, 350);
-      }
-    }, 3500);
-  }
-
-  dismissToast(id: number): void {
-    const idx = this.toasts.findIndex(t => t.id === id);
-    if (idx > -1) {
-      this.toasts[idx].visible = false;
-      setTimeout(() => {
-        this.toasts = this.toasts.filter(t => t.id !== id);
-      }, 350);
+    let result = [...this.rejectedKycList];
+    if (this.searchTermRejected.trim()) {
+      const q = this.searchTermRejected.toLowerCase();
+      result = result.filter(k => k.name.toLowerCase().includes(q) || k.applicationId.toLowerCase().includes(q));
     }
+    if (this.filterRejectionReason !== 'all') result = result.filter(k => k.rejectionReason.toLowerCase().includes(this.filterRejectionReason));
+    return result;
   }
 
-  // ==================== TAB METHODS ====================
-  switchTab(tabId: string): void {
-    this.activeTab = tabId;
+  get filteredActivityLog(): ActivityLog[] {
+    if (this.filterActivityType === 'all') return this.activityLog;
+    return this.activityLog.filter(a => a.type === this.filterActivityType);
   }
 
-  // ==================== MODAL METHODS ====================
-  openModal(modalName: keyof Modals): void {
-    this.modals[modalName] = true;
+  get allTermsAccepted(): boolean {
+    return this.terms.every(t => t.accepted) && this.regForm.masterDeclaration;
   }
 
-  closeModal(modalName: keyof Modals): void {
-    this.modals[modalName] = false;
+  openModal(name: keyof Modals): void {
+    this.closeAllModals();
+    this.modals[name] = true;
+    document.body.style.overflow = 'hidden';
   }
 
-  // ==================== KYC ACTIONS ====================
-  viewKycDetails(kyc: KycApplication): void {
-    this.selectedKyc = kyc;
+  closeAllModals(): void {
+    (Object.keys(this.modals) as Array<keyof Modals>).forEach(key => (this.modals[key] = false));
+    document.body.style.overflow = '';
+  }
+
+  openKycDetail(kyc: KycApplication): void {
+    this.selectedKyc = { ...kyc };
     this.verificationNotes = '';
     this.openModal('kycDetails');
   }
 
-  openVerifyModal(kyc: KycApplication): void {
-    this.selectedKyc = kyc;
-    this.showToast('Opening verification panel...', 'info');
-  }
-
-  openApproveModal(kyc: KycApplication): void {
-    this.selectedKyc = kyc;
-    this.approvalForm = {
-      tier: 'Bronze',
-      initialShares: 5000,
-      notes: '',
-      sendWelcome: true,
-      confirmVerification: false
-    };
+  openApproveModal(): void {
+    if (!this.selectedKyc) return;
+    this.approvalForm = { tier: 'Bronze', initialShares: 5000, notes: '', sendWelcome: true, confirmVerification: false };
     this.openModal('approve');
   }
 
-  openRejectModal(kyc: KycApplication): void {
-    this.selectedKyc = kyc;
-    this.rejectionForm = {
-      reason: '',
-      details: '',
-      documentsToResubmit: [],
-      allowResubmission: true,
-      notifyApplicant: true
-    };
+  openRejectModal(): void {
+    if (!this.selectedKyc) return;
+    this.rejectionForm = { reason: '', details: '', documentsToResubmit: [], allowResubmission: true, notifyApplicant: true };
     this.openModal('reject');
   }
 
-  submitApproval(): void {
-    if (!this.approvalForm.confirmVerification) {
-      this.showToast('Please confirm document verification', 'warning');
-      return;
-    }
-    if (this.selectedKyc) {
-      this.showToast(`KYC approved for ${this.selectedKyc.name}! Account activated.`, 'success');
-      this.closeModal('approve');
-      // Remove from pending list
-      this.pendingKycList = this.pendingKycList.filter(k => k.applicationId !== this.selectedKyc?.applicationId);
-      this.pendingCount--;
-      this.approvedCount++;
-    }
-  }
-
-  submitRejection(): void {
-    if (!this.rejectionForm.reason || !this.rejectionForm.details) {
-      this.showToast('Please provide rejection reason and details', 'warning');
-      return;
-    }
-    if (this.selectedKyc) {
-      this.showToast(`KYC rejected for ${this.selectedKyc.name}`, 'danger');
-      this.closeModal('reject');
-      // Remove from pending list
-      this.pendingKycList = this.pendingKycList.filter(k => k.applicationId !== this.selectedKyc?.applicationId);
-      this.pendingCount--;
-      this.rejectedCount++;
-    }
-  }
-
-  toggleResubmitDoc(docName: string): void {
-    const idx = this.rejectionForm.documentsToResubmit.indexOf(docName);
-    if (idx > -1) {
-      this.rejectionForm.documentsToResubmit.splice(idx, 1);
-    } else {
-      this.rejectionForm.documentsToResubmit.push(docName);
-    }
-  }
-
-  // ==================== DOCUMENT ACTIONS ====================
-  previewDocument(doc: Document): void {
-    this.selectedDocument = doc;
+  openDocumentPreview(doc: KycDocument): void {
+    this.selectedDocument = { ...doc };
     this.openModal('documentPreview');
   }
 
-  downloadDocument(doc: Document): void {
-    this.showToast(`Downloading ${doc.name}...`, 'info');
-  }
-
-  verifyDocument(doc: Document): void {
-    doc.status = 'verified';
-    this.showToast(`${doc.name} verified successfully`, 'success');
-    this.updateKycProgress();
-  }
-
-  rejectDocument(doc: Document): void {
-    doc.status = 'rejected';
-    this.showToast(`${doc.name} marked as rejected`, 'danger');
-    this.updateKycProgress();
-  }
-
-  updateKycProgress(): void {
-    if (this.selectedKyc) {
-      const totalDocs = this.selectedKyc.documents.length;
-      const verifiedDocs = this.selectedKyc.documents.filter(d => d.status === 'verified').length;
-      this.selectedKyc.progress = Math.round((verifiedDocs / totalDocs) * 100);
-    }
-  }
-
-  // ==================== APPROVED ACTIONS ====================
-  viewMemberProfile(kyc: ApprovedKyc): void {
-    this.showToast(`Opening profile for ${kyc.name}...`, 'info');
-  }
-
-  downloadDocs(kyc: ApprovedKyc): void {
-    this.showToast(`Downloading documents for ${kyc.name}...`, 'info');
-  }
-
-  sendWelcome(kyc: ApprovedKyc): void {
-    this.showToast(`Welcome message sent to ${kyc.name}`, 'success');
-  }
-
-  // ==================== REJECTED ACTIONS ====================
-  viewRejectionDetails(kyc: RejectedKyc): void {
-    this.showToast(`Viewing rejection details for ${kyc.name}`, 'info');
-  }
-
-  resendInstructions(kyc: RejectedKyc): void {
-    this.showToast(`Resubmission instructions sent to ${kyc.name}`, 'success');
-  }
-
-  confirmDelete(kyc: RejectedKyc): void {
-    if (confirm(`Are you sure you want to delete application ${kyc.applicationId}?`)) {
-      this.rejectedKycList = this.rejectedKycList.filter(k => k.applicationId !== kyc.applicationId);
-      this.rejectedCount--;
-      this.showToast(`Application ${kyc.applicationId} deleted`, 'danger');
-    }
-  }
-
-  // ==================== BULK ACTIONS ====================
-  bulkAction(action: string): void {
-    switch (action) {
-      case 'approve':
-        this.showToast('Bulk approving fully verified applications...', 'success');
-        break;
-      case 'reminder':
-        this.showToast('Sending reminders to applicants with incomplete documents...', 'info');
-        break;
-      case 'export':
-        this.showToast('Exporting all pending applications as CSV...', 'info');
-        break;
-      case 'archive':
-        this.showToast('Archiving applications older than 90 days...', 'info');
-        break;
-    }
-    this.closeModal('bulkActions');
-  }
-
-  // ==================== SETTINGS ====================
-  saveSettings(): void {
-    this.showToast('KYC settings saved successfully', 'success');
-    this.closeModal('settings');
-  }
-
-  // ==================== EXPORT ====================
-  exportData(format: string): void {
-    this.showToast(`Exporting ${this.exportOptions.range} data as ${format}...`, 'info');
-    this.closeModal('export');
-  }
-
-  exportActivityLog(): void {
-    this.showToast('Exporting activity log...', 'info');
-  }
-
-  // ==================== REGISTRATION WIZARD METHODS ====================
-  nextStep(): void {
-    if (this.currentStep < this.totalSteps) {
-      this.currentStep++;
-    }
-  }
-
-  prevStep(): void {
-    if (this.currentStep > 1) {
-      this.currentStep--;
-    }
-  }
-
-  goToStep(step: number): void {
-    if (step >= 1 && step <= this.totalSteps) {
-      this.currentStep = step;
-    }
-  }
-
-  calculateTotal(): number {
-    return this.fees.filter(f => f.selected || f.required).reduce((sum, f) => sum + f.amount, 0);
-  }
-
-  getPaymentMethodLabel(): string {
-    const method = this.paymentMethods.find(m => m.value === this.regForm.paymentMethod);
-    return method ? method.label : '';
-  }
-
-  uploadDoc(doc: { name: string; uploaded: boolean }): void {
-    doc.uploaded = true;
-    this.showToast(`${doc.name} uploaded successfully`, 'success');
-  }
-
-  removeDocument(doc: { name: string; uploaded: boolean }): void {
-    doc.uploaded = false;
-    this.showToast(`${doc.name} removed`, 'info');
-  }
-
-  skipDocument(doc: { name: string }): void {
-    this.showToast(`${doc.name} skipped`, 'info');
-  }
-
-  getAcceptedTermsCount(): number {
-    return this.terms.filter(t => t.accepted).length;
-  }
-
-  acceptAllTerms(): void {
-    this.terms.forEach(t => t.accepted = true);
-    this.showToast('All terms accepted', 'success');
-  }
-
-  updateTermsCount(): void {
-    // Auto-triggered by checkbox changes
-  }
-
-  viewTermDetails(term: { name: string }): void {
-    this.showToast(`Viewing ${term.name}...`, 'info');
-  }
-
-  sendStkPush(): void {
-    if (!this.regForm.mpesaPhone) {
-      this.showToast('Please enter M-Pesa phone number', 'warning');
-      return;
-    }
-    this.showToast('STK Push sent to +254 ' + this.regForm.mpesaPhone, 'success');
-  }
-
-  recordCashPayment(): void {
-    if (!this.regForm.cashReceipt) {
-      this.showToast('Please enter receipt number', 'warning');
-      return;
-    }
-    this.showToast('Cash payment recorded successfully', 'success');
-  }
-
-  confirmBankPayment(): void {
-    this.showToast('Bank payment confirmed', 'success');
-  }
-
-  processCardPayment(): void {
-    if (!this.regForm.cardNumber || !this.regForm.cardExpiry || !this.regForm.cardCvv) {
-      this.showToast('Please fill in all card details', 'warning');
-      return;
-    }
-    this.showToast('Card payment processed successfully', 'success');
-  }
-
-  completeRegistration(): void {
-    if (!this.regForm.masterDeclaration) {
-      this.showToast('Please accept the member declaration', 'warning');
-      return;
-    }
-    this.showToast('🎉 Member registration completed successfully!', 'success');
-    this.closeModal('registration');
-    this.resetRegistrationForm();
-  }
-
-  resetRegistrationForm(): void {
-    this.currentStep = 1;
-    this.regForm = {
-      firstName: '', middleName: '', lastName: '', nationalId: '', kraPin: '',
-      dateOfBirth: '', gender: '', maritalStatus: '', nationality: 'Kenyan',
-      primaryPhone: '', altPhone: '', email: '', contactMethod: 'sms',
-      county: '', subCounty: '', ward: '', estate: '', streetAddress: '',
-      poBox: '', postalCode: '', residenceType: '', yearsAtAddress: '',
-      employmentStatus: '', employerName: '', employeeNumber: '', jobTitle: '',
-      department: '', employerAddress: '', employmentDate: '', incomeRange: '', paymentMode: '',
-      nokName: '', nokRelationship: '', nokPhone: '', nokIdNumber: '', nokEmail: '', nokAddress: '',
-      paymentMethod: 'mpesa', mpesaPhone: '', cashReceipt: '',
-      bankName: '', bankAccount: '', bankReference: '',
-      cardNumber: '', cardExpiry: '', cardCvv: '',
-      masterDeclaration: false
-    };
-    this.terms.forEach(t => t.accepted = false);
-    this.uploadDocuments.forEach(d => d.uploaded = false);
-  }
-
-  // ==================== BULK APPROVE MODAL ====================
-  getSelectedBulkCount(): number {
-    return this.bulkApproveList.filter(a => a.selected).length;
-  }
-
-  confirmBulkApproval(): void {
-    if (!this.bulkApprovalForm.confirmVerification) {
-      this.showToast('Please confirm verification', 'warning');
-      return;
-    }
-    const count = this.getSelectedBulkCount();
-    this.showToast(`${count} applications approved successfully!`, 'success');
-    this.closeModal('bulkApprove');
-  }
-
-  // ==================== REQUEST INFO MODAL ====================
-  sendInfoRequest(): void {
-    if (!this.selectedKyc) return;
-    const requestedDocs = this.requestInfoForm.documents.filter(d => d.requested);
-    if (requestedDocs.length === 0 && !this.requestInfoForm.additionalNotes) {
-      this.showToast('Please select documents or add notes', 'warning');
-      return;
-    }
-    this.showToast(`Information request sent to ${this.selectedKyc.name}`, 'success');
-    this.closeModal('requestInfo');
-  }
-
-  // ==================== UPLOAD FOR MEMBER ====================
-  triggerFileUpload(): void {
-    this.showToast('File upload dialog opened', 'info');
-  }
-
-  uploadDocumentForMember(): void {
-    if (!this.uploadForMemberForm.documentType) {
-      this.showToast('Please select document type', 'warning');
-      return;
-    }
-    this.showToast('Document uploaded successfully', 'success');
-    this.closeModal('uploadForMember');
-  }
-
-  // ==================== EDIT MEMBER ====================
-  saveMemberInfo(): void {
-    this.showToast('Member information updated successfully', 'success');
-    this.closeModal('editMemberInfo');
-  }
-
-  // ==================== ADD NOTE ====================
-  saveNote(): void {
-    if (!this.addNoteForm.content) {
-      this.showToast('Please enter a note', 'warning');
-      return;
-    }
-    this.showToast('Note added successfully', 'success');
-    this.closeModal('addNote');
-    this.addNoteForm = { type: 'general', content: '', visibleToMember: false };
-  }
-
-  // ==================== OPEN ADDITIONAL MODALS ====================
-  openRequestInfoModal(kyc: KycApplication): void {
-    this.selectedKyc = kyc;
-    this.requestInfoForm.documents.forEach(d => d.requested = false);
-    this.requestInfoForm.additionalNotes = '';
+  openRequestInfo(): void {
+    this.requestInfoSubject = '';
+    this.requestInfoMessage = '';
+    this.requestInfoDocs = [];
     this.openModal('requestInfo');
   }
 
-  openUploadForMemberModal(kyc: KycApplication): void {
-    this.uploadForMemberForm.memberName = kyc.name;
-    this.uploadForMemberForm.applicationId = kyc.applicationId;
-    this.uploadForMemberForm.documentType = '';
-    this.uploadForMemberForm.notes = '';
+  openUploadForMember(): void {
+    this.uploadForMemberDocType = '';
+    this.uploadForMemberFile = null;
     this.openModal('uploadForMember');
   }
 
-  openEditMemberModal(kyc: KycApplication): void {
-    this.selectedKyc = kyc;
-    this.editMemberActiveTab = 'personal';
-    // Pre-fill form from kyc data
-    const nameParts = kyc.name.split(' ');
+  openEditMemberInfo(): void {
+    if (!this.selectedKyc) return;
+    const parts = this.selectedKyc.name.split(' ');
     this.editMemberForm = {
-      firstName: nameParts[0] || '',
-      middleName: nameParts[1] || '',
-      lastName: nameParts[2] || nameParts[1] || '',
-      nationalId: kyc.idNumber,
-      dateOfBirth: kyc.dateOfBirth,
-      gender: kyc.gender,
-      maritalStatus: '',
-      phone: kyc.phone,
-      altPhone: '',
-      email: kyc.email,
-      address: kyc.address,
-      county: '',
-      postalCode: '',
-      occupation: kyc.occupation,
-      employer: kyc.employer,
-      incomeRange: '',
-      kraPin: ''
+      firstName: parts[0] || '', middleName: '', lastName: parts[1] || '',
+      nationalId: this.selectedKyc.idNumber, dateOfBirth: this.selectedKyc.dateOfBirth,
+      gender: this.selectedKyc.gender, maritalStatus: '',
+      phone: this.selectedKyc.phone, altPhone: '', email: this.selectedKyc.email,
+      address: this.selectedKyc.address, county: '', postalCode: '',
+      occupation: this.selectedKyc.occupation, employer: this.selectedKyc.employer,
+      incomeRange: '', kraPin: '',
     };
+    this.editMemberActiveTab = 'personal';
     this.openModal('editMemberInfo');
   }
 
-  openAddNoteModal(): void {
-    this.addNoteForm = { type: 'general', content: '', visibleToMember: false };
+  openAddNote(): void {
+    this.addNoteText = '';
+    this.addNoteCategory = 'general';
     this.openModal('addNote');
   }
 
-  openBulkApproveModal(): void {
-    this.bulkApprovalForm = { tier: 'Bronze', sendWelcome: true, confirmVerification: false };
-    this.openModal('bulkApprove');
+  confirmApproval(): void {
+    if (!this.selectedKyc || !this.approvalForm.confirmVerification) return;
+    const approved: ApprovedKyc = {
+      applicationId: this.selectedKyc.applicationId,
+      initials: this.selectedKyc.initials,
+      name: this.selectedKyc.name,
+      email: this.selectedKyc.email,
+      idNumber: this.selectedKyc.idNumber,
+      approvedDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      approvedBy: 'Admin James',
+      tier: this.approvalForm.tier as 'Gold' | 'Silver' | 'Bronze',
+      initialShares: this.approvalForm.initialShares,
+    };
+    this.approvedKycList = [approved, ...this.approvedKycList];
+    this.pendingKycList = this.pendingKycList.filter(k => k.applicationId !== this.selectedKyc?.applicationId);
+    this.approvedCount++;
+    this.pendingCount--;
+    this.closeAllModals();
+    this.showToast('success', `${approved.name} has been approved and activated.`);
+  }
+
+  confirmRejection(): void {
+    if (!this.selectedKyc || !this.rejectionForm.reason || !this.rejectionForm.details) return;
+    const rejected: RejectedKyc = {
+      applicationId: this.selectedKyc.applicationId,
+      initials: this.selectedKyc.initials,
+      name: this.selectedKyc.name,
+      email: this.selectedKyc.email,
+      rejectedDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      rejectionReason: this.rejectionForm.reason,
+      rejectedBy: 'Admin James',
+      canResubmit: this.rejectionForm.allowResubmission,
+    };
+    this.rejectedKycList = [rejected, ...this.rejectedKycList];
+    this.pendingKycList = this.pendingKycList.filter(k => k.applicationId !== this.selectedKyc?.applicationId);
+    this.rejectedCount++;
+    this.pendingCount--;
+    this.closeAllModals();
+    this.showToast('danger', `${rejected.name}'s application has been rejected.`);
+  }
+
+  verifyDocument(doc: KycDocument): void {
+    doc.status = 'verified';
+    if (this.selectedKyc) {
+      const d = this.selectedKyc.documents.find(x => x.name === doc.name);
+      if (d) d.status = 'verified';
+      this.selectedKyc.progress = Math.round((this.selectedKyc.documents.filter(x => x.status === 'verified').length / this.selectedKyc.documents.length) * 100);
+    }
+  }
+
+  rejectDocument(doc: KycDocument): void {
+    doc.status = 'rejected';
+    if (this.selectedKyc) {
+      const d = this.selectedKyc.documents.find(x => x.name === doc.name);
+      if (d) d.status = 'rejected';
+    }
+  }
+
+  toggleDocResubmit(docName: string): void {
+    const index = this.rejectionForm.documentsToResubmit.indexOf(docName);
+    if (index > -1) this.rejectionForm.documentsToResubmit.splice(index, 1);
+    else this.rejectionForm.documentsToResubmit.push(docName);
+  }
+
+  allowResubmission(kyc: RejectedKyc): void {
+    kyc.canResubmit = true;
+  }
+
+  viewApprovedProfile(kyc: ApprovedKyc): void {
+    this.showToast('info', `Viewing profile for ${kyc.name}.`);
+  }
+
+  submitRequestInfo(): void {
+    if (!this.requestInfoMessage.trim()) return;
+    this.closeAllModals();
+    this.showToast('success', 'Information request sent to applicant.');
+  }
+
+  submitUploadForMember(): void {
+    if (!this.uploadForMemberDocType) return;
+    this.closeAllModals();
+    this.showToast('success', 'Document uploaded on behalf of the member.');
+  }
+
+  saveEditMemberInfo(): void {
+    if (!this.editMemberForm.firstName || !this.editMemberForm.lastName) return;
+    if (this.selectedKyc) {
+      this.selectedKyc.name = `${this.editMemberForm.firstName} ${this.editMemberForm.lastName}`;
+      this.selectedKyc.phone = this.editMemberForm.phone;
+      this.selectedKyc.email = this.editMemberForm.email;
+      this.selectedKyc.idNumber = this.editMemberForm.nationalId;
+      this.selectedKyc.occupation = this.editMemberForm.occupation;
+      this.selectedKyc.employer = this.editMemberForm.employer;
+    }
+    this.closeAllModals();
+    this.showToast('success', 'Member information updated.');
+  }
+
+  submitAddNote(): void {
+    if (!this.addNoteText.trim()) return;
+    this.activityLog = [{
+      id: this.activityLog.length + 1,
+      type: 'document',
+      actor: 'Admin James',
+      action: 'added a note to',
+      target: this.selectedKyc?.name || 'application',
+      timestamp: new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      details: this.addNoteText.substring(0, 80),
+    }, ...this.activityLog];
+    this.closeAllModals();
+  }
+
+  executeBulkApprove(): void {
+    if (!this.bulkApproveConfirm) return;
+    const selected = this.bulkApproveList.filter(item => item.selected);
+    selected.forEach(item => {
+      const kyc = this.pendingKycList.find(k => k.applicationId === item.applicationId);
+      if (kyc) {
+        this.approvedKycList = [{
+          applicationId: kyc.applicationId, initials: kyc.initials, name: kyc.name, email: kyc.email,
+          idNumber: kyc.idNumber, approvedDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+          approvedBy: 'Admin James', tier: this.bulkApproveTier as 'Gold' | 'Silver' | 'Bronze', initialShares: 5000,
+        }, ...this.approvedKycList];
+        this.pendingKycList = this.pendingKycList.filter(k => k.applicationId !== kyc.applicationId);
+      }
+    });
+    this.approvedCount += selected.length;
+    this.pendingCount -= selected.length;
+    this.closeAllModals();
+    this.showToast('success', `${selected.length} application(s) approved.`);
+  }
+
+  exportData(): void {
+    this.closeAllModals();
+    this.showToast('success', `KYC data exported as ${this.selectedExportFormat}.`);
+  }
+
+  saveSettings(): void {
+    this.closeAllModals();
+    this.showToast('success', 'KYC settings saved.');
+  }
+
+  // Registration wizard
+  nextStep(): void {
+    if (this.currentStep < this.totalSteps) this.currentStep++;
+  }
+
+  prevStep(): void {
+    if (this.currentStep > 1) this.currentStep--;
+  }
+
+  goToStep(step: number): void {
+    if (step >= 1 && step <= this.totalSteps) this.currentStep = step;
+  }
+
+  onDocUpload(event: Event, index: number): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) this.uploadDocuments[index].uploaded = true;
+  }
+
+  onUploadForMemberFile(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) this.uploadForMemberFile = file;
+  }
+
+  toggleFee(fee: Fee): void {
+    if (!fee.required) fee.selected = !fee.selected;
+  }
+
+  calculateTotal(): number {
+    return this.fees.filter(f => f.selected).reduce((sum, f) => sum + f.amount, 0);
+  }
+
+  getPaymentMethodLabel(): string {
+    return this.paymentMethods.find(m => m.value === this.regForm.paymentMethod)?.label || '';
+  }
+
+  completeRegistration(): void {
+    if (!this.regForm.firstName || !this.regForm.lastName || !this.regForm.nationalId) {
+      this.showToast('warning', 'Fill in all required fields before submitting.');
+      this.currentStep = 1;
+      return;
+    }
+    if (!this.allTermsAccepted) {
+      this.showToast('warning', 'Accept all terms and the master declaration.');
+      this.currentStep = 9;
+      return;
+    }
+    this.closeAllModals();
+    this.currentStep = 1;
+    this.showToast('success', `${this.regForm.firstName} ${this.regForm.lastName} registered and pending KYC review.`);
+  }
+
+  showToast(type: Toast['type'], message: string): void {
+    const id = Date.now();
+    this.toasts.push({ id, message, type, visible: true });
+    setTimeout(() => {
+      this.toasts = this.toasts.filter(t => t.id !== id);
+    }, 3000);
+  }
+
+  dismissToast(id: number): void {
+    this.toasts = this.toasts.filter(t => t.id !== id);
   }
 }

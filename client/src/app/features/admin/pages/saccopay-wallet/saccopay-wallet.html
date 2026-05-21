@@ -1,1038 +1,1230 @@
-<!-- Toast Notification -->
-<div class="tw-toast" [class.show]="toast.show" [class]="'tw-toast ' + 'tw-toast--' + toast.type" *ngIf="toast.show">
-  <span class="tw-toast-icon">
-    <svg *ngIf="toast.type==='success'" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#4caf50"/><path d="M7 12l3 3 7-7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-    <svg *ngIf="toast.type==='danger'" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f44336"/><path d="M9 9l6 6M15 9l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-    <svg *ngIf="toast.type==='info'" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2196f3"/><path d="M12 8v4m0 4h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-    <svg *ngIf="toast.type==='warning'" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 3l9 16H3L12 3z" fill="#ffc107"/><path d="M12 10v4m0 3h.01" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
-  </span>
-  <span class="tw-toast-message">{{ toast.message }}</span>
-  <button class="tw-toast-close" (click)="closeToast()">✕</button>
-</div>
+<div class="wl-page">
 
-<!-- Page Wrapper -->
-<div class="tw-page">
+  <!-- ─── BREADCRUMB ─── -->
 
-  <!-- Page Header -->
-  <div class="tw-page-header">
-    <div class="tw-page-header-left">
-      <div class="tw-breadcrumb">
-        <span class="tw-breadcrumb-item">Dashboard</span>
-        <span class="tw-breadcrumb-sep">›</span>
-        <span class="tw-breadcrumb-item tw-breadcrumb-active">SACCOPay Wallet</span>
+
+  <!-- ─── HEADING ─── -->
+  <div class="wl-heading fade-up">
+    <div class="head-left">
+      <!-- <div class="head-icon">💳</div> -->
+      <div>
+        <!-- <h1>SACCOPay Wallet</h1> -->
+        <p>Manage wallet accounts, transfers, limits & permissions</p>
       </div>
-      <div class="tw-page-title-row">
-        <span class="tw-page-title-icon">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="#1a2332" stroke-width="1.8"/><path d="M2 9h20" stroke="#1a2332" stroke-width="1.8"/><rect x="5" y="13" width="4" height="2" rx="1" fill="#1a2332"/></svg>
-        </span>
-        <h1 class="tw-page-title">SACCOPay Wallet</h1>
-      </div>
-      <p class="tw-page-subtitle">Manage wallet accounts, transfers, limits &amp; permissions</p>
     </div>
-    <div class="tw-page-header-right">
-      <button class="tw-btn tw-btn-outline" (click)="openSettingsModal()">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Settings
+    <div class="head-actions">
+      <button class="btn btn-outline btn-sm" (click)="openModal('settings')">⚙ Settings</button>
+      <button class="btn btn-primary btn-sm" (click)="openModal('create_wallet')">+ Create Wallet</button>
+    </div>
+  </div>
+
+  <!-- ─── HERO WALLET CARD ─── -->
+  <div class="wallet-hero fade-up">
+    <div class="wh-top">
+      <div class="wh-card-icon">💳</div>
+      <div class="wh-status-row">
+        <span class="wh-pill"><span class="dot"></span> Active</span>
+        <span class="wh-pill sub-pill">💳 SACCOPay</span>
+      </div>
+    </div>
+    <div class="wh-balance-label">Available Balance</div>
+    <div class="wh-balance">
+      <span class="currency">KES</span>
+      <span class="amount">{{ walletBalance | number:'1.0-0' }}</span>
+      <span class="decimals">.00</span>
+    </div>
+    <button class="wh-id-chip" (click)="copyWalletId()">
+      💳 {{ walletId }} <span class="copy-icon">📋</span>
+    </button>
+    <div class="wh-footer">
+      <div class="wh-owner">
+        {{ walletOwner }} <span class="owner-dot">●</span> {{ walletRole }}
+      </div>
+      <div class="wh-share-row">
+        <button class="wh-mini-btn" (click)="openModal('share_wallet')">⤴ Share</button>
+        <button class="wh-mini-btn" (click)="openModal('qr_code')">📱 QR Code</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ACTION TILES ─── -->
+  <div class="action-tiles fade-up">
+    <div class="action-tile" (click)="openModal('add_money')">
+      <div class="at-icon add">⬇</div>
+      <div class="at-label">Add Money</div>
+      <div class="at-sub">Top up wallet</div>
+    </div>
+    <div class="action-tile" (click)="openModal('send')">
+      <div class="at-icon send">✈</div>
+      <div class="at-label">Send</div>
+      <div class="at-sub">To wallet or phone</div>
+    </div>
+    <div class="action-tile" (click)="openModal('withdraw')">
+      <div class="at-icon withdraw">⬆</div>
+      <div class="at-label">Withdraw</div>
+      <div class="at-sub">To M-Pesa or bank</div>
+    </div>
+    <div class="action-tile" (click)="openModal('to_savings')">
+      <div class="at-icon savings">🐷</div>
+      <div class="at-label">To Savings</div>
+      <div class="at-sub">Move to SACCO</div>
+    </div>
+    <div class="action-tile" (click)="openModal('scheduled')">
+      <div class="at-icon scheduled">📅</div>
+      <div class="at-label">Scheduled</div>
+      <div class="at-sub">Auto-send setup</div>
+    </div>
+    <div class="action-tile" (click)="activeTab = 'controls'">
+      <div class="at-icon controls">🛡</div>
+      <div class="at-label">Controls</div>
+      <div class="at-sub">Limits & security</div>
+    </div>
+  </div>
+
+  <!-- ─── MAIN CARD ─── -->
+  <div class="wl-card fade-up">
+
+    <!-- Main Tabs -->
+    <div class="wl-card-tabs">
+      <button class="wl-tab-btn" [class.active]="activeTab === 'transactions'" (click)="activeTab = 'transactions'">
+        Transactions
       </button>
-      <button class="tw-btn tw-btn-primary" (click)="openCreateWalletModal()">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        Create Wallet
+      <button class="wl-tab-btn" [class.active]="activeTab === 'limits'" (click)="activeTab = 'limits'">
+        Limits & Alerts
+      </button>
+      <button class="wl-tab-btn" [class.active]="activeTab === 'controls'" (click)="activeTab = 'controls'">
+        Account Controls
+      </button>
+      <button class="wl-tab-btn" [class.active]="activeTab === 'members'" (click)="activeTab = 'members'">
+        Member Wallets
       </button>
     </div>
-  </div>
 
-  <!-- Wallet Card -->
-  <div class="tw-wallet-card">
-    <div class="tw-wallet-card-top">
-      <div class="tw-wallet-card-chip">
-        <svg width="32" height="24" fill="none" viewBox="0 0 32 24"><rect x="1" y="1" width="30" height="22" rx="4" fill="#f5c842" stroke="#d4a910" stroke-width="1"/><rect x="4" y="4" width="11" height="16" rx="2" fill="#d4a910" opacity="0.6"/><line x1="15" y1="4" x2="15" y2="20" stroke="#d4a910" stroke-width="1"/><line x1="4" y1="9" x2="15" y2="9" stroke="#d4a910" stroke-width="1"/><line x1="4" y1="14" x2="15" y2="14" stroke="#d4a910" stroke-width="1"/></svg>
-      </div>
-      <div class="tw-wallet-card-badges">
-        <span class="tw-badge-active">● Active</span>
-        <span class="tw-badge-brand">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/></svg>
-          SACCOPay
-        </span>
-      </div>
-    </div>
-    <div class="tw-wallet-card-body">
-      <div class="tw-wallet-balance-label">Available Balance</div>
-      <div class="tw-wallet-balance">
-        <span class="tw-wallet-currency">KES</span>
-        <span class="tw-wallet-amount">247,580</span>
-        <span class="tw-wallet-cents">.00</span>
-      </div>
-      <div class="tw-wallet-id-row">
-        <span class="tw-wallet-id">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/></svg>
-          SP-WAL-2024-00158
-        </span>
-        <button class="tw-copy-btn" (click)="copyWalletId()" title="Copy Wallet ID">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8"/></svg>
+    <!-- ═══════════════ TAB 1: TRANSACTIONS ═══════════════ -->
+    <ng-container *ngIf="activeTab === 'transactions'">
+      <!-- Sub-tabs -->
+      <div class="tx-subtabs">
+        <button class="tx-subtab" [class.active]="txSubTab === 'all'" (click)="txSubTab = 'all'">
+          All <span class="count-badge">{{ txCounts.all }}</span>
         </button>
-      </div>
-    </div>
-    <div class="tw-wallet-card-footer">
-      <div class="tw-wallet-owner">JAMES KARIUKI • ADMIN</div>
-      <div class="tw-wallet-actions-row">
-        <button class="tw-wallet-action-btn" (click)="openShareModal()">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.8"/></svg>
-          Share
+        <button class="tx-subtab" [class.active]="txSubTab === 'received'" (click)="txSubTab = 'received'">
+          Received <span class="count-badge">{{ txCounts.received }}</span>
         </button>
-        <button class="tw-wallet-action-btn" (click)="openQRModal()">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="5" y="5" width="3" height="3" fill="currentColor"/><rect x="16" y="5" width="3" height="3" fill="currentColor"/><rect x="5" y="16" width="3" height="3" fill="currentColor"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3" stroke="currentColor" stroke-width="1.5"/></svg>
-          QR Code
+        <button class="tx-subtab" [class.active]="txSubTab === 'sent'" (click)="txSubTab = 'sent'">
+          Sent <span class="count-badge">{{ txCounts.sent }}</span>
         </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="tw-quick-actions">
-    <div class="tw-quick-action-card" (click)="openAddMoneyModal()">
-      <div class="tw-qa-icon tw-qa-icon--green">
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#00d084" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="18" width="16" height="2" rx="1" fill="#00d084"/></svg>
-      </div>
-      <div class="tw-qa-label">Add Money</div>
-      <div class="tw-qa-sub">Top up wallet</div>
-    </div>
-    <div class="tw-quick-action-card" (click)="openSendModal()">
-      <div class="tw-qa-icon tw-qa-icon--blue">
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#2196f3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="tw-qa-label">Send</div>
-      <div class="tw-qa-sub">To wallet or phone</div>
-    </div>
-    <div class="tw-quick-action-card" (click)="openWithdrawModal()">
-      <div class="tw-qa-icon tw-qa-icon--red">
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 20V4M6 14l6 6 6-6" stroke="#f44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="4" width="16" height="2" rx="1" fill="#f44336"/></svg>
-      </div>
-      <div class="tw-qa-label">Withdraw</div>
-      <div class="tw-qa-sub">To M-Pesa or bank</div>
-    </div>
-    <div class="tw-quick-action-card" (click)="openSavingsModal()">
-      <div class="tw-qa-icon tw-qa-icon--purple">
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#9c27b0" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="#9c27b0" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </div>
-      <div class="tw-qa-label">To Savings</div>
-      <div class="tw-qa-sub">Move to SACCO</div>
-    </div>
-    <div class="tw-quick-action-card" (click)="openScheduledModal()">
-      <div class="tw-qa-icon tw-qa-icon--orange">
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#ff9800" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#ff9800" stroke-width="1.8" stroke-linecap="round"/><path d="M8 14h2v2H8z" fill="#ff9800"/></svg>
-      </div>
-      <div class="tw-qa-label">Scheduled</div>
-      <div class="tw-qa-sub">Auto-send setup</div>
-    </div>
-    <div class="tw-quick-action-card" (click)="switchTab('controls')">
-      <div class="tw-qa-icon tw-qa-icon--teal">
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#00bcd4" stroke-width="1.8" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="tw-qa-label">Controls</div>
-      <div class="tw-qa-sub">Limits &amp; security</div>
-    </div>
-  </div>
-
-  <!-- Tab Panel -->
-  <div class="tw-panel">
-    <!-- Tab Nav -->
-    <div class="tw-tabs">
-      <button class="tw-tab" [class.tw-tab--active]="activeTab==='transactions'" (click)="switchTab('transactions')">Transactions</button>
-      <button class="tw-tab" [class.tw-tab--active]="activeTab==='limits'" (click)="switchTab('limits')">Limits &amp; Alerts</button>
-      <button class="tw-tab" [class.tw-tab--active]="activeTab==='controls'" (click)="switchTab('controls')">Account Controls</button>
-      <button class="tw-tab" [class.tw-tab--active]="activeTab==='members'" (click)="switchTab('members')">Member Wallets</button>
-    </div>
-
-    <!-- TRANSACTIONS TAB -->
-    <div class="tw-tab-content" *ngIf="activeTab==='transactions'">
-      <!-- Sub filters -->
-      <div class="tw-txn-filters">
-        <div class="tw-txn-sub-tabs">
-          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='all'" (click)="setTxnFilter('all')">All <span class="tw-count">142</span></button>
-          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='received'" (click)="setTxnFilter('received')">Received <span class="tw-count">68</span></button>
-          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='sent'" (click)="setTxnFilter('sent')">Sent <span class="tw-count">45</span></button>
-          <button class="tw-sub-tab" [class.tw-sub-tab--active]="txnFilter==='transfers'" (click)="setTxnFilter('transfers')">Transfers <span class="tw-count">29</span></button>
-        </div>
-        <button class="tw-btn tw-btn-outline tw-btn-sm" (click)="exportTransactions()">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 15V3M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Export
+        <button class="tx-subtab" [class.active]="txSubTab === 'transfers'" (click)="txSubTab = 'transfers'">
+          Transfers <span class="count-badge">{{ txCounts.transfers }}</span>
         </button>
       </div>
 
-      <!-- Table -->
-      <div class="tw-table-wrap">
-        <table class="tw-table">
+      <div class="tx-controls">
+        <span style="font-size:.78rem; color:var(--text-secondary)">Showing {{ filteredTransactions.length }} transactions</span>
+        <button class="btn btn-ghost btn-sm" (click)="openModal('export_tx')">📥 Export</button>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="wl-table-wrap">
+        <table class="wl-table">
           <thead>
             <tr>
-              <th>REF</th>
-              <th>TYPE</th>
-              <th>FROM / TO</th>
-              <th>AMOUNT</th>
-              <th>BALANCE</th>
-              <th>DATE</th>
-              <th>ACTIONS</th>
+              <th>Ref</th>
+              <th>Type</th>
+              <th>From / To</th>
+              <th>Amount</th>
+              <th>Balance</th>
+              <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let txn of filteredTransactions(); trackBy: trackById">
-              <td><span class="tw-ref-link" (click)="openTxnDetail(txn)">{{ txn.ref }}</span></td>
-              <td><span class="tw-badge-type" [class]="'tw-badge-type--' + txn.type">{{ txn.typeLabel }}</span></td>
+            <tr *ngFor="let t of filteredTransactions">
+              <td><span class="mono">{{ t.ref }}</span></td>
               <td>
-                <div class="tw-from-to">
-                  <span class="tw-avatar" [style.background]="txn.avatarColor">{{ txn.initials }}</span>
-                  <div>
-                    <div class="tw-from-name">{{ txn.name }}</div>
-                    <div class="tw-from-id">{{ txn.walletId }}</div>
+                <span class="pill"
+                  [class.type-received]="t.type === 'Received'"
+                  [class.type-sent]="t.type === 'Sent'"
+                  [class.type-transfer]="t.type === 'Transfer'"
+                  [class.type-topup]="t.type === 'Top-up'"
+                  [class.type-withdraw]="t.type === 'Withdraw'">
+                  {{ t.type === 'Received' ? '↓' : t.type === 'Sent' ? '↑' : t.type === 'Transfer' ? '→' : t.type === 'Top-up' ? '+' : '↗' }}
+                  {{ t.type }}
+                </span>
+              </td>
+              <td>
+                <div class="party-cell">
+                  <span class="party-avatar" [ngClass]="t.avClass">{{ t.partyInitials }}</span>
+                  <div class="party-meta">
+                    <div class="party-name">{{ t.partyName }}</div>
+                    <div class="party-id">{{ t.partyId }}</div>
                   </div>
                 </div>
               </td>
               <td>
-                <span class="tw-amount" [class.tw-amount--pos]="txn.amount > 0" [class.tw-amount--neg]="txn.amount < 0">
-                  {{ txn.amount > 0 ? '+' : '' }}KES {{ formatAmount(txn.amount) }}
+                <span class="tx-amount"
+                  [class.positive]="t.sign === '+'"
+                  [class.negative]="t.sign === '-' && t.type !== 'Transfer'"
+                  [class.purple]="t.type === 'Transfer'">
+                  {{ t.sign }}KES {{ t.amount | number:'1.0-0' }}
                 </span>
               </td>
-              <td class="tw-balance-cell">KES {{ formatAmount(txn.balance) }}</td>
-              <td class="tw-date-cell">{{ txn.date }}</td>
+              <td><strong>KES {{ t.balanceAfter | number:'1.0-0' }}</strong></td>
+              <td style="color:var(--text-secondary)">{{ t.date }}</td>
               <td>
-                <button class="tw-action-icon-btn" (click)="openTxnDetail(txn)" title="View Details">
-                  <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 4.5C7.5 4.5 3.73 7.61 2.46 12c1.27 4.39 5.04 7.5 9.54 7.5s8.27-3.11 9.54-7.5C20.27 7.61 16.5 4.5 12 4.5z" stroke="currentColor" stroke-width="1.8"/></svg>
-                </button>
+                <button class="page-btn" style="border:0;background:transparent" (click)="openModal('tx_detail', t)">👁</button>
+              </td>
+            </tr>
+            <tr *ngIf="!filteredTransactions.length">
+              <td colspan="7" style="text-align:center; padding:40px; color:var(--text-tertiary)">
+                No transactions in this category.
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-
-      <!-- Pagination -->
-      <div class="tw-pagination-row">
-        <span class="tw-pagination-info">Showing 1-5 of 142</span>
-        <div class="tw-pagination">
-          <button class="tw-page-btn tw-page-btn--active">1</button>
-          <button class="tw-page-btn" (click)="goToPage(2)">2</button>
-          <button class="tw-page-btn" (click)="goToPage(3)">3</button>
+      <div class="wl-table-footer">
+        <span>Showing 1-{{ filteredTransactions.length }} of <strong>142</strong></span>
+        <div class="pagination">
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
         </div>
       </div>
-    </div>
+    </ng-container>
 
-    <!-- LIMITS & ALERTS TAB -->
-    <div class="tw-tab-content" *ngIf="activeTab==='limits'">
-      <div class="tw-limits-grid">
+    <!-- ═══════════════ TAB 2: LIMITS & ALERTS ═══════════════ -->
+    <ng-container *ngIf="activeTab === 'limits'">
+      <div class="limits-grid">
         <!-- Transaction Limits -->
-        <div class="tw-limits-section">
-          <h3 class="tw-section-title">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#ff9800" stroke-width="1.8" fill="none"/></svg>
-            Transaction Limits
-          </h3>
-          <div class="tw-limit-list">
-            <div class="tw-limit-item" *ngFor="let limit of transactionLimits; trackBy: trackByIndex">
-              <div class="tw-limit-header">
-                <span class="tw-limit-label">{{ limit.label }}</span>
-                <span class="tw-limit-value">{{ limit.current }}</span>
-              </div>
-              <div class="tw-progress-bar" *ngIf="limit.percent !== null">
-                <div class="tw-progress-fill" [style.width]="limit.percent + '%'"></div>
-              </div>
-              <div class="tw-limit-remaining">{{ limit.remaining }}</div>
+        <div>
+          <h3 class="section-title"><span class="title-icon">📊</span> Transaction Limits</h3>
+
+          <div class="limit-row">
+            <div class="limit-header">
+              <span class="limit-name">Daily Send Limit</span>
+              <span class="limit-value">
+                <span class="used">KES {{ limits.dailySendUsed | number }}</span>
+                <span class="slash">/</span>
+                <span class="total">{{ limits.dailySendMax | number }}</span>
+              </span>
             </div>
+            <div class="limit-bar"><div class="limit-fill" [style.width.%]="pct(limits.dailySendUsed, limits.dailySendMax)" style="background:linear-gradient(90deg,#00d084,#00bcd4)"></div></div>
+            <div class="limit-foot">KES {{ (limits.dailySendMax - limits.dailySendUsed) | number }} remaining today</div>
+          </div>
+
+          <div class="limit-row">
+            <div class="limit-header">
+              <span class="limit-name">Daily Withdrawal Limit</span>
+              <span class="limit-value">
+                <span class="used">KES {{ limits.dailyWithdrawUsed | number }}</span>
+                <span class="slash">/</span>
+                <span class="total">{{ limits.dailyWithdrawMax | number }}</span>
+              </span>
+            </div>
+            <div class="limit-bar"><div class="limit-fill" [style.width.%]="pct(limits.dailyWithdrawUsed, limits.dailyWithdrawMax)" style="background:linear-gradient(90deg,#1565c0,#42a5f5)"></div></div>
+            <div class="limit-foot">KES {{ (limits.dailyWithdrawMax - limits.dailyWithdrawUsed) | number }} remaining today</div>
+          </div>
+
+          <div class="limit-row">
+            <div class="limit-header">
+              <span class="limit-name">Monthly Transaction Volume</span>
+              <span class="limit-value">
+                <span class="used">KES {{ limits.monthlyUsed | number }}</span>
+                <span class="slash">/</span>
+                <span class="total">{{ limits.monthlyMax | number }}</span>
+              </span>
+            </div>
+            <div class="limit-bar"><div class="limit-fill" [style.width.%]="pct(limits.monthlyUsed, limits.monthlyMax)" style="background:linear-gradient(90deg,#9c27b0,#ab47bc)"></div></div>
+            <div class="limit-foot">KES {{ (limits.monthlyMax - limits.monthlyUsed) | number }} remaining this month</div>
+          </div>
+
+          <div class="limit-row">
+            <div class="limit-header">
+              <span class="limit-name">Single Transaction Max</span>
+              <span class="limit-value">
+                <span class="used" style="color:#e65100">KES {{ limits.singleTxnMax | number }}</span>
+              </span>
+            </div>
+            <div class="limit-bar"><div class="limit-fill" [style.width.%]="100" style="background:linear-gradient(90deg,#ff9800,#ef6c00)"></div></div>
+            <div class="limit-foot">Per transaction cap</div>
+          </div>
+
+          <div class="section-footer">
+            <button class="btn btn-outline btn-sm" (click)="el_dailySend = limits.dailySendMax; el_dailyWithdraw = limits.dailyWithdrawMax; el_monthly = limits.monthlyMax; el_singleMax = limits.singleTxnMax; openModal('edit_limits')">
+              ✏ Edit Limits
+            </button>
           </div>
         </div>
 
         <!-- Alerts -->
-        <div class="tw-limits-section">
-          <h3 class="tw-section-title">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#2196f3" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Balance &amp; Activity Alerts
-          </h3>
-          <div class="tw-alert-list">
-            <div class="tw-alert-row" *ngFor="let alert of balanceAlerts; trackBy: trackByIndex">
-              <div class="tw-alert-info">
-                <div class="tw-alert-label">{{ alert.label }}</div>
-                <div class="tw-alert-desc">{{ alert.desc }}</div>
-              </div>
-              <div class="tw-alert-control">
-                <input *ngIf="alert.inputType === 'number'" type="number" class="tw-inline-input" [(ngModel)]="alert.value" />
-                <label *ngIf="alert.inputType === 'toggle'" class="tw-toggle">
-                  <input type="checkbox" [(ngModel)]="alert.enabled" />
-                  <span class="tw-toggle-slider"></span>
-                </label>
-              </div>
+        <div>
+          <h3 class="section-title warn"><span class="title-icon">🔔</span> Balance & Activity Alerts</h3>
+
+          <div class="alert-row" *ngFor="let a of alerts; let i = index">
+            <div class="alert-info">
+              <div class="alert-name">{{ a.name }}</div>
+              <div class="alert-desc">{{ a.desc }}</div>
+            </div>
+            <div class="alert-right">
+              <span class="alert-thresh" *ngIf="a.threshold">{{ a.threshold }}</span>
+              <button class="toggle-switch" [class.on]="a.enabled" (click)="toggleAlert(i)"></button>
             </div>
           </div>
-          <div class="tw-limits-actions">
-            <button class="tw-btn tw-btn-primary" (click)="saveLimits()">Save Limits &amp; Alerts</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- ACCOUNT CONTROLS TAB -->
-    <div class="tw-tab-content" *ngIf="activeTab==='controls'">
-      <div class="tw-controls-grid">
-        <!-- Account Permissions -->
-        <div class="tw-controls-section">
-          <h3 class="tw-section-title">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#00d084" stroke-width="1.8" fill="none"/></svg>
-            Account Permissions
-          </h3>
-          <div class="tw-permission-list">
-            <div class="tw-permission-row" *ngFor="let perm of permissions; trackBy: trackByIndex">
-              <div class="tw-perm-info">
-                <div class="tw-perm-icon-wrap" [style.color]="perm.color">
-                  <span [innerHTML]="perm.icon"></span>
-                </div>
-                <div>
-                  <div class="tw-perm-label">{{ perm.label }}</div>
-                  <div class="tw-perm-desc">{{ perm.desc }}</div>
-                </div>
-              </div>
-              <label class="tw-toggle">
-                <input type="checkbox" [(ngModel)]="perm.enabled" (change)="onPermissionChange(perm)" />
-                <span class="tw-toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Account Actions -->
-        <div class="tw-controls-section">
-          <h3 class="tw-section-title">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#ff9800" stroke-width="1.8" fill="none"/><path d="M12 9v4M12 17h.01" stroke="#ff9800" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Account Actions
-          </h3>
-          <div class="tw-action-list">
-            <div class="tw-action-row" *ngFor="let action of accountActions; trackBy: trackByIndex" (click)="handleAccountAction(action)">
-              <div class="tw-action-info">
-                <div class="tw-action-label" [style.color]="action.color">
-                  <span [innerHTML]="action.icon"></span>
-                  {{ action.label }}
-                </div>
-                <div class="tw-action-desc">{{ action.desc }}</div>
-              </div>
-              <svg class="tw-chevron" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MEMBER WALLETS TAB -->
-    <div class="tw-tab-content" *ngIf="activeTab==='members'">
-      <div class="tw-member-toolbar">
-        <input type="text" class="tw-search-input" placeholder="Search member wallets..." [(ngModel)]="memberSearch" />
-        <button class="tw-btn tw-btn-primary" (click)="openCreateWalletModal()">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-          Create Wallet
-        </button>
-      </div>
-
-      <div class="tw-table-wrap">
-        <table class="tw-table">
-          <thead>
-            <tr>
-              <th>MEMBER</th>
-              <th>WALLET ID</th>
-              <th>BALANCE</th>
-              <th>STATUS</th>
-              <th>LAST ACTIVITY</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let member of filteredMembers(); trackBy: trackById">
-              <td>
-                <div class="tw-member-cell">
-                  <span class="tw-avatar" [style.background]="member.avatarColor">{{ member.initials }}</span>
-                  <div>
-                    <div class="tw-member-name">{{ member.name }}</div>
-                    <div class="tw-member-id">{{ member.memberId }}</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="tw-wallet-id-link">{{ member.walletId }}</span></td>
-              <td>KES {{ formatAmount(member.balance) }}</td>
-              <td>
-                <span class="tw-status-badge" [class]="'tw-status-badge--' + member.status.toLowerCase()">
-                  ● {{ member.status }}
-                </span>
-              </td>
-              <td class="tw-date-cell">{{ member.lastActivity }}</td>
-              <td>
-                <button class="tw-manage-btn" (click)="openManageWalletModal(member)">
-                  <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 4.5C7.5 4.5 3.73 7.61 2.46 12c1.27 4.39 5.04 7.5 9.54 7.5s8.27-3.11 9.54-7.5C20.27 7.61 16.5 4.5 12 4.5z" stroke="currentColor" stroke-width="1.8"/></svg>
-                  Manage
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MODALS ===================== -->
-
-<!-- Add Money Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.addMoney" (click)="closeAllModals()">
-  <div class="tw-modal" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--green">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </span>
-        Add Money
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-form-group">
-        <label class="tw-label">Source</label>
-        <select class="tw-select" [(ngModel)]="addMoneyForm.source">
-          <option value="mpesa">M-Pesa</option>
-          <option value="bank">Bank Transfer</option>
-          <option value="agent">SACCO Agent</option>
-        </select>
-      </div>
-      <div class="tw-form-group" *ngIf="addMoneyForm.source === 'mpesa'">
-        <label class="tw-label">M-Pesa Phone Number</label>
-        <input type="tel" class="tw-input" [(ngModel)]="addMoneyForm.phone" placeholder="07XX XXX XXX" />
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Amount (KES)</label>
-        <div class="tw-input-group">
-          <span class="tw-input-prefix">KES</span>
-          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="addMoneyForm.amount" placeholder="0.00" min="100" />
-        </div>
-        <div class="tw-quick-amounts">
-          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 500">500</button>
-          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 1000">1,000</button>
-          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 5000">5,000</button>
-          <button class="tw-quick-amt" (click)="addMoneyForm.amount = 10000">10,000</button>
-        </div>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Reference (Optional)</label>
-        <input type="text" class="tw-input" [(ngModel)]="addMoneyForm.reference" placeholder="Payment reference" />
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-primary" (click)="submitAddMoney()">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        Top Up Wallet
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Send Money Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.send" (click)="closeAllModals()">
-  <div class="tw-modal" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--blue">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </span>
-        Send Money
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-form-group">
-        <label class="tw-label">Send To</label>
-        <select class="tw-select" [(ngModel)]="sendForm.sendTo">
-          <option value="wallet">Wallet ID</option>
-          <option value="phone">Phone Number</option>
-          <option value="member">SACCO Member</option>
-        </select>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">{{ sendForm.sendTo === 'wallet' ? 'Wallet ID' : sendForm.sendTo === 'phone' ? 'Phone Number' : 'Member Name / ID' }}</label>
-        <input type="text" class="tw-input" [(ngModel)]="sendForm.recipient"
-          [placeholder]="sendForm.sendTo === 'wallet' ? 'SP-WAL-XXXXXX' : sendForm.sendTo === 'phone' ? '07XX XXX XXX' : 'Search member...'" />
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Amount (KES)</label>
-        <div class="tw-input-group">
-          <span class="tw-input-prefix">KES</span>
-          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="sendForm.amount" placeholder="0.00" min="1" />
-        </div>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Note (Optional)</label>
-        <textarea class="tw-textarea" [(ngModel)]="sendForm.note" placeholder="Add a note..." rows="2"></textarea>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Transaction PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="sendForm.pin" placeholder="Enter your 4-digit PIN" maxlength="4" />
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-primary tw-btn--blue" (click)="submitSend()">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        Send Money
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Withdraw Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.withdraw" (click)="closeAllModals()">
-  <div class="tw-modal" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--red">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 20V4M6 14l6 6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </span>
-        Withdraw Funds
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-form-group">
-        <label class="tw-label">Withdraw To</label>
-        <select class="tw-select" [(ngModel)]="withdrawForm.method">
-          <option value="mpesa">M-Pesa</option>
-          <option value="bank">Bank Account</option>
-        </select>
-      </div>
-      <div class="tw-form-group" *ngIf="withdrawForm.method === 'mpesa'">
-        <label class="tw-label">M-Pesa Phone Number</label>
-        <input type="tel" class="tw-input" [(ngModel)]="withdrawForm.phone" placeholder="07XX XXX XXX" />
-      </div>
-      <div class="tw-form-group" *ngIf="withdrawForm.method === 'bank'">
-        <label class="tw-label">Bank Account Number</label>
-        <input type="text" class="tw-input" [(ngModel)]="withdrawForm.bankAccount" placeholder="XXXX-XXXX-1234" />
-        <label class="tw-label" style="margin-top:10px">Bank Name</label>
-        <select class="tw-select" [(ngModel)]="withdrawForm.bankName">
-          <option value="kcb">KCB Bank</option>
-          <option value="equity">Equity Bank</option>
-          <option value="coop">Co-operative Bank</option>
-          <option value="absa">ABSA Bank</option>
-        </select>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Amount (KES)</label>
-        <div class="tw-input-group">
-          <span class="tw-input-prefix">KES</span>
-          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="withdrawForm.amount" placeholder="0.00" min="100" />
-        </div>
-        <div class="tw-fee-note">Withdrawal fee: <strong>KES 33</strong> • You receive: <strong>KES {{ getWithdrawNet() }}</strong></div>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Transaction PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="withdrawForm.pin" placeholder="Enter your 4-digit PIN" maxlength="4" />
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-danger" (click)="submitWithdraw()">Withdraw</button>
-    </div>
-  </div>
-</div>
-
-<!-- To Savings Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.savings" (click)="closeAllModals()">
-  <div class="tw-modal" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--purple">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#fff" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </span>
-        Move to Savings
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-form-group">
-        <label class="tw-label">Savings Account</label>
-        <select class="tw-select" [(ngModel)]="savingsForm.account">
-          <option value="regular">Regular Savings — SACCO Account</option>
-          <option value="fixed">Fixed Deposit Account</option>
-          <option value="shares">Share Capital Account</option>
-        </select>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Amount (KES)</label>
-        <div class="tw-input-group">
-          <span class="tw-input-prefix">KES</span>
-          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="savingsForm.amount" placeholder="0.00" min="500" />
-        </div>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Frequency</label>
-        <select class="tw-select" [(ngModel)]="savingsForm.frequency">
-          <option value="once">One Time</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-      </div>
-      <div class="tw-info-box">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#2196f3" stroke-width="1.8"/><path d="M12 8v4m0 4h.01" stroke="#2196f3" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Funds will be moved to your SACCO savings account and earn interest as per the current rate.
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-purple" (click)="submitSavings()">Move to Savings</button>
-    </div>
-  </div>
-</div>
-
-<!-- Scheduled Payments Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.scheduled" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--lg" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--orange">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </span>
-        Scheduled Payments
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body tw-modal-body--scroll">
-      <div class="tw-scheduled-list">
-        <div class="tw-scheduled-item" *ngFor="let sched of scheduledPayments; trackBy: trackByIndex">
-          <div class="tw-sched-info">
-            <div class="tw-sched-label">{{ sched.label }}</div>
-            <div class="tw-sched-detail">{{ sched.recipient }} • {{ sched.frequency }}</div>
-          </div>
-          <div class="tw-sched-amount">KES {{ formatAmount(sched.amount) }}</div>
-          <div class="tw-sched-next">Next: {{ sched.nextDate }}</div>
-          <div class="tw-sched-actions">
-            <label class="tw-toggle tw-toggle--sm">
-              <input type="checkbox" [(ngModel)]="sched.active" />
-              <span class="tw-toggle-slider"></span>
-            </label>
-            <button class="tw-icon-btn" (click)="deleteScheduled(sched)">
-              <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="#f44336" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="section-footer">
+            <button class="btn btn-outline btn-sm" (click)="ca_lowThreshold = 10000; ca_highThreshold = 500000; ca_largeThreshold = 50000; openModal('configure_alerts')">
+              🔔 Configure Alerts
             </button>
           </div>
         </div>
       </div>
-      <div class="tw-section-divider">New Scheduled Payment</div>
-      <div class="tw-form-group">
-        <label class="tw-label">Payment Label</label>
-        <input type="text" class="tw-input" [(ngModel)]="newScheduled.label" placeholder="e.g. Monthly Savings" />
-      </div>
-      <div class="tw-form-row">
-        <div class="tw-form-group">
-          <label class="tw-label">Recipient (Wallet/Phone)</label>
-          <input type="text" class="tw-input" [(ngModel)]="newScheduled.recipient" placeholder="SP-WAL-XXXXX" />
+    </ng-container>
+
+    <!-- ═══════════════ TAB 3: ACCOUNT CONTROLS ═══════════════ -->
+    <ng-container *ngIf="activeTab === 'controls'">
+      <div class="controls-grid">
+        <!-- Permissions -->
+        <div>
+          <h3 class="section-title"><span class="title-icon">🛡</span> Account Permissions</h3>
+
+          <div class="perm-row" *ngFor="let p of permissions; let i = index">
+            <div class="perm-info">
+              <div class="perm-icon" [ngClass]="p.tone">{{ p.icon }}</div>
+              <div class="perm-text">
+                <div class="perm-name">{{ p.name }}</div>
+                <div class="perm-desc">{{ p.desc }}</div>
+              </div>
+            </div>
+            <button class="toggle-switch" [class.on]="p.enabled" (click)="togglePermission(i)"></button>
+          </div>
         </div>
-        <div class="tw-form-group">
-          <label class="tw-label">Amount (KES)</label>
-          <input type="number" class="tw-input" [(ngModel)]="newScheduled.amount" placeholder="0.00" />
+
+        <!-- Actions -->
+        <div>
+          <h3 class="section-title danger"><span class="title-icon">⚠</span> Account Actions</h3>
+
+          <div class="action-row" (click)="openModal('freeze_account')">
+            <div class="action-info">
+              <div class="action-icon cyan">❄</div>
+              <div class="action-text">
+                <div class="action-name cyan-text">Freeze Account</div>
+                <div class="action-desc">Temporarily freeze all wallet activity</div>
+              </div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+
+          <div class="action-row" (click)="openModal('pause_account')">
+            <div class="action-info">
+              <div class="action-icon orange">⏸</div>
+              <div class="action-text">
+                <div class="action-name orange-text">Pause Account</div>
+                <div class="action-desc">Pause sending — receiving still works</div>
+              </div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+
+          <div class="action-row" (click)="openModal('change_pin')">
+            <div class="action-info">
+              <div class="action-icon green">🔑</div>
+              <div class="action-text">
+                <div class="action-name green-text">Change Wallet PIN</div>
+                <div class="action-desc">Update the transaction PIN</div>
+              </div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+
+          <div class="action-row" (click)="openModal('close_wallet')">
+            <div class="action-info">
+              <div class="action-icon red">✕</div>
+              <div class="action-text">
+                <div class="action-name red-text">Close Wallet</div>
+                <div class="action-desc">Permanently close this wallet account</div>
+              </div>
+            </div>
+            <span class="chev">›</span>
+          </div>
         </div>
       </div>
-      <div class="tw-form-row">
-        <div class="tw-form-group">
-          <label class="tw-label">Frequency</label>
-          <select class="tw-select" [(ngModel)]="newScheduled.frequency">
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
+    </ng-container>
+
+    <!-- ═══════════════ TAB 4: MEMBER WALLETS ═══════════════ -->
+    <ng-container *ngIf="activeTab === 'members'">
+      <div class="member-wallets-panel">
+        <div class="mw-search-row">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" [(ngModel)]="memberWalletSearch" placeholder="Search member wallets..." />
+          </div>
+          <button class="btn btn-primary btn-sm" (click)="openModal('create_wallet')">+ Create Wallet</button>
+        </div>
+
+        <div class="wl-table-wrap">
+          <table class="wl-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Wallet ID</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Last Activity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of filteredMemberWallets">
+                <td>
+                  <div class="party-cell">
+                    <span class="party-avatar" [ngClass]="m.avClass">{{ m.initials }}</span>
+                    <div class="party-meta">
+                      <div class="party-name">{{ m.name }}</div>
+                      <div class="party-id">{{ m.memberId }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="mono">{{ m.walletId }}</span></td>
+                <td><strong>KES {{ m.balance | number }}</strong></td>
+                <td>
+                  <span class="pill"
+                    [class.st-active]="m.status === 'Active'"
+                    [class.st-frozen]="m.status === 'Frozen'"
+                    [class.st-paused]="m.status === 'Paused'"
+                    [class.st-closed]="m.status === 'Closed'">
+                    {{ m.status }}
+                  </span>
+                </td>
+                <td style="color:var(--text-secondary)">{{ m.lastActivity }}</td>
+                <td>
+                  <button class="btn btn-ghost btn-xs" (click)="manageMemberWallet(m)">👁 Manage</button>
+                </td>
+              </tr>
+              <tr *ngIf="!filteredMemberWallets.length">
+                <td colspan="6" style="text-align:center; padding:40px; color:var(--text-tertiary)">
+                  No wallets match your search.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="activeModal" (click)="closeModal()">
+  <div class="modal-box"
+       [class.modal-wide]="activeModal === 'scheduled' || activeModal === 'manage_wallet'"
+       [class.modal-sm]="activeModal === 'qr_code' || activeModal === 'share_wallet'"
+       (click)="$event.stopPropagation()">
+
+    <!-- ────────── M1: WALLET SETTINGS ────────── -->
+    <ng-container *ngIf="activeModal === 'settings'">
+      <div class="modal-header tone-dark">
+        <h2>⚙ Wallet Settings</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" style="gap:0">
+        <div class="settings-list">
+          <div class="setting-item" (click)="closeModal(); el_dailySend = limits.dailySendMax; el_dailyWithdraw = limits.dailyWithdrawMax; el_monthly = limits.monthlyMax; el_singleMax = limits.singleTxnMax; openModal('edit_limits')">
+            <div class="setting-icon gray">📊</div>
+            <div class="setting-text">
+              <div class="setting-name">Transaction Limits</div>
+              <div class="setting-desc">Set daily/monthly caps</div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+          <div class="setting-item" (click)="closeModal(); openModal('configure_alerts')">
+            <div class="setting-icon gray">🔔</div>
+            <div class="setting-text">
+              <div class="setting-name">Alerts</div>
+              <div class="setting-desc">Balance & activity notifications</div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+          <div class="setting-item" (click)="closeModal(); openModal('change_pin')">
+            <div class="setting-icon blue">🔑</div>
+            <div class="setting-text">
+              <div class="setting-name">Change PIN</div>
+              <div class="setting-desc">Update wallet PIN</div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+          <div class="setting-item" (click)="closeModal(); openModal('freeze_account')">
+            <div class="setting-icon cyan">❄</div>
+            <div class="setting-text">
+              <div class="setting-name cyan-text">Freeze</div>
+              <div class="setting-desc">Block all activity</div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+          <div class="setting-item" (click)="closeModal(); openModal('close_wallet')">
+            <div class="setting-icon red">✕</div>
+            <div class="setting-text">
+              <div class="setting-name red-text">Close Wallet</div>
+              <div class="setting-desc">Permanently close</div>
+            </div>
+            <span class="chev">›</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M2: ADD MONEY (Multi-step) ────────── -->
+    <ng-container *ngIf="activeModal === 'add_money'">
+      <div class="modal-header tone-green">
+        <h2>⬇ Add Money to Wallet</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Steps Indicator -->
+        <div class="steps-indicator">
+          <div class="step-pill" [class.active]="modalStep === 1" [class.done]="modalStep > 1"><span class="step-num">{{ modalStep > 1 ? '✓' : '1' }}</span><span class="step-label">Source</span></div>
+          <div class="step-pill" [class.active]="modalStep === 2" [class.done]="modalStep > 2"><span class="step-num">{{ modalStep > 2 ? '✓' : '2' }}</span><span class="step-label">Amount</span></div>
+          <div class="step-pill" [class.active]="modalStep === 3" [class.done]="modalStep > 3"><span class="step-num">{{ modalStep > 3 ? '✓' : '3' }}</span><span class="step-label">Confirm</span></div>
+          <div class="step-pill" [class.active]="modalStep === 4"><span class="step-num">{{ modalStep === 4 ? '✓' : '4' }}</span><span class="step-label">Done</span></div>
+        </div>
+
+        <!-- Step 1: Source -->
+        <ng-container *ngIf="modalStep === 1">
+          <div class="field"><label>Choose Source</label></div>
+          <div class="method-grid">
+            <div class="method-card" [class.selected]="am_source === 'M-Pesa'" (click)="am_source = 'M-Pesa'">
+              <div class="method-icon green">📱</div>
+              <div class="method-text"><div class="method-name">M-Pesa</div><div class="method-sub">Mobile money transfer</div></div>
+            </div>
+            <div class="method-card" [class.selected]="am_source === 'Bank Transfer'" (click)="am_source = 'Bank Transfer'">
+              <div class="method-icon blue">🏦</div>
+              <div class="method-text"><div class="method-name">Bank Transfer</div><div class="method-sub">From linked bank account</div></div>
+            </div>
+            <div class="method-card" [class.selected]="am_source === 'Card'" (click)="am_source = 'Card'">
+              <div class="method-icon orange">💳</div>
+              <div class="method-text"><div class="method-name">Debit / Credit Card</div><div class="method-sub">Visa or Mastercard</div></div>
+            </div>
+            <div class="method-card" [class.selected]="am_source === 'SACCO'" (click)="am_source = 'SACCO'">
+              <div class="method-icon purple">🏛</div>
+              <div class="method-text"><div class="method-name">SACCO Account</div><div class="method-sub">Transfer from savings</div></div>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Payment Reference (Optional)</label>
+            <input type="text" [(ngModel)]="am_ref" placeholder="M-Pesa code or transaction ref" />
+          </div>
+        </ng-container>
+
+        <!-- Step 2: Amount -->
+        <ng-container *ngIf="modalStep === 2">
+          <div class="modal-info">ℹ️ Funds will be credited to wallet <strong>{{ walletId }}</strong> via <strong>{{ am_source }}</strong>.</div>
+          <div class="field">
+            <label>Amount (KES) <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="am_amount" placeholder="e.g. 5000" />
+            <div class="preset-amounts">
+              <button class="preset-amt-btn" *ngFor="let p of presetAmounts" [class.active]="am_amount === p.toString()" (click)="setPreset('am_amount', p)">KES {{ p >= 1000 ? (p/1000) + 'K' : p }}</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Step 3: Confirm + PIN -->
+        <ng-container *ngIf="modalStep === 3">
+          <div class="summary-card">
+            <div class="summary-row"><span class="label">Source</span><span class="value">{{ am_source }}</span></div>
+            <div class="summary-row"><span class="label">Reference</span><span class="value">{{ am_ref || '—' }}</span></div>
+            <div class="summary-row"><span class="label">Wallet</span><span class="value">{{ walletId }}</span></div>
+            <div class="summary-row"><span class="label">Processing Fee</span><span class="value">KES 0</span></div>
+            <div class="summary-row total"><span class="label">Total to Credit</span><span class="value">KES {{ (+am_amount || 0) | number }}</span></div>
+          </div>
+          <div class="field">
+            <label style="text-align:center">Enter Wallet PIN to Confirm</label>
+            <div class="pin-row">
+              <input type="password" class="pin-box" *ngFor="let p of am_pin; let i = index" [(ngModel)]="am_pin[i]" maxlength="1" (input)="onPinInput(am_pin, i, $event)" />
+            </div>
+            <div class="hint" style="text-align:center">Forgot PIN? <a href="#" style="color:var(--primary-green-dark); font-weight:700" (click)="$event.preventDefault(); closeModal(); openModal('change_pin')">Reset here</a></div>
+          </div>
+        </ng-container>
+
+        <!-- Step 4: Success -->
+        <ng-container *ngIf="modalStep === 4">
+          <div class="success-state">
+            <div class="success-icon">✓</div>
+            <h3>Money Added Successfully!</h3>
+            <div class="success-amount">+KES {{ (+am_amount || 0) | number }}</div>
+            <div class="success-msg">Your wallet balance has been updated.<br/>New balance: <strong>KES {{ walletBalance | number }}</strong></div>
+            <div class="receipt-info">Receipt: <span class="receipt-id">{{ transactions[0]?.ref }}</span></div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button class="btn btn-ghost" *ngIf="modalStep > 1 && modalStep < 4" (click)="prevStep()">← Back</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" *ngIf="modalStep < 4" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 1" [disabled]="!am_source" (click)="nextStep()">Next →</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 2" [disabled]="!am_amount || +am_amount <= 0" (click)="nextStep()">Next →</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 3" (click)="confirmAddMoney()">✓ Confirm Top-up</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 4" (click)="closeModal()">Done</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M3: SEND MONEY (Multi-step) ────────── -->
+    <ng-container *ngIf="activeModal === 'send'">
+      <div class="modal-header tone-blue">
+        <h2>✈ Send Money</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="steps-indicator">
+          <div class="step-pill" [class.active]="modalStep === 1" [class.done]="modalStep > 1"><span class="step-num">{{ modalStep > 1 ? '✓' : '1' }}</span><span class="step-label">Recipient</span></div>
+          <div class="step-pill" [class.active]="modalStep === 2" [class.done]="modalStep > 2"><span class="step-num">{{ modalStep > 2 ? '✓' : '2' }}</span><span class="step-label">Amount</span></div>
+          <div class="step-pill" [class.active]="modalStep === 3" [class.done]="modalStep > 3"><span class="step-num">{{ modalStep > 3 ? '✓' : '3' }}</span><span class="step-label">Confirm</span></div>
+          <div class="step-pill" [class.active]="modalStep === 4"><span class="step-num">{{ modalStep === 4 ? '✓' : '4' }}</span><span class="step-label">Done</span></div>
+        </div>
+
+        <ng-container *ngIf="modalStep === 1">
+          <div class="field"><label>Send Method</label></div>
+          <div class="method-grid">
+            <div class="method-card" [class.selected]="sn_method === 'Wallet'" (click)="sn_method = 'Wallet'">
+              <div class="method-icon green">💳</div><div class="method-text"><div class="method-name">SACCOPay Wallet</div><div class="method-sub">Wallet-to-wallet (instant)</div></div>
+            </div>
+            <div class="method-card" [class.selected]="sn_method === 'M-Pesa'" (click)="sn_method = 'M-Pesa'">
+              <div class="method-icon green">📱</div><div class="method-text"><div class="method-name">M-Pesa</div><div class="method-sub">Phone number</div></div>
+            </div>
+            <div class="method-card" [class.selected]="sn_method === 'Bank'" (click)="sn_method = 'Bank'">
+              <div class="method-icon blue">🏦</div><div class="method-text"><div class="method-name">Bank Account</div><div class="method-sub">RTGS / EFT</div></div>
+            </div>
+            <div class="method-card" [class.selected]="sn_method === 'Member'" (click)="sn_method = 'Member'">
+              <div class="method-icon purple">👤</div><div class="method-text"><div class="method-name">SACCO Member</div><div class="method-sub">By member ID</div></div>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Recipient (Phone, Wallet ID or Name) <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="sn_recipient" placeholder="e.g. 0722-XXX-456 or SP-WAL-00234" />
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 2">
+          <div class="modal-info">ℹ️ Sending to <strong>{{ sn_recipient }}</strong> via <strong>{{ sn_method }}</strong>.</div>
+          <div class="field">
+            <label>Amount (KES) <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="sn_amount" placeholder="e.g. 5000" />
+            <div class="preset-amounts">
+              <button class="preset-amt-btn" *ngFor="let p of presetAmounts" [class.active]="sn_amount === p.toString()" (click)="setPreset('sn_amount', p)">KES {{ p >= 1000 ? (p/1000) + 'K' : p }}</button>
+            </div>
+            <div class="hint">Daily send remaining: KES {{ (limits.dailySendMax - limits.dailySendUsed) | number }}</div>
+          </div>
+          <div class="field full">
+            <label>Note (Optional)</label>
+            <textarea [(ngModel)]="sn_note" placeholder="Payment description..."></textarea>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 3">
+          <div class="summary-card">
+            <div class="summary-row"><span class="label">Recipient</span><span class="value">{{ sn_recipient }}</span></div>
+            <div class="summary-row"><span class="label">Method</span><span class="value">{{ sn_method }}</span></div>
+            <div class="summary-row"><span class="label">Note</span><span class="value">{{ sn_note || '—' }}</span></div>
+            <div class="summary-row"><span class="label">Amount</span><span class="value">KES {{ (+sn_amount || 0) | number }}</span></div>
+            <div class="summary-row"><span class="label">Transaction Fee</span><span class="value">KES {{ ((+sn_amount || 0) * 0.005) | number:'1.0-0' }}</span></div>
+            <div class="summary-row total"><span class="label">Total Debit</span><span class="value">KES {{ ((+sn_amount || 0) * 1.005) | number:'1.0-0' }}</span></div>
+          </div>
+          <div class="field">
+            <label style="text-align:center">Enter Wallet PIN to Authorize</label>
+            <div class="pin-row">
+              <input type="password" class="pin-box" *ngFor="let p of sn_pin; let i = index" [(ngModel)]="sn_pin[i]" maxlength="1" (input)="onPinInput(sn_pin, i, $event)" />
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 4">
+          <div class="success-state">
+            <div class="success-icon">✓</div>
+            <h3>Money Sent Successfully!</h3>
+            <div class="success-amount">-KES {{ (+sn_amount || 0) | number }}</div>
+            <div class="success-msg">Sent to <strong>{{ sn_recipient }}</strong> via {{ sn_method }}.<br/>New balance: <strong>KES {{ walletBalance | number }}</strong></div>
+            <div class="receipt-info">Reference: <span class="receipt-id">{{ transactions[0]?.ref }}</span></div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button class="btn btn-ghost" *ngIf="modalStep > 1 && modalStep < 4" (click)="prevStep()">← Back</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" *ngIf="modalStep < 4" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-blue" *ngIf="modalStep === 1" [disabled]="!sn_method || !sn_recipient" (click)="nextStep()">Next →</button>
+          <button class="btn btn-blue" *ngIf="modalStep === 2" [disabled]="!sn_amount || +sn_amount <= 0" (click)="nextStep()">Next →</button>
+          <button class="btn btn-blue" *ngIf="modalStep === 3" (click)="confirmSend()">✓ Send Now</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 4" (click)="closeModal()">Done</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M4: WITHDRAW (Multi-step) ────────── -->
+    <ng-container *ngIf="activeModal === 'withdraw'">
+      <div class="modal-header tone-orange">
+        <h2>⬆ Withdraw Funds</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="steps-indicator">
+          <div class="step-pill" [class.active]="modalStep === 1" [class.done]="modalStep > 1"><span class="step-num">{{ modalStep > 1 ? '✓' : '1' }}</span><span class="step-label">Destination</span></div>
+          <div class="step-pill" [class.active]="modalStep === 2" [class.done]="modalStep > 2"><span class="step-num">{{ modalStep > 2 ? '✓' : '2' }}</span><span class="step-label">Amount</span></div>
+          <div class="step-pill" [class.active]="modalStep === 3" [class.done]="modalStep > 3"><span class="step-num">{{ modalStep > 3 ? '✓' : '3' }}</span><span class="step-label">Confirm</span></div>
+          <div class="step-pill" [class.active]="modalStep === 4"><span class="step-num">{{ modalStep === 4 ? '✓' : '4' }}</span><span class="step-label">Done</span></div>
+        </div>
+
+        <ng-container *ngIf="modalStep === 1">
+          <div class="field"><label>Withdraw To</label></div>
+          <div class="method-grid">
+            <div class="method-card" [class.selected]="wd_method === 'M-Pesa'" (click)="wd_method = 'M-Pesa'">
+              <div class="method-icon green">📱</div><div class="method-text"><div class="method-name">M-Pesa</div><div class="method-sub">Withdraw to phone</div></div>
+            </div>
+            <div class="method-card" [class.selected]="wd_method === 'KCB Bank'" (click)="wd_method = 'KCB Bank'">
+              <div class="method-icon blue">🏦</div><div class="method-text"><div class="method-name">KCB Bank</div><div class="method-sub">XXXX-1234</div></div>
+            </div>
+            <div class="method-card" [class.selected]="wd_method === 'Equity Bank'" (click)="wd_method = 'Equity Bank'">
+              <div class="method-icon blue">🏦</div><div class="method-text"><div class="method-name">Equity Bank</div><div class="method-sub">Linked account</div></div>
+            </div>
+            <div class="method-card" [class.selected]="wd_method === 'Branch'" (click)="wd_method = 'Branch'">
+              <div class="method-icon purple">🏛</div><div class="method-text"><div class="method-name">SACCO Branch</div><div class="method-sub">Counter pickup</div></div>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Destination Account/Phone <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="wd_destination" placeholder="e.g. 0722-XXX-456 or XXXX-1234" />
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 2">
+          <div class="modal-warn">⚠ Withdrawals may take 5-30 minutes to reflect at destination.</div>
+          <div class="field">
+            <label>Amount (KES) <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="wd_amount" placeholder="e.g. 10000" />
+            <div class="preset-amounts">
+              <button class="preset-amt-btn" *ngFor="let p of presetAmounts" [class.active]="wd_amount === p.toString()" (click)="setPreset('wd_amount', p)">KES {{ p >= 1000 ? (p/1000) + 'K' : p }}</button>
+            </div>
+            <div class="hint">Daily withdrawal remaining: KES {{ (limits.dailyWithdrawMax - limits.dailyWithdrawUsed) | number }}</div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 3">
+          <div class="summary-card">
+            <div class="summary-row"><span class="label">Destination</span><span class="value">{{ wd_method }}</span></div>
+            <div class="summary-row"><span class="label">Account/Phone</span><span class="value">{{ wd_destination }}</span></div>
+            <div class="summary-row"><span class="label">Withdrawal Amount</span><span class="value">KES {{ (+wd_amount || 0) | number }}</span></div>
+            <div class="summary-row"><span class="label">Withdrawal Fee</span><span class="value">KES {{ ((+wd_amount || 0) * 0.01) | number:'1.0-0' }}</span></div>
+            <div class="summary-row total"><span class="label">Total Debit</span><span class="value">KES {{ ((+wd_amount || 0) * 1.01) | number:'1.0-0' }}</span></div>
+          </div>
+          <div class="field">
+            <label style="text-align:center">Enter Wallet PIN to Confirm</label>
+            <div class="pin-row">
+              <input type="password" class="pin-box" *ngFor="let p of wd_pin; let i = index" [(ngModel)]="wd_pin[i]" maxlength="1" (input)="onPinInput(wd_pin, i, $event)" />
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 4">
+          <div class="success-state">
+            <div class="success-icon">✓</div>
+            <h3>Withdrawal Initiated!</h3>
+            <div class="success-amount">-KES {{ (+wd_amount || 0) | number }}</div>
+            <div class="success-msg">Sent to <strong>{{ wd_method }}</strong> ({{ wd_destination }}).<br/>Funds will arrive within 5-30 minutes.</div>
+            <div class="receipt-info">Reference: <span class="receipt-id">{{ transactions[0]?.ref }}</span></div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button class="btn btn-ghost" *ngIf="modalStep > 1 && modalStep < 4" (click)="prevStep()">← Back</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" *ngIf="modalStep < 4" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-warning" *ngIf="modalStep === 1" [disabled]="!wd_method || !wd_destination" (click)="nextStep()">Next →</button>
+          <button class="btn btn-warning" *ngIf="modalStep === 2" [disabled]="!wd_amount || +wd_amount <= 0" (click)="nextStep()">Next →</button>
+          <button class="btn btn-warning" *ngIf="modalStep === 3" (click)="confirmWithdraw()">✓ Confirm Withdrawal</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 4" (click)="closeModal()">Done</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M5: TO SAVINGS (Multi-step) ────────── -->
+    <ng-container *ngIf="activeModal === 'to_savings'">
+      <div class="modal-header tone-purple">
+        <h2>🐷 Move to Savings</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="steps-indicator">
+          <div class="step-pill" [class.active]="modalStep === 1" [class.done]="modalStep > 1"><span class="step-num">{{ modalStep > 1 ? '✓' : '1' }}</span><span class="step-label">Account</span></div>
+          <div class="step-pill" [class.active]="modalStep === 2" [class.done]="modalStep > 2"><span class="step-num">{{ modalStep > 2 ? '✓' : '2' }}</span><span class="step-label">Amount</span></div>
+          <div class="step-pill" [class.active]="modalStep === 3" [class.done]="modalStep > 3"><span class="step-num">{{ modalStep > 3 ? '✓' : '3' }}</span><span class="step-label">Confirm</span></div>
+          <div class="step-pill" [class.active]="modalStep === 4"><span class="step-num">{{ modalStep === 4 ? '✓' : '4' }}</span><span class="step-label">Done</span></div>
+        </div>
+
+        <ng-container *ngIf="modalStep === 1">
+          <div class="modal-info">ℹ️ Transferring to your SACCO savings is fee-free and instant.</div>
+          <div class="field">
+            <label>Target Savings Account <span class="req">*</span></label>
+            <select [(ngModel)]="ts_account">
+              <option>Regular Savings</option>
+              <option>Holiday Savings</option>
+              <option>Education Plan</option>
+              <option>Share Capital</option>
+              <option>Fixed Deposit</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Transfer Frequency</label>
+            <select [(ngModel)]="ts_freq">
+              <option>One-time</option>
+              <option>Weekly</option>
+              <option>Monthly</option>
+              <option>Quarterly</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 2">
+          <div class="modal-success">✓ Moving funds to <strong>{{ ts_account }}</strong> ({{ ts_freq }})</div>
+          <div class="field">
+            <label>Amount (KES) <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="ts_amount" placeholder="e.g. 50000" />
+            <div class="preset-amounts">
+              <button class="preset-amt-btn" *ngFor="let p of presetAmounts" [class.active]="ts_amount === p.toString()" (click)="setPreset('ts_amount', p)">KES {{ p >= 1000 ? (p/1000) + 'K' : p }}</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 3">
+          <div class="summary-card">
+            <div class="summary-row"><span class="label">From</span><span class="value">{{ walletId }}</span></div>
+            <div class="summary-row"><span class="label">To</span><span class="value">{{ ts_account }}</span></div>
+            <div class="summary-row"><span class="label">Frequency</span><span class="value">{{ ts_freq }}</span></div>
+            <div class="summary-row"><span class="label">Transfer Fee</span><span class="value">FREE</span></div>
+            <div class="summary-row total"><span class="label">Amount</span><span class="value">KES {{ (+ts_amount || 0) | number }}</span></div>
+          </div>
+          <div class="field">
+            <label style="text-align:center">Enter Wallet PIN to Authorize</label>
+            <div class="pin-row">
+              <input type="password" class="pin-box" *ngFor="let p of ts_pin; let i = index" [(ngModel)]="ts_pin[i]" maxlength="1" (input)="onPinInput(ts_pin, i, $event)" />
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="modalStep === 4">
+          <div class="success-state">
+            <div class="success-icon">✓</div>
+            <h3>Transfer Complete!</h3>
+            <div class="success-amount">→ KES {{ (+ts_amount || 0) | number }}</div>
+            <div class="success-msg">Moved to your <strong>{{ ts_account }}</strong> ({{ ts_freq }}).<br/>New wallet balance: <strong>KES {{ walletBalance | number }}</strong></div>
+            <div class="receipt-info">Reference: <span class="receipt-id">{{ transactions[0]?.ref }}</span></div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button class="btn btn-ghost" *ngIf="modalStep > 1 && modalStep < 4" (click)="prevStep()">← Back</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" *ngIf="modalStep < 4" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 1" (click)="nextStep()">Next →</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 2" [disabled]="!ts_amount || +ts_amount <= 0" (click)="nextStep()">Next →</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 3" (click)="confirmToSavings()">✓ Confirm Transfer</button>
+          <button class="btn btn-primary" *ngIf="modalStep === 4" (click)="closeModal()">Done</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M6: SCHEDULED PAYMENTS (Wide modal) ────────── -->
+    <ng-container *ngIf="activeModal === 'scheduled'">
+      <div class="modal-header tone-orange">
+        <h2>📅 Scheduled Payments</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" style="gap:18px">
+        <div class="modal-info">ℹ️ Automate recurring payments to members, savings, or external accounts.</div>
+        <div class="sched-table-wrap">
+          <table class="sched-table">
+            <thead>
+              <tr><th>Recipient</th><th>Amount</th><th>Frequency</th><th>Next Date</th><th>Destination</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of scheduledPayments">
+                <td class="sched-name">{{ s.recipient }}</td>
+                <td class="sched-amt">KES {{ s.amount | number }}</td>
+                <td>{{ s.frequency }}</td>
+                <td>{{ s.nextDate }}</td>
+                <td>{{ s.destination }}</td>
+                <td>
+                  <span class="pill" [class.st-active-large]="s.status === 'Active'" [class.st-paused]="s.status === 'Paused'">{{ s.status }}</span>
+                </td>
+                <td>
+                  <button class="sched-icon-btn" (click)="pauseScheduled(s)" [title]="s.status === 'Active' ? 'Pause' : 'Resume'">{{ s.status === 'Active' ? '⏸' : '▶' }}</button>
+                  <button class="sched-icon-btn" (click)="deleteScheduled(s)" title="Delete">✕</button>
+                </td>
+              </tr>
+              <tr *ngIf="!scheduledPayments.length">
+                <td colspan="7" style="text-align:center; padding:30px; color:var(--text-tertiary)">No scheduled payments yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="border-top:1px dashed var(--border-color); padding-top:16px">
+          <h3 class="section-title" style="font-size:.86rem"><span class="title-icon">+</span> Add New Schedule</h3>
+          <div class="form-grid-2">
+            <div class="field"><label>Recipient</label><input type="text" [(ngModel)]="np_recipient" placeholder="Sarah Auma or Savings" /></div>
+            <div class="field"><label>Amount (KES)</label><input type="number" [(ngModel)]="np_amount" placeholder="5000" /></div>
+            <div class="field full">
+              <label>Frequency</label>
+              <select [(ngModel)]="np_frequency"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Quarterly</option></select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:12px" (click)="addScheduledPayment()">+ New Scheduled Payment</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M7: CREATE WALLET ────────── -->
+    <ng-container *ngIf="activeModal === 'create_wallet'">
+      <div class="modal-header tone-green">
+        <h2>⊕ Create New Wallet</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info">ℹ️ Member must be KYC verified to create a wallet.</div>
+        <div class="field">
+          <label>Member <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="cw_member" placeholder="Search member by name or ID" />
+        </div>
+        <div class="form-grid-2">
+          <div class="field">
+            <label>Initial Deposit (KES)</label>
+            <input type="number" [(ngModel)]="cw_deposit" placeholder="0" />
+          </div>
+          <div class="field">
+            <label>Wallet Tier</label>
+            <select [(ngModel)]="cw_tier">
+              <option>Basic (KES 50K daily)</option>
+              <option>Standard (KES 100K daily)</option>
+              <option>Premium (KES 500K daily)</option>
+              <option>Business (KES 2M daily)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Set Initial PIN <span class="req">*</span></label>
+          <input type="password" [(ngModel)]="cw_pin" maxlength="4" placeholder="4-digit PIN for member" />
+          <div class="hint">Member will be required to change this on first login.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="finalizeCreateWallet()">💳 Create Wallet</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M8: EDIT LIMITS ────────── -->
+    <ng-container *ngIf="activeModal === 'edit_limits'">
+      <div class="modal-header tone-green">
+        <h2>✏ Edit Transaction Limits</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-warn">⚠ Changes apply to all future transactions immediately.</div>
+        <div class="form-grid-2">
+          <div class="field"><label>Daily Send Limit (KES)</label><input type="number" [(ngModel)]="el_dailySend" /></div>
+          <div class="field"><label>Daily Withdrawal Limit (KES)</label><input type="number" [(ngModel)]="el_dailyWithdraw" /></div>
+          <div class="field"><label>Monthly Volume (KES)</label><input type="number" [(ngModel)]="el_monthly" /></div>
+          <div class="field"><label>Single Transaction Max (KES)</label><input type="number" [(ngModel)]="el_singleMax" /></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveEditLimits()">💾 Save Limits</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M9: CONFIGURE ALERTS ────────── -->
+    <ng-container *ngIf="activeModal === 'configure_alerts'">
+      <div class="modal-header tone-orange">
+        <h2>🔔 Configure Alert Thresholds</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="field"><label>Low Balance Threshold (KES)</label><input type="number" [(ngModel)]="ca_lowThreshold" /></div>
+          <div class="field"><label>High Balance Threshold (KES)</label><input type="number" [(ngModel)]="ca_highThreshold" /></div>
+          <div class="field"><label>Large Transaction Threshold (KES)</label><input type="number" [(ngModel)]="ca_largeThreshold" /></div>
+          <div class="field"><label>Notification Channel</label>
+            <select><option>SMS + Email + Push</option><option>SMS Only</option><option>Email Only</option><option>Push Only</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveConfigAlerts()">💾 Save</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M10: CHANGE PIN ────────── -->
+    <ng-container *ngIf="activeModal === 'change_pin'">
+      <div class="modal-header tone-blue">
+        <h2>🔑 Change Wallet PIN</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info">ℹ️ Your new PIN should be 4 digits and not easily guessable.</div>
+        <div class="field"><label>Current PIN <span class="req">*</span></label><input type="password" [(ngModel)]="cp_current" maxlength="4" placeholder="••••" /></div>
+        <div class="field"><label>New PIN <span class="req">*</span></label><input type="password" [(ngModel)]="cp_new" maxlength="4" placeholder="••••" /></div>
+        <div class="field"><label>Confirm New PIN <span class="req">*</span></label><input type="password" [(ngModel)]="cp_confirm" maxlength="4" placeholder="••••" /></div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveChangePin()">✓ Update PIN</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M11: FREEZE ACCOUNT ────────── -->
+    <ng-container *ngIf="activeModal === 'freeze_account' || activeModal === 'pause_account'">
+      <div class="modal-header tone-orange">
+        <h2>{{ activeModal === 'freeze_account' ? '❄ Freeze Account' : '⏸ Pause Account' }}</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-warn" *ngIf="activeModal === 'freeze_account'">⚠ Freezing will block ALL wallet activity. Reversible at any time.</div>
+        <div class="modal-warn" *ngIf="activeModal === 'pause_account'">⚠ Pausing only blocks outgoing transactions. Incoming payments still work.</div>
+        <div class="field"><label>Reason <span class="req">*</span></label>
+          <select [(ngModel)]="fr_reason">
+            <option value="">-- Select reason --</option>
+            <option>Suspicious activity</option>
+            <option>Member request</option>
+            <option>Account review</option>
+            <option>Security audit</option>
+            <option>Lost device</option>
+            <option>Other</option>
           </select>
         </div>
-        <div class="tw-form-group">
-          <label class="tw-label">Start Date</label>
-          <input type="date" class="tw-input" [(ngModel)]="newScheduled.startDate" />
+        <div class="field"><label>Duration</label>
+          <select [(ngModel)]="fr_duration">
+            <option>Indefinite</option><option>24 hours</option><option>7 days</option><option>30 days</option>
+          </select>
+        </div>
+        <div class="field"><label>Notes (Optional)</label><textarea placeholder="Additional context..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-warning" (click)="confirmFreeze()">{{ activeModal === 'freeze_account' ? '❄ Freeze Now' : '⏸ Pause Now' }}</button>
         </div>
       </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-orange" (click)="addScheduled()">Add Scheduled Payment</button>
-    </div>
-  </div>
-</div>
+    </ng-container>
 
-<!-- QR Code Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.qr" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">Wallet QR Code</h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body tw-modal-body--center">
-      <div class="tw-qr-display">
-        <div class="tw-qr-placeholder">
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-            <rect x="5" y="5" width="110" height="110" rx="8" fill="#f8fafb" stroke="#e2e8f0" stroke-width="2"/>
-            <!-- QR pattern -->
-            <rect x="15" y="15" width="35" height="35" rx="3" fill="none" stroke="#1a2332" stroke-width="3"/>
-            <rect x="22" y="22" width="21" height="21" rx="1" fill="#1a2332"/>
-            <rect x="70" y="15" width="35" height="35" rx="3" fill="none" stroke="#1a2332" stroke-width="3"/>
-            <rect x="77" y="22" width="21" height="21" rx="1" fill="#1a2332"/>
-            <rect x="15" y="70" width="35" height="35" rx="3" fill="none" stroke="#1a2332" stroke-width="3"/>
-            <rect x="22" y="77" width="21" height="21" rx="1" fill="#1a2332"/>
-            <rect x="55" y="55" width="8" height="8" fill="#1a2332"/>
-            <rect x="67" y="55" width="8" height="8" fill="#1a2332"/>
-            <rect x="79" y="55" width="8" height="8" fill="#1a2332"/>
-            <rect x="91" y="55" width="8" height="8" fill="#1a2332"/>
-            <rect x="55" y="67" width="8" height="8" fill="#1a2332"/>
-            <rect x="55" y="79" width="8" height="8" fill="#1a2332"/>
-            <rect x="55" y="91" width="8" height="8" fill="#1a2332"/>
-            <rect x="67" y="79" width="8" height="8" fill="#1a2332"/>
-            <rect x="79" y="79" width="8" height="8" fill="#1a2332"/>
-            <rect x="91" y="67" width="8" height="8" fill="#1a2332"/>
-            <rect x="91" y="91" width="8" height="8" fill="#1a2332"/>
-          </svg>
-        </div>
-        <div class="tw-qr-label">SP-WAL-2024-00158</div>
-        <div class="tw-qr-name">JAMES KARIUKI</div>
+    <!-- ────────── M12: CLOSE WALLET ────────── -->
+    <ng-container *ngIf="activeModal === 'close_wallet'">
+      <div class="modal-header tone-red">
+        <h2>✕ Close Wallet Permanently</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
       </div>
-      <p class="tw-qr-instructions">Scan this QR code to send money to this wallet</p>
-    </div>
-    <div class="tw-modal-footer tw-modal-footer--center">
-      <button class="tw-btn tw-btn-outline" (click)="downloadQR()">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 15V3M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8"/></svg>
-        Download
-      </button>
-      <button class="tw-btn tw-btn-primary" (click)="shareQR()">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" stroke="#fff" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="#fff" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="#fff" stroke-width="1.8"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" stroke="#fff" stroke-width="1.8"/></svg>
-        Share QR
-      </button>
-    </div>
-  </div>
-</div>
+      <div class="modal-body">
+        <div class="modal-danger">⚠ <strong>This action is irreversible.</strong> Wallet balance will be transferred to the linked SACCO savings account.</div>
+        <div class="field"><label>Reason <span class="req">*</span></label>
+          <select [(ngModel)]="cl_reason">
+            <option value="">-- Select --</option>
+            <option>Member exit</option>
+            <option>Duplicate wallet</option>
+            <option>Fraud detected</option>
+            <option>Account migration</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="summary-card" style="background:#fff5f5; border-color:#fecaca">
+          <div class="summary-row"><span class="label">Wallet ID</span><span class="value">{{ walletId }}</span></div>
+          <div class="summary-row"><span class="label">Current Balance</span><span class="value">KES {{ walletBalance | number }}</span></div>
+          <div class="summary-row"><span class="label">Funds Will Move To</span><span class="value">Regular Savings</span></div>
+        </div>
+        <div class="field"><label>Type <strong>CLOSE</strong> to confirm <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="cl_confirm" placeholder="CLOSE" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmCloseWallet()">✕ Close Wallet</button>
+        </div>
+      </div>
+    </ng-container>
 
-<!-- Share Wallet Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.share" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">Share Wallet Details</h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-share-info">
-        <div class="tw-share-label">Wallet ID</div>
-        <div class="tw-share-value tw-share-value--green">SP-WAL-2024-00158</div>
+    <!-- ────────── M13: SHARE WALLET ────────── -->
+    <ng-container *ngIf="activeModal === 'share_wallet'">
+      <div class="modal-header tone-green">
+        <h2>⤴ Share Wallet</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
       </div>
-      <div class="tw-share-info">
-        <div class="tw-share-label">Account Name</div>
-        <div class="tw-share-value">JAMES KARIUKI</div>
+      <div class="modal-body">
+        <div class="modal-info">ℹ️ Share your wallet ID to receive payments from anyone.</div>
+        <div class="field"><label>Wallet ID</label><input type="text" [value]="walletId" readonly /></div>
+        <div class="field">
+          <label>Share Via</label>
+          <select [(ngModel)]="sh_method">
+            <option>Link</option><option>SMS</option><option>Email</option><option>WhatsApp</option><option>QR Code</option>
+          </select>
+        </div>
       </div>
-      <div class="tw-share-info">
-        <div class="tw-share-label">SACCO</div>
-        <div class="tw-share-value">SACCOPay</div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="copyShareLink()">📋 Copy Link</button>
+        </div>
       </div>
-      <div class="tw-share-methods">
-        <button class="tw-share-method-btn" (click)="shareVia('copy')">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8"/></svg>
-          Copy Link
-        </button>
-        <button class="tw-share-method-btn" (click)="shareVia('sms')">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8"/></svg>
-          SMS
-        </button>
-        <button class="tw-share-method-btn" (click)="shareVia('email')">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 7l10 7 10-7" stroke="currentColor" stroke-width="1.8"/></svg>
-          Email
-        </button>
-        <button class="tw-share-method-btn" (click)="shareVia('whatsapp')">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#25D366" stroke-width="1.8"/><path d="M8 12s1 2 4 3 4-1 4-1" stroke="#25D366" stroke-width="1.5" stroke-linecap="round"/></svg>
-          WhatsApp
-        </button>
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Close</button>
-    </div>
-  </div>
-</div>
+    </ng-container>
 
-<!-- Transaction Detail Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.txnDetail && selectedTxn" (click)="closeAllModals()">
-  <div class="tw-modal" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">Transaction Details</h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-txn-detail-header">
-        <div class="tw-txn-detail-amount" [class.tw-amount--pos]="selectedTxn.amount > 0" [class.tw-amount--neg]="selectedTxn.amount < 0">
-          {{ selectedTxn.amount > 0 ? '+' : '' }}KES {{ formatAmount(selectedTxn.amount) }}
-        </div>
-        <span class="tw-badge-type" [class]="'tw-badge-type--' + selectedTxn.type">{{ selectedTxn.typeLabel }}</span>
+    <!-- ────────── M14: QR CODE ────────── -->
+    <ng-container *ngIf="activeModal === 'qr_code'">
+      <div class="modal-header tone-green">
+        <h2>📱 Wallet QR Code</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
       </div>
-      <div class="tw-detail-rows">
-        <div class="tw-detail-row"><span class="tw-dr-label">Reference</span><span class="tw-dr-value tw-dr-value--green">{{ selectedTxn.ref }}</span></div>
-        <div class="tw-detail-row"><span class="tw-dr-label">From / To</span><span class="tw-dr-value">{{ selectedTxn.name }}</span></div>
-        <div class="tw-detail-row"><span class="tw-dr-label">Wallet ID</span><span class="tw-dr-value">{{ selectedTxn.walletId }}</span></div>
-        <div class="tw-detail-row"><span class="tw-dr-label">Balance After</span><span class="tw-dr-value">KES {{ formatAmount(selectedTxn.balance) }}</span></div>
-        <div class="tw-detail-row"><span class="tw-dr-label">Date</span><span class="tw-dr-value">{{ selectedTxn.date }}</span></div>
-        <div class="tw-detail-row"><span class="tw-dr-label">Status</span><span class="tw-dr-value tw-status-success">● Completed</span></div>
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Close</button>
-      <button class="tw-btn tw-btn-outline" (click)="downloadReceipt()">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 15V3M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8"/></svg>
-        Download Receipt
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Create Wallet Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.createWallet" (click)="closeAllModals()">
-  <div class="tw-modal" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--green">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3" stroke="#fff" stroke-width="1.8"/><path d="M12 9v6M9 12h6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </span>
-        Create New Wallet
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-form-group">
-        <label class="tw-label">Member Name</label>
-        <input type="text" class="tw-input" [(ngModel)]="createWalletForm.memberName" placeholder="Full name" />
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Member ID</label>
-        <input type="text" class="tw-input" [(ngModel)]="createWalletForm.memberId" placeholder="SP-XXXXX" />
-      </div>
-      <div class="tw-form-row">
-        <div class="tw-form-group">
-          <label class="tw-label">Phone Number</label>
-          <input type="tel" class="tw-input" [(ngModel)]="createWalletForm.phone" placeholder="07XX XXX XXX" />
-        </div>
-        <div class="tw-form-group">
-          <label class="tw-label">Email Address</label>
-          <input type="email" class="tw-input" [(ngModel)]="createWalletForm.email" placeholder="member@email.com" />
-        </div>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Initial Deposit (KES)</label>
-        <div class="tw-input-group">
-          <span class="tw-input-prefix">KES</span>
-          <input type="number" class="tw-input tw-input--prefixed" [(ngModel)]="createWalletForm.initialDeposit" placeholder="0.00" min="0" />
-        </div>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Wallet Type</label>
-        <select class="tw-select" [(ngModel)]="createWalletForm.walletType">
-          <option value="standard">Standard Member Wallet</option>
-          <option value="savings">Savings Wallet</option>
-          <option value="business">Business Wallet</option>
-        </select>
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-primary" (click)="submitCreateWallet()">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        Create Wallet
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Manage Wallet Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.manageWallet && selectedMember" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--lg" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span class="tw-avatar" [style.background]="selectedMember.avatarColor">{{ selectedMember.initials }}</span>
-        <div>
-          <h3 class="tw-modal-title" style="margin:0">{{ selectedMember.name }}</h3>
-          <div class="tw-modal-subtitle">{{ selectedMember.memberId }} • {{ selectedMember.walletId }}</div>
-        </div>
-      </div>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body tw-modal-body--scroll">
-      <div class="tw-manage-stats">
-        <div class="tw-manage-stat">
-          <div class="tw-manage-stat-label">Balance</div>
-          <div class="tw-manage-stat-value">KES {{ formatAmount(selectedMember.balance) }}</div>
-        </div>
-        <div class="tw-manage-stat">
-          <div class="tw-manage-stat-label">Status</div>
-          <div>
-            <span class="tw-status-badge" [class]="'tw-status-badge--' + selectedMember.status.toLowerCase()">● {{ selectedMember.status }}</span>
+      <div class="modal-body" style="text-align:center">
+        <div style="background:#fff; border:2px solid var(--primary-green); border-radius:16px; padding:24px; display:inline-block">
+          <div style="width:200px; height:200px; background:repeating-conic-gradient(#1a2332 0 25%, #fff 0 50%) 50% / 12px 12px; border-radius:8px; position:relative">
+            <div style="position:absolute; inset:30%; background:#fff; border:6px solid #1a2332; border-radius:8px; display:grid; place-items:center; font-size:1rem; font-weight:800; color:var(--primary-green-dark)">💳</div>
           </div>
-        </div>
-        <div class="tw-manage-stat">
-          <div class="tw-manage-stat-label">Last Activity</div>
-          <div class="tw-manage-stat-value">{{ selectedMember.lastActivity }}</div>
+          <div style="margin-top:14px; font-family:monospace; font-size:.86rem; color:var(--text-primary); font-weight:700">{{ walletId }}</div>
+          <div style="font-size:.78rem; color:var(--text-secondary); margin-top:4px">Scan to send money to {{ walletOwner }}</div>
         </div>
       </div>
-      <div class="tw-manage-actions-grid">
-        <button class="tw-manage-action-btn" (click)="manageMemberAction('topup')">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 4v16M6 10l6-6 6 6" stroke="#00d084" stroke-width="2" stroke-linecap="round"/></svg>
-          Top Up
-        </button>
-        <button class="tw-manage-action-btn" (click)="manageMemberAction('freeze')">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" stroke="#2196f3" stroke-width="2" stroke-linecap="round"/></svg>
-          {{ selectedMember.status === 'Frozen' ? 'Unfreeze' : 'Freeze' }}
-        </button>
-        <button class="tw-manage-action-btn" (click)="manageMemberAction('limit')">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#ff9800" stroke-width="1.8"/><path d="M12 8v4m0 4h.01" stroke="#ff9800" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Set Limits
-        </button>
-        <button class="tw-manage-action-btn tw-manage-action-btn--danger" (click)="manageMemberAction('close')">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#f44336" stroke-width="1.8"/><path d="M15 9l-6 6M9 9l6 6" stroke="#f44336" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Close Wallet
-        </button>
-      </div>
-      <div class="tw-section-divider">Wallet Settings</div>
-      <div class="tw-form-row">
-        <div class="tw-form-group">
-          <label class="tw-label">Daily Send Limit (KES)</label>
-          <input type="number" class="tw-input" [(ngModel)]="selectedMember.dailyLimit" placeholder="100,000" />
-        </div>
-        <div class="tw-form-group">
-          <label class="tw-label">Max Balance (KES)</label>
-          <input type="number" class="tw-input" [(ngModel)]="selectedMember.maxBalance" placeholder="1,000,000" />
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+          <button class="btn btn-primary" (click)="showToast('QR code downloaded.', 'info')">📥 Download QR</button>
         </div>
       </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-primary" (click)="saveMemberWallet()">Save Changes</button>
-    </div>
+    </ng-container>
+
+    <!-- ────────── M15: TX DETAIL ────────── -->
+    <ng-container *ngIf="activeModal === 'tx_detail' && selectedTx">
+      <div class="modal-header tone-green">
+        <h2>🧾 Transaction Details</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="summary-card">
+          <div class="summary-row"><span class="label">Reference</span><span class="value mono">{{ selectedTx.ref }}</span></div>
+          <div class="summary-row"><span class="label">Type</span><span class="value">{{ selectedTx.type }}</span></div>
+          <div class="summary-row"><span class="label">Party</span><span class="value">{{ selectedTx.partyName }}</span></div>
+          <div class="summary-row"><span class="label">Party ID</span><span class="value">{{ selectedTx.partyId }}</span></div>
+          <div class="summary-row"><span class="label">Date</span><span class="value">{{ selectedTx.date }}</span></div>
+          <div class="summary-row"><span class="label">Balance After</span><span class="value">KES {{ selectedTx.balanceAfter | number }}</span></div>
+          <div class="summary-row total"><span class="label">Amount</span><span class="value">{{ selectedTx.sign }}KES {{ selectedTx.amount | number }}</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button class="btn btn-ghost btn-sm" (click)="showToast('Receipt downloaded.', 'info')">📥 Download Receipt</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M16: MANAGE MEMBER WALLET ────────── -->
+    <ng-container *ngIf="activeModal === 'manage_wallet' && selectedWallet">
+      <div class="modal-header tone-dark">
+        <h2>👁 Manage Wallet — {{ selectedWallet.walletId }}</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="summary-card">
+          <div class="summary-row"><span class="label">Member</span><span class="value">{{ selectedWallet.name }}</span></div>
+          <div class="summary-row"><span class="label">Member ID</span><span class="value">{{ selectedWallet.memberId }}</span></div>
+          <div class="summary-row"><span class="label">Wallet ID</span><span class="value mono">{{ selectedWallet.walletId }}</span></div>
+          <div class="summary-row"><span class="label">Status</span><span class="value">{{ selectedWallet.status }}</span></div>
+          <div class="summary-row"><span class="label">Last Activity</span><span class="value">{{ selectedWallet.lastActivity }}</span></div>
+          <div class="summary-row total"><span class="label">Balance</span><span class="value">KES {{ selectedWallet.balance | number }}</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px">
+          <button class="btn btn-outline" (click)="showToast('Sent statement to ' + selectedWallet.name)">📥 Send Statement</button>
+          <button class="btn btn-outline" (click)="showToast('Opened transaction log.', 'info')">📋 View Log</button>
+          <button class="btn btn-outline" (click)="showToast('PIN reset link sent.', 'info')">🔑 Reset PIN</button>
+          <button class="btn btn-warning" (click)="freezeMember()">{{ selectedWallet.status === 'Active' ? '❄ Freeze' : '✓ Unfreeze' }}</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ────────── M17: EXPORT TRANSACTIONS ────────── -->
+    <ng-container *ngIf="activeModal === 'export_tx'">
+      <div class="modal-header tone-green">
+        <h2>📥 Export Transactions</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="field"><label>Format</label><select><option>Excel (.xlsx)</option><option>CSV (.csv)</option><option>PDF Report</option></select></div>
+          <div class="field"><label>Date Range</label><select><option>Last 30 days</option><option>This Month</option><option>This Year</option><option>All Time</option></select></div>
+        </div>
+        <div class="field"><label>Transaction Type</label>
+          <select><option>All Types</option><option>Received</option><option>Sent</option><option>Transfers</option><option>Top-ups</option><option>Withdrawals</option></select>
+        </div>
+        <div class="modal-info">ℹ️ Export will include {{ transactions.length }} transactions from wallet {{ walletId }}.</div>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-right">
+          <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="showToast('Transactions exported successfully.'); closeModal()">📥 Export Now</button>
+        </div>
+      </div>
+    </ng-container>
+
   </div>
 </div>
 
-<!-- Wallet Settings Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.settings" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--lg" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--teal">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </span>
-        Wallet Settings
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body tw-modal-body--scroll">
-      <div class="tw-form-group">
-        <label class="tw-label">Wallet Display Name</label>
-        <input type="text" class="tw-input" [(ngModel)]="walletSettings.displayName" />
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Default Currency</label>
-        <select class="tw-select" [(ngModel)]="walletSettings.currency">
-          <option value="KES">KES — Kenyan Shilling</option>
-          <option value="USD">USD — US Dollar</option>
-          <option value="EUR">EUR — Euro</option>
-        </select>
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Transaction PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="walletSettings.pin" placeholder="Change PIN (4 digits)" maxlength="4" />
-      </div>
-      <div class="tw-settings-toggles">
-        <div class="tw-setting-toggle-row">
-          <div>
-            <div class="tw-setting-toggle-label">Auto-generate Statement</div>
-            <div class="tw-setting-toggle-desc">Monthly email statement</div>
-          </div>
-          <label class="tw-toggle">
-            <input type="checkbox" [(ngModel)]="walletSettings.autoStatement" />
-            <span class="tw-toggle-slider"></span>
-          </label>
-        </div>
-        <div class="tw-setting-toggle-row">
-          <div>
-            <div class="tw-setting-toggle-label">SMS Notifications</div>
-            <div class="tw-setting-toggle-desc">Get SMS on every transaction</div>
-          </div>
-          <label class="tw-toggle">
-            <input type="checkbox" [(ngModel)]="walletSettings.smsNotif" />
-            <span class="tw-toggle-slider"></span>
-          </label>
-        </div>
-        <div class="tw-setting-toggle-row">
-          <div>
-            <div class="tw-setting-toggle-label">Email Notifications</div>
-            <div class="tw-setting-toggle-desc">Get email on large transactions</div>
-          </div>
-          <label class="tw-toggle">
-            <input type="checkbox" [(ngModel)]="walletSettings.emailNotif" />
-            <span class="tw-toggle-slider"></span>
-          </label>
-        </div>
-        <div class="tw-setting-toggle-row">
-          <div>
-            <div class="tw-setting-toggle-label">Two-Factor Auth (2FA)</div>
-            <div class="tw-setting-toggle-desc">Require OTP for transactions</div>
-          </div>
-          <label class="tw-toggle">
-            <input type="checkbox" [(ngModel)]="walletSettings.twoFA" />
-            <span class="tw-toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-primary" (click)="saveWalletSettings()">Save Settings</button>
-    </div>
-  </div>
-</div>
-
-<!-- Account Action Confirm Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.actionConfirm && pendingAction" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">{{ pendingAction.label }}</h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-confirm-icon" [style.color]="pendingAction.color">
-        <span [innerHTML]="pendingAction.icon"></span>
-      </div>
-      <p class="tw-confirm-text">{{ pendingAction.confirmMsg }}</p>
-      <div class="tw-form-group" *ngIf="pendingAction.requiresPin">
-        <label class="tw-label">Transaction PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="confirmPin" placeholder="Enter 4-digit PIN" maxlength="4" />
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn" [class]="pendingAction.btnClass" (click)="confirmAction()">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- Change PIN Modal -->
-<div class="tw-modal-backdrop" *ngIf="modals.changePin" (click)="closeAllModals()">
-  <div class="tw-modal tw-modal--sm" (click)="$event.stopPropagation()">
-    <div class="tw-modal-header">
-      <h3 class="tw-modal-title">
-        <span class="tw-modal-icon tw-modal-icon--teal">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="#fff" stroke-width="1.8"/></svg>
-        </span>
-        Change Wallet PIN
-      </h3>
-      <button class="tw-modal-close" (click)="closeAllModals()">✕</button>
-    </div>
-    <div class="tw-modal-body">
-      <div class="tw-form-group">
-        <label class="tw-label">Current PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="pinForm.current" placeholder="Current 4-digit PIN" maxlength="4" />
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">New PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="pinForm.newPin" placeholder="New 4-digit PIN" maxlength="4" />
-      </div>
-      <div class="tw-form-group">
-        <label class="tw-label">Confirm New PIN</label>
-        <input type="password" class="tw-input" [(ngModel)]="pinForm.confirm" placeholder="Repeat new PIN" maxlength="4" />
-      </div>
-    </div>
-    <div class="tw-modal-footer">
-      <button class="tw-btn tw-btn-ghost" (click)="closeAllModals()">Cancel</button>
-      <button class="tw-btn tw-btn-primary" (click)="submitChangePin()">Update PIN</button>
-    </div>
+<!-- ─── TOAST STACK ─── -->
+<div class="toast-stack">
+  <div class="toast" *ngFor="let t of toasts">
+    <span>{{ t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : t.type === 'warning' ? '⚠' : 'ℹ' }}</span>
+    <span style="flex:1">{{ t.msg }}</span>
+    <button class="toast-close" (click)="dismissToast(t.id)">✕</button>
   </div>
 </div>

@@ -1,1216 +1,918 @@
-<!-- ══════════════════════════════════════════════════════════════════════════
-  SACCO REPORTS - MAIN BODY CONTENT ONLY
-  Original Theme Preserved with Full Functionality
-══════════════════════════════════════════════════════════════════════════ -->
 
-<div class="reports-wrapper">
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    PAGE HEADER WITH ACTIONS
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="page-header-section">
-    <div class="page-header-content">
-      <div class="header-left">
-        <div class="page-icon-badge">
-          <i class="bi bi-file-earmark-bar-graph"></i>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="#">
+
+
+    <div class="page-content">
+      <!-- BREADCRUMB -->
+ 
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div class="page-header-left">
+          
+          <p class="page-header-sub">Rongo SACCO — Generate, schedule, and download financial &amp; operational reports
+          </p>
         </div>
-        <div class="page-title-group">
-          <h1 class="page-title">Reports Center</h1>
-          <p class="page-subtitle">Generate, schedule, and download comprehensive SACCO reports</p>
-        </div>
-      </div>
-      
-      <div class="header-right-actions">
-        <button class="btn-secondary" (click)="openScheduledReports()">
-          <i class="bi bi-calendar-check"></i>
-          <span>Scheduled Reports</span>
-        </button>
-        <button class="btn-primary" (click)="openGenerateReportModal()">
-          <i class="bi bi-plus-circle"></i>
-          <span>Generate New Report</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    QUICK STATS OVERVIEW
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="quick-stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon reports-icon">
-        <i class="bi bi-file-earmark-text"></i>
-      </div>
-      <div class="stat-content">
-        <h3 class="stat-value">{{totalReportsGenerated}}</h3>
-        <p class="stat-label">Total Reports Generated</p>
-        <span class="stat-period">This Month</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon scheduled-icon">
-        <i class="bi bi-clock-history"></i>
-      </div>
-      <div class="stat-content">
-        <h3 class="stat-value">{{scheduledReportsCount}}</h3>
-        <p class="stat-label">Scheduled Reports</p>
-        <span class="stat-period">Active Schedules</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon downloads-icon">
-        <i class="bi bi-download"></i>
-      </div>
-      <div class="stat-content">
-        <h3 class="stat-value">{{totalDownloads}}</h3>
-        <p class="stat-label">Total Downloads</p>
-        <span class="stat-period">Last 30 Days</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon storage-icon">
-        <i class="bi bi-hdd"></i>
-      </div>
-      <div class="stat-content">
-        <h3 class="stat-value">{{storageUsed}}</h3>
-        <p class="stat-label">Storage Used</p>
-        <span class="stat-period">of {{storageTotal}}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    REPORT CATEGORIES TABS
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="reports-tabs-section">
-    <div class="tabs-nav">
-      <button class="tab-nav-btn" 
-              [class.active]="activeReportTab === 'all'"
-              (click)="activeReportTab = 'all'">
-        <i class="bi bi-grid"></i>
-        All Reports
-      </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeReportTab === 'financial'"
-              (click)="activeReportTab = 'financial'">
-        <i class="bi bi-cash-stack"></i>
-        Financial Reports
-      </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeReportTab === 'loans'"
-              (click)="activeReportTab = 'loans'">
-        <i class="bi bi-wallet2"></i>
-        Loans Reports
-      </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeReportTab === 'members'"
-              (click)="activeReportTab = 'members'">
-        <i class="bi bi-people"></i>
-        Members Reports
-      </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeReportTab === 'regulatory'"
-              (click)="activeReportTab = 'regulatory'">
-        <i class="bi bi-shield-check"></i>
-        Regulatory Reports
-      </button>
-      <button class="tab-nav-btn" 
-              [class.active]="activeReportTab === 'custom'"
-              (click)="activeReportTab = 'custom'">
-        <i class="bi bi-sliders"></i>
-        Custom Reports
-      </button>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: ALL REPORTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeReportTab === 'all'">
-      <div class="content-grid-full">
-        
-        <!-- Search and Filter Bar -->
-        <div class="search-filter-bar">
-          <div class="search-box">
-            <i class="bi bi-search"></i>
-            <input type="text" 
-                   class="search-input" 
-                   [(ngModel)]="searchQuery"
-                   placeholder="Search reports by name, category, or date...">
-          </div>
-          <div class="filter-buttons">
-            <select class="filter-select" [(ngModel)]="filterCategory">
-              <option value="all">All Categories</option>
-              <option value="financial">Financial</option>
-              <option value="loans">Loans</option>
-              <option value="members">Members</option>
-              <option value="regulatory">Regulatory</option>
-            </select>
-            <select class="filter-select" [(ngModel)]="filterPeriod">
-              <option value="all">All Periods</option>
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-            </select>
-            <button class="btn-icon" (click)="applyFilters()" title="Apply Filters">
-              <i class="bi bi-funnel"></i>
-            </button>
-            <button class="btn-icon" (click)="resetFilters()" title="Reset Filters">
-              <i class="bi bi-x-circle"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Report Templates Grid -->
-        <div class="report-templates-grid">
-          <div class="report-template-card" *ngFor="let report of filteredReportTemplates">
-            <div class="template-header">
-              <div class="template-icon" [style.background]="report.iconColor">
-                <i class="{{report.icon}}"></i>
-              </div>
-              <div class="template-badge" [ngClass]="'badge-' + report.category">
-                {{report.category}}
-              </div>
-            </div>
-            <div class="template-body">
-              <h3 class="template-title">{{report.title}}</h3>
-              <p class="template-description">{{report.description}}</p>
-              <div class="template-meta">
-                <span class="meta-item">
-                  <i class="bi bi-clock"></i>
-                  {{report.lastGenerated}}
-                </span>
-                <span class="meta-item">
-                  <i class="bi bi-download"></i>
-                  {{report.downloadCount}} downloads
-                </span>
-              </div>
-            </div>
-            <div class="template-footer">
-              <button class="btn-secondary-sm" (click)="previewReport(report)">
-                <i class="bi bi-eye"></i>
-                Preview
-              </button>
-              <button class="btn-primary-sm" (click)="generateReport(report)">
-                <i class="bi bi-play-circle"></i>
-                Generate
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: FINANCIAL REPORTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeReportTab === 'financial'">
-      <div class="content-grid-2col">
-        
-        <!-- Financial Reports List -->
-        <div class="content-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-cash-stack"></i>
-              Financial Reports
-            </h3>
-            <button class="icon-btn-sm" (click)="openBulkGenerate('financial')">
-              <i class="bi bi-stack"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="report-list">
-              <div class="report-list-item" *ngFor="let report of financialReports">
-                <div class="report-item-icon" [style.background]="report.color">
-                  <i class="{{report.icon}}"></i>
-                </div>
-                <div class="report-item-content">
-                  <h4 class="report-item-title">{{report.name}}</h4>
-                  <p class="report-item-description">{{report.description}}</p>
-                  <div class="report-item-meta">
-                    <span class="meta-tag">{{report.format}}</span>
-                    <span class="meta-tag">{{report.frequency}}</span>
-                  </div>
-                </div>
-                <div class="report-item-actions">
-                  <button class="action-btn" (click)="quickGenerate(report)" title="Quick Generate">
-                    <i class="bi bi-lightning-charge"></i>
-                  </button>
-                  <button class="action-btn" (click)="scheduleReport(report)" title="Schedule">
-                    <i class="bi bi-calendar-plus"></i>
-                  </button>
-                  <button class="action-btn" (click)="configureReport(report)" title="Configure">
-                    <i class="bi bi-gear"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Financial Summary Widget -->
-        <div class="content-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-graph-up"></i>
-              Financial Overview
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="financial-summary">
-              <div class="summary-item">
-                <div class="summary-label">Total Assets</div>
-                <div class="summary-value">KES 156.8M</div>
-                <div class="summary-trend positive">
-                  <i class="bi bi-arrow-up"></i> 8.5% vs last period
-                </div>
-              </div>
-              <div class="summary-divider"></div>
-              <div class="summary-item">
-                <div class="summary-label">Total Liabilities</div>
-                <div class="summary-value">KES 42.3M</div>
-                <div class="summary-trend">
-                  <i class="bi bi-dash"></i> No change
-                </div>
-              </div>
-              <div class="summary-divider"></div>
-              <div class="summary-item">
-                <div class="summary-label">Net Worth</div>
-                <div class="summary-value">KES 114.5M</div>
-                <div class="summary-trend positive">
-                  <i class="bi bi-arrow-up"></i> 12.3% vs last period
-                </div>
-              </div>
-            </div>
-
-            <div class="quick-report-actions">
-              <button class="quick-action-btn" (click)="generateBalanceSheet()">
-                <i class="bi bi-file-earmark-spreadsheet"></i>
-                <span>Balance Sheet</span>
-              </button>
-              <button class="quick-action-btn" (click)="generateIncomeStatement()">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-                <span>Income Statement</span>
-              </button>
-              <button class="quick-action-btn" (click)="generateCashFlow()">
-                <i class="bi bi-cash-coin"></i>
-                <span>Cash Flow</span>
-              </button>
-              <button class="quick-action-btn" (click)="generateTrialBalance()">
-                <i class="bi bi-calculator"></i>
-                <span>Trial Balance</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: LOANS REPORTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeReportTab === 'loans'">
-      <div class="content-grid-full">
-        
-        <!-- Loans Portfolio Summary -->
-        <div class="portfolio-summary-grid">
-          <div class="portfolio-summary-card outstanding">
-            <div class="summary-icon">
-              <i class="bi bi-wallet2"></i>
-            </div>
-            <div class="summary-content">
-              <h4 class="summary-value">KES 45.2M</h4>
-              <p class="summary-label">Outstanding Portfolio</p>
-            </div>
-            <button class="summary-action" (click)="generatePortfolioReport()">
-              <i class="bi bi-file-earmark"></i>
-            </button>
-          </div>
-
-          <div class="portfolio-summary-card performing">
-            <div class="summary-icon">
-              <i class="bi bi-check-circle"></i>
-            </div>
-            <div class="summary-content">
-              <h4 class="summary-value">98.7%</h4>
-              <p class="summary-label">Performing Loans</p>
-            </div>
-            <button class="summary-action" (click)="generatePerformanceReport()">
-              <i class="bi bi-file-earmark"></i>
-            </button>
-          </div>
-
-          <div class="portfolio-summary-card arrears">
-            <div class="summary-icon">
-              <i class="bi bi-exclamation-triangle"></i>
-            </div>
-            <div class="summary-content">
-              <h4 class="summary-value">KES 467K</h4>
-              <p class="summary-label">In Arrears</p>
-            </div>
-            <button class="summary-action" (click)="generateArrearsReport()">
-              <i class="bi bi-file-earmark"></i>
-            </button>
-          </div>
-
-          <div class="portfolio-summary-card disbursed">
-            <div class="summary-icon">
-              <i class="bi bi-cash-stack"></i>
-            </div>
-            <div class="summary-content">
-              <h4 class="summary-value">KES 8.3M</h4>
-              <p class="summary-label">Disbursed This Month</p>
-            </div>
-            <button class="summary-action" (click)="generateDisbursementReport()">
-              <i class="bi bi-file-earmark"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Loan Reports Table -->
-        <div class="content-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-list-check"></i>
-              Available Loan Reports
-            </h3>
-            <div class="card-header-actions">
-              <button class="btn-secondary-sm" (click)="exportLoanReports()">
-                <i class="bi bi-download"></i>
-                Export All
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="reports-table-wrapper">
-              <table class="reports-table">
-                <thead>
-                  <tr>
-                    <th>Report Name</th>
-                    <th>Description</th>
-                    <th>Period</th>
-                    <th>Format</th>
-                    <th>Last Generated</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let report of loanReports">
-                    <td class="report-name-cell">
-                      <i class="{{report.icon}}" [style.color]="report.color"></i>
-                      <strong>{{report.name}}</strong>
-                    </td>
-                    <td class="description-cell">{{report.description}}</td>
-                    <td>
-                      <select class="period-select-inline" [(ngModel)]="report.selectedPeriod">
-                        <option *ngFor="let period of periodOptions" [value]="period">{{period}}</option>
-                      </select>
-                    </td>
-                    <td>
-                      <div class="format-badges">
-                        <span class="format-badge" *ngFor="let format of report.formats">{{format}}</span>
-                      </div>
-                    </td>
-                    <td class="last-generated-cell">{{report.lastGenerated}}</td>
-                    <td class="actions-cell">
-                      <button class="action-btn" (click)="generateLoanReport(report)" title="Generate">
-                        <i class="bi bi-play-circle"></i>
-                      </button>
-                      <button class="action-btn" (click)="downloadLoanReport(report)" title="Download">
-                        <i class="bi bi-download"></i>
-                      </button>
-                      <button class="action-btn" (click)="scheduleLoanReport(report)" title="Schedule">
-                        <i class="bi bi-calendar-plus"></i>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: MEMBERS REPORTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeReportTab === 'members'">
-      <div class="content-grid-2col">
-        
-        <!-- Member Statistics -->
-        <div class="content-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-person-badge"></i>
-              Member Statistics
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="member-stats-grid">
-              <div class="member-stat-item">
-                <div class="stat-icon-mini active-members">
-                  <i class="bi bi-people-fill"></i>
-                </div>
-                <div class="stat-info-mini">
-                  <h5 class="stat-number">1,248</h5>
-                  <p class="stat-label-mini">Active Members</p>
-                </div>
-                <button class="stat-report-btn" (click)="generateMemberListReport()">
-                  <i class="bi bi-file-earmark-text"></i>
-                </button>
-              </div>
-
-              <div class="member-stat-item">
-                <div class="stat-icon-mini new-members">
-                  <i class="bi bi-person-plus-fill"></i>
-                </div>
-                <div class="stat-info-mini">
-                  <h5 class="stat-number">76</h5>
-                  <p class="stat-label-mini">New This Month</p>
-                </div>
-                <button class="stat-report-btn" (click)="generateNewMembersReport()">
-                  <i class="bi bi-file-earmark-text"></i>
-                </button>
-              </div>
-
-              <div class="member-stat-item">
-                <div class="stat-icon-mini dormant-members">
-                  <i class="bi bi-person-dash-fill"></i>
-                </div>
-                <div class="stat-info-mini">
-                  <h5 class="stat-number">23</h5>
-                  <p class="stat-label-mini">Dormant Accounts</p>
-                </div>
-                <button class="stat-report-btn" (click)="generateDormantReport()">
-                  <i class="bi bi-file-earmark-text"></i>
-                </button>
-              </div>
-
-              <div class="member-stat-item">
-                <div class="stat-icon-mini vip-members">
-                  <i class="bi bi-star-fill"></i>
-                </div>
-                <div class="stat-info-mini">
-                  <h5 class="stat-number">87</h5>
-                  <p class="stat-label-mini">VIP Members</p>
-                </div>
-                <button class="stat-report-btn" (click)="generateVIPReport()">
-                  <i class="bi bi-file-earmark-text"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="member-reports-quick-actions">
-              <button class="member-action-btn" (click)="generateMemberStatement()">
-                <i class="bi bi-receipt"></i>
-                <span>Member Statement</span>
-              </button>
-              <button class="member-action-btn" (click)="generateAgeAnalysis()">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>Age Analysis</span>
-              </button>
-              <button class="member-action-btn" (click)="generateContributionReport()">
-                <i class="bi bi-piggy-bank"></i>
-                <span>Contributions</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Member Reports Categories -->
-        <div class="content-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-folder"></i>
-              Member Report Categories
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="category-list">
-              <div class="category-item" *ngFor="let category of memberReportCategories" (click)="openCategoryReports(category)">
-                <div class="category-icon" [style.background]="category.color">
-                  <i class="{{category.icon}}"></i>
-                </div>
-                <div class="category-content">
-                  <h4 class="category-name">{{category.name}}</h4>
-                  <p class="category-description">{{category.description}}</p>
-                  <span class="category-count">{{category.reportCount}} reports available</span>
-                </div>
-                <div class="category-arrow">
-                  <i class="bi bi-chevron-right"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: REGULATORY REPORTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeReportTab === 'regulatory'">
-      <div class="content-grid-full">
-        
-        <!-- Compliance Status Banner -->
-        <div class="compliance-banner">
-          <div class="compliance-status">
-            <div class="status-icon compliant">
-              <i class="bi bi-shield-check"></i>
-            </div>
-            <div class="status-content">
-              <h3 class="status-title">Compliance Status: Up to Date</h3>
-              <p class="status-description">All regulatory reports are current. Next submission due: December 31, 2024</p>
-            </div>
-          </div>
-          <button class="btn-primary" (click)="openComplianceCenter()">
-            <i class="bi bi-clipboard-check"></i>
-            View Compliance Center
+        <div class="page-header-actions">
+          <button class="btn-outline-pill" (click)="openScheduledModal()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Scheduled <span class="pill-badge">{{ SCHEDULED_REPORTS.length }}</span>
           </button>
+          <button class="btn-outline-pill" (click)="openHistoryModal()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+            </svg>
+            History
+          </button>
+          <button class="btn-primary orange" (click)="openCustomBuilder()">+ Custom Report</button>
         </div>
-
-        <!-- Regulatory Reports Grid -->
-        <div class="regulatory-reports-grid">
-          <div class="regulatory-card" *ngFor="let report of regulatoryReports">
-            <div class="regulatory-header">
-              <div class="regulatory-badge" [ngClass]="report.urgencyClass">
-                {{report.urgency}}
-              </div>
-              <div class="regulatory-icon" [style.background]="report.color">
-                <i class="{{report.icon}}"></i>
-              </div>
-            </div>
-            <div class="regulatory-body">
-              <h3 class="regulatory-title">{{report.name}}</h3>
-              <p class="regulatory-description">{{report.description}}</p>
-              <div class="regulatory-details">
-                <div class="detail-row">
-                  <span class="detail-label">Authority:</span>
-                  <span class="detail-value">{{report.authority}}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">Frequency:</span>
-                  <span class="detail-value">{{report.frequency}}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">Due Date:</span>
-                  <span class="detail-value" [class.urgent]="report.isDuesSoon">{{report.dueDate}}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">Last Submitted:</span>
-                  <span class="detail-value">{{report.lastSubmitted}}</span>
-                </div>
-              </div>
-            </div>
-            <div class="regulatory-footer">
-              <button class="btn-secondary-sm" (click)="viewGuidelines(report)">
-                <i class="bi bi-book"></i>
-                Guidelines
-              </button>
-              <button class="btn-primary-sm" (click)="generateRegulatoryReport(report)">
-                <i class="bi bi-file-earmark-check"></i>
-                Generate
-              </button>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </div>
 
-    <!-- ═════════════════════════════════════════════════════════════════════
-      TAB CONTENT: CUSTOM REPORTS
-    ═════════════════════════════════════════════════════════════════════ -->
-    <div class="tab-content" [class.active]="activeReportTab === 'custom'">
-      <div class="content-grid-full">
-        
-        <!-- Custom Report Builder -->
-        <div class="content-card custom-builder-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-gear"></i>
-              Custom Report Builder
-            </h3>
-            <button class="btn-primary-sm" (click)="saveCustomReport()">
-              <i class="bi bi-save"></i>
-              Save Template
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="builder-grid">
-              
-              <!-- Step 1: Report Type -->
-              <div class="builder-section">
-                <h4 class="builder-section-title">
-                  <span class="step-number">1</span>
-                  Select Report Type
-                </h4>
-                <div class="report-type-options">
-                  <label class="report-type-option" *ngFor="let type of customReportTypes">
-                    <input type="radio" 
-                           name="reportType" 
-                           [value]="type.value" 
-                           [(ngModel)]="customReportConfig.type">
-                    <div class="option-card">
-                      <i class="{{type.icon}}"></i>
-                      <span>{{type.label}}</span>
-                    </div>
-                  </label>
-                </div>
-              </div>
+      <!-- HERO STATS -->
+      <div class="hero-stats-row">
+        <div class="hero-stat">
+          <div class="hero-stat-val green">48</div>
+          <div class="hero-stat-label">Reports Generated (Month)</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val blue">{{ SCHEDULED_REPORTS.length }}</div>
+          <div class="hero-stat-label">Active Schedules</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val purple">28</div>
+          <div class="hero-stat-label">Report Types Available</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val orange">12</div>
+          <div class="hero-stat-label">Pending Downloads</div>
+        </div>
+      </div>
 
-              <!-- Step 2: Data Sources -->
-              <div class="builder-section">
-                <h4 class="builder-section-title">
-                  <span class="step-number">2</span>
-                  Select Data Sources
-                </h4>
-                <div class="data-sources-grid">
-                  <label class="data-source-checkbox" *ngFor="let source of dataSources">
-                    <input type="checkbox" 
-                           [value]="source.value" 
-                           [(ngModel)]="source.selected"
-                           (change)="updateSelectedSources()">
-                    <div class="checkbox-card">
-                      <i class="{{source.icon}}"></i>
-                      <span>{{source.label}}</span>
-                      <small>{{source.description}}</small>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Step 3: Fields Selection -->
-              <div class="builder-section">
-                <h4 class="builder-section-title">
-                  <span class="step-number">3</span>
-                  Choose Fields to Include
-                </h4>
-                <div class="fields-selection">
-                  <div class="fields-column available-fields">
-                    <h5 class="fields-column-title">Available Fields</h5>
-                    <div class="fields-list">
-                      <div class="field-item" 
-                           *ngFor="let field of availableFields"
-                           (click)="addField(field)">
-                        <i class="bi bi-plus-circle"></i>
-                        <span>{{field.label}}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="fields-column selected-fields">
-                    <h5 class="fields-column-title">Selected Fields ({{selectedFields.length}})</h5>
-                    <div class="fields-list">
-                      <div class="field-item selected" 
-                           *ngFor="let field of selectedFields; let i = index">
-                        <i class="bi bi-grip-vertical"></i>
-                        <span>{{field.label}}</span>
-                        <button class="remove-field-btn" (click)="removeField(i)">
-                          <i class="bi bi-x"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 4: Filters & Parameters -->
-              <div class="builder-section">
-                <h4 class="builder-section-title">
-                  <span class="step-number">4</span>
-                  Set Filters & Parameters
-                </h4>
-                <div class="filters-grid">
-                  <div class="filter-group">
-                    <label class="filter-label">Date Range</label>
-                    <div class="date-range-inputs">
-                      <input type="date" class="filter-input" [(ngModel)]="customReportConfig.dateFrom">
-                      <span>to</span>
-                      <input type="date" class="filter-input" [(ngModel)]="customReportConfig.dateTo">
-                    </div>
-                  </div>
-                  <div class="filter-group">
-                    <label class="filter-label">Member Category</label>
-                    <select class="filter-input" [(ngModel)]="customReportConfig.memberCategory">
-                      <option value="all">All Members</option>
-                      <option value="vip">VIP Members</option>
-                      <option value="regular">Regular Members</option>
-                      <option value="new">New Members</option>
-                    </select>
-                  </div>
-                  <div class="filter-group">
-                    <label class="filter-label">Transaction Type</label>
-                    <select class="filter-input" [(ngModel)]="customReportConfig.transactionType">
-                      <option value="all">All Transactions</option>
-                      <option value="deposits">Deposits</option>
-                      <option value="withdrawals">Withdrawals</option>
-                      <option value="loans">Loans</option>
-                    </select>
-                  </div>
-                  <div class="filter-group">
-                    <label class="filter-label">Amount Range</label>
-                    <div class="amount-range-inputs">
-                      <input type="number" class="filter-input" [(ngModel)]="customReportConfig.amountMin" placeholder="Min">
-                      <span>to</span>
-                      <input type="number" class="filter-input" [(ngModel)]="customReportConfig.amountMax" placeholder="Max">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 5: Output Settings -->
-              <div class="builder-section">
-                <h4 class="builder-section-title">
-                  <span class="step-number">5</span>
-                  Configure Output
-                </h4>
-                <div class="output-settings-grid">
-                  <div class="setting-group">
-                    <label class="setting-label">Report Name</label>
-                    <input type="text" class="setting-input" [(ngModel)]="customReportConfig.name" placeholder="Enter report name">
-                  </div>
-                  <div class="setting-group">
-                    <label class="setting-label">Output Format</label>
-                    <div class="format-checkboxes">
-                      <label class="format-checkbox">
-                        <input type="checkbox" value="PDF" [(ngModel)]="customReportConfig.formatPDF">
-                        <span>PDF</span>
-                      </label>
-                      <label class="format-checkbox">
-                        <input type="checkbox" value="Excel" [(ngModel)]="customReportConfig.formatExcel">
-                        <span>Excel</span>
-                      </label>
-                      <label class="format-checkbox">
-                        <input type="checkbox" value="CSV" [(ngModel)]="customReportConfig.formatCSV">
-                        <span>CSV</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="setting-group">
-                    <label class="setting-label">Group By</label>
-                    <select class="setting-input" [(ngModel)]="customReportConfig.groupBy">
-                      <option value="">None</option>
-                      <option value="date">Date</option>
-                      <option value="member">Member</option>
-                      <option value="category">Category</option>
-                      <option value="branch">Branch</option>
-                    </select>
-                  </div>
-                  <div class="setting-group">
-                    <label class="setting-label">Sort By</label>
-                    <select class="setting-input" [(ngModel)]="customReportConfig.sortBy">
-                      <option value="date_desc">Date (Newest First)</option>
-                      <option value="date_asc">Date (Oldest First)</option>
-                      <option value="amount_desc">Amount (High to Low)</option>
-                      <option value="amount_asc">Amount (Low to High)</option>
-                      <option value="name">Name (A-Z)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
+      <!-- ═══ REPORT GROUPS GRID ═══ -->
+      <div class="report-groups-grid">
+        <div class="report-group-card glass-card" *ngFor="let g of REPORT_GROUPS; trackBy: trackById">
+          <div class="rg-header" [style.borderBottomColor]="g.color + '33'">
+            <div class="rg-icon-wrap" [style.background]="g.iconBg">{{ g.icon }}</div>
+            <div class="rg-title-wrap">
+              <div class="rg-title">{{ g.title }}</div>
+              <div class="rg-subtitle">{{ g.subtitle }}</div>
             </div>
-
-            <!-- Builder Actions -->
-            <div class="builder-actions">
-              <button class="btn-secondary" (click)="resetBuilder()">
-                <i class="bi bi-arrow-counterclockwise"></i>
-                Reset
-              </button>
-              <button class="btn-secondary" (click)="previewCustomReport()">
-                <i class="bi bi-eye"></i>
-                Preview
-              </button>
-              <button class="btn-primary" (click)="generateCustomReport()">
-                <i class="bi bi-play-circle"></i>
-                Generate Report
-              </button>
+            <div class="rg-count" [style.color]="g.color" [style.background]="g.color + '18'"
+              (click)="openGroupDetail(g)">{{ g.count }}</div>
+          </div>
+          <div class="rg-report-list">
+            <div class="rg-report-item" *ngFor="let r of g.reports; trackBy: trackById" (click)="openGenerateReport(r)">
+              <div class="rg-report-icon" [style.background]="r.iconBg">{{ r.icon }}</div>
+              <div class="rg-report-info">
+                <div class="rg-report-name">{{ r.name }}</div>
+                <div class="rg-report-desc">{{ r.description }}</div>
+              </div>
+              <svg class="rg-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                viewBox="0 0 24 24">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Saved Custom Reports -->
-        <div class="content-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <i class="bi bi-bookmarks"></i>
-              Saved Custom Reports ({{savedCustomReports.length}})
-            </h3>
+      <!-- ═══ BOTTOM PANELS ═══ -->
+      <div class="bottom-panels">
+        <!-- Recently Generated -->
+        <div class="panel glass-card">
+          <div class="panel-header">
+            <div class="panel-title-row">
+              <span class="panel-icon">🕒</span>
+              <h3 class="panel-title">Recently Generated</h3>
+            </div>
+            <button class="panel-view-all" (click)="openViewAllGenerated()">≡ View All</button>
           </div>
-          <div class="card-body">
-            <div class="saved-reports-grid">
-              <div class="saved-report-card" *ngFor="let report of savedCustomReports">
-                <div class="saved-report-header">
-                  <h4 class="saved-report-title">{{report.name}}</h4>
-                  <div class="saved-report-actions">
-                    <button class="icon-btn-xs" (click)="editCustomReport(report)" title="Edit">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="icon-btn-xs" (click)="deleteCustomReport(report)" title="Delete">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="saved-report-info">
-                  <span class="info-item">
-                    <i class="bi bi-calendar"></i>
-                    {{report.lastGenerated}}
-                  </span>
-                  <span class="info-item">
-                    <i class="bi bi-file-earmark"></i>
-                    {{report.format}}
-                  </span>
-                </div>
-                <button class="btn-primary-sm full-width" (click)="runCustomReport(report)">
-                  <i class="bi bi-play-circle"></i>
-                  Run Report
+          <div class="generated-list">
+            <div class="generated-item" *ngFor="let r of GENERATED_REPORTS.slice(0, 5); trackBy: trackById"
+              (click)="openGeneratedDetail(r)">
+              <div class="gen-icon" [style.background]="r.catColor + '22'" [style.color]="r.catColor">
+                {{ formatIcon(r.format) }}
+              </div>
+              <div class="gen-info">
+                <div class="gen-name">{{ r.name }}</div>
+                <div class="gen-meta">Rongo SACCO · {{ r.generatedBy }}</div>
+              </div>
+              <div class="gen-right">
+                <div class="gen-ts">{{ r.generated }}</div>
+                <div class="gen-size">{{ r.size }}</div>
+              </div>
+              <div class="gen-actions">
+                <button class="gen-action-btn" title="Download"
+                  (click)="$event.stopPropagation(); showToast('Downloading ' + r.name + '…', 'success')">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                </button>
+                <button class="gen-action-btn" title="Email" (click)="$event.stopPropagation(); openEmailReport(r)">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </button>
+                <button class="gen-action-btn danger" title="Delete"
+                  (click)="$event.stopPropagation(); openDeleteReport(r)">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
                 </button>
               </div>
-
-              <!-- Empty State -->
-              <div class="empty-state-custom" *ngIf="savedCustomReports.length === 0">
-                <i class="bi bi-folder2-open"></i>
-                <p>No saved custom reports</p>
-                <span>Create your first custom report using the builder above</span>
-              </div>
             </div>
           </div>
         </div>
 
+        <!-- Scheduled Reports -->
+        <div class="panel glass-card">
+          <div class="panel-header">
+            <div class="panel-title-row">
+              <span class="panel-icon">📅</span>
+              <h3 class="panel-title">Scheduled Reports</h3>
+            </div>
+            <button class="panel-add-btn" (click)="openNewSchedule()">+</button>
+          </div>
+          <div class="scheduled-list">
+            <div class="scheduled-item" *ngFor="let s of SCHEDULED_REPORTS; trackBy: trackById">
+              <div class="sched-info">
+                <div class="sched-name">{{ s.name }}</div>
+                <div class="sched-meta">{{ s.subtitle }}</div>
+              </div>
+              <div class="sched-right">
+                <span class="freq-badge" [style.color]="freqColor(s.frequency)"
+                  [style.background]="freqColor(s.frequency) + '18'"
+                  [style.borderColor]="freqColor(s.frequency) + '44'">
+                  ● {{ s.frequency }}
+                </span>
+                <button class="sched-edit-btn" (click)="openEditSchedule(s)" title="Edit schedule">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-    RECENT REPORTS HISTORY
-  ═══════════════════════════════════════════════════════════════════════ -->
-  <div class="recent-reports-section">
-    <div class="section-header">
-      <h2 class="section-title">
-        <i class="bi bi-clock-history"></i>
-        Recent Reports
-      </h2>
-      <button class="btn-text" (click)="viewAllReports()">
-        View All
-        <i class="bi bi-arrow-right"></i>
-      </button>
-    </div>
-
-    <div class="content-card">
-      <div class="card-body no-padding">
-        <div class="reports-history-table-wrapper">
-          <table class="reports-history-table">
+  <!-- ═══════════════════════════════════════════════════════════
+       MODAL 1: ALL SCHEDULED REPORTS
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="showScheduledModal()" (click)="closeScheduledModal()">
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header orange-header">
+        <h3 class="modal-title white">📅 All Scheduled Reports</h3>
+        <button class="modal-close white" (click)="closeScheduledModal()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="sched-modal-table-wrap">
+          <table class="sched-modal-table">
             <thead>
               <tr>
-                <th>Report Name</th>
-                <th>Category</th>
-                <th>Generated By</th>
-                <th>Date & Time</th>
+                <th>Report</th>
+                <th>Frequency</th>
+                <th>Next Run</th>
+                <th>Recipients</th>
                 <th>Format</th>
-                <th>Size</th>
-                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let report of recentReports">
-                <td class="report-name-cell">
-                  <i class="{{report.icon}}" [style.color]="report.iconColor"></i>
-                  <strong>{{report.name}}</strong>
-                </td>
+              <tr *ngFor="let s of allScheduledData(); trackBy: trackById">
+                <td class="td-strong">{{ s.name }}</td>
                 <td>
-                  <span class="category-badge" [ngClass]="'badge-' + report.category">
-                    {{report.category}}
+                  <span class="freq-badge sm" [style.color]="freqColor(s.frequency)"
+                    [style.background]="freqColor(s.frequency) + '18'"
+                    [style.borderColor]="freqColor(s.frequency) + '44'">
+                    ● {{ s.frequency }}
                   </span>
                 </td>
-                <td class="user-cell">
-                  <div class="user-avatar-sm">{{report.generatedByInitials}}</div>
-                  <span>{{report.generatedBy}}</span>
-                </td>
-                <td class="datetime-cell">{{report.generatedAt}}</td>
+                <td>{{ s.nextRun }}</td>
+                <td>{{ s.recipients }}</td>
+                <td>{{ s.format }}</td>
                 <td>
-                  <span class="format-badge">{{report.format}}</span>
-                </td>
-                <td class="size-cell">{{report.size}}</td>
-                <td>
-                  <span class="status-badge" [ngClass]="'status-' + report.status">
-                    {{report.statusLabel}}
-                  </span>
-                </td>
-                <td class="actions-cell">
-                  <button class="action-btn" (click)="downloadReport(report)" title="Download">
-                    <i class="bi bi-download"></i>
-                  </button>
-                  <button class="action-btn" (click)="shareReport(report)" title="Share">
-                    <i class="bi bi-share"></i>
-                  </button>
-                  <button class="action-btn" (click)="deleteReport(report)" title="Delete">
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  <div class="row-actions">
+                    <button class="ic-btn ghost" title="Edit" (click)="openEditSchedule(s)">✎</button>
+                    <button class="ic-btn ghost" title="Email now" (click)="openEmailSchedule(s)">✉</button>
+                    <button class="ic-btn ghost" title="Pause" (click)="openPauseSchedule(s)">⏸</button>
+                    <button class="ic-btn danger" title="Delete" (click)="openDeleteSchedule(s)">🗑</button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeScheduledModal()">Close</button>
+        <button class="btn-primary orange" (click)="closeScheduledModal(); openNewSchedule()">+ New Schedule</button>
+      </div>
     </div>
   </div>
 
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════════════════
-  MODALS
-══════════════════════════════════════════════════════════════════════════ -->
-
-<!-- Generate Report Modal -->
-<div class="modal-backdrop" [class.show]="showGenerateReportModal" (click)="closeGenerateReportModal()">
-  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="bi bi-file-earmark-plus"></i>
-          Generate New Report
-        </h3>
-        <button class="modal-close-btn" (click)="closeGenerateReportModal()">
-          <i class="bi bi-x-lg"></i>
-        </button>
+  <!-- ═══ MODAL 2: HISTORY (full paginated) ═══ -->
+  <div class="modal-overlay" *ngIf="showHistoryModal()" (click)="closeHistoryModal()">
+    <div class="modal-box modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header dark-header">
+        <h3 class="modal-title white">🕒 Report History</h3>
+        <button class="modal-close white" (click)="closeHistoryModal()">✕</button>
       </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Select Report Template</label>
-          <select class="form-select" [(ngModel)]="selectedReportTemplate">
-            <option value="">Choose a template...</option>
-            <optgroup label="Financial Reports">
-              <option value="balance-sheet">Balance Sheet</option>
-              <option value="income-statement">Income Statement</option>
-              <option value="cash-flow">Cash Flow Statement</option>
-              <option value="trial-balance">Trial Balance</option>
-            </optgroup>
-            <optgroup label="Loan Reports">
-              <option value="portfolio-summary">Portfolio Summary</option>
-              <option value="disbursement-report">Disbursement Report</option>
-              <option value="arrears-report">Arrears Report</option>
-              <option value="aging-analysis">Aging Analysis</option>
-            </optgroup>
-            <optgroup label="Member Reports">
-              <option value="member-list">Member List</option>
-              <option value="member-statement">Member Statement</option>
-              <option value="contribution-summary">Contribution Summary</option>
-            </optgroup>
+      <div class="modal-body modal-scrollable">
+        <div class="hist-filters">
+          <button *ngFor="let f of ['All','Financial','Loan','Member','Savings','Compliance','Operational']"
+            class="hist-filter-btn" [class.active]="historyFilter() === f" (click)="setHistoryFilter(f)">{{ f
+            }}</button>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Report</th>
+              <th>Category</th>
+              <th>Format</th>
+              <th>Period</th>
+              <th>Size</th>
+              <th>Generated</th>
+              <th>By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of paginatedHistory(); trackBy: trackById" class="hist-row"
+              (click)="openHistoryDetail(r)">
+              <td class="td-strong">{{ r.name }}</td>
+              <td>
+                <span class="cat-pill" [style.color]="r.catColor" [style.background]="r.catColor + '18'"
+                  [style.borderColor]="r.catColor + '33'">{{ r.category }}</span>
+              </td>
+              <td>{{ formatIcon(r.format) }} {{ r.format }}</td>
+              <td>{{ r.period }}</td>
+              <td>{{ r.size }}</td>
+              <td>{{ r.generatedOn }}</td>
+              <td>{{ r.generatedBy }}</td>
+              <td>
+                <div class="row-actions" (click)="$event.stopPropagation()">
+                  <button class="ic-btn ghost" title="View" (click)="openHistoryDetail(r)">👁</button>
+                  <button class="ic-btn ghost" title="Download"
+                    (click)="showToast('Downloading…', 'success')">⬇</button>
+                  <button class="ic-btn ghost" title="Email"
+                    (click)="openEmailReport({id: r.id, name: r.name, category: r.category, catColor: r.catColor, format: r.format, size: r.size, generated: r.generatedOn, generatedBy: r.generatedBy})">✉</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="hist-pagination">
+          <div class="pagination-info">Showing {{ (historyPage()-1)*HIST_PAGE_SIZE + 1 }}–{{
+            historyPage()*HIST_PAGE_SIZE > filteredHistory().length ? filteredHistory().length :
+            historyPage()*HIST_PAGE_SIZE }} of {{ filteredHistory().length }} records</div>
+          <div class="pagination-controls">
+            <button class="page-btn" [disabled]="historyPage() === 1"
+              (click)="setHistoryPage(historyPage()-1)">Previous</button>
+            <button *ngFor="let p of historyPageNumbers(); trackBy: trackByIndex" class="page-btn num"
+              [class.active]="historyPage()===p" (click)="setHistoryPage(p)">{{ p }}</button>
+            <button class="page-btn" [disabled]="historyPage() === historyTotalPages()"
+              (click)="setHistoryPage(historyPage()+1)">Next</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeHistoryModal()">Close</button>
+        <button class="btn-outline" (click)="showToast('Exporting full history…', 'success')">⬇ Export All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 3: CUSTOM REPORT BUILDER ═══ -->
+  <div class="modal-overlay" *ngIf="showCustomBuilder()" (click)="closeCustomBuilder()">
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header purple-header">
+        <h3 class="modal-title white">✦ Custom Report Builder</h3>
+        <button class="modal-close white" (click)="closeCustomBuilder()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="form-grid">
+          <div class="form-field form-full">
+            <label>Report Name</label>
+            <input type="text" placeholder="e.g. Board Meeting Financial Pack — Q4 2024" [value]="customReport().name"
+              (input)="onCustomInput('name', $event)" />
+          </div>
+          <div class="form-field">
+            <label>Data Source</label>
+            <select [value]="customReport().dataSource" (change)="onCustomInput('dataSource', $event)">
+              <option *ngFor="let d of DATA_SOURCES" [value]="d">{{ d }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Period</label>
+            <select [value]="customReport().period" (change)="onCustomInput('period', $event)">
+              <option *ngFor="let p of PERIODS" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field form-full" style="margin-top:0.75rem">
+          <label>Select Columns / Fields <span class="field-count">({{ selectedFieldCount() }} selected)</span></label>
+          <div class="fields-grid">
+            <label class="field-checkbox" *ngFor="let f of customReport().fields; let i = index; trackBy: trackByIndex">
+              <input type="checkbox" [checked]="f.selected" (change)="toggleField(i)" [attr.accent-color]="'#00d084'" />
+              {{ f.label }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-top:0.75rem">
+          <div class="form-field">
+            <label>Group By</label>
+            <select [value]="customReport().groupBy" (change)="onCustomInput('groupBy', $event)">
+              <option *ngFor="let g of GROUP_BY_OPTIONS" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Sort By</label>
+            <select [value]="customReport().sortBy" (change)="onCustomInput('sortBy', $event)">
+              <option *ngFor="let s of SORT_BY_OPTIONS" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Format</label>
+            <select [value]="customReport().format" (change)="onCustomInput('format', $event)">
+              <option *ngFor="let f of FORMATS" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Filters</label>
+            <select [value]="customReport().filter" (change)="onCustomInput('filter', $event)">
+              <option *ngFor="let f of FILTER_OPTIONS" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Inline Preview -->
+        <ng-container *ngIf="showPreviewInModal()">
+          <div class="report-preview-inline">
+            <div class="preview-hdr-label">✓ Report Preview <span>Showing first 5 rows</span></div>
+            <div class="report-preview-doc">
+              <div class="rp-org">RONGO SACCO SOCIETY LTD</div>
+              <div class="rp-addr">P.O Box 45-40404, Rongo, Migori County, Kenya</div>
+              <div class="rp-reg">Reg No: CS/7842 | SASRA Licence: DT/0168</div>
+              <div class="rp-title">CUSTOM REPORT — {{ customReport().dataSource | uppercase }}</div>
+              <div class="rp-period">Period: {{ customReport().period }} | Generated: Dec 18, 2024</div>
+              <table class="rp-table">
+                <thead>
+                  <tr>
+                    <th>DESCRIPTION</th>
+                    <th>CURRENT PERIOD</th>
+                    <th>PREVIOUS PERIOD</th>
+                    <th>VARIANCE</th>
+                    <th>% CHANGE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of PREVIEW_ROWS; trackBy: trackByIndex"
+                    [class.surplus]="row.description === 'Net Surplus'">
+                    <td>{{ row.description }}</td>
+                    <td>{{ row.current }}</td>
+                    <td>{{ row.previous }}</td>
+                    <td [class.pos]="row.positive" [class.neg]="!row.positive">{{ row.variance }}</td>
+                    <td [class.pos]="row.positive" [class.neg]="!row.positive">{{ row.pct }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="rp-truncate">— preview truncated. Full report will contain all data.</div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeCustomBuilder()">Cancel</button>
+        <button class="btn-outline-green" (click)="generateCustom(true)">✓ Preview</button>
+        <button class="btn-primary purple" (click)="generateCustom(false)">⬇ Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 4: NEW SCHEDULE ═══ -->
+  <div class="modal-overlay" *ngIf="showNewSchedule()" (click)="closeNewSchedule()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header green-header">
+        <h3 class="modal-title white">+ New Report Schedule</h3>
+        <button class="modal-close white" (click)="closeNewSchedule()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="form-field form-full">
+          <label>Report Name</label>
+          <select [value]="newScheduleForm().reportName" (change)="onInput('newSchedule', 'reportName', $event)">
+            <option value="">Select report...</option>
+            <option *ngFor="let g of REPORT_GROUPS" [value]="g.title">{{ g.title }}</option>
+            <option value="Custom Report">Custom Report</option>
           </select>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Report Period</label>
-          <div class="period-selection-grid">
-            <label class="period-option">
-              <input type="radio" name="period" value="today" [(ngModel)]="reportPeriod">
-              <div class="period-card">
-                <i class="bi bi-calendar-day"></i>
-                <span>Today</span>
-              </div>
-            </label>
-            <label class="period-option">
-              <input type="radio" name="period" value="week" [(ngModel)]="reportPeriod">
-              <div class="period-card">
-                <i class="bi bi-calendar-week"></i>
-                <span>This Week</span>
-              </div>
-            </label>
-            <label class="period-option">
-              <input type="radio" name="period" value="month" [(ngModel)]="reportPeriod">
-              <div class="period-card">
-                <i class="bi bi-calendar-month"></i>
-                <span>This Month</span>
-              </div>
-            </label>
-            <label class="period-option">
-              <input type="radio" name="period" value="quarter" [(ngModel)]="reportPeriod">
-              <div class="period-card">
-                <i class="bi bi-calendar-range"></i>
-                <span>This Quarter</span>
-              </div>
-            </label>
-            <label class="period-option">
-              <input type="radio" name="period" value="year" [(ngModel)]="reportPeriod">
-              <div class="period-card">
-                <i class="bi bi-calendar"></i>
-                <span>This Year</span>
-              </div>
-            </label>
-            <label class="period-option">
-              <input type="radio" name="period" value="custom" [(ngModel)]="reportPeriod">
-              <div class="period-card">
-                <i class="bi bi-sliders"></i>
-                <span>Custom</span>
-              </div>
-            </label>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Frequency</label>
+            <select [value]="newScheduleForm().frequency" (change)="onInput('newSchedule', 'frequency', $event)">
+              <option *ngFor="let f of FREQUENCIES" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Time</label>
+            <select [value]="newScheduleForm().time" (change)="onInput('newSchedule', 'time', $event)">
+              <option *ngFor="let t of SCHEDULE_TIMES" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Format</label>
+            <select [value]="newScheduleForm().format" (change)="onInput('newSchedule', 'format', $event)">
+              <option *ngFor="let f of FORMATS" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Recipients (email)</label>
+            <select [value]="newScheduleForm().recipients" (change)="onInput('newSchedule', 'recipients', $event)">
+              <option value="">Select recipient...</option>
+              <option *ngFor="let e of EMAIL_RECIPIENTS_LIST" [value]="e">{{ e }}</option>
+            </select>
           </div>
         </div>
-
-        <div class="form-group" *ngIf="reportPeriod === 'custom'">
-          <label class="form-label">Custom Date Range</label>
-          <div class="date-range-row">
-            <input type="date" class="form-control" [(ngModel)]="customReportDateFrom" placeholder="From">
-            <span class="date-separator">to</span>
-            <input type="date" class="form-control" [(ngModel)]="customReportDateTo" placeholder="To">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Output Format</label>
-          <div class="format-selection">
-            <label class="format-checkbox-lg">
-              <input type="checkbox" [(ngModel)]="outputFormatPDF">
-              <div class="format-card">
-                <i class="bi bi-file-pdf"></i>
-                <span>PDF</span>
-                <small>Print-ready format</small>
-              </div>
-            </label>
-            <label class="format-checkbox-lg">
-              <input type="checkbox" [(ngModel)]="outputFormatExcel">
-              <div class="format-card">
-                <i class="bi bi-file-excel"></i>
-                <span>Excel</span>
-                <small>Editable spreadsheet</small>
-              </div>
-            </label>
-            <label class="format-checkbox-lg">
-              <input type="checkbox" [(ngModel)]="outputFormatCSV">
-              <div class="format-card">
-                <i class="bi bi-filetype-csv"></i>
-                <span>CSV</span>
-                <small>Data export</small>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="checkbox-option-lg">
-            <input type="checkbox" [(ngModel)]="emailReportAfterGeneration">
-            <span>Email report after generation</span>
+        <div class="form-field" style="margin-top:0.5rem">
+          <label class="check-line">
+            <input type="checkbox" [checked]="newScheduleForm().paused"
+              (change)="onCheckInput('newSchedule','paused',$event)" />
+            Start paused (activate manually later)
           </label>
         </div>
-
-        <div class="form-group" *ngIf="emailReportAfterGeneration">
-          <label class="form-label">Email Address</label>
-          <input type="email" class="form-control" [(ngModel)]="reportEmailAddress" placeholder="email@example.com">
-        </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" (click)="closeGenerateReportModal()">Cancel</button>
-        <button class="btn-primary" (click)="confirmGenerateReport()">
-          <i class="bi bi-play-circle"></i>
-          Generate Report
-        </button>
+        <button class="btn-ghost" (click)="closeNewSchedule()">Cancel</button>
+        <button class="btn-primary green" (click)="submitNewSchedule()">✓ Create Schedule</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Scheduled Reports Modal -->
-<div class="modal-backdrop" [class.show]="showScheduledReportsModal" (click)="closeScheduledReportsModal()">
-  <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="bi bi-calendar-check"></i>
-          Scheduled Reports
-        </h3>
-        <button class="modal-close-btn" (click)="closeScheduledReportsModal()">
-          <i class="bi bi-x-lg"></i>
-        </button>
+  <!-- ═══ MODAL 5: EDIT SCHEDULE ═══ -->
+  <div class="modal-overlay" *ngIf="showEditSchedule()" (click)="closeEditSchedule()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header orange-header">
+        <h3 class="modal-title white">✎ Edit Schedule — {{ showEditSchedule()?.name }}</h3>
+        <button class="modal-close white" (click)="closeEditSchedule()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="detail-card">
+          <div class="detail-row"><span>Report</span><strong>{{ showEditSchedule()?.name }}</strong></div>
+          <div class="detail-row"><span>Next Run</span><strong>{{ showEditSchedule()?.nextRun }}</strong></div>
+        </div>
+        <div class="form-grid" style="margin-top:0.75rem">
+          <div class="form-field">
+            <label>Frequency</label>
+            <select [value]="editScheduleForm().frequency" (change)="onInput('editSchedule','frequency',$event)">
+              <option *ngFor="let f of FREQUENCIES" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Time</label>
+            <select [value]="editScheduleForm().time" (change)="onInput('editSchedule','time',$event)">
+              <option *ngFor="let t of SCHEDULE_TIMES" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="form-field form-full">
+            <label>Recipients</label>
+            <select [value]="editScheduleForm().recipients" (change)="onInput('editSchedule','recipients',$event)">
+              <option *ngFor="let e of EMAIL_RECIPIENTS_LIST" [value]="e">{{ e }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field" style="margin-top:0.5rem">
+          <label class="check-line">
+            <input type="checkbox" [checked]="editScheduleForm().paused"
+              (change)="onCheckInput('editSchedule','paused',$event)" />
+            Pause this schedule
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeEditSchedule()">Cancel</button>
+        <button class="btn-primary danger-btn" (click)="openDeleteSchedule(showEditSchedule()!); closeEditSchedule()">🗑
+          Delete</button>
+        <button class="btn-primary orange" (click)="submitEditSchedule()">✓ Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 6: DELETE SCHEDULE CONFIRM ═══ -->
+  <div class="modal-overlay" *ngIf="showDeleteSchedule()" (click)="closeDeleteSchedule()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header danger-header">
+        <h3 class="modal-title white">🗑 Delete Schedule</h3>
+        <button class="modal-close white" (click)="closeDeleteSchedule()">✕</button>
       </div>
       <div class="modal-body">
-        <div class="scheduled-reports-list">
-          <div class="scheduled-report-item" *ngFor="let schedule of scheduledReportsList">
-            <div class="schedule-header">
-              <div class="schedule-icon" [style.background]="schedule.color">
-                <i class="{{schedule.icon}}"></i>
-              </div>
-              <div class="schedule-info">
-                <h4 class="schedule-name">{{schedule.name}}</h4>
-                <p class="schedule-description">{{schedule.description}}</p>
-              </div>
-              <div class="schedule-toggle">
-                <label class="toggle-switch">
-                  <input type="checkbox" [(ngModel)]="schedule.active">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-            <div class="schedule-details">
-              <div class="detail-item">
-                <i class="bi bi-clock"></i>
-                <span>{{schedule.frequency}}</span>
-              </div>
-              <div class="detail-item">
-                <i class="bi bi-calendar"></i>
-                <span>Next Run: {{schedule.nextRun}}</span>
-              </div>
-              <div class="detail-item">
-                <i class="bi bi-envelope"></i>
-                <span>{{schedule.recipients}}</span>
-              </div>
-            </div>
-            <div class="schedule-actions">
-              <button class="btn-secondary-xs" (click)="editSchedule(schedule)">
-                <i class="bi bi-pencil"></i>
-                Edit
-              </button>
-              <button class="btn-secondary-xs" (click)="runScheduleNow(schedule)">
-                <i class="bi bi-play"></i>
-                Run Now
-              </button>
-              <button class="btn-danger-xs" (click)="deleteSchedule(schedule)">
-                <i class="bi bi-trash"></i>
-                Delete
-              </button>
-            </div>
-          </div>
+        <div class="confirm-msg">
+          Are you sure you want to delete the schedule for <strong>{{ showDeleteSchedule()?.name }}</strong>?
+          This action cannot be undone. The schedule will stop running immediately.
+        </div>
+        <div class="detail-card" style="margin-top:0.75rem">
+          <div class="detail-row"><span>Frequency</span><strong>{{ showDeleteSchedule()?.frequency }}</strong></div>
+          <div class="detail-row"><span>Recipients</span><strong>{{ showDeleteSchedule()?.recipients }}</strong></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeDeleteSchedule()">Cancel</button>
+        <button class="btn-primary danger-btn" (click)="confirmDeleteSchedule()">🗑 Delete Schedule</button>
+      </div>
+    </div>
+  </div>
 
-          <!-- Empty State -->
-          <div class="empty-state-scheduled" *ngIf="scheduledReportsList.length === 0">
-            <i class="bi bi-calendar-x"></i>
-            <p>No scheduled reports</p>
-            <span>Create a schedule to automate report generation</span>
+  <!-- ═══ MODAL 7: GENERATE REPORT ═══ -->
+  <div class="modal-overlay" *ngIf="showGenerateReport()" (click)="closeGenerateReport()">
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header green-header">
+        <h3 class="modal-title white">📄 Generate: {{ showGenerateReport()?.name }}</h3>
+        <button class="modal-close white" (click)="closeGenerateReport()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Report Period</label>
+            <select [value]="reportOptions().period" (change)="onInput('options','period',$event)">
+              <option>This Month (December 2024)</option>
+              <option>Last Month (November 2024)</option>
+              <option>This Quarter (Q4 2024)</option>
+              <option>Last Quarter (Q3 2024)</option>
+              <option>This Year (FY 2024)</option>
+              <option>Custom Range</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Format</label>
+            <select [value]="reportOptions().format" (change)="onInput('options','format',$event)">
+              <option>PDF Report</option>
+              <option>Excel Spreadsheet</option>
+              <option>CSV Export</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Report Preview -->
+        <div class="report-preview-section">
+          <div class="preview-label">✓ Report Preview <span>Showing first 5 rows</span></div>
+          <div class="report-preview-doc">
+            <div class="rp-org">RONGO SACCO SOCIETY LTD</div>
+            <div class="rp-addr">P.O Box 45-40404, Rongo, Migori County, Kenya</div>
+            <div class="rp-reg">Reg No: CS/7842 | SASRA Licence: DT/0168</div>
+            <div class="rp-title">{{ showGenerateReport()?.name | uppercase }}</div>
+            <div class="rp-period">Period: December 1–18, 2024 | Generated: Dec 18, 2024</div>
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>DESCRIPTION</th>
+                  <th>CURRENT PERIOD</th>
+                  <th>PREVIOUS PERIOD</th>
+                  <th>VARIANCE</th>
+                  <th>% CHANGE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of PREVIEW_ROWS; trackBy: trackByIndex"
+                  [class.surplus]="row.description === 'Net Surplus'">
+                  <td>{{ row.description }}</td>
+                  <td>{{ row.current }}</td>
+                  <td>{{ row.previous }}</td>
+                  <td [class.pos]="row.positive" [class.neg]="!row.positive">{{ row.variance }}</td>
+                  <td [class.pos]="row.positive" [class.neg]="!row.positive">{{ row.pct }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="rp-truncate">— preview truncated. Full report will contain all data.</div>
+          </div>
+        </div>
+
+        <!-- Additional Options -->
+        <div class="additional-options">
+          <div class="ao-title">Additional Options</div>
+          <div class="ao-grid">
+            <label class="ao-check"><input type="checkbox" [checked]="reportOptions().includeHeader"
+                (change)="onOptionCheck('includeHeader', $event)" /> Include SACCO header &amp; logo</label>
+            <label class="ao-check"><input type="checkbox" [checked]="reportOptions().includeCharts"
+                (change)="onOptionCheck('includeCharts', $event)" /> Include charts &amp; graphs</label>
+            <label class="ao-check"><input type="checkbox" [checked]="reportOptions().includeComparison"
+                (change)="onOptionCheck('includeComparison', $event)" /> Include period comparison</label>
+            <label class="ao-check"><input type="checkbox" [checked]="reportOptions().includeSignatures"
+                (change)="onOptionCheck('includeSignatures', $event)" /> Include signature lines</label>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-primary" (click)="createNewSchedule()">
-          <i class="bi bi-plus-circle"></i>
-          Create New Schedule
-        </button>
+        <button class="btn-ghost" (click)="closeGenerateReport()">Cancel</button>
+        <button class="btn-outline-green" (click)="closeGenerateReport(); openNewSchedule()">📅 Schedule</button>
+        <button class="btn-outline"
+          (click)="closeGenerateReport(); openEmailReport({id:'x', name: showGenerateReport()?.name||'', category: showGenerateReport()?.category||'', catColor:'#00d084', format:'PDF', size:'—', generated:'Now', generatedBy:'James Kariuki'})">✉
+          Email</button>
+        <button class="btn-primary orange" (click)="generateAndDownload()">⬇ Generate &amp; Download</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Toast Notification -->
-<div class="toast-notification" [class.show]="toastVisible" [attr.data-type]="toastType">
-  <div class="toast-icon">
-    <i class="bi bi-check-circle-fill" *ngIf="toastType === 'success'"></i>
-    <i class="bi bi-info-circle-fill" *ngIf="toastType === 'info'"></i>
-    <i class="bi bi-exclamation-triangle-fill" *ngIf="toastType === 'warning'"></i>
-    <i class="bi bi-x-circle-fill" *ngIf="toastType === 'danger'"></i>
+  <!-- ═══ MODAL 8: GROUP DETAIL (all reports in a group) ═══ -->
+  <div class="modal-overlay" *ngIf="showGroupDetail()" (click)="closeGroupDetail()">
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header"
+        [style.background]="'linear-gradient(135deg, ' + showGroupDetail()?.color + ', ' + showGroupDetail()?.color + 'cc)'">
+        <div style="display:flex;align-items:center;gap:0.6rem">
+          <span style="font-size:1.3rem">{{ showGroupDetail()?.icon }}</span>
+          <h3 class="modal-title white">{{ showGroupDetail()?.title }}</h3>
+        </div>
+        <button class="modal-close white" (click)="closeGroupDetail()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">{{ showGroupDetail()?.subtitle }} — {{
+          showGroupDetail()?.count }} reports available</p>
+        <div class="group-report-list">
+          <div class="grp-report-item" *ngFor="let r of showGroupDetail()?.reports; trackBy: trackById"
+            (click)="closeGroupDetail(); openGenerateReport(r)">
+            <div class="grp-icon" [style.background]="r.iconBg">{{ r.icon }}</div>
+            <div class="grp-info">
+              <div class="grp-name">{{ r.name }}</div>
+              <div class="grp-desc">{{ r.description }}</div>
+            </div>
+            <div class="grp-actions">
+              <button class="btn-outline-sm"
+                (click)="$event.stopPropagation(); closeGroupDetail(); openGenerateReport(r)">Generate →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeGroupDetail()">Close</button>
+        <button class="btn-primary"
+          [style.background]="'linear-gradient(135deg, ' + showGroupDetail()?.color + ', ' + showGroupDetail()?.color + 'bb)'"
+          (click)="closeGroupDetail(); openCustomBuilder()">+ Custom Report</button>
+      </div>
+    </div>
   </div>
-  <div class="toast-content">
-    <span class="toast-message">{{toastMessage}}</span>
+
+  <!-- ═══ MODAL 9: GENERATED REPORT DETAIL ═══ -->
+  <div class="modal-overlay" *ngIf="showGeneratedDetail()" (click)="closeGeneratedDetail()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header green-header">
+        <h3 class="modal-title white">📄 Report Detail</h3>
+        <button class="modal-close white" (click)="closeGeneratedDetail()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="detail-card">
+          <div class="detail-row"><span>Name</span><strong>{{ showGeneratedDetail()?.name }}</strong></div>
+          <div class="detail-row"><span>Category</span>
+            <span class="cat-pill" [style.color]="showGeneratedDetail()?.catColor"
+              [style.background]="showGeneratedDetail()?.catColor + '18'"
+              [style.borderColor]="showGeneratedDetail()?.catColor + '33'">{{ showGeneratedDetail()?.category }}</span>
+          </div>
+          <div class="detail-row"><span>Format</span><strong>{{ formatIcon(showGeneratedDetail()?.format||'PDF') }} {{
+              showGeneratedDetail()?.format }}</strong></div>
+          <div class="detail-row"><span>Size</span><strong>{{ showGeneratedDetail()?.size }}</strong></div>
+          <div class="detail-row"><span>Generated</span><strong>{{ showGeneratedDetail()?.generated }}</strong></div>
+          <div class="detail-row"><span>Generated By</span><strong>{{ showGeneratedDetail()?.generatedBy }}</strong>
+          </div>
+          <div class="detail-row" *ngIf="showGeneratedDetail()?.period"><span>Period</span><strong>{{
+              showGeneratedDetail()?.period }}</strong></div>
+        </div>
+        <div class="gen-report-preview" style="margin-top:1rem">
+          <div class="report-preview-doc compact">
+            <div class="rp-org sm">RONGO SACCO SOCIETY LTD</div>
+            <div class="rp-title sm">{{ showGeneratedDetail()?.name | uppercase }}</div>
+            <div class="rp-period">Period: {{ showGeneratedDetail()?.period }}</div>
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>DESCRIPTION</th>
+                  <th>CURRENT</th>
+                  <th>VARIANCE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of PREVIEW_ROWS.slice(0,3); trackBy: trackByIndex">
+                  <td>{{ row.description }}</td>
+                  <td>{{ row.current }}</td>
+                  <td [class.pos]="row.positive" [class.neg]="!row.positive">{{ row.variance }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeGeneratedDetail()">Close</button>
+        <button class="btn-outline" (click)="openEmailReport(showGeneratedDetail()!)">✉ Email</button>
+        <button class="btn-primary" (click)="showToast('Downloading…', 'success'); closeGeneratedDetail()">⬇
+          Download</button>
+      </div>
+    </div>
   </div>
-  <button class="toast-close" (click)="hideToast()">
-    <i class="bi bi-x"></i>
-  </button>
-</div>
+
+  <!-- ═══ MODAL 10: HISTORY RECORD DETAIL ═══ -->
+  <div class="modal-overlay" *ngIf="showHistoryDetail()" (click)="closeHistoryDetail()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header dark-header">
+        <h3 class="modal-title white">📋 History Record</h3>
+        <button class="modal-close white" (click)="closeHistoryDetail()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="detail-card">
+          <div class="detail-row"><span>Name</span><strong>{{ showHistoryDetail()?.name }}</strong></div>
+          <div class="detail-row"><span>Category</span>
+            <span class="cat-pill" [style.color]="showHistoryDetail()?.catColor"
+              [style.background]="showHistoryDetail()?.catColor+'18'"
+              [style.borderColor]="showHistoryDetail()?.catColor+'33'">{{ showHistoryDetail()?.category }}</span>
+          </div>
+          <div class="detail-row"><span>Format</span><strong>{{ formatIcon(showHistoryDetail()?.format||'PDF') }} {{
+              showHistoryDetail()?.format }}</strong></div>
+          <div class="detail-row"><span>Period</span><strong>{{ showHistoryDetail()?.period }}</strong></div>
+          <div class="detail-row"><span>Size</span><strong>{{ showHistoryDetail()?.size }}</strong></div>
+          <div class="detail-row"><span>Generated On</span><strong>{{ showHistoryDetail()?.generatedOn }}</strong></div>
+          <div class="detail-row"><span>Generated By</span><strong>{{ showHistoryDetail()?.generatedBy }}</strong></div>
+          <div class="detail-row">
+            <span>Status</span>
+            <span class="cat-pill"
+              style="color:#00d084;background:rgba(0,208,132,0.12);border-color:rgba(0,208,132,0.3)">✓ {{
+              showHistoryDetail()?.status }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeHistoryDetail()">Close</button>
+        <button class="btn-outline" (click)="showToast('Downloading…','success'); closeHistoryDetail()">⬇
+          Download</button>
+        <button class="btn-primary" (click)="showToast('Regenerating report…','success'); closeHistoryDetail()">↻
+          Regenerate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 11: EMAIL REPORT ═══ -->
+  <div class="modal-overlay" *ngIf="showEmailReport()" (click)="closeEmailReport()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header teal-header">
+        <h3 class="modal-title white">✉ Email Report</h3>
+        <button class="modal-close white" (click)="closeEmailReport()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="detail-card" style="margin-bottom:0.85rem">
+          <div class="detail-row"><span>Report</span><strong>{{ showEmailReport()?.name }}</strong></div>
+          <div class="detail-row"><span>Format</span><strong>{{ showEmailReport()?.format }}</strong></div>
+          <div class="detail-row"><span>Size</span><strong>{{ showEmailReport()?.size }}</strong></div>
+        </div>
+        <div class="form-field">
+          <label>To (Recipients)</label>
+          <select [value]="emailForm().to" (change)="onInput('email','to',$event)">
+            <option *ngFor="let e of EMAIL_RECIPIENTS_LIST" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Subject</label>
+          <input type="text" [value]="emailForm().subject" (input)="onInput('email','subject',$event)" />
+        </div>
+        <div class="form-field">
+          <label>Message</label>
+          <textarea rows="3" [value]="emailForm().message" (input)="onInput('email','message',$event)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeEmailReport()">Cancel</button>
+        <button class="btn-primary teal" (click)="sendEmail()">✉ Send Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 12: DELETE REPORT ═══ -->
+  <div class="modal-overlay" *ngIf="showDeleteReport()" (click)="closeDeleteReport()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header danger-header">
+        <h3 class="modal-title white">🗑 Delete Report</h3>
+        <button class="modal-close white" (click)="closeDeleteReport()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-msg">
+          Are you sure you want to permanently delete <strong>{{ showDeleteReport()?.name }}</strong>?
+          This file ({{ showDeleteReport()?.size }}) will be removed from the reports library.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeDeleteReport()">Cancel</button>
+        <button class="btn-primary danger-btn" (click)="confirmDeleteReport()">🗑 Delete Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 13: VIEW ALL GENERATED ═══ -->
+  <div class="modal-overlay" *ngIf="showViewAllGenerated()" (click)="closeViewAllGenerated()">
+    <div class="modal-box modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header dark-header">
+        <h3 class="modal-title white">🕒 All Generated Reports</h3>
+        <button class="modal-close white" (click)="closeViewAllGenerated()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="generated-full-list">
+          <div class="generated-item" *ngFor="let r of GENERATED_REPORTS; trackBy: trackById"
+            (click)="closeViewAllGenerated(); openGeneratedDetail(r)">
+            <div class="gen-icon" [style.background]="r.catColor+'22'" [style.color]="r.catColor">{{
+              formatIcon(r.format) }}</div>
+            <div class="gen-info">
+              <div class="gen-name">{{ r.name }}</div>
+              <div class="gen-meta">{{ r.category }} · {{ r.generatedBy }}</div>
+            </div>
+            <div class="gen-right">
+              <div class="gen-ts">{{ r.generated }}</div>
+              <div class="gen-size">{{ r.size }}</div>
+            </div>
+            <div class="gen-actions" (click)="$event.stopPropagation()">
+              <button class="gen-action-btn" (click)="showToast('Downloading…','success')">⬇</button>
+              <button class="gen-action-btn" (click)="openEmailReport(r)">✉</button>
+              <button class="gen-action-btn danger" (click)="openDeleteReport(r)">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeViewAllGenerated()">Close</button>
+        <button class="btn-outline" (click)="showToast('Exporting…','success')">⬇ Export List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 14: EMAIL SCHEDULE ═══ -->
+  <div class="modal-overlay" *ngIf="showEmailSchedule()" (click)="closeEmailSchedule()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header teal-header">
+        <h3 class="modal-title white">✉ Send Schedule Now — {{ showEmailSchedule()?.name }}</h3>
+        <button class="modal-close white" (click)="closeEmailSchedule()">✕</button>
+      </div>
+      <div class="modal-body modal-scrollable">
+        <div class="detail-card" style="margin-bottom:0.85rem">
+          <div class="detail-row"><span>Report</span><strong>{{ showEmailSchedule()?.name }}</strong></div>
+          <div class="detail-row"><span>Frequency</span><strong>{{ showEmailSchedule()?.frequency }}</strong></div>
+          <div class="detail-row"><span>Next Scheduled</span><strong>{{ showEmailSchedule()?.nextRun }}</strong></div>
+        </div>
+        <div class="form-field">
+          <label>To</label>
+          <select [value]="emailForm().to" (change)="onInput('email','to',$event)">
+            <option *ngFor="let e of EMAIL_RECIPIENTS_LIST" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Message</label>
+          <textarea rows="3" [value]="emailForm().message" (input)="onInput('email','message',$event)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeEmailSchedule()">Cancel</button>
+        <button class="btn-primary teal" (click)="sendEmail(); closeEmailSchedule()">✉ Send Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL 15: PAUSE SCHEDULE ═══ -->
+  <div class="modal-overlay" *ngIf="showPauseSchedule()" (click)="closePauseSchedule()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header orange-header">
+        <h3 class="modal-title white">⏸ Pause Schedule</h3>
+        <button class="modal-close white" (click)="closePauseSchedule()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-msg">
+          Pause the scheduled delivery of <strong>{{ showPauseSchedule()?.name }}</strong>?
+          You can resume it at any time from the Schedules panel.
+        </div>
+        <div class="detail-card" style="margin-top:0.75rem">
+          <div class="detail-row"><span>Frequency</span><strong>{{ showPauseSchedule()?.frequency }}</strong></div>
+          <div class="detail-row"><span>Recipients</span><strong>{{ showPauseSchedule()?.recipients }}</strong></div>
+          <div class="detail-row"><span>Next Run</span><strong>{{ showPauseSchedule()?.nextRun }}</strong></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closePauseSchedule()">Cancel</button>
+        <button class="btn-primary orange" (click)="confirmPauseSchedule()">⏸ Pause Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST ═══ -->
+  <div *ngIf="toast()" class="global-toast" [class.success]="toast()?.type==='success'"
+    [class.error]="toast()?.type==='error'">
+    <span>{{ toast()?.type === 'success' ? '✓' : '✕' }}</span>
+    {{ toast()?.msg }}
+  </div>
