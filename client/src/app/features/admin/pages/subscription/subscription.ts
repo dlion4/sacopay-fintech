@@ -134,7 +134,7 @@ export class SubscriptionComponent {
     },
     // Official SACCO Plans
     {
-      id: 'starter', name: 'Starter', price: 35000,
+      id: 'starter', name: 'Starter', price: 1000,
       billingLabel: '/mo', memberLimit: 'Up to 300 members',
       description: 'For newly registered SACCOs starting digital operations.',
       features: [
@@ -144,7 +144,7 @@ export class SubscriptionComponent {
       category: 'sacco',
     },
     {
-      id: 'basic', name: 'Basic', price: 55000,
+      id: 'basic', name: 'Basic', price: 5000,
       billingLabel: '/mo', memberLimit: 'Up to 500 members',
       description: 'For small SACCOs with growing operations.',
       features: [
@@ -154,7 +154,7 @@ export class SubscriptionComponent {
       category: 'sacco',
     },
     {
-      id: 'growth', name: 'Growth', price: 75000,
+      id: 'growth', name: 'Growth', price: 15000,
       billingLabel: '/mo', memberLimit: 'Up to 2,500 members',
       description: 'For mid-sized SACCOs with full operational needs.',
       features: [
@@ -165,7 +165,7 @@ export class SubscriptionComponent {
       popular: true, tag: 'Most Popular', tagColor: 'green', category: 'sacco',
     },
     {
-      id: 'professional', name: 'Professional', price: 110000,
+      id: 'professional', name: 'Professional', price: 45000,
       billingLabel: '/mo', memberLimit: 'Up to 10,000 members',
       description: 'For large SACCOs with diaspora & API needs.',
       features: [
@@ -175,7 +175,7 @@ export class SubscriptionComponent {
       category: 'sacco',
     },
     {
-      id: 'enterprise', name: 'Enterprise', price: 180000,
+      id: 'enterprise', name: 'Enterprise', price: 90000,
       billingLabel: '/mo', memberLimit: 'Unlimited members',
       description: 'For SACCO federations & national cooperatives.',
       features: [

@@ -51,6 +51,11 @@ export const routes: Routes = [
                 path: 'contact',
                 loadComponent: () => import('./features/home/pages/contact/contact').then(m => m.ContactComponent),
                 title: 'SACCOPay | Contact Us'
+            },
+            {
+                path: 'pricing',
+                loadComponent: () => import('./features/home/pages/pricing/pricing').then(m => m.PricingComponent),
+                title: 'SACCOPay | Pricing'
             }
         ]
     },

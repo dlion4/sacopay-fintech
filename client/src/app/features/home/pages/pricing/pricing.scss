@@ -237,11 +237,11 @@
 
       thead {
         th {
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(255, 255, 255, 0.03) !important;
           color: #fff;
           font-weight: 600;
           padding: 16px;
-          border-bottom: 1px solid rgba(0, 255, 102, 0.2);
+          border-bottom: 1px solid rgba(0, 255, 102, 0.2) !important;
           font-size: 0.95rem;
 
           &:first-child {
@@ -258,7 +258,7 @@
           vertical-align: middle;
 
           &:first-child {
-            color: #fff;
+            // color: #fff;
             font-weight: 500;
           }
         }
@@ -644,5 +644,69 @@
         font-size: 1rem !important;
       }
     }
+  }
+}
+
+/* SaccoPay Table Theme */
+.sp-table {
+  color: #ccc;
+  background: transparent;
+
+  thead, tbody, tr, td, th {
+    background: transparent;
+  }
+
+  .sp-th {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #fff;
+    font-weight: 600;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 255, 102, 0.2) !important;
+    font-size: 0.95rem;
+  }
+
+  .sp-th-neon {
+    color: #00ff66 !important;
+    text-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+  }
+
+  .sp-row {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  .sp-td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+    vertical-align: middle;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .sp-category {
+    .sp-category-cell {
+      background: rgba(0, 255, 102, 0.03);
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #00ff66 !important;
+      text-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-weight: 700;
+    }
+  }
+
+  .sp-icon-neon {
+    color: #00ff66 !important;
+    text-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+  }
+
+  .sp-icon-muted {
+    color: #888;
   }
 }

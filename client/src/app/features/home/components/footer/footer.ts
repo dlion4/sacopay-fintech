@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'sacco-footer',
-  imports: [],
+  selector: 'app-footer',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './footer.html',
-  styleUrl: './footer.scss',
+  styleUrls: ['./footer.scss']
 })
-export class Footer {}
+export class FooterComponent {}
