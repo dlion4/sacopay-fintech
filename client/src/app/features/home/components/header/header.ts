@@ -21,15 +21,16 @@ export class HeaderComponent implements OnInit {
     @Inject(DOCUMENT) private document: Document
   ) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
     const saved = localStorage.getItem(this.THEME_KEY);
-    this.isLightTheme = saved === 'light';
+    // Default to LIGHT if no saved preference (changed from === 'light' to !== 'dark')
+    this.isLightTheme = saved !== 'dark';
     
     // Apply initial theme
     this.renderer.removeClass(this.document.body, 'light-theme');
     this.renderer.removeClass(this.document.body, 'dark-theme');
     this.renderer.addClass(this.document.body, this.isLightTheme ? 'light-theme' : 'dark-theme');
-  }
+}
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
