@@ -1,354 +1,720 @@
-<!-- member-support.component.html -->
-<!-- Angular v21 Standalone — Member Support Page — Body Only -->
+<!-- SACCO Member Support Center - Inline SVG Icons -->
+<div class="support-page">
 
-<div class="support-page fade-in-up" style="max-width:1400px;">
-
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- ALERT BANNER -->
-  <!-- ═════════════════════════════════════════════ -->
-  <div class="alert-banner gap-section">
-    <div class="alert-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
-    <div>
-      <div class="alert-title">Loan Payment Due in 4 Days</div>
+  <!-- Loan Repayment Alert -->
+  <div class="alert-banner">
+    <div class="alert-content">
+      <div class="alert-icon svg-icon svg-icon-lg svg-icon-danger">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
       <div class="alert-text">
-        Your Emergency Loan installment of <strong>KES 3,200</strong> is due on <strong>Mar 1, 2025</strong>. Need help with repayment options?
+        <strong>Loan Payment Due in 4 Days</strong>
+        <p>Your Emergency Loan installment of <span class="amount">KES 3,200</span> is due on <strong>Mar 1, 2025</strong>. Need help with repayment options?</p>
       </div>
     </div>
-    <button class="btn-alert" (click)="showToast('Redirecting to loan repayment...','info')">Pay Now</button>
-  </div>
-
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- STATS CARDS -->
-  <!-- ═════════════════════════════════════════════ -->
-  <div class="row g-3 gap-section">
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="stat-card">
-        <div class="stat-value">{{ stats.openTickets }}</div>
-        <div class="stat-label">Open Tickets</div>
-        <div class="stat-sub">{{ stats.resolvedThisWeek }} resolved this week</div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="stat-card">
-        <div class="stat-value">{{ stats.avgResponseTime }}</div>
-        <div class="stat-label">Avg. Response Time</div>
-        <div class="stat-sub">Faster than last week</div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="stat-card">
-        <div class="stat-value">{{ stats.pendingEscalation }}</div>
-        <div class="stat-label">Pending Escalation</div>
-        <div class="stat-sub">Awaiting admin review</div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3">
-      <div class="stat-card">
-        <div class="stat-value" style="color:#00C853">{{ stats.satisfactionScore }}%</div>
-        <div class="stat-label">Satisfaction Score</div>
-        <div class="stat-sub">Based on {{ stats.ratingCount }} ratings</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- PAGE TABS -->
-  <!-- ═════════════════════════════════════════════ -->
-  <div class="page-tabs">
-    @for (tab of pageTabs; track tab.id) {
-    <button class="page-tab-btn" [class.active]="activeTab === tab.id" (click)="setTab(tab.id)">
-      <i class="bi" [class]="tab.icon"></i> {{ tab.label }}
+    <button class="btn-pay" (click)="payNow()">
+      <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>Pay Now
     </button>
-    }
   </div>
 
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- TAB 1: MY TICKETS -->
-  <!-- ═════════════════════════════════════════════ -->
-  @if (activeTab === 'tickets') {
-  <div class="tab-section visible">
-    <div class="sp-card gap-section">
-      <div class="sp-card-header">
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h2>{{ stats.openTickets }}</h2>
+      <p class="stat-label">
+        <span class="svg-icon svg-icon-sm svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Open Tickets
+      </p>
+      <small>
+        <span class="svg-icon svg-icon-sm svg-icon-success"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>{{ stats.resolvedThisWeek }} resolved this week
+      </small>
+    </div>
+    <div class="stat-card warning">
+      <h2>{{ stats.avgResponseTime }}</h2>
+      <p class="stat-label">
+        <span class="svg-icon svg-icon-sm svg-icon-warning"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Avg. Response Time
+      </p>
+      <small>Faster than last week</small>
+    </div>
+    <div class="stat-card danger">
+      <h2>{{ stats.pendingEscalation }}</h2>
+      <p class="stat-label">
+        <span class="svg-icon svg-icon-sm svg-icon-danger"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Pending Escalation
+      </p>
+      <small>Awaiting specialist review</small>
+    </div>
+    <div class="stat-card success">
+      <h2>{{ stats.satisfactionScore }}%</h2>
+      <p class="stat-label">
+        <span class="svg-icon svg-icon-sm svg-icon-success"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>Satisfaction Score
+      </p>
+      <small>Based on {{ stats.totalRatings }} ratings</small>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="header-notif-btn" (click)="setTab('notifications')">
+      <span class="svg-icon svg-icon-md"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+      <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'tickets'" (click)="setTab('tickets')">
+        <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>My Tickets
+      </button>
+      <button class="tab" [class.active]="activeTab === 'faq'" (click)="setTab('faq')">
+        <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>FAQ
+      </button>
+      <button class="tab" [class.active]="activeTab === 'resources'" (click)="setTab('resources')">
+        <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>Resources
+      </button>
+      <button class="tab" [class.active]="activeTab === 'feedback'" (click)="setTab('feedback')">
+        <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>Feedback
+      </button>
+    </div>
+    <button class="tab" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications')">
+      <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Notifications
+      <span class="tab-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </button>
+  </div>
+  <!-- === TICKETS TAB === -->
+  <section *ngIf="activeTab === 'tickets'" class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>
+          <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>My Support Tickets
+        </h3>
+        <small>Track and manage all your support requests</small>
+      </div>
+      <button class="btn-primary" (click)="openNewTicketModal()">
+        <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>New Ticket
+      </button>
+    </div>
+
+    <div class="filters">
+      <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input type="text" placeholder="Search by ticket ID, subject, or category..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>
+      <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+        <option value="all">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="Pending">Pending</option>
+        <option value="Escalated">Escalated</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <button class="filter-reset" (click)="resetFilters()" *ngIf="searchTerm || filterStatus !== 'all'">
+        <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>Reset
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="tickets-table">
+        <thead>
+          <tr>
+            <th>TICKET ID</th>
+            <th>SUBJECT & PREVIEW</th>
+            <th>CATEGORY</th>
+            <th>PRIORITY</th>
+            <th>STATUS</th>
+            <th>LAST UPDATE</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of filteredTickets; trackBy: trackById">
+            <td><span class="ticket-id">{{ t.id }}</span></td>
+            <td>
+              <strong>{{ t.subject }}</strong>
+              <p class="preview">{{ t.preview }}</p>
+            </td>
+            <td>{{ t.category }}</td>
+            <td><span class="priority" [ngClass]="priorityClass(t.priority)">{{ t.priority }}</span></td>
+            <td>
+              <span class="status" [ngClass]="statusClass(t.status)">
+                <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>{{ t.status }}
+              </span>
+              <small *ngIf="t.escalated" class="escalated-tag">
+                <span class="svg-icon svg-icon-sm svg-icon-warning"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Escalated to {{ t.escalationLevel }}
+              </small>
+            </td>
+            <td>{{ t.lastUpdate }}</td>
+            <td>
+              <button class="btn-view" (click)="openTicketDetail(t)">
+                <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>View
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredTickets.length === 0">
+            <td colspan="7" class="empty">
+              <div style="padding: 2rem 0;">
+                <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+                  <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>No tickets found
+                </p>
+                <p *ngIf="searchTerm || filterStatus !== 'all'">Try adjusting your filters or <a (click)="resetFilters()">reset them</a></p>
+                <p *ngIf="!searchTerm && filterStatus === 'all'">You have no tickets yet. <a (click)="openNewTicketModal()">Create your first ticket</a></p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="info-card-grid">
+      <div class="info-card-small">
+        <span class="info-icon svg-icon svg-icon-md svg-icon-primary">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </span>
         <div>
-          <div class="card-title"><i class="bi bi-ticket-perforated-fill text-orange me-2"></i>My Support Tickets</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Track and manage all your support requests</div>
+          <strong>Stay Updated</strong>
+          <p>When your ticket status changes, you will get alerts in <a (click)="goToNotifications()">Notifications</a>. Check there for resolution updates, admin replies, and escalation status.</p>
         </div>
-        <button class="btn-new-ticket" (click)="showToast('Opening new ticket form...','info')">
-          <i class="bi bi-plus-lg"></i> New Ticket
+      </div>
+      <div class="info-card-small">
+        <span class="info-icon svg-icon svg-icon-md svg-icon-warning">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <div>
+          <strong>Need Faster Help?</strong>
+          <p>If SACCO Admin cannot resolve your issue within 48 hours, escalate to <strong>SaccoPay Support</strong> or <strong>SACCO Manager</strong> directly from the ticket detail view.</p>
+        </div>
+      </div>
+      <div class="info-card-small">
+        <span class="info-icon svg-icon svg-icon-md svg-icon-success">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </span>
+        <div>
+          <strong>Rate Your Experience</strong>
+          <p>After a ticket is resolved, head to the <a (click)="setTab('feedback')">Feedback tab</a> to rate the support and help us improve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- === FAQ TAB === -->
+  <section *ngIf="activeTab === 'faq'" class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>
+          <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Frequently Asked Questions
+        </h3>
+        <small>Find quick answers to common queries before raising a ticket</small>
+      </div>
+    </div>
+
+    <div class="filters">
+      <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input type="text" placeholder="Search FAQs..." [(ngModel)]="faqSearch" (input)="applyFilters()">
+      <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>
+      <select [(ngModel)]="faqCategory">
+        <option *ngFor="let c of faqCategories" [value]="c">{{ c === 'all' ? 'All Categories' : c }}</option>
+      </select>
+      <button class="filter-reset" (click)="faqSearch=''; faqCategory='all'" *ngIf="faqSearch || faqCategory !== 'all'">
+        <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>Reset
+      </button>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item" *ngFor="let faq of filteredFaqs; trackBy: trackById" [class.open]="faq.expanded">
+        <div class="faq-q" (click)="toggleFaq(faq)">
+          <span>{{ faq.question }}</span>
+          <span class="caret">{{ faq.expanded ? '−' : '+' }}</span>
+        </div>
+        <div class="faq-a" *ngIf="faq.expanded">
+          <p>{{ faq.answer }}</p>
+          <div class="faq-actions">
+            <span class="cat-tag">{{ faq.category }}</span>
+            <div class="actions-right">
+              <button class="btn-link" (click)="markFaqHelpful(faq)">
+                <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></span>Helpful ({{ faq.helpful }})
+              </button>
+              <button class="btn-link" (click)="faqStillNeedHelp(faq)">Still need help? Raise a ticket</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="filteredFaqs.length === 0" class="empty" style="text-align: center; padding: 2.5rem; color: var(--muted);">
+        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+          <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>No FAQs match your search
+        </p>
+        <p>Try different keywords or <a (click)="faqSearch=''; faqCategory='all'">reset filters</a></p>
+        <p style="margin-top: 1rem;">
+          <button class="btn-primary" (click)="openNewTicketModal()">
+            <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Create Support Ticket
+          </button>
+        </p>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <span class="info-icon svg-icon svg-icon-lg svg-icon-primary">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </span>
+      <div>
+        <strong>Cannot find what you are looking for?</strong>
+        <p>If the FAQ does not answer your question, click "Still need help?" on any FAQ to auto-fill a ticket, or use the <strong>+ New Ticket</strong> button. Our SACCO Admin team typically responds within <strong>2 hours</strong> during business hours.</p>
+      </div>
+    </div>
+  </section>
+  <!-- === RESOURCES TAB === -->
+  <section *ngIf="activeTab === 'resources'" class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>
+          <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>Member Resources
+        </h3>
+        <small>Documents, forms, policies, and guides for SACCO members</small>
+      </div>
+    </div>
+
+    <div class="resources-grid">
+      <div class="resource-card" *ngFor="let r of resources; trackBy: trackById">
+        <span class="res-type" [ngClass]="resourceClass(r.type)">{{ r.type }}</span>
+        <h4>{{ r.title }}</h4>
+        <p>{{ r.description }}</p>
+        <a class="res-link" (click)="downloadResource(r)">
+          <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>{{ r.action }}
+        </a>
+      </div>
+    </div>
+
+    <div class="info-card" style="margin-top: 1.5rem;">
+      <span class="info-icon svg-icon svg-icon-lg svg-icon-primary">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </span>
+      <div>
+        <strong>Need a specific document?</strong>
+        <p>If you cannot find the resource you need, raise a ticket under the <a (click)="setTab('tickets')">Tickets tab</a> and request it. We can email documents directly or upload them to your member portal.</p>
+      </div>
+    </div>
+  </section>
+  <!-- === FEEDBACK TAB === -->
+  <section *ngIf="activeTab === 'feedback'" class="panel feedback-panel">
+    <div class="feedback-grid">
+      <div class="card">
+        <h3>
+          <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>Rate Your Support Experience
+        </h3>
+        <small>Your feedback helps us serve you better</small>
+
+        <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
+          <label>How would you rate our support? *</label>
+          <div class="stars" (mouseleave)="hoverRating=0">
+            <span *ngFor="let s of [1,2,3,4,5]"
+                  class="star"
+                  [class.filled]="s <= (hoverRating || rating)"
+                  (mouseenter)="hoverRating=s"
+                  (click)="setRating(s)">
+              <span class="svg-icon svg-icon-md" [class.svg-icon-warning]="s <= (hoverRating || rating)" [class.svg-icon-muted]="s > (hoverRating || rating)">
+                <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </span>
+            </span>
+          </div>
+          <p class="hint" *ngIf="rating === 0">Click a star to rate (1 = Poor, 5 = Excellent)</p>
+          <p class="hint" *ngIf="rating > 0" style="color: var(--warning); font-weight: 600;">You rated {{ rating }} / 5 — {{ rating === 5 ? 'Excellent!' : rating >= 4 ? 'Good' : rating >= 3 ? 'Average' : rating >= 2 ? 'Below Average' : 'Poor' }}</p>
+
+          <label>Which ticket are you rating? *</label>
+          <select formControlName="ticketRef">
+            <option value="">Select a ticket...</option>
+            <option *ngFor="let t of tickets" [value]="t.id">{{ t.id }} — {{ t.subject }} ({{ t.status }})</option>
+          </select>
+          <small class="err" *ngIf="feedbackForm.get('ticketRef')?.touched && feedbackForm.get('ticketRef')?.invalid">Please select a ticket.</small>
+
+          <label>What went well?</label>
+          <textarea formControlName="whatWentWell" rows="3" placeholder="Tell us what you appreciated about the support experience..."></textarea>
+
+          <label>What can we improve?</label>
+          <textarea formControlName="whatToImprove" rows="3" placeholder="Share suggestions or areas that need improvement..."></textarea>
+
+          <label class="check">
+            <input type="checkbox" formControlName="consent">
+            <span>I consent to my feedback being used for service improvement</span>
+          </label>
+          <small class="err" *ngIf="feedbackForm.get('consent')?.touched && feedbackForm.get('consent')?.invalid">Consent is required.</small>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">
+              <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>Submit Feedback
+            </button>
+            <button type="button" class="btn-ghost" (click)="clearFeedback()">
+              <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>Clear
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="side-stack">
+        <div class="card">
+          <h3>
+            <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Your Feedback History
+          </h3>
+          <div *ngIf="feedbackHistory.length === 0" style="color: var(--muted); text-align: center; padding: 1rem 0;">
+            <p>No feedback submitted yet.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Rate a resolved ticket to see it here.</p>
+          </div>
+          <div class="fb-entry" *ngFor="let fb of feedbackHistory">
+            <div class="fb-head">
+              <span class="fb-ref">{{ fb.ticketRef }} — {{ fb.ticketTitle }}</span>
+              <span class="fb-stars">{{ '★'.repeat(fb.rating) }}{{ '☆'.repeat(5-fb.rating) }}</span>
+            </div>
+            <p class="fb-comment">"{{ fb.comment }}"</p>
+            <small>
+              <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Submitted on {{ fb.submittedAt | date:'MMM d, y' }}
+            </small>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>
+            <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Support Metrics
+          </h3>
+          <ul class="metrics">
+            <li>
+              <span>
+                <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>First Response Time
+              </span>
+              <strong>{{ stats.firstResponseTime }}</strong>
+            </li>
+            <li>
+              <span>
+                <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>Resolution Rate
+              </span>
+              <strong>{{ stats.resolutionRate }}</strong>
+            </li>
+            <li>
+              <span>
+                <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>Member Satisfaction
+              </span>
+              <strong>{{ stats.memberSatisfaction }}</strong>
+            </li>
+            <li>
+              <span>
+                <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Tickets Resolved This Month
+              </span>
+              <strong>{{ stats.ticketsResolvedThisMonth }}</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- === NOTIFICATIONS PANEL === -->
+  <div class="notifications-overlay" *ngIf="showNotificationsPanel" (click)="closeNotifications()"></div>
+  <div class="notifications-panel" *ngIf="showNotificationsPanel">
+    <div class="notif-header">
+      <h3>
+        <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Notifications
+      </h3>
+      <div class="notif-actions">
+        <button class="btn-link" (click)="markAllRead()" *ngIf="unreadCount > 0">
+          <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>Mark all read
+        </button>
+        <button class="modal-close" (click)="closeNotifications()">
+          <span class="svg-icon svg-icon-md"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
         </button>
       </div>
-      <div class="sp-card-body p-0">
-        <div class="table-wrap">
-          <table class="sp-table">
-            <thead>
-              <tr>
-                <th>Ticket ID</th>
-                <th>Subject &amp; Preview</th>
-                <th class="hide-sm">Category</th>
-                <th class="hide-xs">Priority</th>
-                <th>Status</th>
-                <th class="hide-sm">Last Update</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (ticket of tickets; track ticket.id) {
-              <tr>
-                <td><span class="ticket-id">{{ ticket.id }}</span></td>
-                <td>
-                  <div class="ticket-subject">{{ ticket.subject }}</div>
-                  <div class="ticket-preview">{{ ticket.preview }}</div>
-                </td>
-                <td class="hide-sm"><span style="font-size:0.75rem">{{ ticket.category }}</span></td>
-                <td class="hide-xs"><span class="priority-{{ ticket.priority }}">{{ ticket.priorityLabel }}</span></td>
-                <td>
-                  <span class="sp-badge badge-{{ ticket.status }}">
-                    <span class="dot"></span>{{ ticket.statusLabel }}
-                  </span>
-                </td>
-                <td class="hide-sm" style="font-size:0.72rem;color:var(--text-muted)">{{ ticket.lastUpdate }}</td>
-                <td>
-                  <a href="#" class="btn-view" (click)="viewTicket(ticket); $event.preventDefault()">View</a>
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
+    </div>
+    <div class="notif-body">
+      <div *ngIf="unreadNotifications.length > 0">
+        <div class="notif-section-title">Unread ({{ unreadCount }})</div>
+        <div class="notif-item unread" *ngFor="let n of unreadNotifications" (click)="handleNotificationAction(n)">
+          <div class="notif-dot" [ngClass]="notificationClass(n.type)"></div>
+          <div class="notif-content">
+            <div class="notif-title">{{ n.title }}</div>
+            <div class="notif-message">{{ n.message }}</div>
+            <div class="notif-meta">
+              <span class="notif-time">
+                <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>{{ n.timestamp | date:'MMM d, h:mm a' }}
+              </span>
+              <button class="notif-action-btn" *ngIf="n.action" (click)="$event.stopPropagation(); handleNotificationAction(n)">{{ n.action }}</button>
+            </div>
+          </div>
+          <button class="notif-delete" (click)="$event.stopPropagation(); deleteNotification(n)">
+            <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+          </button>
         </div>
+      </div>
+
+      <div *ngIf="readNotifications.length > 0">
+        <div class="notif-section-title">Earlier</div>
+        <div class="notif-item" *ngFor="let n of readNotifications" (click)="handleNotificationAction(n)">
+          <div class="notif-dot" [ngClass]="notificationClass(n.type)"></div>
+          <div class="notif-content">
+            <div class="notif-title">{{ n.title }}</div>
+            <div class="notif-message">{{ n.message }}</div>
+            <div class="notif-meta">
+              <span class="notif-time">
+                <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>{{ n.timestamp | date:'MMM d, h:mm a' }}
+              </span>
+              <button class="notif-action-btn" *ngIf="n.action" (click)="$event.stopPropagation(); handleNotificationAction(n)">{{ n.action }}</button>
+            </div>
+          </div>
+          <button class="notif-delete" (click)="$event.stopPropagation(); deleteNotification(n)">
+            <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="notifications.length === 0" class="notif-empty">
+        <p>
+          <span class="svg-icon svg-icon-md svg-icon-muted"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>No notifications yet
+        </p>
+        <p style="font-size: 0.85rem; margin-top: 0.5rem;">Ticket updates, replies, and alerts will appear here.</p>
       </div>
     </div>
   </div>
-  }
 
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- TAB 2: FAQ -->
-  <!-- ═════════════════════════════════════════════ -->
-  @if (activeTab === 'faq') {
-  <div class="tab-section visible">
-    <div class="row g-3 gap-section">
-      <div class="col-12 col-lg-8">
-        <div class="sp-card">
-          <div class="sp-card-header">
-            <div class="card-title"><i class="bi bi-patch-question-fill text-orange me-2"></i>Frequently Asked Questions</div>
-          </div>
-          <div class="sp-card-body p-0">
-            @for (faq of faqs; track faq.id; let i = $index) {
-            <div class="accordion-item" [class.first-item]="i === 0" [class.last-item]="i === faqs.length - 1">
-              <button class="accordion-btn" (click)="toggleFaq(faq.id)" [attr.aria-expanded]="faq.open">
-                {{ faq.question }}
-                <i class="bi bi-chevron-down acc-icon" [class.rotated]="faq.open"></i>
-              </button>
-              @if (faq.open) {
-              <div class="accordion-body-text" [innerHTML]="faq.answer"></div>
-              }
-            </div>
-            }
-          </div>
+</div>
+<!-- ===== MODALS ===== -->
+
+<!-- NEW TICKET MODAL -->
+<div class="modal-overlay" *ngIf="showNewTicketModal" (click)="onOverlayClick($event, 'newTicket')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>
+        <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Create New Support Ticket
+      </h3>
+      <button class="modal-close" (click)="closeNewTicketModal()">
+        <span class="svg-icon svg-icon-md"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+      </button>
+    </div>
+    <form [formGroup]="newTicketForm" (ngSubmit)="submitNewTicket()" class="modal-body">
+      <label>Subject *</label>
+      <input type="text" formControlName="subject" placeholder="Brief summary of your issue (min 5 characters)">
+      <small class="err" *ngIf="newTicketForm.get('subject')?.touched && newTicketForm.get('subject')?.invalid">Subject is required (min 5 chars).</small>
+
+      <div class="row-2">
+        <div>
+          <label>Category *</label>
+          <select formControlName="category">
+            <option value="">Select category</option>
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+          <small class="err" *ngIf="newTicketForm.get('category')?.touched && newTicketForm.get('category')?.invalid">Category is required.</small>
+        </div>
+        <div>
+          <label>Priority *</label>
+          <select formControlName="priority">
+            <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+          </select>
         </div>
       </div>
 
-      <div class="col-12 col-lg-4">
-        <!-- Top Searches -->
-        <div class="sp-card mb-3">
-          <div class="sp-card-header">
-            <div class="card-title"><i class="bi bi-search text-orange me-2"></i>Top Searches</div>
-          </div>
-          <div class="sp-card-body">
-            <div class="search-pills">
-              @for (pill of searchPills; track pill) {
-              <span class="search-pill" (click)="showToast('Searching: ' + pill,'info')">{{ pill }}</span>
-              }
-            </div>
-          </div>
-        </div>
+      <label>Detailed Description *</label>
+      <textarea formControlName="description" rows="5" placeholder="Provide as much detail as possible (dates, amounts, error messages, screenshots references)... Min 20 characters."></textarea>
+      <small class="err" *ngIf="newTicketForm.get('description')?.touched && newTicketForm.get('description')?.invalid">Description is required (min 20 characters).</small>
 
-        <!-- Video Guides -->
-        <div class="sp-card">
-          <div class="sp-card-header">
-            <div class="card-title"><i class="bi bi-play-circle-fill text-orange me-2"></i>Video Guides</div>
+      <div class="modal-info">
+        <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <div>
+          <strong>Routing:</strong> Your ticket will be assigned to <strong>SACCO Admin</strong> first. If it cannot be resolved there, you can escalate to <strong>SaccoPay Support</strong>, <strong>SACCO Manager</strong>, or <strong>SaccoPay Technical</strong> from the ticket detail view.
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" (click)="closeNewTicketModal()">
+          <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Cancel
+        </button>
+        <button type="submit" class="btn-primary">
+          <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>Submit Ticket
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- TICKET DETAIL MODAL -->
+<div class="modal-overlay" *ngIf="showTicketDetailModal && selectedTicket" (click)="onOverlayClick($event, 'ticketDetail')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <div>
+        <h3>{{ selectedTicket.subject }}</h3>
+        <small>{{ selectedTicket.id }} &bull; Opened {{ selectedTicket.createdAt | date:'MMM d, y, h:mm a' }}</small>
+      </div>
+      <button class="modal-close" (click)="closeTicketDetail()">
+        <span class="svg-icon svg-icon-md"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="ticket-meta">
+        <span class="chip">{{ selectedTicket.category }}</span>
+        <span class="chip" [ngClass]="priorityClass(selectedTicket.priority)">{{ selectedTicket.priority }} Priority</span>
+        <span class="chip" [ngClass]="statusClass(selectedTicket.status)">
+          <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>{{ selectedTicket.status }}
+        </span>
+        <span class="chip escalation-chip">
+          <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Handled by: {{ selectedTicket.escalationLevel }}
+        </span>
+      </div>
+
+      <div *ngIf="selectedTicket.escalated" class="escalation-banner">
+        <span class="svg-icon svg-icon-md svg-icon-warning"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <div><strong>Escalated</strong> &mdash; {{ selectedTicket.escalationReason }}</div>
+      </div>
+
+      <div class="modal-info" *ngIf="selectedTicket.status === 'Open' || selectedTicket.status === 'Pending'">
+        <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+        <div>
+          <strong>Expected Response:</strong> SACCO Admin typically replies within <strong>2 hours</strong> during business hours (Mon-Fri, 8AM-5PM). For escalated tickets, SaccoPay Support responds within <strong>4 business hours</strong>.
+        </div>
+      </div>
+
+      <h4 class="convo-title">
+        <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Conversation
+      </h4>
+      <div class="convo">
+        <div class="msg" *ngFor="let m of selectedTicket.messages" [class.msg-member]="m.role === 'Member'">
+          <div class="msg-head">
+            <strong>{{ m.author }}</strong>
+            <span class="msg-role">{{ m.role }}</span>
+            <small>
+              <span class="svg-icon svg-icon-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>{{ m.timestamp | date:'MMM d, h:mm a' }}
+            </small>
           </div>
-          <div class="sp-card-body d-flex flex-column gap-2">
-            @for (video of videoGuides; track video.title) {
-            <div class="video-card" (click)="showToast('Playing video: ' + video.title,'info')">
-              <div class="play-icon"><i class="bi bi-play-fill"></i></div>
-              <div>
-                <div class="video-title">{{ video.title }}</div>
-                <div class="video-dur"><i class="bi bi-clock me-1"></i>{{ video.duration }}</div>
-              </div>
-            </div>
-            }
-          </div>
+          <p>{{ m.message }}</p>
+        </div>
+        <div *ngIf="selectedTicket.messages.length === 0" style="text-align: center; color: var(--muted); padding: 1rem;">
+          <p>No messages yet. Start the conversation below.</p>
+        </div>
+      </div>
+
+      <div *ngIf="selectedTicket.status !== 'Closed' && selectedTicket.status !== 'Resolved'" class="reply-box">
+        <label>Add a reply</label>
+        <textarea [(ngModel)]="newReply" rows="3" placeholder="Type your message..."></textarea>
+        <button class="btn-primary" (click)="sendReply()" [disabled]="!newReply.trim()">
+          <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>Send Reply
+        </button>
+      </div>
+
+      <div *ngIf="selectedTicket.status === 'Resolved' || selectedTicket.status === 'Closed'" class="modal-info">
+        <span class="svg-icon svg-icon-md svg-icon-success"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+        <div>
+          <strong>This ticket is {{ selectedTicket.status.toLowerCase() }}.</strong> You can re-open it if the issue persists, or head to <a (click)="setTab('feedback'); closeTicketDetail()">Feedback</a> to rate your experience.
+        </div>
+      </div>
+
+      <div class="modal-info" *ngIf="selectedTicket.status !== 'Closed' && selectedTicket.status !== 'Resolved'">
+        <span class="svg-icon svg-icon-md svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+        <div>
+          <strong>Tip:</strong> Replies and status updates will also appear in your
+          <a (click)="goToNotifications()">Notifications section</a>. If your issue is resolved, please rate it under <a (click)="setTab('feedback'); closeTicketDetail()">Feedback</a>.
         </div>
       </div>
     </div>
-  </div>
-  }
 
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- TAB 3: RESOURCES -->
-  <!-- ═════════════════════════════════════════════ -->
-  @if (activeTab === 'resources') {
-  <div class="tab-section visible">
-    <div class="row g-3 gap-section">
-      @for (res of resources; track res.name) {
-      <div class="col-12 col-sm-6 col-xl-4">
-        <div class="resource-card">
-          <span class="resource-type-badge" [class]="'rtype-' + res.type">
-            <i class="bi" [class]="res.typeIcon"></i>{{ res.typeLabel }}
-          </span>
-          <div class="resource-name">{{ res.name }}</div>
-          <div class="resource-desc">{{ res.desc }}</div>
-          <a href="#" class="resource-link" (click)="downloadResource(res); $event.preventDefault()">
-            {{ res.actionLabel }} <i class="bi bi-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-      }
+    <div class="modal-actions sticky">
+      <button class="btn-ghost" (click)="closeTicketDetail()">
+        <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Close
+      </button>
+      <button class="btn-warning"
+              *ngIf="!selectedTicket.escalated && selectedTicket.status !== 'Resolved' && selectedTicket.status !== 'Closed' && selectedTicket.status !== 'Escalated'"
+              (click)="openEscalateModal()">
+        <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Escalate Issue
+      </button>
+      <button class="btn-success"
+              *ngIf="selectedTicket.status === 'Open' || selectedTicket.status === 'Pending' || selectedTicket.status === 'Escalated'"
+              (click)="markResolved()">
+        <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>Mark as Resolved
+      </button>
+      <button class="btn-ghost"
+              *ngIf="selectedTicket.status === 'Resolved' || selectedTicket.status === 'Closed'"
+              (click)="reopenTicket()">
+        <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>Re-open Ticket
+      </button>
     </div>
   </div>
-  }
-
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- TAB 4: FEEDBACK -->
-  <!-- ═════════════════════════════════════════════ -->
-  @if (activeTab === 'feedback') {
-  <div class="tab-section visible">
-    <div class="row g-3">
-
-      <!-- Feedback Form -->
-      <div class="col-12 col-lg-7">
-        <div class="sp-card">
-          <div class="sp-card-header">
-            <div>
-              <div class="card-title"><i class="bi bi-star-fill text-orange me-2"></i>Rate Your Support Experience</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Your feedback helps us serve you better</div>
-            </div>
-          </div>
-          <div class="sp-card-body">
-            <!-- Star Rating -->
-            <div class="mb-3">
-              <label class="form-label-sp">How would you rate our support? <span>*</span></label>
-              <div class="stars-widget">
-                @for (star of [1,2,3,4,5]; track star) {
-                <button class="star-btn"
-                  [class.active]="star <= currentRating"
-                  [class.hover]="star <= hoverRating"
-                  (click)="setRating(star)"
-                  (mouseenter)="setHover(star)"
-                  (mouseleave)="clearHover()">
-                  &#9733;
-                </button>
-                }
-              </div>
-              <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.35rem;">{{ starLabel }}</div>
-            </div>
-
-            <!-- Ticket Select -->
-            <div class="mb-3">
-              <label class="form-label-sp">Which ticket are you rating?</label>
-              <select class="sp-input sp-select" [(ngModel)]="feedbackForm.ticket">
-                <option value="">— Select a ticket —</option>
-                @for (t of feedbackTickets; track t) {
-                <option [value]="t">{{ t }}</option>
-                }
-              </select>
-            </div>
-
-            <!-- What went well -->
-            <div class="mb-3">
-              <label class="form-label-sp">What went well?</label>
-              <textarea class="sp-input sp-textarea" placeholder="Tell us what you appreciated about the support experience..." [(ngModel)]="feedbackForm.positive"></textarea>
-            </div>
-
-            <!-- What to improve -->
-            <div class="mb-3">
-              <label class="form-label-sp">What can we improve?</label>
-              <textarea class="sp-input sp-textarea" placeholder="Share suggestions or areas that need improvement..." [(ngModel)]="feedbackForm.improvement"></textarea>
-            </div>
-
-            <!-- Consent -->
-            <div class="mb-3">
-              <label class="sp-checkbox">
-                <input type="checkbox" [(ngModel)]="feedbackForm.consent" />
-                <span>I consent to my feedback being used for service improvement</span>
-              </label>
-            </div>
-
-            <!-- Actions -->
-            <div class="d-flex gap-2 flex-wrap">
-              <button class="btn-submit" (click)="submitFeedback()">
-                <i class="bi bi-send-fill me-2"></i>Submit Feedback
-              </button>
-              <button class="btn-secondary-sp" (click)="clearFeedback()">
-                <i class="bi bi-x-lg me-1"></i>Clear
-              </button>
-            </div>
-          </div>
+</div>
+<!-- ESCALATE MODAL -->
+<div class="modal-overlay" *ngIf="showEscalateModal" (click)="onOverlayClick($event, 'escalate')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>
+        <span class="svg-icon svg-icon-md svg-icon-warning"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Escalate Ticket
+      </h3>
+      <button class="modal-close" (click)="closeEscalateModal()">
+        <span class="svg-icon svg-icon-md"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+      </button>
+    </div>
+    <form [formGroup]="escalateForm" (ngSubmit)="confirmEscalate()" class="modal-body">
+      <div class="modal-info warn">
+        <span class="svg-icon svg-icon-md svg-icon-warning"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+        <div>
+          <strong>Escalation moves your ticket beyond SACCO Admin.</strong> Use this only when your local SACCO admin could not resolve the issue within a reasonable time (typically 48 hours), or when the issue requires specialized technical or managerial intervention.
         </div>
       </div>
 
-      <!-- Feedback History + Metrics -->
-      <div class="col-12 col-lg-5">
-        <!-- History -->
-        <div class="sp-card mb-3">
-          <div class="sp-card-header">
-            <div class="card-title"><i class="bi bi-clock-history text-orange me-2"></i>Your Feedback History</div>
-          </div>
-          <div class="sp-card-body d-flex flex-column gap-3">
-            @for (fb of feedbackHistory; track fb.ticket) {
-            <div class="feedback-card">
-              <div class="d-flex align-items-start justify-content-between">
-                <div class="fb-ticket">{{ fb.ticket }}</div>
-                <div class="fb-stars">{{ fb.stars }}</div>
-              </div>
-              <div class="fb-quote">"{{ fb.quote }}"</div>
-              <div class="fb-date"><i class="bi bi-calendar3 me-1"></i>{{ fb.date }}</div>
-            </div>
-            }
-          </div>
-        </div>
+      <label>Escalate to *</label>
+      <select formControlName="escalateTo">
+        <option value="SACCO Manager">SACCO Manager (Branch Level &mdash; for policy/account issues)</option>
+        <option value="SaccoPay Support">SaccoPay Support (Platform Team &mdash; for app/payment issues)</option>
+        <option value="SaccoPay Technical">SaccoPay Technical (Engineering &mdash; for bugs/system errors)</option>
+      </select>
 
-        <!-- Support Metrics -->
-        <div class="sp-card">
-          <div class="sp-card-header">
-            <div class="card-title"><i class="bi bi-bar-chart-fill text-orange me-2"></i>Support Metrics</div>
-          </div>
-          <div class="sp-card-body">
-            @for (metric of supportMetrics; track metric.label) {
-            <div class="metric-item">
-              <span class="metric-label"><i class="bi me-2 text-orange" [class]="metric.icon"></i>{{ metric.label }}</span>
-              <span class="metric-value">{{ metric.value }}</span>
-            </div>
-            }
-          </div>
-        </div>
+      <label>Reason for escalation *</label>
+      <textarea formControlName="reason" rows="4" placeholder="Explain why this issue needs escalation. Examples: no response in 48h, technical fault beyond admin scope, urgent financial impact, repeated unresolved attempts..."></textarea>
+      <small class="err" *ngIf="escalateForm.get('reason')?.touched && escalateForm.get('reason')?.invalid">Reason is required (min 15 chars). Be specific.</small>
+
+      <label class="check">
+        <input type="checkbox" formControlName="acknowledge">
+        <span>I confirm this issue could not be resolved through the SACCO Admin channel.</span>
+      </label>
+      <small class="err" *ngIf="escalateForm.get('acknowledge')?.touched && escalateForm.get('acknowledge')?.invalid">Acknowledgment is required.</small>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" (click)="closeEscalateModal()">
+          <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Cancel
+        </button>
+        <button type="submit" class="btn-warning">
+          <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Confirm Escalation
+        </button>
       </div>
+    </form>
+  </div>
+</div>
+<!-- INFO MODAL after new ticket -->
+<div class="modal-overlay" *ngIf="showInfoModal" (click)="onOverlayClick($event, 'info')">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3>
+        <span class="svg-icon svg-icon-md svg-icon-success"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>Ticket Submitted Successfully
+      </h3>
+      <button class="modal-close" (click)="showInfoModal=false">
+        <span class="svg-icon svg-icon-md"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Your ticket has been created and routed to the <strong>SACCO Admin</strong> team. Expected first response within <strong>2 hours</strong> during business hours.</p>
+      <ul class="info-list">
+        <li>
+          <span class="svg-icon svg-icon-sm svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+          <div><strong>Status updates</strong> &rarr; Check <a (click)="goToNotifications()">Notifications</a> for real-time alerts</div>
+        </li>
+        <li>
+          <span class="svg-icon svg-icon-sm svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+          <div><strong>Email alerts</strong> sent to your registered email address</div>
+        </li>
+        <li>
+          <span class="svg-icon svg-icon-sm svg-icon-primary"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <div><strong>Cannot be resolved?</strong> Escalate to SaccoPay Support or SACCO Manager from the ticket detail view</div>
+        </li>
+        <li>
+          <span class="svg-icon svg-icon-sm svg-icon-primary"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+          <div><strong>After resolution</strong> &rarr; Rate your experience in the Feedback tab</div>
+        </li>
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" (click)="showInfoModal=false">
+        <span class="svg-icon svg-icon-sm svg-icon-muted"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Got it
+      </button>
+      <button class="btn-primary" (click)="goToNotifications()">
+        <span class="svg-icon svg-icon-sm svg-icon-white"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Go to Notifications
+      </button>
     </div>
   </div>
-  }
+</div>
 
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- FOOTER -->
-  <!-- ═════════════════════════════════════════════ -->
-  <footer class="app-footer">
-    <span>&copy; 2025 <a routerLink="/home">SaccoPay</a>. All rights reserved.</span>
-    <span>
-      <a href="#" (click)="showToast('Opening Help Center...','info'); $event.preventDefault()">Help Center</a> &nbsp;·&nbsp;
-      <a href="#" (click)="showToast('Opening Privacy Policy...','info'); $event.preventDefault()">Privacy Policy</a> &nbsp;·&nbsp;
-      <a href="#" (click)="showToast('Opening Terms...','info'); $event.preventDefault()">Terms</a>
-    </span>
-  </footer>
-
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- TOAST CONTAINER -->
-  <!-- ═════════════════════════════════════════════ -->
-  <div id="toast-container">
-    @for (toast of toasts; track toast.id) {
-    <div class="toast-msg" [class]="'toast-' + toast.type" [@slideInToast]>
-      <i class="bi" [class]="toast.icon"></i>
-      <span>{{ toast.message }}</span>
-    </div>
-    }
-  </div>
-
-</div><!-- /support-page -->
+<!-- TOAST -->
+<div class="toast" *ngIf="showToast" [ngClass]="'toast-'+toastType">
+  <span class="svg-icon svg-icon-md svg-icon-white"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>{{ toastMessage }}
+</div>

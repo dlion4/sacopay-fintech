@@ -1,1705 +1,547 @@
-<!-- ============================================
-     LOANS CENTER — Angular v21 Standalone Component
-     Uses @if, @for control flow syntax
-============================================ -->
-
-<div class="p-3 p-lg-4 fiu" style="max-width:1440px;">
-  <!-- HEADER -->
-  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+<!-- Loans page main content only. No sidebar and no global header. -->
+<section class="ln-shell ln-v2">
+  <header class="ln-page-head">
     <div>
-      <h1 class="h3 fw-bold mb-1">
-        <i class="fas fa-hand-holding-usd me-2" style="color:var(--pri);"></i>
-        Loans <span style="color:var(--pri);">Center</span>
-      </h1>
-      <p class="mb-0" style="color:var(--txm);font-size:14px;">
-        Browse products, apply for loans, track active loans & manage repayments — all in one place.
-      </p>
+      <!-- <h4><span class="ln-title-icon">$</span> Loans <span>Center</span></h4> -->
+      <p>Browse products, apply for loans, track requests, and manage repayments from one clean member workspace.</p>
     </div>
-    <div class="d-flex gap-2">
-      <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openCalcModal()">
-        <i class="fas fa-calculator me-1"></i> Calculator
-      </button>
-      <button class="btn btn-sm text-white rounded-3 fw-semibold"
-              style="background:var(--grd);box-shadow:var(--sh-o);"
-              (click)="scrollToProducts()">
-        <i class="fas fa-plus-circle me-1"></i> Apply for Loan
-      </button>
+    <div class="ln-actions">
+      <button class="ln-btn-outline" (click)="openModal('calculator')">Calculator</button>
+      <button class="ln-btn-primary" (click)="openModal('applyLoan')">Apply for Loan</button>
     </div>
+  </header>
+
+  <!-- Hero -->
+  <article class="ln-hero">
+    <div class="ln-hero-orb"></div>
+    <div class="ln-hero-inner">
+      <div>
+        <p>Loan Portfolio</p>
+        <h2><span>KES</span> {{fmt(portfolio.outstanding)}}<small>.00</small></h2>
+        <small>Total Outstanding Balance</small>
+        <div class="ln-hero-meta">
+          <span>{{portfolio.active}} Active</span>
+          <span>{{portfolio.pending}} Pending</span>
+          <span>{{portfolio.cleared}} Cleared</span>
+        </div>
+      </div>
+      <div class="ln-hero-grid">
+        <button (click)="openModal('loanLimit')"><span>Borrowing Limit</span><strong>KES 476K</strong><small>How it is
+            calculated</small></button>
+        <button (click)="openModal('eligibility')"><span>Available to Borrow</span><strong class="text-green">KES
+            373K</strong><small>Eligible now</small></button>
+        <button (click)="openModal('repaymentDetail')"><span>Repayment Score</span><strong
+            class="text-green">92%</strong><small>Good standing</small></button>
+        <button (click)="setTab('schedule')"><span>Next Payment</span><strong class="text-amber">Mar
+            1</strong><small>KES 3,200 • 4 days</small></button>
+      </div>
+    </div>
+  </article>
+
+  <!-- Action-oriented status cards -->
+  <div class="ln-command-strip">
+    <button (click)="setTab('applications')"><span
+        class="dot amber"></span><strong>{{latestApplication.product}}</strong><small>{{latestApplication.status}} •
+        {{latestApplication.guarantors}}</small></button>
+    <button (click)="openModal('makePayment')"><span class="dot blue"></span><strong>Next payment
+        due</strong><small>Emergency Loan • KES 3,200 on Mar 1</small></button>
+    <button (click)="openModal('autoPay')"><span class="dot green"></span><strong>Auto-pay reminder</strong><small>Set
+        an STK prompt before due dates</small></button>
+    <button (click)="openModal('loanStatement')"><span class="dot cyan"></span><strong>Loan
+        documents</strong><small>Statements, schedules and certificates</small></button>
   </div>
 
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- HERO: PORTFOLIO OVERVIEW -->
-  <!-- ═══════════════════════════════════════════════ -->
-  <div class="hero p-4 p-lg-5 mb-4">
-    <div class="position-relative" style="z-index:1;">
-      <div class="row align-items-center g-3">
-        <div class="col-lg-6">
-          <div style="font-size:12px;color:rgba(255,255,255,0.55);font-weight:500;text-transform:uppercase;letter-spacing:.1em;" class="mb-2">
-            Loan Portfolio
-          </div>
-          <div class="display-5 fw-bold" style="font-family:var(--mono);letter-spacing:-.04em;">
-            <span style="font-size:.55em;opacity:.7;">KES</span>
-            {{ portfolio.totalOutstanding | number:'1.0-0' }}<span style="font-size:.45em;opacity:.4;">.00</span>
-          </div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.55);" class="mt-1">Total Outstanding Balance</div>
-          <div class="d-flex flex-wrap align-items-center gap-3 mt-3" style="font-size:12px;">
-            <span style="color:rgba(255,255,255,0.7);">
-              <i class="fas fa-file-invoice me-1"></i>
-              <strong>{{ portfolio.activeCount }}</strong> Active
+  <!-- Tabs -->
+  <nav class="ln-tabs">
+    <button [class.active]="activeTab==='myLoans'" (click)="setTab('myLoans')">My Loans</button>
+    <button [class.active]="activeTab==='products'" (click)="setTab('products')">Loan Products</button>
+    <button [class.active]="activeTab==='schedule'" (click)="setTab('schedule')">Repayment Schedule</button>
+    <button [class.active]="activeTab==='applications'" (click)="setTab('applications')">Applications</button>
+    <button [class.active]="activeTab==='guarantors'" (click)="setTab('guarantors')">Guarantors</button>
+    <button [class.active]="activeTab==='documents'" (click)="setTab('documents')">Documents</button>
+  </nav>
+
+  <!-- My Loans -->
+  @if (activeTab === 'myLoans') {
+  <section class="ln-tab-panel">
+    <div class="ln-filter-pills">
+      @for (f of [{k:'all',l:'All (4)'},{k:'active',l:'Active (2)'},{k:'pending',l:'Pending
+      (1)'},{k:'cleared',l:'Cleared (1)'}]; track f.k) {
+      <button [class.active]="loanFilter===f.k" (click)="loanFilter=f.k">{{f.l}}</button>
+      }
+    </div>
+
+    <div class="ln-loan-grid refined">
+      @for (loan of filteredLoans; track loan.key) {
+      <article class="ln-loan-card refined-card {{loan.status}}" (click)="openLoanDetail(loan)">
+        <header>
+          <div class="ln-loan-title">
+            <span class="ln-loan-icon tone-{{loan.status}}">
+              @if (loan.key === 'development') {
+                <svg class="svg-icon svg-icon-lg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              } @else if (loan.key === 'school') {
+                <svg class="svg-icon svg-icon-lg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 2.24 3 5 3s5-1.34 5-3v-5"/></svg>
+              } @else if (loan.key === 'personal') {
+                <svg class="svg-icon svg-icon-lg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              } @else {
+                <svg class="svg-icon svg-icon-lg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              }
             </span>
-            <span style="width:1px;height:14px;background:rgba(255,255,255,0.15);"></span>
-            <span style="color:rgba(255,255,255,0.7);">
-              <i class="fas fa-clock me-1"></i>
-              <strong>{{ portfolio.pendingCount }}</strong> Pending
-            </span>
-            <span style="width:1px;height:14px;background:rgba(255,255,255,0.15);"></span>
-            <span style="color:rgba(255,255,255,0.7);">
-              <i class="fas fa-check-double me-1"></i>
-              <strong>{{ portfolio.clearedCount }}</strong> Cleared
-            </span>
+            <div>
+              <h6>{{loan.name}}</h6>
+              <small>{{loan.ref}}</small>
+              <p>@for (tag of loan.tags; track tag) { <span class="ln-pill" [class.ok]="loan.status !== 'pending'"
+                  [class.warn]="loan.status==='pending'">{{tag}}</span> }</p>
+            </div>
           </div>
+          <div class="ln-disbursed"><small>{{loan.status === 'pending' ? 'APPLIED FOR' : loan.status === 'cleared' ?
+              'BORROWED' : 'DISBURSED'}}</small><strong>KES {{fmt(loan.disbursed / 1000)}}K</strong></div>
+        </header>
+
+        @if (loan.status !== 'pending') {
+        <div class="ln-metric-row refined">
+          <div><span>Outstanding</span><strong [class.text-red]="loan.outstanding > 0">{{loan.outstanding ?
+              fmt(loan.outstanding / 1000) + 'K' : '0'}}</strong></div>
+          <div><span>Installment</span><strong>{{fmt(loan.installment)}}</strong></div>
+          <div><span>Rate</span><strong class="text-blue">{{loan.rate}}%</strong></div>
+          <div><span>Period</span><strong>{{loan.period}} mo</strong></div>
         </div>
-        <div class="col-lg-6">
-          <div class="row g-2">
-            <div class="col-6">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Borrowing Limit</div>
-                <div class="v" style="color:var(--pri-l);">{{ portfolio.borrowingLimit }}</div>
-                <a href="javascript:;" class="text-decoration-none" style="font-size:10px;color:var(--pri-l);" (click)="openEligModal()">
-                  How it's calculated →
-                </a>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Available to Borrow</div>
-                <div class="v" style="color:var(--grn);">{{ portfolio.availableToBorrow }}</div>
-                <button class="btn btn-sm text-white rounded-pill px-3 mt-1"
-                        style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.20);font-size:10px;"
-                        (click)="scrollToProducts()">
-                  Apply <i class="fas fa-arrow-right ms-1"></i>
-                </button>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Repayment Score</div>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="v" style="color:var(--grn);">{{ portfolio.repaymentScore }}%</div>
-                  <span class="b" style="background:rgba(0,200,83,0.15);color:var(--grn);border:1px solid rgba(0,200,83,0.25);font-size:9px;">
-                    <i class="fas fa-star"></i> {{ portfolio.repaymentRating }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Next Payment</div>
-                <div class="v" style="color:var(--ylw);">{{ portfolio.nextPaymentDate | date:'MMM d' }}</div>
-                <div style="font-size:10px;color:rgba(255,255,255,0.45);">
-                  KES {{ portfolio.nextPaymentAmount | number:'1.0-0' }} • {{ portfolio.nextPaymentDays }} days
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- TAB NAVIGATION -->
-  <ul class="nav nav-pills mb-4 gap-2 flex-nowrap overflow-auto pb-1" id="mainTabs" role="tablist">
-    <li class="nav-item">
-      <button class="nav-link rounded-pill px-4 py-2"
-              [class.active]="activeTab === 'myLoans'"
-              style="font-size:13px;font-weight:600;"
-              (click)="activeTab = 'myLoans'">
-        <i class="fas fa-folder-open me-1"></i> My Loans
-      </button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link rounded-pill px-4 py-2"
-              [class.active]="activeTab === 'products'"
-              style="font-size:13px;font-weight:600;"
-              (click)="activeTab = 'products'">
-        <i class="fas fa-store me-1"></i> Loan Products
-      </button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link rounded-pill px-4 py-2"
-              [class.active]="activeTab === 'schedule'"
-              style="font-size:13px;font-weight:600;"
-              (click)="activeTab = 'schedule'">
-        <i class="fas fa-calendar-alt me-1"></i> Repayment Schedule
-      </button>
-    </li>
-  </ul>
+        <div class="ln-progress-row"><span>Repaid
+            ({{loan.paid}}/{{loan.totalInstallments}})</span><strong>{{progress(loan)}}%</strong></div>
+        <div class="ln-progress"><span [style.width.%]="progress(loan)"></span></div>
 
-  <div class="tab-content">
-
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- TAB 1: MY LOANS -->
-    <!-- ═══════════════════════════════════════════════ -->
-    <div class="tab-pane fade" id="panelMyLoans"
-         [class.show]="activeTab === 'myLoans'"
-         [class.active]="activeTab === 'myLoans'">
-
-      <!-- Filter Pills -->
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <button class="pill" [class.act]="loanFilter === 'all'" (click)="setLoanFilter('all')">
-          All ({{ myLoans.length }})
-        </button>
-        <button class="pill" [class.act]="loanFilter === 'active'" (click)="setLoanFilter('active')">
-          <i class="fas fa-bolt me-1" style="color:var(--pri);"></i> Active ({{ activeLoansCount }})
-        </button>
-        <button class="pill" [class.act]="loanFilter === 'pending'" (click)="setLoanFilter('pending')">
-          <i class="fas fa-clock me-1" style="color:var(--ylw);"></i> Pending ({{ pendingLoansCount }})
-        </button>
-        <button class="pill" [class.act]="loanFilter === 'cleared'" (click)="setLoanFilter('cleared')">
-          <i class="fas fa-check-double me-1" style="color:var(--grn);"></i> Cleared ({{ clearedLoansCount }})
-        </button>
-      </div>
-
-      <div class="row g-3" id="loanGrid">
-        <!-- Emergency Loan — ACTIVE -->
-        @if (loanFilter === 'all' || loanFilter === 'active') {
-          <div class="col-lg-6">
-            <div class="c ltile st-active p-0" (click)="openLoanDetail('emergency')">
-              <div class="p-3 p-lg-4">
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                  <div class="d-flex align-items-center gap-3">
-                    <div style="width:48px;height:48px;border-radius:14px;background:rgba(229,57,53,0.06);border:1px solid rgba(229,57,53,0.18);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:20px;flex-shrink:0;">
-                      <i class="fas fa-ambulance"></i>
-                    </div>
-                    <div>
-                      <div class="fw-bold" style="font-size:15px;">Emergency Loan</div>
-                      <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">LN-2025-0042</div>
-                      <div class="d-flex gap-2 mt-1">
-                        <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                          <i class="fas fa-check-circle"></i> Active
-                        </span>
-                        <span class="b" style="background:rgba(26, 115, 232, 0.06);color:var(--pri);border:1px solid rgba(26, 115, 232, 0.2);font-size:10px;">
-                          <i class="fas fa-bolt"></i> Quick Loan
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-end">
-                    <div style="font-size:10px;color:var(--txm);">DISBURSED</div>
-                    <div class="fw-bold" style="font-family:var(--mono);font-size:16px;">KES 30K</div>
-                  </div>
-                </div>
-                <div class="row g-2 mb-3 text-center">
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Outstanding</div>
-                    <div class="fw-bold" style="font-family:var(--mono);color:var(--red);font-size:14px;">18.5K</div>
-                  </div>
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Installment</div>
-                    <div class="fw-bold" style="font-family:var(--mono);font-size:14px;">3,200</div>
-                  </div>
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Rate</div>
-                    <div class="fw-bold" style="color:var(--pri);font-size:14px;">12%</div>
-                  </div>
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Period</div>
-                    <div class="fw-bold" style="font-size:14px;">12 mo</div>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between mb-1" style="font-size:11px;">
-                  <span style="color:var(--txm);">Repaid (4/12)</span>
-                  <span class="fw-bold" style="color:var(--pri);">38%</span>
-                </div>
-                <div class="pr">
-                  <div class="pf sh" style="width:38%;background:var(--grd);"></div>
-                </div>
-                <div class="dv my-3"></div>
-                <div class="d-flex align-items-center justify-content-between">
-                  <div class="d-flex align-items-center gap-2">
-                    <div style="width:32px;height:32px;background:rgba(249,168,37,0.10);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ylw);font-size:13px;">
-                      <i class="fas fa-calendar-day"></i>
-                    </div>
-                    <div>
-                      <div style="font-size:12px;font-weight:600;">Next: Mar 1</div>
-                      <div style="font-size:10px;color:var(--txm);">
-                        KES 3,200 • <strong style="color:var(--ylw);">4 days</strong>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="d-flex gap-2">
-                    <a routerLink="/member/loan-repayment"
-                       class="btn btn-sm text-white rounded-3 fw-semibold"
-                       style="background:var(--grd);font-size:12px;"
-                       (click)="$event.stopPropagation()">
-                      <i class="fas fa-hand-holding-usd me-1"></i> Pay
-                    </a>
-                    <button class="btn btn-sm btn-outline-secondary rounded-3" style="font-size:12px;"
-                            (click)="$event.stopPropagation(); openLoanDetail('emergency')">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Development Loan — ACTIVE -->
-        @if (loanFilter === 'all' || loanFilter === 'active') {
-          <div class="col-lg-6">
-            <div class="c ltile st-active p-0" (click)="openLoanDetail('development')">
-              <div class="p-3 p-lg-4">
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                  <div class="d-flex align-items-center gap-3">
-                    <div style="width:48px;height:48px;border-radius:14px;background:rgba(2,136,209,0.06);border:1px solid rgba(2,136,209,0.18);display:flex;align-items:center;justify-content:center;color:var(--blu);font-size:20px;flex-shrink:0;">
-                      <i class="fas fa-home"></i>
-                    </div>
-                    <div>
-                      <div class="fw-bold" style="font-size:15px;">Development Loan</div>
-                      <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">LN-2024-0028</div>
-                      <div class="d-flex gap-2 mt-1">
-                        <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                          <i class="fas fa-check-circle"></i> Active
-                        </span>
-                        <span class="b" style="background:rgba(2,136,209,0.06);color:var(--blu);border:1px solid rgba(2,136,209,0.18);font-size:10px;">
-                          <i class="fas fa-users"></i> 3 Guarantors
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="text-end">
-                    <div style="font-size:10px;color:var(--txm);">DISBURSED</div>
-                    <div class="fw-bold" style="font-family:var(--mono);font-size:16px;">KES 100K</div>
-                  </div>
-                </div>
-                <div class="row g-2 mb-3 text-center">
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Outstanding</div>
-                    <div class="fw-bold" style="font-family:var(--mono);color:var(--red);font-size:14px;">85K</div>
-                  </div>
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Installment</div>
-                    <div class="fw-bold" style="font-family:var(--mono);font-size:14px;">4,800</div>
-                  </div>
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Rate</div>
-                    <div class="fw-bold" style="color:var(--blu);font-size:14px;">10%</div>
-                  </div>
-                  <div class="col-3">
-                    <div style="font-size:10px;color:var(--txm);">Period</div>
-                    <div class="fw-bold" style="font-size:14px;">36 mo</div>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between mb-1" style="font-size:11px;">
-                  <span style="color:var(--txm);">Repaid (5/36)</span>
-                  <span class="fw-bold" style="color:var(--blu);">15%</span>
-                </div>
-                <div class="pr">
-                  <div class="pf" style="width:15%;background:var(--blu);"></div>
-                </div>
-                <div class="dv my-3"></div>
-                <div class="d-flex align-items-center justify-content-between">
-                  <div class="d-flex align-items-center gap-2">
-                    <div style="width:32px;height:32px;background:rgba(0,200,83,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--grn);font-size:13px;">
-                      <i class="fas fa-check"></i>
-                    </div>
-                    <div>
-                      <div style="font-size:12px;font-weight:600;">Next: Mar 15</div>
-                      <div style="font-size:10px;color:var(--txm);">KES 4,800 • 18 days</div>
-                    </div>
-                  </div>
-                  <div class="d-flex gap-2">
-                    <a routerLink="/member/loan-repayment"
-                       class="btn btn-sm text-white rounded-3 fw-semibold"
-                       style="background:var(--grd);font-size:12px;"
-                       (click)="$event.stopPropagation()">
-                      <i class="fas fa-hand-holding-usd me-1"></i> Pay
-                    </a>
-                    <button class="btn btn-sm btn-outline-secondary rounded-3" style="font-size:12px;"
-                            (click)="$event.stopPropagation(); openLoanDetail('development')">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Pending Application -->
-        @if (loanFilter === 'all' || loanFilter === 'pending') {
-          <div class="col-lg-6">
-            <div class="c ltile st-pending p-0" (click)="openAppTrackModal()">
-              <div class="p-3 p-lg-4">
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                  <div class="d-flex align-items-center gap-3">
-                    <div style="width:48px;height:48px;border-radius:14px;background:rgba(171,0,217,0.06);border:1px solid rgba(171,0,217,0.18);display:flex;align-items:center;justify-content:center;color:var(--pur);font-size:20px;flex-shrink:0;">
-                      <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div>
-                      <div class="fw-bold" style="font-size:15px;">School Fees Loan</div>
-                      <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">LN-2025-0058</div>
-                      <span class="b mt-1" style="background:rgba(249,168,37,0.10);color:var(--ylw);border:1px solid rgba(249,168,37,0.20);">
-                        <i class="fas fa-clock pa"></i> Pending Approval
-                      </span>
-                    </div>
-                  </div>
-                  <div class="text-end">
-                    <div style="font-size:10px;color:var(--txm);">APPLIED FOR</div>
-                    <div class="fw-bold" style="font-family:var(--mono);font-size:16px;color:var(--ylw);">KES 50K</div>
-                  </div>
-                </div>
-                <div class="alert border-0 mb-0 py-2 px-3"
-                     style="background:rgba(249,168,37,0.06);border-radius:10px;font-size:12px;color:var(--ylw);">
-                  <i class="fas fa-hourglass-half me-1"></i> Under admin review. Guarantors confirmed (2/2). Expected decision: 3-5 business days.
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Cleared -->
-        @if (loanFilter === 'all' || loanFilter === 'cleared') {
-          <div class="col-lg-6">
-            <div class="c ltile st-cleared p-0" style="opacity:0.75;" (click)="openLoanDetail('personal')">
-              <div class="p-3 p-lg-4">
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                  <div class="d-flex align-items-center gap-3">
-                    <div style="width:48px;height:48px;border-radius:14px;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);display:flex;align-items:center;justify-content:center;color:var(--grn);font-size:20px;flex-shrink:0;">
-                      <i class="fas fa-check-double"></i>
-                    </div>
-                    <div>
-                      <div class="fw-bold" style="font-size:15px;">Personal Loan</div>
-                      <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">LN-2024-0015</div>
-                      <span class="b mt-1" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                        <i class="fas fa-flag-checkered"></i> Fully Cleared
-                      </span>
-                    </div>
-                  </div>
-                  <div class="text-end">
-                    <div style="font-size:10px;color:var(--txm);">BORROWED</div>
-                    <div class="fw-bold" style="font-family:var(--mono);font-size:16px;">KES 20K</div>
-                  </div>
-                </div>
-                <div class="pr">
-                  <div class="pf" style="width:100%;background:var(--grn);"></div>
-                </div>
-                <div class="d-flex justify-content-between mt-2" style="font-size:12px;">
-                  <span style="color:var(--grn);font-weight:600;">
-                    <i class="fas fa-check-circle me-1"></i> 100% Repaid
-                  </span>
-                  <span style="color:var(--txm);">Cleared Sep 2024</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- TAB 2: LOAN PRODUCTS -->
-    <!-- ═══════════════════════════════════════════════ -->
-    <div class="tab-pane fade" id="panelProducts"
-         [class.show]="activeTab === 'products'"
-         [class.active]="activeTab === 'products'">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-          <h5 class="fw-bold mb-1">
-            <i class="fas fa-store me-2" style="color:var(--pri);"></i>Available Loan Products
-          </h5>
-          <p class="mb-0" style="font-size:13px;color:var(--txm);">
-            Products configured by SACCO admin. Select one to see full terms, penalties & apply.
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="pill" [class.act]="productFilter === 'all'" (click)="setProductFilter('all')">All</button>
-          <button class="pill" [class.act]="productFilter === 'quick'" (click)="setProductFilter('quick')">
-            <i class="fas fa-bolt me-1"></i> Quick
-          </button>
-          <button class="pill" [class.act]="productFilter === 'guarantor'" (click)="setProductFilter('guarantor')">
-            <i class="fas fa-users me-1"></i> Guarantor
-          </button>
-          <button class="pill" [class.act]="productFilter === 'no-guarantor'" (click)="setProductFilter('no-guarantor')">
-            <i class="fas fa-user me-1"></i> No Guarantor
-          </button>
-        </div>
-      </div>
-
-      <div class="row g-3" id="productGrid">
-        <!-- Emergency -->
-        @if (productFilter === 'all' || productFilter === 'quick' || productFilter === 'no-guarantor') {
-          <div class="col-md-6 col-lg-4">
-            <div class="pcard h-100" (click)="openProductDetail('emergency')"
-                 [class.selected]="selectedProductKey === 'emergency'">
-              <div class="ribbon">POPULAR</div>
-              <div class="pico" style="background:rgba(229,57,53,0.06);border:1px solid rgba(229,57,53,0.18);color:var(--red);">
-                <i class="fas fa-ambulance"></i>
-              </div>
-              <h6 class="fw-bold mb-1">Emergency Loan</h6>
-              <div class="d-flex gap-2 mb-3">
-                <span class="b" style="background:rgba(26, 115, 232, 0.06);color:var(--pri);border:1px solid var(--pri-bdr);font-size:9px;">
-                  <i class="fas fa-bolt"></i> Quick
-                </span>
-                <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;">
-                  <i class="fas fa-user"></i> No Guarantor
-                </span>
-              </div>
-              <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Amount</span>
-                  <strong style="font-family:var(--mono);">KES 50,000</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Interest Rate</span>
-                  <strong style="color:var(--red);">12% p.a.</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Period</span>
-                  <strong>12 months</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Processing Fee</span>
-                  <strong>1%</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Guarantors</span>
-                  <strong style="color:var(--grn);">None required</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Disbursement</span>
-                  <strong>Within 24h</strong>
-                </div>
-              </div>
-              <button class="btn btn-sm text-white rounded-3 w-100 fw-semibold mt-3" style="background:var(--grd);"
-                      (click)="$event.stopPropagation(); startApplication('emergency')">
-                <i class="fas fa-paper-plane me-1"></i> Apply Now
-              </button>
-            </div>
-          </div>
-        }
-
-        <!-- Development -->
-        @if (productFilter === 'all' || productFilter === 'guarantor') {
-          <div class="col-md-6 col-lg-4">
-            <div class="pcard h-100" (click)="openProductDetail('development')"
-                 [class.selected]="selectedProductKey === 'development'">
-              <div class="pico" style="background:rgba(2,136,209,0.06);border:1px solid rgba(2,136,209,0.18);color:var(--blu);">
-                <i class="fas fa-home"></i>
-              </div>
-              <h6 class="fw-bold mb-1">Development Loan</h6>
-              <div class="d-flex gap-2 mb-3">
-                <span class="b" style="background:rgba(2,136,209,0.06);color:var(--blu);border:1px solid rgba(2,136,209,0.18);font-size:9px;">
-                  <i class="fas fa-chart-line"></i> Long Term
-                </span>
-                <span class="b" style="background:rgba(249,168,37,0.08);color:var(--ylw);border:1px solid rgba(249,168,37,0.18);font-size:9px;">
-                  <i class="fas fa-users"></i> 3 Guarantors
-                </span>
-              </div>
-              <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Amount</span>
-                  <strong style="font-family:var(--mono);">KES 500,000</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Interest Rate</span>
-                  <strong style="color:var(--blu);">10% p.a.</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Period</span>
-                  <strong>36 months</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Processing Fee</span>
-                  <strong>2%</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Guarantors</span>
-                  <strong style="color:var(--ylw);">3 Required</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Disbursement</span>
-                  <strong>3-5 days</strong>
-                </div>
-              </div>
-              <button class="btn btn-sm text-white rounded-3 w-100 fw-semibold mt-3" style="background:var(--grd);"
-                      (click)="$event.stopPropagation(); startApplication('development')">
-                <i class="fas fa-paper-plane me-1"></i> Apply Now
-              </button>
-            </div>
-          </div>
-        }
-
-        <!-- School Fees -->
-        @if (productFilter === 'all' || productFilter === 'guarantor') {
-          <div class="col-md-6 col-lg-4">
-            <div class="pcard h-100" (click)="openProductDetail('school')"
-                 [class.selected]="selectedProductKey === 'school'">
-              <div class="pico" style="background:rgba(171,0,217,0.06);border:1px solid rgba(171,0,217,0.18);color:var(--pur);">
-                <i class="fas fa-graduation-cap"></i>
-              </div>
-              <h6 class="fw-bold mb-1">School Fees Loan</h6>
-              <div class="d-flex gap-2 mb-3">
-                <span class="b" style="background:rgba(171,0,217,0.06);color:var(--pur);border:1px solid rgba(171,0,217,0.18);font-size:9px;">
-                  <i class="fas fa-graduation-cap"></i> Education
-                </span>
-                <span class="b" style="background:rgba(249,168,37,0.08);color:var(--ylw);border:1px solid rgba(249,168,37,0.18);font-size:9px;">
-                  <i class="fas fa-users"></i> 2 Guarantors
-                </span>
-              </div>
-              <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Amount</span>
-                  <strong style="font-family:var(--mono);">KES 100,000</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Interest Rate</span>
-                  <strong style="color:var(--pur);">8% p.a.</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Period</span>
-                  <strong>12 months</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Processing Fee</span>
-                  <strong>1%</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Guarantors</span>
-                  <strong style="color:var(--ylw);">2 Required</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Disbursement</span>
-                  <strong>Direct to school</strong>
-                </div>
-              </div>
-              <button class="btn btn-sm text-white rounded-3 w-100 fw-semibold mt-3" style="background:var(--grd);"
-                      (click)="$event.stopPropagation(); startApplication('school')">
-                <i class="fas fa-paper-plane me-1"></i> Apply Now
-              </button>
-            </div>
-          </div>
-        }
-
-        <!-- Salary Advance -->
-        @if (productFilter === 'all' || productFilter === 'quick' || productFilter === 'no-guarantor') {
-          <div class="col-md-6 col-lg-4">
-            <div class="pcard h-100" (click)="openProductDetail('salary')"
-                 [class.selected]="selectedProductKey === 'salary'">
-              <div class="pico" style="background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);color:var(--grn);">
-                <i class="fas fa-money-bill-wave"></i>
-              </div>
-              <h6 class="fw-bold mb-1">Salary Advance</h6>
-              <div class="d-flex gap-2 mb-3">
-                <span class="b" style="background:rgba(26, 115, 232, 0.06);color:var(--pri);border:1px solid var(--pri-bdr);font-size:9px;">
-                  <i class="fas fa-bolt"></i> Instant
-                </span>
-                <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;">
-                  <i class="fas fa-user"></i> No Guarantor
-                </span>
-              </div>
-              <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Amount</span>
-                  <strong style="font-family:var(--mono);">KES 30,000</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Interest Rate</span>
-                  <strong style="color:var(--grn);">5% flat</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Period</span>
-                  <strong>3 months</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Processing Fee</span>
-                  <strong>0.5%</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Guarantors</span>
-                  <strong style="color:var(--grn);">None</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Disbursement</span>
-                  <strong style="color:var(--grn);">Instant STK</strong>
-                </div>
-              </div>
-              <button class="btn btn-sm text-white rounded-3 w-100 fw-semibold mt-3" style="background:var(--grd);"
-                      (click)="$event.stopPropagation(); startApplication('salary')">
-                <i class="fas fa-bolt me-1"></i> Get Instantly
-              </button>
-            </div>
-          </div>
-        }
-
-        <!-- Business -->
-        @if (productFilter === 'all' || productFilter === 'guarantor') {
-          <div class="col-md-6 col-lg-4">
-            <div class="pcard h-100" (click)="openProductDetail('business')"
-                 [class.selected]="selectedProductKey === 'business'">
-              <div class="pico" style="background:rgba(249,168,37,0.08);border:1px solid rgba(249,168,37,0.18);color:var(--ylw);">
-                <i class="fas fa-briefcase"></i>
-              </div>
-              <h6 class="fw-bold mb-1">Business Loan</h6>
-              <div class="d-flex gap-2 mb-3">
-                <span class="b" style="background:rgba(249,168,37,0.08);color:var(--ylw);border:1px solid rgba(249,168,37,0.18);font-size:9px;">
-                  <i class="fas fa-briefcase"></i> Business
-                </span>
-                <span class="b" style="background:rgba(249,168,37,0.08);color:var(--ylw);border:1px solid rgba(249,168,37,0.18);font-size:9px;">
-                  <i class="fas fa-users"></i> 4 Guarantors
-                </span>
-              </div>
-              <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Amount</span>
-                  <strong style="font-family:var(--mono);">KES 1,000,000</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Interest Rate</span>
-                  <strong style="color:var(--ylw);">14% p.a.</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Period</span>
-                  <strong>48 months</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Guarantors</span>
-                  <strong style="color:var(--ylw);">4 Required</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Collateral</span>
-                  <strong style="color:var(--red);">Required</strong>
-                </div>
-              </div>
-              <button class="btn btn-sm text-white rounded-3 w-100 fw-semibold mt-3" style="background:var(--grd);"
-                      (click)="$event.stopPropagation(); startApplication('business')">
-                <i class="fas fa-paper-plane me-1"></i> Apply Now
-              </button>
-            </div>
-          </div>
-        }
-
-        <!-- Asset Finance -->
-        @if (productFilter === 'all' || productFilter === 'guarantor') {
-          <div class="col-md-6 col-lg-4">
-            <div class="pcard h-100" (click)="openProductDetail('asset')"
-                 [class.selected]="selectedProductKey === 'asset'">
-              <div class="pico" style="background:rgba(26,29,46,0.04);border:1px solid rgba(26,29,46,0.10);color:var(--tx2);">
-                <i class="fas fa-car"></i>
-              </div>
-              <h6 class="fw-bold mb-1">Asset Finance</h6>
-              <div class="d-flex gap-2 mb-3">
-                <span class="b" style="background:rgba(26,29,46,0.04);color:var(--tx2);border:1px solid rgba(26,29,46,0.10);font-size:9px;">
-                  <i class="fas fa-car"></i> Secured
-                </span>
-                <span class="b" style="background:rgba(249,168,37,0.08);color:var(--ylw);border:1px solid rgba(249,168,37,0.18);font-size:9px;">
-                  <i class="fas fa-users"></i> 2 Guarantors
-                </span>
-              </div>
-              <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Amount</span>
-                  <strong style="font-family:var(--mono);">KES 2,000,000</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Interest Rate</span>
-                  <strong>13% p.a.</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Max Period</span>
-                  <strong>60 months</strong>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Collateral</span>
-                  <strong style="color:var(--red);">Asset logbook</strong>
-                </div>
-              </div>
-              <button class="btn btn-sm text-white rounded-3 w-100 fw-semibold mt-3" style="background:var(--grd);"
-                      (click)="$event.stopPropagation(); startApplication('asset')">
-                <i class="fas fa-paper-plane me-1"></i> Apply Now
-              </button>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- TAB 3: REPAYMENT SCHEDULE -->
-    <!-- ═══════════════════════════════════════════════ -->
-    <div class="tab-pane fade" id="panelSchedule"
-         [class.show]="activeTab === 'schedule'"
-         [class.active]="activeTab === 'schedule'">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-          <h5 class="fw-bold mb-1">
-            <i class="fas fa-calendar-alt me-2" style="color:var(--pri);"></i>Repayment Schedule
-          </h5>
-          <p class="mb-0" style="font-size:13px;color:var(--txm);">
-            Combined amortization view for all active loans. Click any row for details.
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <select class="form-select form-select-sm" style="width:auto;font-size:12px;border-radius:8px;"
-                  [(ngModel)]="scheduleLoanFilter" (change)="filterSchedule()">
-            <option value="all">All Active Loans</option>
-            <option value="emergency">Emergency (LN-2025-0042)</option>
-            <option value="development">Development (LN-2024-0028)</option>
-          </select>
-          <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="exportSchedulePdf()">
-            <i class="fas fa-download"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Schedule Summary -->
-      <div class="row g-3 mb-4">
-        <div class="col-md-3">
-          <div class="kpi text-center">
-            <div class="k">Total Monthly Due</div>
-            <div class="v" style="color:var(--pri);">KES 8,000</div>
-            <div style="font-size:10px;color:var(--txm);">Both loans combined</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="kpi text-center">
-            <div class="k">Remaining Payments</div>
-            <div class="v">39</div>
-            <div style="font-size:10px;color:var(--txm);">Across all loans</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="kpi text-center">
-            <div class="k">Total Remaining</div>
-            <div class="v" style="color:var(--red);">KES 103.5K</div>
-            <div style="font-size:10px;color:var(--txm);">Principal + interest</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="kpi text-center">
-            <div class="k">Projected Clearance</div>
-            <div class="v" style="color:var(--grn);">Dec 2027</div>
-            <div style="font-size:10px;color:var(--txm);">All loans fully paid</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Amortization Table -->
-      <div class="c">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0" style="font-size:12px;">
-            <thead>
-              <tr style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--txm);background:rgba(26,29,46,0.02);">
-                <th class="border-0 py-3 px-3">#</th>
-                <th class="border-0">Due Date</th>
-                <th class="border-0">Loan</th>
-                <th class="border-0">Principal</th>
-                <th class="border-0">Interest</th>
-                <th class="border-0">Total</th>
-                <th class="border-0">Balance After</th>
-                <th class="border-0">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (scheduleLoanFilter === 'all' || scheduleLoanFilter === 'emergency') {
-                <tr class="sch-row paid"
-                    (click)="showToast('Installment 4 paid on Feb 14, 2025 via M-Pesa STK','success')">
-                  <td class="px-3">4</td>
-                  <td>Feb 14</td>
-                  <td>
-                    <span class="b" style="background:rgba(229,57,53,0.06);color:var(--red);border:1px solid rgba(229,57,53,0.18);font-size:10px;">Emergency</span>
-                  </td>
-                  <td style="font-family:var(--mono);">1,688</td>
-                  <td style="font-family:var(--mono);">212</td>
-                  <td class="fw-bold" style="font-family:var(--mono);">1,900</td>
-                  <td style="font-family:var(--mono);">18,500</td>
-                  <td>
-                    <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                      <i class="fas fa-check"></i> Paid
-                    </span>
-                  </td>
-                </tr>
-              }
-
-              @if (scheduleLoanFilter === 'all' || scheduleLoanFilter === 'development') {
-                <tr class="sch-row paid"
-                    (click)="showToast('Installment 5 paid on Feb 15 via Bank EFT','success')">
-                  <td class="px-3">5</td>
-                  <td>Feb 15</td>
-                  <td>
-                    <span class="b" style="background:rgba(2,136,209,0.06);color:var(--blu);border:1px solid rgba(2,136,209,0.18);font-size:10px;">Development</span>
-                  </td>
-                  <td style="font-family:var(--mono);">3,950</td>
-                  <td style="font-family:var(--mono);">850</td>
-                  <td class="fw-bold" style="font-family:var(--mono);">4,800</td>
-                  <td style="font-family:var(--mono);">85,000</td>
-                  <td>
-                    <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                      <i class="fas fa-check"></i> Paid
-                    </span>
-                  </td>
-                </tr>
-              }
-
-              @if (scheduleLoanFilter === 'all' || scheduleLoanFilter === 'emergency') {
-                <tr class="sch-row due"
-                    (click)="showToast('Redirecting to payment for Emergency Loan KES 3,200','info')">
-                  <td class="px-3 fw-bold" style="color:var(--ylw);">5</td>
-                  <td class="fw-bold" style="color:var(--ylw);">Mar 1</td>
-                  <td>
-                    <span class="b" style="background:rgba(229,57,53,0.06);color:var(--red);border:1px solid rgba(229,57,53,0.18);font-size:10px;">Emergency</span>
-                  </td>
-                  <td style="font-family:var(--mono);">3,015</td>
-                  <td style="font-family:var(--mono);">185</td>
-                  <td class="fw-bold" style="font-family:var(--mono);color:var(--ylw);">3,200</td>
-                  <td style="font-family:var(--mono);">15,485</td>
-                  <td>
-                    <span class="b" style="background:rgba(249,168,37,0.10);color:var(--ylw);border:1px solid rgba(249,168,37,0.20);">
-                      <i class="fas fa-clock pa"></i> Due 4d
-                    </span>
-                  </td>
-                </tr>
-              }
-
-              @if (scheduleLoanFilter === 'all' || scheduleLoanFilter === 'development') {
-                <tr class="sch-row">
-                  <td class="px-3">6</td>
-                  <td>Mar 15</td>
-                  <td>
-                    <span class="b" style="background:rgba(2,136,209,0.06);color:var(--blu);border:1px solid rgba(2,136,209,0.18);font-size:10px;">Development</span>
-                  </td>
-                  <td style="font-family:var(--mono);">3,990</td>
-                  <td style="font-family:var(--mono);">810</td>
-                  <td class="fw-bold" style="font-family:var(--mono);">4,800</td>
-                  <td style="font-family:var(--mono);">81,010</td>
-                  <td>
-                    <span class="b" style="background:rgba(26,29,46,0.04);color:var(--txm);border:1px solid rgba(26,29,46,0.10);">Upcoming</span>
-                  </td>
-                </tr>
-              }
-
-              @if (scheduleLoanFilter === 'all' || scheduleLoanFilter === 'emergency') {
-                <tr class="sch-row">
-                  <td class="px-3">6</td>
-                  <td>Apr 1</td>
-                  <td>
-                    <span class="b" style="background:rgba(229,57,53,0.06);color:var(--red);border:1px solid rgba(229,57,53,0.18);font-size:10px;">Emergency</span>
-                  </td>
-                  <td style="font-family:var(--mono);">3,045</td>
-                  <td style="font-family:var(--mono);">155</td>
-                  <td class="fw-bold" style="font-family:var(--mono);">3,200</td>
-                  <td style="font-family:var(--mono);">12,440</td>
-                  <td>
-                    <span class="b" style="background:rgba(26,29,46,0.04);color:var(--txm);border:1px solid rgba(26,29,46,0.10);">Upcoming</span>
-                  </td>
-                </tr>
-              }
-
-              @if (scheduleLoanFilter === 'all' || scheduleLoanFilter === 'development') {
-                <tr class="sch-row">
-                  <td class="px-3">7</td>
-                  <td>Apr 15</td>
-                  <td>
-                    <span class="b" style="background:rgba(2,136,209,0.06);color:var(--blu);border:1px solid rgba(2,136,209,0.18);font-size:10px;">Development</span>
-                  </td>
-                  <td style="font-family:var(--mono);">4,030</td>
-                  <td style="font-family:var(--mono);">770</td>
-                  <td class="fw-bold" style="font-family:var(--mono);">4,800</td>
-                  <td style="font-family:var(--mono);">76,980</td>
-                  <td>
-                    <span class="b" style="background:rgba(26,29,46,0.04);color:var(--txm);border:1px solid rgba(26,29,46,0.10);">Upcoming</span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <div class="p-3 border-top d-flex justify-content-between align-items-center"
-             style="border-color:rgba(26,29,46,0.06)!important;font-size:12px;">
-          <span style="color:var(--txm);">Showing next 6 installments</span>
-          <a routerLink="/member/loan-repayment" class="btn btn-sm text-white rounded-3 fw-semibold"
-             style="background:var(--grd);">
-            <i class="fas fa-hand-holding-usd me-1"></i> Make Payment
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /tab-content -->
-</div><!-- /page-content -->
-
-
-<!-- ═════════════════════════════════════════════════════════════ -->
-<!-- MEGA MODALS -->
-<!-- ═════════════════════════════════════════════════════════════ -->
-
-<!-- LOAN DETAIL MODAL -->
-@if (loanDetailModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;max-height:90vh;">
-        <div style="height:3px;" [style.background]="selectedLoan?.color ?? 'var(--pri)'"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold">
-            <i class="fas me-2" [ngClass]="'fa-' + (selectedLoan?.icon ?? 'file-contract')"
-               [style.color]="selectedLoan?.color ?? 'var(--pri)'"></i>
-            {{ selectedLoan?.name }} — {{ selectedLoan?.ref }}
-          </h5>
-          <button type="button" class="btn-close" (click)="closeLoanDetailModal()"></button>
-        </div>
-        @if (selectedLoan) {
-          <div class="modal-body px-4 pb-4">
-            <div class="row g-4">
-              <div class="col-md-7">
-                <div class="text-center p-4 rounded-4 mb-3" style="background:var(--inp);">
-                  <div style="font-size:12px;color:var(--txm);">Outstanding Balance</div>
-                  <div style="font-size:32px;font-weight:800;font-family:var(--mono);"
-                       [style.color]="selectedLoan.outstanding > 0 ? 'var(--red)' : 'var(--grn)'">
-                    KES {{ selectedLoan.outstanding | number:'1.0-0' }}
-                  </div>
-                  <div class="d-flex justify-content-center gap-2 mt-2">
-                    <span class="b" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                      <i class="fas" [ngClass]="selectedLoan.status === 'Cleared' ? 'fa-flag-checkered' : 'fa-check-circle'"></i>
-                      {{ selectedLoan.status }}
-                    </span>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between mb-1" style="font-size:12px;">
-                  <span style="color:var(--txm);">Repaid ({{ selectedLoan.paid }}/{{ selectedLoan.total }})</span>
-                  <span class="fw-bold" style="color:var(--pri);">{{ selectedLoan.repaymentPct }}%</span>
-                </div>
-                <div class="pr mb-3">
-                  <div class="pf sh" [style.width.%]="selectedLoan.repaymentPct" style="background:var(--grd);"></div>
-                </div>
-                <div class="row g-2 mb-3" style="font-size:12px;">
-                  <div class="col-4">
-                    <div class="kpi text-center">
-                      <div class="k">Disbursed</div>
-                      <div class="v">KES {{ selectedLoan.amountDisp }}</div>
-                    </div>
-                  </div>
-                  <div class="col-4">
-                    <div class="kpi text-center">
-                      <div class="k">Rate</div>
-                      <div class="v" style="color:var(--pri);">{{ selectedLoan.rate }}</div>
-                    </div>
-                  </div>
-                  <div class="col-4">
-                    <div class="kpi text-center">
-                      <div class="k">Installment</div>
-                      <div class="v">KES {{ selectedLoan.installment | number:'1.0-0' }}</div>
-                    </div>
-                  </div>
-                </div>
-                @if (selectedLoan.guarantors && selectedLoan.guarantors.length > 0) {
-                  <div class="rounded-4 p-3 mb-3" style="background:var(--inp);">
-                    <div class="fw-semibold mb-2" style="font-size:13px;">
-                      <i class="fas fa-handshake me-2" style="color:var(--pur);"></i>Guarantors
-                    </div>
-                    <div class="d-flex flex-column gap-1">
-                      @for (g of selectedLoan.guarantors; track g) {
-                        <div style="font-size:12px;color:var(--tx2);">• {{ g }}</div>
-                      }
-                    </div>
-                  </div>
-                }
-                @if (selectedLoan.status === 'Active') {
-                  <div class="d-flex gap-2">
-                    <a routerLink="/member/loan-repayment"
-                       class="btn btn-sm text-white rounded-3 fw-semibold flex-fill"
-                       style="background:var(--grd);">
-                      <i class="fas fa-hand-holding-usd me-1"></i> Pay KES {{ selectedLoan.nextAmt | number:'1.0-0' }}
-                    </a>
-                    <button class="btn btn-sm btn-outline-secondary rounded-3 flex-fill"
-                            (click)="showToast('Loan statement PDF downloaded','success')">
-                      <i class="fas fa-download me-1"></i> Statement
-                    </button>
-                  </div>
-                }
-                @if (selectedLoan.status === 'Cleared') {
-                  <button class="btn btn-sm btn-outline-secondary rounded-3 w-100"
-                          (click)="showToast('Clearance certificate downloaded','success')">
-                    <i class="fas fa-certificate me-1"></i> Download Clearance Certificate
-                  </button>
-                }
-              </div>
-              <div class="col-md-5">
-                <div class="rounded-4 p-3" style="background:var(--inp);">
-                  <div class="fw-semibold mb-2" style="font-size:13px;">
-                    <i class="fas fa-info-circle me-2" style="color:var(--pri);"></i>Loan Info
-                  </div>
-                  <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Reference</span>
-                      <span class="fw-semibold" style="font-family:var(--mono);color:var(--pri);">{{ selectedLoan.ref }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Disbursed</span>
-                      <span>{{ selectedLoan.disburseDate }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Period</span>
-                      <span>{{ selectedLoan.period }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Next Due</span>
-                      <span class="fw-bold" style="color:var(--ylw);">{{ selectedLoan.nextDue }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Total Paid</span>
-                      <span class="fw-bold" style="color:var(--grn);">KES {{ selectedLoan.totalPaid | number:'1.0-0' }}</span>
-                    </div>
-                  </div>
-                </div>
-                @if (selectedLoan.status === 'Active') {
-                  <div class="rounded-4 p-3 mt-3" style="background:rgba(229,57,53,0.04);border:1px solid rgba(229,57,53,0.12);">
-                    <div class="fw-semibold mb-2" style="font-size:13px;color:var(--red);">
-                      <i class="fas fa-exclamation-triangle me-2"></i>Penalties
-                    </div>
-                    <div style="font-size:11px;color:var(--tx2);">
-                      Late payment: 5% of overdue amount per month. Grace period: 3 days after due date. Default after 90 days triggers recovery from savings and guarantors.
-                    </div>
-                  </div>
-                }
-                <div class="rounded-4 p-3 mt-3" style="background:rgba(2,136,209,0.04);border:1px solid rgba(2,136,209,0.12);">
-                  <div class="fw-semibold mb-2" style="font-size:13px;color:var(--blu);">
-                    <i class="fas fa-shield-alt me-2"></i>Admin Rules
-                  </div>
-                  <div style="font-size:11px;color:var(--tx2);">
-                    Loan terms, rates, and penalties are configured by your SACCO administrator. Contact support for clarifications or disputes.
-                  </div>
-                  <a routerLink="/member/support" class="btn btn-sm btn-outline-primary rounded-3 mt-2 w-100">
-                    <i class="fas fa-headset me-1"></i> Contact Support
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- MULTI-STEP APPLICATION MODAL -->
-@if (applyModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;max-height:90vh;">
-        <div style="height:3px;background:var(--grd);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <div>
-            <h5 class="modal-title fw-bold">
-              <i class="fas fa-file-invoice-dollar me-2" style="color:var(--pri);"></i>Loan Application
-            </h5>
-            <p class="mb-0 mt-1" style="font-size:12px;color:var(--txm);">{{ applyProductName }}</p>
-          </div>
-          <button type="button" class="btn-close" (click)="closeApplyModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <!-- Wizard Bar -->
-          <div class="wizard-bar">
-            @for (step of applyWizardSteps; track $index; let i = $index; let last = $last) {
-              <div class="wz-step">
-                <div class="d-flex flex-column align-items-center">
-                  <div class="wz-dot"
-                       [class.done]="i + 1 < applyStep"
-                       [class.active]="i + 1 === applyStep"
-                       [class.pending]="i + 1 > applyStep">
-                    @if (i + 1 < applyStep) {
-                      <i class="fas fa-check" style="font-size:10px;"></i>
-                    } @else {
-                      <span>{{ i + 1 }}</span>
-                    }
-                  </div>
-                  <div class="wz-label"
-                       [style.color]="i + 1 === applyStep ? 'var(--pri)' : i + 1 < applyStep ? 'var(--grn)' : 'var(--txm)'">
-                    {{ step }}
-                  </div>
-                </div>
-              </div>
-              @if (!last) {
-                <div class="wz-line"
-                     [class.done]="i + 1 < applyStep"
-                     [class.active]="i + 1 === applyStep"
-                     [class.pending]="i + 1 > applyStep"></div>
-              }
+        <footer>
+          <div><strong>{{loan.status === 'cleared' ? 'Cleared' : 'Next: ' +
+              loan.nextDue}}</strong><small>{{loan.nextMeta || 'Fully paid'}}</small></div>
+          @if (loan.status === 'active') { <button class="ln-btn-primary sm"
+            (click)="$event.stopPropagation(); selectedLoan=loan; openModal('makePayment')">Pay</button> }
+          <button class="ln-btn-outline sm" (click)="$event.stopPropagation(); openLoanDetail(loan)">Details</button>
+        </footer>
+        } @else {
+        <div class="ln-application-summary-card">
+          <div class="ln-mini-steps">
+            @for (step of applicationSteps; track step; let i = $index) {
+            <span [class.done]="i < 3" [class.active]="i === 3">{{i + 1}}</span>
             }
           </div>
-
-          <!-- Step 1: Loan Details -->
-          @if (applyStep === 1) {
-            <h6 class="fw-bold mb-3"><i class="fas fa-file-invoice me-2" style="color:var(--pri);"></i>Loan Details</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold" style="font-size:13px;">Loan Amount (KES) <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <span class="input-group-text fw-bold" style="border-radius:12px 0 0 12px;background:var(--inp);">KES</span>
-                  <input type="number" class="form-control" [(ngModel)]="applyData.amount" placeholder="0"
-                         style="border-radius:0 12px 12px 0;font-family:var(--mono);font-size:16px;"
-                         (input)="updateAppCalc()">
-                </div>
-                <div class="form-text" style="font-size:11px;">Max: {{ applyProduct?.max ?? 'N/A' }} • Min: KES 1,000</div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold" style="font-size:13px;">Repayment Period <span class="text-danger">*</span></label>
-                <select class="form-select" style="border-radius:12px;" [(ngModel)]="applyData.period" (change)="updateAppCalc()">
-                  <option [ngValue]="3">3 months</option>
-                  <option [ngValue]="6">6 months</option>
-                  <option [ngValue]="12">12 months</option>
-                  <option [ngValue]="24">24 months</option>
-                  <option [ngValue]="36">36 months</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-semibold" style="font-size:13px;">Purpose <span class="text-danger">*</span></label>
-                <select class="form-select" style="border-radius:12px;" [(ngModel)]="applyData.purpose">
-                  <option value="">Select purpose...</option>
-                  <option>School Fees</option>
-                  <option>Medical</option>
-                  <option>Home Improvement</option>
-                  <option>Business</option>
-                  <option>Personal</option>
-                  <option>Emergency</option>
-                </select>
-              </div>
-            </div>
-            <div class="rounded-4 p-3" style="background:var(--inp);">
-              <div class="fw-semibold mb-2" style="font-size:12px;">
-                <i class="fas fa-calculator me-2" style="color:var(--pri);"></i>Estimate (auto-calculated)
-              </div>
-              <div class="row g-2 text-center" style="font-size:12px;">
-                <div class="col-3">
-                  <div class="k">Monthly</div>
-                  <div class="fw-bold" style="font-family:var(--mono);color:var(--pri);">{{ appCalcMonthly }}</div>
-                </div>
-                <div class="col-3">
-                  <div class="k">Total Interest</div>
-                  <div class="fw-bold" style="font-family:var(--mono);color:var(--ylw);">{{ appCalcInterest }}</div>
-                </div>
-                <div class="col-3">
-                  <div class="k">Fee ({{ applyProduct?.fee ?? '1%' }})</div>
-                  <div class="fw-bold" style="font-family:var(--mono);">{{ appCalcFee }}</div>
-                </div>
-                <div class="col-3">
-                  <div class="k">Total</div>
-                  <div class="fw-bold" style="font-family:var(--mono);color:var(--red);">{{ appCalcTotal }}</div>
-                </div>
-              </div>
-            </div>
-          }
-
-          <!-- Step 2: Disbursement Channel -->
-          @if (applyStep === 2) {
-            <h6 class="fw-bold mb-3"><i class="fas fa-wallet me-2" style="color:var(--pri);"></i>Where should we send the funds?</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-6 col-md-3">
-                <div class="pm" [class.act]="applyData.channel === 'wallet'" (click)="selectChannel('wallet')">
-                  <div class="pi" style="background:var(--pri-sub);color:var(--pri);border:1px solid var(--pri-bdr);">
-                    <i class="fas fa-wallet"></i>
-                  </div>
-                  <div class="fw-bold" style="font-size:12px;">SaccoPay Wallet</div>
-                  <div style="font-size:10px;color:var(--txm);">Instant</div>
-                  <span class="b mt-2" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);font-size:9px;">
-                    <i class="fas fa-bolt"></i> Fastest
-                  </span>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="pm" [class.act]="applyData.channel === 'mpesa'" (click)="selectChannel('mpesa')">
-                  <div class="pi" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                    <i class="fas fa-mobile-alt"></i>
-                  </div>
-                  <div class="fw-bold" style="font-size:12px;">M-Pesa</div>
-                  <div style="font-size:10px;color:var(--txm);">Auto STK</div>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="pm" [class.act]="applyData.channel === 'bank'" (click)="selectChannel('bank')">
-                  <div class="pi" style="background:rgba(2,136,209,0.06);color:var(--blu);border:1px solid rgba(2,136,209,0.18);">
-                    <i class="fas fa-university"></i>
-                  </div>
-                  <div class="fw-bold" style="font-size:12px;">Bank</div>
-                  <div style="font-size:10px;color:var(--txm);">EFT 1-2 days</div>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="pm" [class.act]="applyData.channel === 'school'" (click)="selectChannel('school')">
-                  <div class="pi" style="background:rgba(171,0,217,0.06);color:var(--pur);border:1px solid rgba(171,0,217,0.18);">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div class="fw-bold" style="font-size:12px;">Direct to School</div>
-                  <div style="font-size:10px;color:var(--txm);">Fee payment</div>
-                </div>
-              </div>
-            </div>
-            <!-- Channel Details -->
-            @if (applyData.channel === 'mpesa') {
-              <div class="mb-3">
-                <label class="form-label fw-semibold" style="font-size:13px;">M-Pesa Number</label>
-                <div class="phi">
-                  <span class="flag">🇰🇪</span>
-                  <span class="pfx">+254</span>
-                  <input type="tel" class="form-control" style="border-radius:14px;" [(ngModel)]="applyData.phone">
-                </div>
-              </div>
-            }
-            @if (applyData.channel === 'bank') {
-              <div class="row g-3 mb-3">
-                <div class="col-6">
-                  <label class="form-label fw-semibold" style="font-size:13px;">Bank</label>
-                  <select class="form-select" style="border-radius:12px;" [(ngModel)]="applyData.bank">
-                    <option>Co-operative Bank</option>
-                    <option>Equity Bank</option>
-                    <option>KCB</option>
-                    <option>ABSA</option>
-                  </select>
-                </div>
-                <div class="col-6">
-                  <label class="form-label fw-semibold" style="font-size:13px;">Account No.</label>
-                  <input type="text" class="form-control" style="border-radius:12px;font-family:var(--mono);" [(ngModel)]="applyData.bankAcc">
-                </div>
-              </div>
-            }
-            @if (applyData.channel === 'school') {
-              <div class="row g-3 mb-3">
-                <div class="col-12">
-                  <label class="form-label fw-semibold" style="font-size:13px;">School Name</label>
-                  <input type="text" class="form-control" style="border-radius:12px;" placeholder="e.g., Bright Future Academy" [(ngModel)]="applyData.school">
-                </div>
-                <div class="col-6">
-                  <label class="form-label fw-semibold" style="font-size:13px;">School Paybill/Account</label>
-                  <input type="text" class="form-control" style="border-radius:12px;font-family:var(--mono);" [(ngModel)]="applyData.schoolAcc">
-                </div>
-                <div class="col-6">
-                  <label class="form-label fw-semibold" style="font-size:13px;">Student Admission No.</label>
-                  <input type="text" class="form-control" style="border-radius:12px;" [(ngModel)]="applyData.adm">
-                </div>
-              </div>
-            }
-          }
-
-          <!-- Step 3: Guarantors (if needed) -->
-          @if (applyStep === 3 && applyNeedsGuarantors) {
-            <h6 class="fw-bold mb-3"><i class="fas fa-users me-2" style="color:var(--pur);"></i>Select {{ applyGuarantorCount }} Guarantors</h6>
-            <div class="alert border-0 mb-3" style="background:rgba(171,0,217,0.04);border-radius:12px;font-size:12px;color:var(--pur);">
-              <i class="fas fa-info-circle me-1"></i> Guarantors will be notified and must accept within 48 hours. Their savings must cover the guaranteed amount.
-            </div>
-            <div class="row g-3">
-              @for (g of applyGuarantors; track $index; let i = $index) {
-                <div class="col-md-6">
-                  <div class="rounded-4 p-3" style="background:var(--inp);">
-                    <label class="form-label fw-semibold" style="font-size:13px;">Guarantor {{ i + 1 }} <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control mb-2" style="border-radius:12px;font-size:13px;"
-                           placeholder="Search member by name or ID..." [(ngModel)]="g.memberId">
-                    <div style="font-size:11px;color:var(--txm);">The system will send an automatic request to the guarantor for their approval.</div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-
-          <!-- Step 3/4: Documents -->
-          @if ((applyStep === 3 && !applyNeedsGuarantors) || (applyStep === 4 && applyNeedsGuarantors)) {
-            <h6 class="fw-bold mb-3"><i class="fas fa-file-alt me-2" style="color:var(--blu);"></i>Upload Documents</h6>
-            <div class="alert border-0 mb-3" style="background:rgba(2,136,209,0.04);border-radius:12px;font-size:12px;color:var(--blu);">
-              <i class="fas fa-info-circle me-1"></i> Required: {{ applyProduct?.docs ?? 'National ID' }}
-            </div>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="border rounded-3 p-4 text-center" style="border-style:dashed!important;border-color:rgba(26,29,46,0.15)!important;cursor:pointer;"
-                     (click)="triggerFileUpload('id')">
-                  <i class="fas fa-id-card d-block mb-2" style="font-size:24px;" [style.color]="uploadedFiles.id ? 'var(--grn)' : 'var(--txm)'"></i>
-                  <div style="font-size:12px;font-weight:600;">National ID</div>
-                  <div style="font-size:11px;color:var(--txm);">Front & Back</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="border rounded-3 p-4 text-center" style="border-style:dashed!important;border-color:rgba(26,29,46,0.15)!important;cursor:pointer;"
-                     (click)="triggerFileUpload('payslip')">
-                  <i class="fas fa-file-invoice-dollar d-block mb-2" style="font-size:24px;" [style.color]="uploadedFiles.payslip ? 'var(--grn)' : 'var(--txm)'"></i>
-                  <div style="font-size:12px;font-weight:600;">Pay Slip / Statement</div>
-                  <div style="font-size:11px;color:var(--txm);">Latest 3 months</div>
-                </div>
-              </div>
-            </div>
-          }
-
-          <!-- Review & Submit -->
-          @if (applyStep === applyTotalSteps) {
-            <h6 class="fw-bold mb-3"><i class="fas fa-clipboard-check me-2" style="color:var(--grn);"></i>Review & Submit</h6>
-            <div class="rounded-4 p-4 mb-3" style="background:var(--inp);">
-              <div class="row g-2" style="font-size:13px;">
-                <div class="col-6"><span style="color:var(--txm);">Product:</span> <strong>{{ applyProduct?.name }}</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Amount:</span> <strong style="font-family:var(--mono);">KES {{ applyData.amount | number:'1.0-0' }}</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Period:</span> <strong>{{ applyData.period }} months</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Rate:</span> <strong>{{ applyProduct?.rate }}</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Monthly:</span> <strong style="font-family:var(--mono);color:var(--pri);">{{ appCalcMonthly }}</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Total:</span> <strong style="font-family:var(--mono);color:var(--red);">{{ appCalcTotal }}</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Disburse to:</span> <strong>{{ (applyData.channel || 'wallet') | uppercase }}</strong></div>
-                <div class="col-6"><span style="color:var(--txm);">Guarantors:</span> <strong>{{ applyProduct?.guarantors }}</strong></div>
-              </div>
-            </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="applyData.agreeTerms" id="appTerms">
-              <label class="form-check-label" for="appTerms" style="font-size:12px;">
-                I have read and agree to the <a href="javascript:;" (click)="openProductDetail(applyProduct?.id ?? '')">loan terms, penalties</a>, and SACCO policies. I understand that defaulting may result in recovery from my savings and guarantors.
-              </label>
-            </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="applyData.consent" id="appConsent">
-              <label class="form-check-label" for="appConsent" style="font-size:12px;">
-                I consent to credit checks and authorize the SACCO to deduct installments from my savings/salary as per the agreed schedule.
-              </label>
-            </div>
-          }
-
-          <!-- Navigation -->
-          <div class="d-flex justify-content-between mt-4">
-            <button class="btn btn-outline-secondary rounded-3" [class.invisible]="applyStep === 1" (click)="prevApplyStep()">
-              <i class="fas fa-arrow-left me-1"></i> Back
-            </button>
-            @if (applyStep < applyTotalSteps) {
-              <button class="btn text-white rounded-3 fw-semibold" style="background:var(--grd);"
-                      (click)="nextApplyStep()">
-                Next <i class="fas fa-arrow-right ms-1"></i>
-              </button>
-            }
-            @if (applyStep === applyTotalSteps) {
-              <button class="btn text-white rounded-3 fw-semibold px-4" style="background:var(--grn);box-shadow:0 4px 16px rgba(0,200,83,0.3);"
-                      (click)="submitApplication()">
-                <i class="fas fa-paper-plane me-1"></i> Submit Application
-              </button>
-            }
-          </div>
+          <p>{{loan.reason}}</p>
+          <button class="ln-btn-outline sm" (click)="$event.stopPropagation(); openModal('applicationTracker')">Track
+            Request</button>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- PRODUCT DETAIL MODAL -->
-@if (prodDetailModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;max-height:90vh;">
-        <div style="height:3px;" [style.background]="selectedProduct?.color ?? 'var(--pri)'"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold">
-            <i class="fas fa-info-circle me-2" style="color:var(--pri);"></i>{{ selectedProduct?.name }} — Full Terms
-          </h5>
-          <button type="button" class="btn-close" (click)="closeProdDetailModal()"></button>
-        </div>
-        @if (selectedProduct) {
-          <div class="modal-body px-4 pb-4">
-            <div class="row g-4">
-              <div class="col-md-6">
-                <div class="rounded-4 p-4" style="background:var(--inp);">
-                  <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2" [style.color]="selectedProduct.color"></i>Product Terms</h6>
-                  <div class="d-flex flex-column gap-2" style="font-size:13px;">
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Category</span><strong>{{ selectedProduct.category }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Max Amount</span><strong>{{ selectedProduct.max }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Interest Rate</span><strong>{{ selectedProduct.rate }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Period</span><strong>{{ selectedProduct.period }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Processing Fee</span><strong>{{ selectedProduct.fee }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Guarantors</span><strong>{{ selectedProduct.guarantors }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Collateral</span><strong>{{ selectedProduct.collateral }}</strong></div>
-                    <div class="d-flex justify-content-between"><span style="color:var(--txm);">Disbursement</span><strong>{{ selectedProduct.disburse }}</strong></div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="rounded-4 p-4 mb-3" style="background:rgba(229,57,53,0.04);border:1px solid rgba(229,57,53,0.12);">
-                  <h6 class="fw-bold mb-2" style="color:var(--red);"><i class="fas fa-exclamation-triangle me-2"></i>Penalties & Default</h6>
-                  <div style="font-size:12px;color:var(--tx2);">{{ selectedProduct.penalty }}</div>
-                </div>
-                <div class="rounded-4 p-4 mb-3" style="background:rgba(0,200,83,0.04);border:1px solid rgba(0,200,83,0.15);">
-                  <h6 class="fw-bold mb-2" style="color:var(--grn);"><i class="fas fa-check-circle me-2"></i>Eligibility</h6>
-                  <div style="font-size:12px;color:var(--tx2);">{{ selectedProduct.eligibility }}</div>
-                </div>
-                <div class="rounded-4 p-4" style="background:rgba(2,136,209,0.04);border:1px solid rgba(2,136,209,0.12);">
-                  <h6 class="fw-bold mb-2" style="color:var(--blu);"><i class="fas fa-file-alt me-2"></i>Required Documents</h6>
-                  <div style="font-size:12px;color:var(--tx2);">{{ selectedProduct.docs }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer border-0 px-4 pb-4 pt-0">
-            <button class="btn btn-outline-secondary rounded-3" (click)="closeProdDetailModal()">Close</button>
-            <button class="btn text-white rounded-3 fw-semibold" style="background:var(--grd);"
-                    (click)="closeProdDetailModal(); startApplication(selectedProduct.id)">
-              <i class="fas fa-paper-plane me-1"></i> Apply for {{ selectedProduct.name }}
-            </button>
-          </div>
         }
-      </div>
+      </article>
+      }
     </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- CALCULATOR MODAL -->
-@if (calcModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-        <div style="height:3px;background:var(--grd);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold"><i class="fas fa-calculator me-2" style="color:var(--pri);"></i>Loan Calculator</h5>
-          <button type="button" class="btn-close" (click)="closeCalcModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <label class="form-label fw-semibold" style="font-size:13px;">Amount</label>
-              <input type="number" class="form-control" [(ngModel)]="calcData.amount"
-                     style="border-radius:12px;font-family:var(--mono);" (input)="calc()">
-            </div>
-            <div class="col-6">
-              <label class="form-label fw-semibold" style="font-size:13px;">Period (months)</label>
-              <input type="number" class="form-control" [(ngModel)]="calcData.period"
-                     style="border-radius:12px;font-family:var(--mono);" (input)="calc()">
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-semibold" style="font-size:13px;">Interest (%)</label>
-              <input type="range" class="form-range" min="5" max="18" step=".5"
-                     [(ngModel)]="calcData.rate" (input)="calc()">
-              <div class="d-flex justify-content-between" style="font-size:11px;color:var(--txm);">
-                <span>5%</span><span class="fw-bold" style="color:var(--pri);">{{ calcData.rate }}%</span><span>18%</span>
-              </div>
-            </div>
-          </div>
-          <div class="rounded-4 p-3" style="background:var(--inp);">
-            <div class="row g-2 text-center">
-              <div class="col-6">
-                <div class="k" style="font-size:11px;color:var(--txm);">Monthly</div>
-                <div class="fw-bold" style="font-size:20px;font-family:var(--mono);color:var(--pri);">{{ calcResult.monthly }}</div>
-              </div>
-              <div class="col-6">
-                <div class="k" style="font-size:11px;color:var(--txm);">Total Interest</div>
-                <div class="fw-bold" style="font-size:20px;font-family:var(--mono);color:var(--ylw);">{{ calcResult.interest }}</div>
-              </div>
-              <div class="col-6">
-                <div class="k" style="font-size:11px;color:var(--txm);">Processing Fee</div>
-                <div class="fw-bold" style="font-family:var(--mono);">{{ calcResult.fee }}</div>
-              </div>
-              <div class="col-6">
-                <div class="k" style="font-size:11px;color:var(--txm);">Total Repayable</div>
-                <div class="fw-bold" style="font-family:var(--mono);color:var(--red);">{{ calcResult.total }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <button class="btn btn-outline-secondary rounded-3" (click)="closeCalcModal()">Close</button>
-          <button class="btn text-white rounded-3 fw-semibold" style="background:var(--grd);"
-                  (click)="scrollToProducts(); closeCalcModal();">
-            <i class="fas fa-arrow-right me-1"></i> Apply
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- ELIGIBILITY MODAL -->
-@if (eligModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-        <div style="height:3px;background:var(--blu);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold"><i class="fas fa-chart-line me-2" style="color:var(--blu);"></i>Loan Eligibility</h5>
-          <button type="button" class="btn-close" (click)="closeEligModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <div class="text-center p-3 rounded-4 mb-3" style="background:var(--inp);">
-            <div style="font-size:12px;color:var(--txm);">Max Borrowable</div>
-            <div style="font-size:28px;font-weight:800;font-family:var(--mono);color:var(--blu);">KES 476,250</div>
-            <span class="b mt-2" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-              <i class="fas fa-check-circle"></i> Eligible
-            </span>
-          </div>
-          <div class="rounded-4 p-3" style="background:rgba(2,136,209,0.04);border:1px solid rgba(2,136,209,0.15);">
-            <div class="d-flex flex-column gap-1" style="font-size:13px;">
-              <div class="d-flex justify-content-between"><span style="color:var(--txm);">Savings</span><span class="fw-bold" style="font-family:var(--mono);">KES 158,750</span></div>
-              <div class="d-flex justify-content-between"><span style="color:var(--txm);">Multiplier (Admin-set)</span><span class="fw-bold" style="color:var(--blu);">3×</span></div>
-              <div class="dv my-1"></div>
-              <div class="d-flex justify-content-between"><span style="color:var(--txm);">Gross Limit</span><span class="fw-bold" style="font-family:var(--mono);color:var(--blu);">KES 476,250</span></div>
-              <div class="d-flex justify-content-between"><span style="color:var(--red);">Outstanding</span><span class="fw-bold" style="font-family:var(--mono);color:var(--red);">- KES 103,500</span></div>
-              <div class="dv my-1"></div>
-              <div class="d-flex justify-content-between"><span class="fw-bold" style="color:var(--grn);">Available</span><span class="fw-bold" style="font-family:var(--mono);color:var(--grn);">KES 372,750</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <button class="btn btn-outline-secondary rounded-3" (click)="closeEligModal()">Close</button>
-          <button class="btn text-white rounded-3 fw-semibold" style="background:var(--grd);"
-                  (click)="scrollToProducts(); closeEligModal();">
-            <i class="fas fa-plus-circle me-1"></i> Apply
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- APP TRACKER MODAL -->
-@if (appTrackModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-        <div style="height:3px;background:var(--ylw);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice me-2" style="color:var(--ylw);"></i>Application Tracker</h5>
-          <button type="button" class="btn-close" (click)="closeAppTrackModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <div class="text-center p-3 rounded-4 mb-4" style="background:rgba(249,168,37,0.06);border:1px solid rgba(249,168,37,0.18);">
-            <div style="font-size:12px;color:var(--txm);">School Fees Loan</div>
-            <div class="fw-bold mt-1" style="font-size:24px;font-family:var(--mono);color:var(--ylw);">KES 50,000</div>
-            <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">LN-2025-0058</div>
-          </div>
-          <div class="d-flex flex-column gap-3 ps-2">
-            @for (step of appTrackerSteps; track $index; let i = $index) {
-              <div class="d-flex gap-3">
-                <div class="wz-dot"
-                     [class.done]="step.status === 'done'"
-                     [class.active]="step.status === 'active'"
-                     [class.pending]="step.status === 'pending'"
-                     style="width:32px;height:32px;font-size:11px;flex-shrink:0;">
-                  @if (step.status === 'done') {
-                    <i class="fas fa-check"></i>
-                  } @else if (step.status === 'active') {
-                    <i class="fas" [ngClass]="step.icon"></i>
-                  } @else {
-                    <span>{{ i + 1 }}</span>
-                  }
-                </div>
-                <div>
-                  <div style="font-size:13px;font-weight:600;"
-                       [style.color]="step.status === 'active' ? 'var(--pri)' : step.status === 'done' ? 'var(--tx)' : 'var(--txm)'">
-                    {{ step.title }}
-                  </div>
-                  @if (step.desc) {
-                    <div style="font-size:11px;color:var(--txm);">{{ step.desc }}</div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-          <div class="alert border-0 mt-3 mb-0" style="background:rgba(249,168,37,0.06);border-radius:12px;font-size:11px;color:var(--ylw);">
-            <i class="fas fa-clock me-1"></i> Expected decision within 3-5 business days.
-          </div>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <button class="btn btn-outline-secondary rounded-3" (click)="closeAppTrackModal()">Close</button>
-          <button class="btn btn-outline-danger rounded-3 btn-sm"
-                  (click)="showToast('Application cancelled','warning'); closeAppTrackModal();">
-            <i class="fas fa-times me-1"></i> Cancel App
-          </button>
-          <a routerLink="/member/support" class="btn btn-outline-primary rounded-3 btn-sm">
-            <i class="fas fa-headset me-1"></i> Support
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- NOTIFICATIONS MODAL -->
-@if (notifModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
-        <div class="modal-header border-0 px-4 pt-4 pb-2">
-          <h5 class="modal-title fw-bold"><i class="fas fa-bell me-2" style="color:var(--pri);"></i>Notifications</h5>
-          <button type="button" class="btn-close" (click)="closeNotifModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4" style="max-height:350px;overflow:auto;">
-          @for (notif of notifications; track notif.id) {
-            <div class="d-flex align-items-start gap-3 p-2 rounded-3 mb-1"
-                 style="cursor:pointer;background:rgba(26, 115, 232, 0.03);"
-                 (click)="handleNotification(notif)">
-              <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;"
-                   [style.background]="notif.bgColor"
-                   [style.color]="notif.iconColor">
-                <i class="fas" [ngClass]="notif.icon"></i>
-              </div>
-              <div>
-                <div style="font-size:13px;font-weight:600;">{{ notif.title }}</div>
-                <div style="font-size:11px;color:var(--txm);">{{ notif.desc }}</div>
-              </div>
-              @if (notif.unread) {
-                <div style="width:6px;height:6px;background:var(--pri);border-radius:50%;margin-top:8px;flex-shrink:0;"></div>
-              }
-            </div>
-          }
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <a routerLink="/member/notifications" class="btn btn-outline-secondary rounded-3 w-100">
-            <i class="fas fa-external-link-alt me-1"></i> All
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- LOGOUT MODAL -->
-@if (logoutModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
-        <div class="modal-body p-4 text-center">
-          <div style="width:56px;height:56px;background:rgba(229,57,53,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--red);font-size:24px;">
-            <i class="fas fa-sign-out-alt"></i>
-          </div>
-          <h5 class="fw-bold">Logout?</h5>
-          <p style="font-size:13px;color:var(--txm);">Are you sure?</p>
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary rounded-3 flex-fill" (click)="closeLogoutModal()">Stay</button>
-            <a routerLink="/auth/login" class="btn btn-danger rounded-3 flex-fill">
-              <i class="fas fa-sign-out-alt me-1"></i> Logout
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- TOAST CONTAINER -->
-<div class="toast-c" id="toastC">
-  @for (toast of toasts; track $index; let i = $index) {
-    <div class="t"
-         [class.success]="toast.type === 'success'"
-         [class.warning]="toast.type === 'warning'"
-         [class.danger]="toast.type === 'danger'"
-         [class.info]="toast.type === 'info'"
-         [class.primary]="toast.type === 'primary'">
-      <i class="fas" [ngClass]="toast.icon" style="font-size:18px;flex-shrink:0;" [style.color]="toast.iconColor"></i>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;">{{ toast.title }}</div>
-        <div style="font-size:11px;color:var(--txm);">{{ toast.message }}</div>
-      </div>
-      <button (click)="removeToast(i)" class="btn-close btn-close-sm ms-2" style="font-size:10px;"></button>
-    </div>
+  </section>
   }
+
+  <!-- Products -->
+  @if (activeTab === 'products') {
+  <section class="ln-tab-panel">
+    <header class="ln-section-head">
+      <div>
+        <h5>Available Loan Products</h5>
+        <p>Products configured by SACCO admin. Select one to see terms, penalties and eligibility before applying.</p>
+      </div>
+      <div class="ln-filter-pills compact">@for (f of
+        [{k:'all',l:'All'},{k:'quick',l:'Quick'},{k:'guarantor',l:'Guarantor'},{k:'no',l:'No Guarantor'}]; track f.k)
+        {<button [class.active]="productFilter===f.k" (click)="productFilter=f.k">{{f.l}}</button>}</div>
+    </header>
+    <div class="ln-product-grid refined-products">
+      @for (p of filteredProducts; track p.key) {
+      <article class="ln-product-card refined-product" (click)="openProductDetail(p)">
+        @if (p.popular) { <span class="ln-ribbon">Popular</span> }
+        <div class="ln-product-head"><span class="ln-product-icon">{{p.icon}}</span>
+          <div>
+            <h6>{{p.name}}</h6>
+            <p>@for (tag of p.tags; track tag) { <span class="ln-pill info">{{tag}}</span> }</p>
+          </div>
+        </div>
+        <div class="ln-product-terms refined">
+          <p><span>Max Amount</span><strong>KES {{fmt(p.maxAmount)}}</strong></p>
+          <p><span>Interest Rate</span><strong>{{p.rate}}</strong></p>
+          <p><span>Max Period</span><strong>{{p.period}}</strong></p>
+          <p><span>Processing Fee</span><strong>{{p.fee}}</strong></p>
+          <p><span>Guarantors</span><strong>{{p.guarantors}}</strong></p>
+          <p><span>Disbursement</span><strong>{{p.disbursement}}</strong></p>
+        </div>
+        <div class="ln-product-actions"><button class="ln-btn-outline sm"
+            (click)="$event.stopPropagation(); openProductDetail(p)">View Terms</button><button
+            class="ln-btn-primary sm"
+            (click)="$event.stopPropagation(); selectedProduct=p; application.product=p.key; openModal('applyLoan')">Apply</button>
+        </div>
+      </article>
+      }
+    </div>
+  </section>
+  }
+
+  <!-- Schedule -->
+  @if (activeTab === 'schedule') {
+  <section class="ln-tab-panel">
+    <header class="ln-section-head">
+      <div>
+        <h5>Repayment Schedule</h5>
+        <p>Combined amortization view for active loans. Click any row for installment details.</p>
+      </div>
+      <div class="ln-schedule-actions"><select [(ngModel)]="scheduleFilter">
+          <option value="all">All Active Loans</option>
+          <option value="emergency">Emergency</option>
+          <option value="development">Development</option>
+        </select><button class="ln-btn-outline sm" (click)="openModal('scheduleExport')">Download</button></div>
+    </header>
+    <div class="ln-schedule-summary">
+      <div><span>Total Monthly Due</span><strong>KES 8,000</strong><small>Both loans combined</small></div>
+      <div><span>Remaining Payments</span><strong>39</strong><small>Across all loans</small></div>
+      <div><span>Total Remaining</span><strong class="text-red">KES 103.5K</strong><small>Principal + interest</small>
+      </div>
+      <div><span>Projected Clearance</span><strong class="text-green">Dec 2027</strong><small>All loans fully
+          paid</small></div>
+    </div>
+    <article class="ln-table-card">
+      <div class="ln-table-wrap">
+        <table class="ln-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Due Date</th>
+              <th>Loan</th>
+              <th>Principal</th>
+              <th>Interest</th>
+              <th>Total</th>
+              <th>Balance After</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>@for (r of filteredSchedule; track r.loan + r.no + r.due) {<tr [class.due]="r.status==='Due 4d'"
+              (click)="openSchedule(r)">
+              <td>{{r.no}}</td>
+              <td>{{r.due}}</td>
+              <td><span class="ln-pill info">{{r.loan}}</span></td>
+              <td>{{fmt(r.principal)}}</td>
+              <td>{{fmt(r.interest)}}</td>
+              <td><strong>{{fmt(r.total)}}</strong></td>
+              <td>{{fmt(r.balance)}}</td>
+              <td><span class="ln-pill" [class.ok]="r.status==='Paid'" [class.warn]="r.status==='Due 4d'"
+                  [class.muted]="r.status==='Upcoming'">{{r.status}}</span></td>
+            </tr>}</tbody>
+        </table>
+      </div>
+      <footer><small>Showing next {{filteredSchedule.length}} installments</small><button class="ln-btn-primary"
+          (click)="openModal('makePayment')">Make Payment</button></footer>
+    </article>
+  </section>
+  }
+
+  <!-- Applications -->
+  @if (activeTab === 'applications') {
+  <section class="ln-tab-panel">
+    <header class="ln-section-head">
+      <div>
+        <h5>Loan Applications & Requests</h5>
+        <p>Requests you sent, reviewed applications, approved loans and rejected submissions are all listed here.</p>
+      </div><button class="ln-btn-primary sm" (click)="openModal('applyLoan')">New Application</button>
+    </header>
+    <div class="ln-application-board">
+      @for (appReq of applicationRequests; track appReq.ref) {
+      <article class="ln-app-request {{appReq.status.toLowerCase().replace(' ', '-')}}"
+        (click)="openModal('applicationTracker')">
+        <header>
+          <div><strong>{{appReq.product}}</strong><small>{{appReq.ref}} • {{appReq.date}}</small></div><span
+            class="ln-pill" [class.warn]="appReq.status==='Under Review'"
+            [class.ok]="appReq.status==='Approved' || appReq.status==='Disbursed'"
+            [class.danger]="appReq.status==='Rejected'">{{appReq.status}}</span>
+        </header>
+        <h3>KES {{fmt(appReq.amount)}}</h3>
+        <p>{{appReq.note}}</p>
+        <div class="ln-app-progress">@for (step of applicationSteps; track step; let i = $index) {<span
+            [class.done]="i < appReq.stage - 1" [class.active]="i === appReq.stage - 1">{{i + 1}}</span>}</div>
+        <footer><small>Guarantors: {{appReq.guarantors}}</small><button class="ln-btn-outline sm"
+            (click)="$event.stopPropagation(); openModal('applicationTracker')">Track</button></footer>
+      </article>
+      }
+    </div>
+  </section>
+  }
+
+  <!-- Guarantors -->
+  @if (activeTab === 'guarantors') {
+  <section class="ln-two-col">
+    <article class="ln-panel">
+      <h5>Guarantor Commitments</h5>@for (g of guarantorRequests; track g.member) {<div class="ln-guarantor">
+        <strong>{{g.member}}</strong><span>{{g.loan}} • KES {{fmt(g.amount)}}</span><em>{{g.status}}</em></div>}<button
+        class="ln-btn-outline" (click)="openModal('guarantorRequest')">View Requests</button>
+    </article>
+    <article class="ln-panel">
+      <h5>Guarantor Rules</h5>
+      <p class="muted">Guarantees reduce available borrowing capacity until the guaranteed loan is fully repaid.</p>
+      <div class="ln-detail-list">
+        <p><span>Max active guarantees</span><strong>5</strong></p>
+        <p><span>Current exposure</span><strong>KES 65,000</strong></p>
+        <p><span>Available capacity</span><strong>KES 185,000</strong></p>
+      </div>
+    </article>
+  </section>
+  }
+
+  <!-- Documents -->
+  @if (activeTab === 'documents') {
+  <section class="ln-two-col">
+    <article class="ln-panel">
+      <h5>Loan Documents</h5>@for (d of documents; track d.name) {<div class="ln-doc-row">
+        <span>{{d.name}}</span><strong>{{d.status}}</strong></div>}<button class="ln-btn-primary"
+        (click)="openModal('uploadDocuments')">Upload / Update</button>
+    </article>
+    <article class="ln-panel">
+      <h5>Statements & Certificates</h5><button class="ln-btn-outline full" (click)="openModal('loanStatement')">Loan
+        Statement</button><button class="ln-btn-outline full" (click)="openModal('clearance')">Clearance
+        Certificate</button><button class="ln-btn-outline full" (click)="openModal('collateral')">Collateral
+        Documents</button>
+    </article>
+  </section>
+  }
+</section>
+
+<!-- Modals -->
+@if (activeModal) { <div class="ln-overlay" (click)="closeModal()"></div> }
+
+<!-- Loan Calculator -->
+@if (activeModal === 'calculator') {<div class="ln-modal" (click)="$event.stopPropagation()">
+  <header>
+    <h5>Loan Calculator</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body">
+    <div class="ln-form-grid">
+      <div><label>Amount</label><input type="number" [(ngModel)]="calculator.amount"></div>
+      <div><label>Period (months)</label><input type="number" [(ngModel)]="calculator.period"></div>
+    </div><label>Interest (%)</label><input type="range" min="5" max="18" [(ngModel)]="calculator.interest">
+    <div class="ln-calc-results">
+      <div><span>Monthly</span><strong>KES {{fmt(monthlyPayment)}}</strong></div>
+      <div><span>Total Interest</span><strong>KES {{fmt(totalInterest)}}</strong></div>
+      <div><span>Processing Fee</span><strong>KES {{fmt(processingFee)}}</strong></div>
+      <div><span>Total Repayable</span><strong class="text-red">KES {{fmt(totalPayable)}}</strong></div>
+    </div>
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Close</button><button class="ln-btn-primary"
+      (click)="application.amount=calculator.amount; application.period=calculator.period; openModal('applyLoan')">Apply</button>
+  </footer>
+</div>}
+
+<!-- Loan Detail -->
+@if (activeModal === 'loanDetail' && selectedLoan) {<div class="ln-modal lg" (click)="$event.stopPropagation()">
+  <header>
+    <h5>{{selectedLoan.name}} — {{selectedLoan.ref}}</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body loan-detail-v2">
+    <section class="ln-detail-hero"><span>Outstanding Balance</span>
+      <h2>KES {{fmt(selectedLoan.outstanding)}}</h2><strong
+        [class.text-green]="selectedLoan.status==='cleared'">{{selectedLoan.status === 'cleared' ? 'Cleared' :
+        'Active'}}</strong>
+    </section>
+    <div class="ln-progress-row"><span>Repaid
+        ({{selectedLoan.paid}}/{{selectedLoan.totalInstallments}})</span><strong>{{progress(selectedLoan)}}%</strong>
+    </div>
+    <div class="ln-progress"><span [style.width.%]="progress(selectedLoan)"></span></div>
+    <section class="ln-modal-grid">
+      <div class="ln-metric-grid">
+        <div><span>Disbursed</span><strong>KES {{fmt(selectedLoan.disbursed)}}</strong></div>
+        <div><span>Rate</span><strong>{{selectedLoan.rate}}% p.a.</strong></div>
+        <div><span>Installment</span><strong>KES {{fmt(selectedLoan.installment)}}</strong></div>
+        <div><span>Period</span><strong>{{selectedLoan.period}} mo</strong></div>
+      </div>
+      <div class="ln-detail-list">
+        <p><span>Reference</span><strong>{{selectedLoan.ref}}</strong></p>
+        <p><span>Next Due</span><strong>{{selectedLoan.nextDue || '—'}}</strong></p>
+        <p><span>Total Paid</span><strong class="text-green">KES {{fmt(selectedLoan.disbursed -
+            selectedLoan.outstanding)}}</strong></p>
+      </div>
+    </section>
+    <div class="ln-admin-box"><strong>Admin Rules</strong>
+      <p>Rates, terms and penalties are configured by your SACCO administrator. Contact support for clarifications.</p>
+      <button class="ln-btn-outline full" (click)="openModal('support')">Contact Support</button>
+    </div>
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Close</button>
+    @if (selectedLoan.status === 'active') {<button class="ln-btn-primary" (click)="openModal('makePayment')">Make
+      Payment</button><button class="ln-btn-outline" (click)="openModal('restructure')">Restructure</button>}
+    @if (selectedLoan.status === 'cleared') {<button class="ln-btn-primary" (click)="downloadClearance()">Download
+      Clearance Certificate</button>}
+  </footer>
+</div>}
+
+<!-- Product Detail -->
+@if (activeModal === 'productDetail' && selectedProduct) {<div class="ln-modal" (click)="$event.stopPropagation()">
+  <header>
+    <h5>{{selectedProduct.name}}</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body product-detail-v2">
+    <div class="ln-product-hero"><span>{{selectedProduct.icon}}</span>
+      <div>
+        <h3>{{selectedProduct.name}}</h3>
+        <p>@for (tag of selectedProduct.tags; track tag) { <span class="ln-pill info">{{tag}}</span> }</p>
+      </div>
+    </div>
+    <div class="ln-detail-list">
+      <p><span>Max Amount</span><strong>KES {{fmt(selectedProduct.maxAmount)}}</strong></p>
+      <p><span>Rate</span><strong>{{selectedProduct.rate}}</strong></p>
+      <p><span>Max Period</span><strong>{{selectedProduct.period}}</strong></p>
+      <p><span>Processing Fee</span><strong>{{selectedProduct.fee}}</strong></p>
+      <p><span>Guarantors</span><strong>{{selectedProduct.guarantors}}</strong></p>
+      <p><span>Disbursement</span><strong>{{selectedProduct.disbursement}}</strong></p>
+    </div>
+    <div class="ln-note info">This is a pre-application view. The application form only asks for product, amount,
+      purpose and acceptance of terms.</div>
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Close</button><button class="ln-btn-primary"
+      (click)="openModal('applyLoan')">Apply Now</button></footer>
+</div>}
+
+<!-- Apply Loan - simplified member flow -->
+@if (activeModal === 'applyLoan') {<div class="ln-modal lg" (click)="$event.stopPropagation()">
+  <header>
+    <h5>Loan Application</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body">
+    <div class="ln-apply-layout">
+      <section class="ln-apply-form">
+        <div class="ln-form-grid">
+          <div><label>Product</label><select [(ngModel)]="application.product">@for (p of products; track p.key) {
+              <option [value]="p.key">{{p.name}}</option>}</select></div>
+          <div><label>Amount</label><input type="number" [(ngModel)]="application.amount"></div>
+        </div><label>Purpose</label><select [(ngModel)]="application.purpose">
+          <option value="">Select purpose...</option>
+          <option>School fees</option>
+          <option>Emergency</option>
+          <option>Business</option>
+          <option>Home improvement</option>
+          <option>Asset purchase</option>
+          <option>Other</option>
+        </select><label>Short note (optional)</label><textarea rows="3" [(ngModel)]="application.notes"
+          placeholder="Add any important detail for the loan officer..."></textarea><label class="ln-check"><input
+            type="checkbox" [(ngModel)]="application.agree"> I accept the loan terms and allow SACCO admin
+          verification.</label>
+      </section>
+      <aside class="ln-apply-summary">
+        <h6>Before you submit</h6>
+        <p><span>Eligibility</span><strong class="text-green">Pre-qualified</strong></p>
+        <p><span>Guarantors</span><strong>Requested after review if required</strong></p>
+        <p><span>Documents</span><strong>Uploads only requested when needed</strong></p>
+        <p><span>Decision</span><strong>3-5 business days</strong></p>
+      </aside>
+    </div>
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Cancel</button><button class="ln-btn-primary"
+      (click)="submitApplication()">Submit Application</button></footer>
+</div>}
+
+<!-- Payment -->
+@if (activeModal === 'makePayment') {<div class="ln-modal" (click)="$event.stopPropagation()">
+  <header>
+    <h5>Make Loan Payment</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body"><label>Amount</label><input type="number"
+      [(ngModel)]="payment.amount"><label>Method</label><select [(ngModel)]="payment.method">
+      <option value="mpesa">M-Pesa STK</option>
+      <option value="wallet">SACCO Wallet</option>
+      <option value="bank">Bank EFT</option>
+    </select><label>Phone</label><input [(ngModel)]="payment.phone">
+    <div class="ln-note info">An STK prompt will be sent if M-Pesa is selected.</div>
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Cancel</button><button class="ln-btn-primary"
+      (click)="submitPayment()">Pay Now</button></footer>
+</div>}
+
+<!-- Application Tracker -->
+@if (activeModal === 'applicationTracker') {<div class="ln-modal" (click)="$event.stopPropagation()">
+  <header>
+    <h5>Application Tracker</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body">
+    <div class="ln-track-head"><span>School Fees Loan</span>
+      <h3>KES 50,000</h3><small>LN-2025-0058</small>
+    </div>
+    <div class="ln-timeline">
+      <div class="done"><span><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><strong>Submitted</strong><small>Feb 24, 3:42 PM</small></div>
+      <div class="done"><span><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><strong>Guarantors Confirmed</strong><small>2/2 accepted</small></div>
+      <div class="done"><span><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><strong>Documents Verified</strong><small>All uploaded & checked</small></div>
+      <div class="active"><span><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><strong>Admin Review</strong><small>Under loan committee review</small></div>
+      <div><span><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg></span><strong>Approval & Disbursement</strong></div>
+    </div>
+    <div class="ln-note warn">Expected decision within 3-5 business days.</div>
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Close</button><button class="ln-btn-danger-outline"
+      (click)="openModal('cancelApplication')">Cancel App</button><button class="ln-btn-outline"
+      (click)="openModal('support')">Support</button></footer>
+</div>}
+
+<!-- General connected modals -->
+@if (activeModal === 'cancelApplication' || activeModal === 'support' || activeModal === 'clearance' || activeModal ===
+'guarantorRequest' || activeModal === 'uploadDocuments' || activeModal === 'repaymentDetail' || activeModal ===
+'earlyPay' || activeModal === 'restructure' || activeModal === 'loanLimit' || activeModal === 'loanStatement' ||
+activeModal === 'penaltyInfo' || activeModal === 'eligibility' || activeModal === 'scheduleExport' || activeModal ===
+'collateral' || activeModal === 'autoPay') {
+<div class="ln-modal" (click)="$event.stopPropagation()">
+  <header>
+    <h5>{{activeModal === 'support' ? 'Contact Support' : activeModal === 'restructure' ? 'Restructure Loan' :
+      activeModal === 'autoPay' ? 'Auto-Pay Setup' : activeModal === 'uploadDocuments' ? 'Upload Documents' : 'Loan
+      Information'}}</h5><button class="modal-close-btn" (click)="closeModal()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </header>
+  <div class="ln-modal-body">
+    @if (activeModal === 'support') {<label>Subject</label><input
+      [(ngModel)]="supportForm.subject"><label>Message</label><textarea rows="4"
+      [(ngModel)]="supportForm.message"></textarea>}
+    @if (activeModal === 'restructure') {<label>Reason</label><textarea rows="3"
+      [(ngModel)]="restructure.reason"></textarea>
+    <div class="ln-form-grid">
+      <div><label>New Period</label><input type="number" [(ngModel)]="restructure.newPeriod"></div>
+      <div><label>Requested Installment</label><input type="number" [(ngModel)]="restructure.requestedInstallment">
+      </div>
+    </div>}
+    @if (activeModal === 'autoPay') {<label class="ln-check"><input type="checkbox" [(ngModel)]="autoPay.enabled">
+      Enable auto-pay STK reminder</label><label>Amount</label><input type="number"
+      [(ngModel)]="autoPay.amount"><label>Day</label><select [(ngModel)]="autoPay.day">
+      <option>1st</option>
+      <option>15th</option>
+      <option>Last day</option>
+    </select><label>Phone</label><input [(ngModel)]="autoPay.phone">}
+    @if (activeModal === 'uploadDocuments') {<label>Document Type</label><select>
+      <option>Payslip</option>
+      <option>ID Copy</option>
+      <option>Business Permit</option>
+      <option>Collateral Document</option>
+    </select>
+    <div class="ln-upload-box">Drag and drop file here or click to browse</div>}
+    @if (activeModal !== 'support' && activeModal !== 'restructure' && activeModal !== 'autoPay' && activeModal !==
+    'uploadDocuments') {<div class="ln-detail-list">
+      <p><span>Borrowing Limit</span><strong>KES 476,000</strong></p>
+      <p><span>Available to Borrow</span><strong class="text-green">KES 373,000</strong></p>
+      <p><span>Repayment Score</span><strong class="text-green">92%</strong></p>
+      <p><span>Outstanding</span><strong>KES 103,500</strong></p>
+    </div>
+    <div class="ln-note info">This action is connected so no loan page button or link is left blank.</div>}
+  </div>
+  <footer><button class="ln-btn-outline" (click)="closeModal()">Close</button>
+    @if (activeModal === 'support') {<button class="ln-btn-primary" (click)="submitSupport()">Submit</button>}
+    @if (activeModal === 'restructure') {<button class="ln-btn-primary" (click)="saveRestructure()">Submit
+      Request</button>}
+    @if (activeModal === 'autoPay') {<button class="ln-btn-primary" (click)="saveAutoPay()">Save</button>}
+    @if (activeModal === 'uploadDocuments') {<button class="ln-btn-primary" (click)="uploadDocuments()">Upload</button>}
+    @if (activeModal === 'loanStatement' || activeModal === 'scheduleExport') {<button class="ln-btn-primary"
+      (click)="exportSchedule()">Download</button>}
+  </footer>
 </div>
+}
+
+@if (toast) {<div class="ln-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'"
+  [class.warn]="toast.type==='warning'"><span>
+          @if (toast.type === 'success') {
+            <svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          } @else if (toast.type === 'info') {
+            <svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          } @else {
+            <svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          }
+        </span>
+  <p>{{toast.message}}</p><button class="toast-close-btn" (click)="dismissToast()"><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+</div>}

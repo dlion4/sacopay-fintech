@@ -98,17 +98,36 @@ interface UploadState {
   residence: boolean;
 }
 
+interface ExitMember {
+  id: string;
+  name: string;
+  initials: string;
+  avatarColor: string;
+  memberNo: string;
+  nationalId: string;
+  status: MemberStatus;
+  shares: number;
+  nonWithdrawableShares: number;
+  savings: number;
+  loanBalance: number;
+  pendingDues: number;
+  joinDate: string;
+  branch: string;
+  phone: string;
+}
+
 @Component({
-  selector: 'app-members-all',
+  selector: 'app-members',
   standalone: true,
-  // imports: [CommonModule, FormsModule, DecimalPipe, TitleCasePipe],
   imports: [CommonModule, FormsModule, DecimalPipe],
-  templateUrl: './members.html',
+  templateUrl:'./members.html',
   styleUrls: ['./members.scss'],
 })
-export class MembersAllComponent implements OnInit {
+export class MembersComponent implements OnInit {
   toast: Toast = { visible: false, type: 'success', title: '', message: '' };
   private toastTimer?: number;
+
+  activeTab: 'all' | 'pending' | 'active' | 'exit' = 'all';
 
   viewMode: ViewMode = 'table';
   activeModal: ModalName = null;
@@ -175,9 +194,69 @@ export class MembersAllComponent implements OnInit {
     { text: 'Profile updated by member', time: 'Jun 12, 2024 - 4:10 PM', type: 'info' },
   ];
 
+  // Mock exit members (10 sample records)
+  exitMembers: ExitMember[] = [];
+
+  // Snapshot values (load from API when member selected)
+  exitSnapshot: any = {
+    shares: 0,
+    nonWithdrawableShares: 0,
+    savings: 0,
+    loanBalance: 0,
+    pendingDues: 0
+  };
+
+  exitBlockingIssues: string[] = [];
+
+  exitChecklist = {
+    transferNonWithdrawableShares: false,
+    clearLoans: false,
+    clearPendingLoanPayments: false,
+    clearOtherDues: false,
+    generateStatement: true,
+    issueClearanceCertificate: true
+  };
+
+  exitControls = {
+    requireTwoManApproval: true,
+    freezeMemberAccountDuringExit: true,
+    allowAdminOverride: false,
+    internalNotes: ''
+  };
+
+  deathExit = {
+    nokName: '',
+    nokRelationship: '',
+    nokPhone: '',
+    nokBankAccount: '',
+    nokIsMember: false,
+    nokMemberRef: ''
+  };
+
+  exitWizard = {
+    open: false,
+    type: 'ALIVE' as 'ALIVE' | 'DEATH',
+    step: 1
+  };
+
+  payout = {
+    source: 'SACCOPAY_WALLET' as 'SACCOPAY_WALLET' | 'EXTERNAL_WALLET',
+    mode: 'MOBILE_MONEY' as 'BANK' | 'MOBILE_MONEY' | 'CARD' | 'CASH',
+    amount: 0,
+    bankName: '',
+    bankAccountName: '',
+    bankAccountNo: '',
+    mobileNetwork: 'MPESA' as 'MPESA' | 'AIRTEL' | 'TELKOM',
+    mobilePhone: '',
+    cardRef: '',
+    cashPoint: '',
+    cashReceiver: ''
+  };
+
   ngOnInit(): void {
     this.generateMembersData();
     this.generatePendingData();
+    this.generateExitMockMembers();
     this.applyFilters();
   }
 
@@ -296,6 +375,95 @@ export class MembersAllComponent implements OnInit {
       docsComplete: index % 2 === 0,
       notes: index % 2 === 0 ? 'All mandatory KYC documents verified.' : 'Residence proof requires review before activation.',
     }));
+  }
+
+  generateExitMockMembers(): void {
+    const firstNames = ['James', 'Mary', 'John', 'Grace', 'Peter', 'Charity', 'Michael', 'Faith', 'David', 'Esther'];
+    const lastNames = ['Otieno', 'Akinyi', 'Ouma', 'Owino', 'Nyambura', 'Wanjiru', 'Kamau', 'Njoroge', 'Odhiambo', 'Chebet'];
+    const branches = ['Main Branch', 'Kiboswa', 'Migori', 'Awendo'];
+    const statuses: MemberStatus[] = ['active', 'active', 'active', 'pending', 'suspended', 'active', 'dormant', 'active', 'active', 'pending'];
+    const colors = [
+      'linear-gradient(135deg,#00d084,#00bcd4)',
+      'linear-gradient(135deg,#2196f3,#00bcd4)',
+      'linear-gradient(135deg,#9c27b0,#673ab7)',
+      'linear-gradient(135deg,#ff9800,#f44336)',
+      'linear-gradient(135deg,#4caf50,#8bc34a)',
+    ];
+
+    this.exitMembers = Array.from({ length: 10 }, (_, i) => {
+      const first = firstNames[i];
+      const last = lastNames[i];
+      const shares = 50 + (i * 25);
+      const savings = 25000 + (i * 8500);
+      const loanBalance = i % 3 === 0 ? 0 : 15000 + (i * 4200);
+      return {
+        id: `RSM-${String(i + 1).padStart(5, '0')}`,
+        name: `${first} ${last}`,
+        initials: `${first[0]}${last[0]}`,
+        avatarColor: colors[i % colors.length],
+        memberNo: `SAC-${2024}-${String(1000 + i).padStart(4, '0')}`,
+        nationalId: String(22000000 + i * 78123),
+        status: statuses[i],
+        shares,
+        nonWithdrawableShares: Math.floor(shares * 0.35),
+        savings,
+        loanBalance,
+        pendingDues: loanBalance > 0 ? Math.floor(loanBalance * 0.05) : 0,
+        joinDate: `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'][i]} ${10 + (i % 20)}, ${2020 + (i % 4)}`,
+        branch: branches[i % branches.length],
+        phone: `+254 7${String(10000000 + i * 174521).slice(0, 8)}`,
+      };
+    });
+  }
+
+  generateExitMockData(): void {
+    if (!this.selectedMember) return;
+    this.exitSnapshot = {
+      shares: this.selectedMember.shares || 150,
+      nonWithdrawableShares: Math.floor((this.selectedMember.shares || 150) * 0.4),
+      savings: this.selectedMember.savingsBalance || 45000,
+      loanBalance: this.selectedMember.loanBalance || 28000,
+      pendingDues: 3500
+    };
+    this.exitBlockingIssues = [];
+    if (this.exitSnapshot.loanBalance > 0) {
+      this.exitBlockingIssues.push('Outstanding loan balance must be cleared before exit.');
+    }
+    if (this.exitSnapshot.pendingDues > 0) {
+      this.exitBlockingIssues.push('Pending dues (fees/penalties) require settlement.');
+    }
+    const withdrawableShares = (this.exitSnapshot.shares - this.exitSnapshot.nonWithdrawableShares) * 200;
+    const totalAssets = this.exitSnapshot.savings + withdrawableShares;
+    const totalDebts = this.exitSnapshot.loanBalance + this.exitSnapshot.pendingDues;
+    this.payout.amount = Math.max(0, totalAssets - totalDebts);
+  }
+
+  selectExitMember(exitMember: ExitMember): void {
+    this.selectedMember = {
+      id: exitMember.id,
+      name: exitMember.name,
+      initials: exitMember.initials,
+      avatarColor: exitMember.avatarColor,
+      nationalId: exitMember.nationalId,
+      phone: exitMember.phone,
+      email: `${exitMember.name.toLowerCase().replace(' ', '.')}@email.com`,
+      branch: exitMember.branch,
+      shares: exitMember.shares,
+      shareAmount: exitMember.shares * 200,
+      status: exitMember.status,
+      joinDate: exitMember.joinDate,
+      gender: 'male',
+      occupation: 'Member',
+      savingsBalance: exitMember.savings,
+      loanBalance: exitMember.loanBalance,
+      walletBalance: 0,
+      lastActivity: '2 days ago',
+    };
+    this.generateExitMockData();
+  }
+
+  trackExitMember(_index: number, member: ExitMember): string {
+    return member.id;
   }
 
   applyFilters(): void {
@@ -724,5 +892,129 @@ export class MembersAllComponent implements OnInit {
   hideToast(): void {
     this.toast.visible = false;
     if (this.toastTimer) window.clearTimeout(this.toastTimer);
+  }
+
+  onViewMember(member: any): void {
+    this.selectedMember = member;
+    this.activeTab = 'exit';
+  }
+
+  // ---------- Exit Helpers ----------
+  canProceedVoluntaryExit(): boolean {
+    return !!(
+      this.exitChecklist.transferNonWithdrawableShares &&
+      this.exitChecklist.clearLoans &&
+      this.exitChecklist.clearPendingLoanPayments &&
+      this.exitChecklist.clearOtherDues
+    );
+  }
+
+  totalToClear(): number {
+    return (this.exitSnapshot?.loanBalance || 0) + (this.exitSnapshot?.pendingDues || 0);
+  }
+
+  // ---------- Entry points ----------
+  openExitModal(): void {
+    if (this.activeTab !== 'exit') {
+      this.activeTab = 'exit';
+    }
+    if (this.selectedMember) {
+      this.openExitWizard('ALIVE');
+    }
+  }
+
+  openExitWizard(type: 'ALIVE' | 'DEATH'): void {
+    this.exitWizard.open = true;
+    this.exitWizard.type = type;
+    this.exitWizard.step = 1;
+    this.generateExitMockData();
+    this.exitBlockingIssues = [];
+    this.payout.amount = Math.max(0, (this.exitSnapshot?.savings || 0));
+  }
+
+  closeExitWizard(): void {
+    this.exitWizard.open = false;
+  }
+
+  // ---------- Wizard navigation ----------
+  canGoNextStep(): boolean {
+    if (this.exitWizard.step === 1) {
+      if (this.exitWizard.type === 'ALIVE' && !this.canProceedVoluntaryExit()) return false;
+      if (this.exitBlockingIssues?.length && !this.exitControls.allowAdminOverride) return false;
+      return true;
+    }
+    if (this.exitWizard.step === 2) {
+      const total = this.totalToClear();
+      if (total > 0 && !this.exitControls.allowAdminOverride) return false;
+      return true;
+    }
+    if (this.exitWizard.step === 3) {
+      return this.payout.amount > 0;
+    }
+    return true;
+  }
+
+  nextStep(): void {
+    if (!this.canGoNextStep()) return;
+    if (this.exitWizard.step < 4) this.exitWizard.step += 1;
+  }
+
+  prevStep(): void {
+    if (this.exitWizard.step > 1) this.exitWizard.step -= 1;
+  }
+
+  // ---------- Step actions ----------
+  openSettlementPaymentModal(): void {
+    this.exitWizard.step = 3;
+  }
+
+  markAsClearedAdminOverride(): void {
+    // TODO: require reason modal + maker-checker
+  }
+
+  processPayoutOrTransfer(): void {
+    if (this.exitWizard.type === 'DEATH' && this.deathExit.nokIsMember) {
+      // TODO: internal transfer
+    } else {
+      // TODO: external payout
+    }
+    this.exitWizard.step = 4;
+  }
+
+  simulateNetPayout(): void {
+    // TODO: compute net
+  }
+
+  generateClearanceCertificate(): void {
+    // TODO: API -> PDF
+  }
+
+  generateExitReport(): void {
+    // TODO: compile transactions
+  }
+
+  finalizeExit(): void {
+    // TODO: set status to Exited/Deceased
+    this.closeExitWizard();
+  }
+
+  previewClearanceCertificate(): void {
+    // TODO: preview modal
+  }
+
+  downloadExitReport(): void {
+    // TODO: download
+  }
+
+  downloadMemberStatement(): void {
+    // TODO: statement
+  }
+
+  attachDeathDocuments(): void {
+    // TODO: upload modal
+  }
+
+  viewExitAuditTrail(): void {
+    // TODO: audit modal
   }
 }

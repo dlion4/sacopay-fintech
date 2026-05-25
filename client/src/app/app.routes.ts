@@ -45,101 +45,105 @@ export const routes: Routes = [
     },
 
     // --- MEMBER DASHBOARD ROUTES (Uses MemberLayout) ---
-    {
-        path: 'member',
-        component: MemberLayoutComponent,
-        children: [
-            {
-                path: 'dashboard',
-                // 2. Ensuring the class name matches what you likely exported (DashboardComponent)
-                loadComponent: () => import('./features/member/pages/dashboard/dashboard').then(m => m.MemberDashboardComponent),
-                title: 'Member | Dashboard'
-            },
-            {
-                path: 'deposits',
-                // 2. Ensuring the class name matches what you likely exported (DashboardComponent)
-                loadComponent: () => import('./features/member/pages/deposits/deposits').then(m => m.DepositsComponent),
-                title: 'Member | Deposits'
-            },
-            {
-                path: 'wallet',
-                loadComponent: () => import('./features/member/pages/wallet/wallet').then(m => m.WalletComponent),
-                title: 'Member | Wallet'
-            },
-            {
-                path: 'loans',
-                loadComponent: () => import('./features/member/pages/loans/loans').then(m => m.LoansCenterComponent),
-                title: 'Member | Loan Center'
-            },
-            {
-                path: 'profile',
-                loadComponent: () => import('./features/member/pages/member-profile/member-profile').then(m => m.MemberProfileComponent),
-                title: 'Member | Profile'
-            },
-            {
-                path: 'withdrawals',
-                loadComponent: () => import('./features/member/pages/withdrawals/withdrawals').then(m => m.FinanceWithdrawalsComponent),
-                title: 'Member | Withdrawals'
-            },
-            {
-                path: 'transactions',
-                loadComponent: () => import('./features/member/pages/transactions/transactions').then(m => m.TransactionsComponent),
-                title: 'Member | Transactions'
-            },
-            {
-                path: 'savings',
-                loadComponent: () => import('./features/member/pages/savings/savings').then(m => m.SavingsComponent),
-                title: 'Member | Savings'
-            },
-            {
-                path: 'loan-repayments',
-                loadComponent: () => import('./features/member/pages/loan-repayment/loan-repayment').then(m => m.LoanRepaymentsComponent),
-                title: 'Member | Loan Repayments'
-            },
-            {
-                path: 'statements',
-                loadComponent: () => import('./features/member/pages/statements/statements').then(m => m.StatementsComponent),
-                title: 'Member | Statements'
-            },
-            {
-                path: 'shares',
-                loadComponent: () => import('./features/member/pages/shares/shares').then(m => m.SharesComponent),
-                title: 'Member | Shares'
-            },
-            {
-                path: 'guarantor',
-                loadComponent: () => import('./features/member/pages/guarantor/guarantor').then(m => m.GuarantorComponent),
-                title: 'Member | Guarantor'
-            },
-            {
-                path: 'dividends',
-                loadComponent: () => import('./features/member/pages/dividends/dividends').then(m => m.DividendsComponent),
-                title: 'Member | Dividends'
-            },
-            {
-                path: 'notifications',
-                loadComponent: () => import('./features/member/pages/account-notification/account-notification').then(m => m.NotificationsComponent),
-                title: 'Member | Notifications'
-            },
-            {
-                path: 'support',
-                loadComponent: () => import('./features/member/pages/account-support/account-support').then(m => m.MemberSupportComponent),
-                title: 'Member | Support'
-            },
-            {
-                path: 'settings',
-                loadComponent: () => import('./features/member/pages/account-setting/account-setting').then(m => m.AccountSettingsComponent),
-                title: 'Member | Settings'
-            },
+  {
+    path: 'member',
+  component: MemberLayoutComponent, // This makes the layout wrap the children
+  children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
+      // ─── Main ───
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/member/pages/dashboard/dashboard').then(m => m.MemberDashboardComponent),
+        title: 'Member | Dashboard'
+      },
+      {
+        path: 'wallet',
+        loadComponent: () => import('./features/member/pages/wallet/wallet').then(m => m.WalletComponent),
+        title: 'Member | Wallet'
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/member/pages/member-profile/member-profile').then(m => m.MemberProfileComponent),
+        title: 'Member | Profile'
+      },
 
+      // ─── Finance ───
+      {
+        path: 'savings',
+        loadComponent: () => import('./features/member/pages/savings/savings').then(m => m.SavingsComponent),
+        title: 'Member | Savings'
+      },
+      {
+        path: 'deposits',
+        loadComponent: () => import('./features/member/pages/deposits/deposits').then(m => m.DepositsComponent),
+        title: 'Member | Deposits'
+      },
+      {
+        path: 'withdrawals',
+        loadComponent: () => import('./features/member/pages/withdrawals/withdrawals').then(m => m.WithdrawalsComponent),
+        title: 'Member | Withdrawals'
+      },
 
+      // ─── Loans ───
+      {
+        path: 'loans',
+        loadComponent: () => import('./features/member/pages/loans/loans').then(m => m.LoansComponent),
+        title: 'Member | Loan Center'
+      },
+      {
+        path: 'loan-repayments',
+        loadComponent: () => import('./features/member/pages/loan-repayment/loan-repayment').then(m => m.LoanRepaymentsComponent),
+        title: 'Member | Loan Repayments'
+      },
 
+      // ─── Membership ───
+      {
+        path: 'shares',
+        loadComponent: () => import('./features/member/pages/shares/shares').then(m => m.SharesComponent),
+        title: 'Member | Shares'
+      },
+      {
+        path: 'dividends',
+        loadComponent: () => import('./features/member/pages/dividends/dividends').then(m => m.DividendsComponent),
+        title: 'Member | Dividends'
+      },
+      {
+        path: 'guarantor',  // SINGULAR — matches your actual route
+        loadComponent: () => import('./features/member/pages/guarantor/guarantor').then(m => m.GuarantorComponent),
+        title: 'Member | Guarantor'
+      },
 
+      // ─── Reports ───
+      {
+        path: 'statements',
+        loadComponent: () => import('./features/member/pages/statements/statements').then(m => m.StatementsComponent),
+        title: 'Member | Statements'
+      },
+      {
+        path: 'transactions',
+        loadComponent: () => import('./features/member/pages/transactions/transactions').then(m => m.TransactionsComponent),
+        title: 'Member | Transactions'
+      },
 
-            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
-        ]
-    },
+      // ─── Account ───
+      {
+        path: 'notifications',
+        loadComponent: () => import('./features/member/pages/account-notification/account-notification').then(m => m.NotificationComponent),
+        title: 'Member | Notifications'
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./features/member/pages/account-setting/account-setting').then(m => m.AccountSettingsComponent),
+        title: 'Member | Settings'
+      },
+      {
+        path: 'support',
+        loadComponent: () => import('./features/member/pages/account-support/account-support').then(m => m.MemberSupportComponent),
+        title: 'Member | Support'
+      }
+    ]
+  },
     {
     path: 'admin',
     component: AdminLayoutComponent,
@@ -151,7 +155,7 @@ export const routes: Routes = [
         { path: 'analytics', loadComponent: () => import('./features/admin/pages/analytics/analytics').then(m => m.AnalyticsComponent) },
 
         // Members & KYC
-        { path: 'members', loadComponent: () => import('./features/admin/pages/members/members').then(m => m.MembersAllComponent) },
+        { path: 'members', loadComponent: () => import('./features/admin/pages/members/members').then(m => m.MembersComponent) },
         { path: 'kyc-verification', loadComponent: () => import('./features/admin/pages/kyc-verification/kyc-verification').then(m => m.KycVerificationComponent) },
 
         // Financial Operations - Deposits & Savings

@@ -1,726 +1,295 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+// withdrawals.module.ts
+import { NgModule } from '@angular/core';
+// import { CommonModule } from '@angular/common';
 
-// ============================================
-// INTERFACES
-// ============================================
-interface WithdrawalSummary {
-  availableBalance: number;
-  withdrawnThisYear: number;
-  withdrawalCountThisYear: number;
-  lastWithdrawalAmount: number;
-  lastWithdrawalDate: Date;
-  lastWithdrawalMethod: string;
-  totalWithdrawnAllTime: number;
-  avgWithdrawal: number;
-  totalFeesPaid: number;
-}
+export type ModalKey =
+  | 'requestWithdrawal'
+  | 'requestConfirm'
+  | 'pendingDetail'
+  | 'completedDetail'
+  | 'rejectedDetail'
+  | 'cancelRequest'
+  | 'policy'
+  | 'impactCalculator'
+  | 'exportHistory'
+  | 'receipt'
+  | 'support'
+  | 'resubmit'
+  | 'feeBreakdown'
+  | 'noticeSchedule'
+  | 'methodDetails'
+  | 'timeline'
+  | 'statusFilter'
+  | 'quickTips';
 
-interface Withdrawal {
-  id: string;
+export interface WithdrawalRequest {
   reference: string;
   amount: number;
-  fee: number;
-  account: string;
-  method: 'mpesa' | 'bank' | 'wallet';
-  methodDetails: string;
-  status: 'pending' | 'approved' | 'processing' | 'completed' | 'rejected' | 'cancelled';
+  account: 'Ordinary' | 'Education' | 'Holiday';
+  method: 'M-Pesa' | 'Bank EFT' | 'Wallet';
+  status: 'pending' | 'completed' | 'rejected';
+  date: string;
+  completedDate?: string;
   reason: string;
+  fee: number | null;
+  estimate?: string;
+  daysRemaining?: number;
   rejectionReason?: string;
-  submittedDate: Date;
-  approvedDate?: Date;
-  completedDate?: Date;
-  estimatedCompletion?: Date;
-  currentStep: number;
-  totalSteps: number;
-  noticePeriodDays?: number;
-  noticePeriodRemaining?: number;
 }
 
-interface WithdrawalRules {
-  noticePeriod: number;
-  minAmount: number;
-  maxPerMonth: number;
-  processingFee: number;
-  disbursementMethods: string[];
-  policyText: string;
+export interface WithdrawalRow {
+  date: string;
+  reference: string;
+  account: 'Ordinary' | 'Education';
+  amount: number;
+  fee: number | null;
+  method: 'M-Pesa' | 'Bank';
+  status: 'Pending' | 'Completed' | 'Rejected';
 }
 
-interface SavingsAccount {
-  id: string;
-  name: string;
-  balance: number;
-  availableBalance: number;
-  lockedAmount: number;
-  type: 'ordinary' | 'education' | 'holiday' | 'emergency';
-}
-
-interface DisbursementMethod {
-  id: string;
-  type: 'mpesa' | 'bank';
-  name: string;
-  details: string;
-  isDefault: boolean;
-  verified: boolean;
-}
-
-interface ImpactCalculation {
-  currentSavings: number;
-  withdrawalAmount: number;
-  remainingSavings: number;
-  currentLoanEligibility: number;
-  newLoanEligibility: number;
-  eligibilityChange: number;
-  currentDividendEstimate: number;
-  newDividendEstimate: number;
-  dividendImpact: number;
-}
-
-interface Toast {
-  type: 'success' | 'warning' | 'danger' | 'info' | 'primary';
-  title: string;
-  message: string;
-  icon: string;
-  iconColor: string;
-}
-
-// ============================================
-// TYPE ALIAS (must be outside class, before decorator)
-// ============================================
-export type WithdrawalMethod = 'mpesa' | 'bank' | 'wallet';
-
-// ============================================
-// FINANCE WITHDRAWALS COMPONENT — Angular v21 Standalone
-// ============================================
 @Component({
-  selector: 'app-finance-withdrawals',
+  selector: 'app-withdrawals',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
-  templateUrl: './withdrawals.html',
-  styleUrls: ['./withdrawals.scss']
+  imports: [CommonModule, FormsModule],
+  templateUrl:'./withdrawals.html',
+  styleUrls: ['./withdrawals.scss'],
 })
-export class FinanceWithdrawalsComponent implements OnInit {
-  // Summary Data
-  summary: WithdrawalSummary = {
-    availableBalance: 123750,
-    withdrawnThisYear: 25000,
-    withdrawalCountThisYear: 2,
-    lastWithdrawalAmount: 10000,
-    lastWithdrawalDate: new Date('2025-01-15'),
-    lastWithdrawalMethod: 'M-Pesa',
-    totalWithdrawnAllTime: 85000,
-    avgWithdrawal: 12143,
-    totalFeesPaid: 350
-  };
+export class WithdrawalsComponent implements AfterViewInit {
+  @ViewChild('historyCanvas') historyCanvas?: ElementRef<HTMLCanvasElement>;
 
-  // Withdrawal Rules
-  rules: WithdrawalRules = {
-    noticePeriod: 14,
-    minAmount: 1000,
-    maxPerMonth: 100000,
-    processingFee: 50,
-    disbursementMethods: ['M-Pesa', 'Bank EFT'],
-    policyText: `Withdrawal Policy:
-    
-1. Notice Period: All withdrawal requests require a 14-day notice period before processing.
+  activeModal: ModalKey | null = null;
+  selectedRequest: WithdrawalRequest | null = null;
+  selectedRow: WithdrawalRow | null = null;
+  chartRange: '6M' | '1Y' | 'All' = '1Y';
+  activeStatusFilter = '';
+  tableRange = 'Last 6 Months';
+  currentPage = 1;
 
-2. Minimum Amount: The minimum withdrawal amount is KES 1,000.
+  available = 123_750;
+  totalSavings = 158_750;
+  locked = 35_000;
+  noticeDays = 14;
 
-3. Maximum Limit: Maximum withdrawal per month is KES 100,000. Amounts exceeding this require special approval.
-
-4. Processing Fee: A flat fee of KES 50 is charged per withdrawal.
-
-5. Loan Collateral: Members with active loans may have restricted withdrawal amounts based on collateral requirements.
-
-6. Disbursement: Funds are disbursed via M-Pesa (instant after approval) or Bank EFT (1-2 business days).
-
-7. Working Days: Withdrawals are processed on business days only (Monday-Friday, excluding public holidays).
-
-8. Emergency Withdrawals: Emergency withdrawals may be requested with reduced notice period subject to admin approval and additional fees.
-
-For any questions, please contact the SACCO office.`
-  };
-
-  // Savings Accounts
-  savingsAccounts: SavingsAccount[] = [
-    {
-      id: 'SA-001',
-      name: 'Ordinary Savings',
-      balance: 158750,
-      availableBalance: 123750,
-      lockedAmount: 35000,
-      type: 'ordinary'
-    },
-    {
-      id: 'SA-002',
-      name: 'Education Savings',
-      balance: 25000,
-      availableBalance: 25000,
-      lockedAmount: 0,
-      type: 'education'
-    },
-    {
-      id: 'SA-003',
-      name: 'Holiday Savings',
-      balance: 15000,
-      availableBalance: 15000,
-      lockedAmount: 0,
-      type: 'holiday'
-    }
+  heroStats = [
+    { label: 'Pending Requests', value: '1', sub: 'View details ->', tone: 'amber', modal: 'pendingDetail' as ModalKey },
+    { label: 'Withdrawn (2025)', value: 'KES 25,000', sub: '2 withdrawals', tone: 'blue', modal: 'timeline' as ModalKey },
+    { label: 'Last Withdrawal', value: 'KES 10,000', sub: 'Jan 15, 2025 - M-Pesa', tone: 'muted', modal: 'completedDetail' as ModalKey },
+    { label: 'Disbursement Methods', value: 'M-Pesa  Bank', sub: 'Auto disbursement', tone: 'green', modal: 'methodDetails' as ModalKey },
   ];
 
-  // Disbursement Methods
-  disbursementMethods: DisbursementMethod[] = [
-    {
-      id: 'DM-001',
-      type: 'mpesa',
-      name: 'M-Pesa',
-      details: '0712****78 - JOHN KAMAU',
-      isDefault: true,
-      verified: true
-    },
-    {
-      id: 'DM-002',
-      type: 'bank',
-      name: 'Equity Bank',
-      details: '****9012 - Westlands',
-      isDefault: false,
-      verified: true
-    }
+  requests: WithdrawalRequest[] = [
+    { reference: 'WDR-2025-0045', amount: 20_000, account: 'Ordinary', method: 'M-Pesa', status: 'pending', date: 'Feb 25, 2025', reason: 'School Fees', fee: 50, estimate: 'Mar 11, 2025', daysRemaining: 8 },
+    { reference: 'WDR-2025-0031', amount: 10_000, account: 'Ordinary', method: 'M-Pesa', status: 'completed', date: 'Jan 15, 2025', completedDate: 'Jan 29, 2025', reason: 'Personal use', fee: 50 },
+    { reference: 'WDR-2024-0089', amount: 50_000, account: 'Ordinary', method: 'Bank EFT', status: 'rejected', date: 'Dec 10, 2024', reason: 'Home Construction', fee: null, rejectionReason: 'Amount exceeds available balance after loan collateral deductions.' },
   ];
 
-  // Withdrawals List
-  withdrawals: Withdrawal[] = [
-    {
-      id: 'WDR-2025-0045',
-      reference: 'WDR-2025-0045',
-      amount: 20000,
-      fee: 50,
-      account: 'Ordinary',
-      method: 'mpesa',
-      methodDetails: '0712****78',
-      status: 'pending',
-      reason: 'School Fees',
-      submittedDate: new Date('2025-02-25'),
-      estimatedCompletion: new Date('2025-03-11'),
-      currentStep: 2,
-      totalSteps: 4,
-      noticePeriodDays: 14,
-      noticePeriodRemaining: 8
-    },
-    {
-      id: 'WDR-2025-0031',
-      reference: 'WDR-2025-0031',
-      amount: 10000,
-      fee: 50,
-      account: 'Ordinary',
-      method: 'mpesa',
-      methodDetails: '0712****78',
-      status: 'completed',
-      reason: 'Personal',
-      submittedDate: new Date('2025-01-15'),
-      approvedDate: new Date('2025-01-28'),
-      completedDate: new Date('2025-01-29'),
-      currentStep: 4,
-      totalSteps: 4
-    },
-    {
-      id: 'WDR-2024-0089',
-      reference: 'WDR-2024-0089',
-      amount: 50000,
-      fee: 0,
-      account: 'Ordinary',
-      method: 'bank',
-      methodDetails: '****9012',
-      status: 'rejected',
-      reason: 'Investment',
-      rejectionReason: 'Amount exceeds available balance after loan collateral deductions.',
-      submittedDate: new Date('2024-12-10'),
-      currentStep: 0,
-      totalSteps: 4
-    },
-    {
-      id: 'WDR-2024-0072',
-      reference: 'WDR-2024-0072',
-      amount: 5000,
-      fee: 50,
-      account: 'Education',
-      method: 'bank',
-      methodDetails: '****9012',
-      status: 'completed',
-      reason: 'School Fees',
-      submittedDate: new Date('2024-11-20'),
-      approvedDate: new Date('2024-12-03'),
-      completedDate: new Date('2024-12-05'),
-      currentStep: 4,
-      totalSteps: 4
-    },
-    {
-      id: 'WDR-2024-0058',
-      reference: 'WDR-2024-0058',
-      amount: 15000,
-      fee: 50,
-      account: 'Ordinary',
-      method: 'mpesa',
-      methodDetails: '0712****78',
-      status: 'completed',
-      reason: 'Medical',
-      submittedDate: new Date('2024-10-05'),
-      completedDate: new Date('2024-10-20'),
-      currentStep: 4,
-      totalSteps: 4
-    },
-    {
-      id: 'WDR-2024-0042',
-      reference: 'WDR-2024-0042',
-      amount: 8000,
-      fee: 50,
-      account: 'Ordinary',
-      method: 'mpesa',
-      methodDetails: '0712****78',
-      status: 'completed',
-      reason: 'Personal',
-      submittedDate: new Date('2024-08-15'),
-      completedDate: new Date('2024-08-30'),
-      currentStep: 4,
-      totalSteps: 4
-    },
-    {
-      id: 'WDR-2024-0025',
-      reference: 'WDR-2024-0025',
-      amount: 12000,
-      fee: 50,
-      account: 'Holiday',
-      method: 'bank',
-      methodDetails: '****9012',
-      status: 'completed',
-      reason: 'Holiday',
-      submittedDate: new Date('2024-06-01'),
-      completedDate: new Date('2024-06-15'),
-      currentStep: 4,
-      totalSteps: 4
-    }
+  withdrawals: WithdrawalRow[] = [
+    { date: 'Feb 25, 2025', reference: 'WDR-2025-0045', account: 'Ordinary', amount: 20_000, fee: 50, method: 'M-Pesa', status: 'Pending' },
+    { date: 'Jan 15, 2025', reference: 'WDR-2025-0031', account: 'Ordinary', amount: 10_000, fee: 50, method: 'M-Pesa', status: 'Completed' },
+    { date: 'Dec 10, 2024', reference: 'WDR-2024-0089', account: 'Ordinary', amount: 50_000, fee: null, method: 'Bank', status: 'Rejected' },
+    { date: 'Nov 20, 2024', reference: 'WDR-2024-0072', account: 'Education', amount: 5_000, fee: 50, method: 'Bank', status: 'Completed' },
   ];
 
-  // Filter States
-  statusFilter: 'all' | 'pending' | 'completed' | 'rejected' = 'all';
-  historyLimit = 4;
-
-  // Modal States
-  newWithdrawalModalOpen = false;
-  withdrawalDetailModalOpen = false;
-  policyModalOpen = false;
-  calculatorModalOpen = false;
-  cancelWithdrawalModalOpen = false;
-  trackingModalOpen = false;
-  resubmitModalOpen = false;
-
-  // Selected Withdrawal
-  selectedWithdrawal: Withdrawal | null = null;
-
-  // New Withdrawal Form — properly typed
-  newWithdrawalData: {
-    account: string;
-    amount: number;
-    method: WithdrawalMethod;
-    methodId: string;
-    reason: string;
-    customReason: string;
-    agreeToTerms: boolean;
-    agreeToFee: boolean;
-  } = {
-    account: '',
-    amount: 0,
-    method: 'mpesa',
-    methodId: '',
+  requestForm = {
+    from: 'ordinary',
+    amount: '',
     reason: '',
-    customReason: '',
-    agreeToTerms: false,
-    agreeToFee: false
+    method: 'mpesa' as 'mpesa' | 'bank',
+    phone: '+254 712345890',
+    bank: 'Co-operative Bank',
+    accountNo: '0110028***4321',
   };
 
-  // Calculator Data
-  calcData = {
-    amount: 0
+  calculator = {
+    amount: '20000',
   };
-  calcResult: ImpactCalculation | null = null;
 
-  // Toasts
-  toasts: Toast[] = [];
+  cancelForm = {
+    reason: '',
+  };
 
-  // Computed Properties
-  get filteredWithdrawals(): Withdrawal[] {
-    if (this.statusFilter === 'all') return this.withdrawals;
-    return this.withdrawals.filter(w => w.status === this.statusFilter);
+  exportForm = {
+    range: 'Last 6 Months',
+    status: 'All Status',
+    format: 'pdf',
+  };
+
+  supportForm = {
+    subject: 'Withdrawal support',
+    message: '',
+  };
+
+  toast: { message: string; type: 'success' | 'info' | 'warning' | 'danger' } | null = null;
+  private toastTimer: any;
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.drawChart(), 0);
+    window.addEventListener('resize', () => this.drawChart());
   }
 
-  get displayedWithdrawals(): Withdrawal[] {
-    return this.filteredWithdrawals.slice(0, this.historyLimit);
+  get visibleRequests(): WithdrawalRequest[] {
+    return this.requests.filter((r) => !this.activeStatusFilter || r.status === this.activeStatusFilter);
   }
 
-  get pendingWithdrawals(): Withdrawal[] {
-    return this.withdrawals.filter(w => w.status === 'pending' || w.status === 'approved' || w.status === 'processing');
+  openModal(key: ModalKey): void {
+    if (key === 'pendingDetail') this.selectedRequest = this.requests.find((r) => r.status === 'pending') || null;
+    if (key === 'completedDetail') this.selectedRequest = this.requests.find((r) => r.status === 'completed') || null;
+    if (key === 'rejectedDetail') this.selectedRequest = this.requests.find((r) => r.status === 'rejected') || null;
+    this.activeModal = key;
+    document.body.style.overflow = 'hidden';
   }
 
-  get completedWithdrawals(): Withdrawal[] {
-    return this.withdrawals.filter(w => w.status === 'completed');
+  openRequestDetail(req: WithdrawalRequest): void {
+    this.selectedRequest = req;
+    this.activeModal = req.status === 'pending' ? 'pendingDetail' : req.status === 'completed' ? 'completedDetail' : 'rejectedDetail';
+    document.body.style.overflow = 'hidden';
   }
 
-  get rejectedWithdrawals(): Withdrawal[] {
-    return this.withdrawals.filter(w => w.status === 'rejected');
+  openRowDetail(row: WithdrawalRow): void {
+    this.selectedRow = row;
+    const req = this.requests.find((r) => r.reference === row.reference);
+    if (req) this.openRequestDetail(req);
   }
 
-  get mpesaWithdrawalsCount(): number {
-    return this.withdrawals.filter(w => w.method === 'mpesa' && w.status === 'completed').length;
+  closeModal(): void {
+    this.activeModal = null;
+    this.selectedRow = null;
+    document.body.style.overflow = '';
   }
 
-  get bankWithdrawalsCount(): number {
-    return this.withdrawals.filter(w => w.method === 'bank' && w.status === 'completed').length;
+  setRange(range: '6M' | '1Y' | 'All'): void {
+    this.chartRange = range;
+    setTimeout(() => this.drawChart(), 0);
   }
 
-  get totalCompletedCount(): number {
-    return this.mpesaWithdrawalsCount + this.bankWithdrawalsCount;
-  }
-
-  get mpesaPercentage(): number {
-    if (this.totalCompletedCount === 0) return 0;
-    return Math.round((this.mpesaWithdrawalsCount / this.totalCompletedCount) * 100);
-  }
-
-  get bankPercentage(): number {
-    if (this.totalCompletedCount === 0) return 0;
-    return Math.round((this.bankWithdrawalsCount / this.totalCompletedCount) * 100);
-  }
-
-  get selectedAccount(): SavingsAccount | null {
-    return this.savingsAccounts.find(a => a.id === this.newWithdrawalData.account) ?? null;
-  }
-
-  get selectedMethod(): DisbursementMethod | null {
-    return this.disbursementMethods.find(m => m.id === this.newWithdrawalData.methodId) ?? null;
-  }
-
-  get canSubmitWithdrawal(): boolean {
-    return !!(
-      this.newWithdrawalData.account &&
-      this.newWithdrawalData.amount >= this.rules.minAmount &&
-      this.newWithdrawalData.amount <= (this.selectedAccount?.availableBalance ?? 0) &&
-      this.newWithdrawalData.methodId &&
-      (this.newWithdrawalData.reason || this.newWithdrawalData.customReason) &&
-      this.newWithdrawalData.agreeToTerms &&
-      this.newWithdrawalData.agreeToFee
-    );
-  }
-
-  ngOnInit(): void {
-    // Initialize component
-  }
-
-  // ============================================
-  // FILTER METHODS
-  // ============================================
-  setStatusFilter(filter: typeof this.statusFilter): void {
-    this.statusFilter = filter;
-  }
-
-  showAllHistory(): void {
-    this.historyLimit = this.filteredWithdrawals.length;
-  }
-
-  // ============================================
-  // NEW WITHDRAWAL MODAL
-  // ============================================
-  openNewWithdrawalModal(): void {
-    this.newWithdrawalData = {
-      account: this.savingsAccounts[0]?.id ?? '',
-      amount: 0,
-      method: 'mpesa',
-      methodId: this.disbursementMethods.find(m => m.isDefault)?.id ?? '',
-      reason: '',
-      customReason: '',
-      agreeToTerms: false,
-      agreeToFee: false
-    };
-    this.newWithdrawalModalOpen = true;
-  }
-
-  closeNewWithdrawalModal(): void {
-    this.newWithdrawalModalOpen = false;
-  }
-
-  setWithdrawalMethod(type: 'mpesa' | 'bank'): void {
-    this.newWithdrawalData.method = type;
-    const defaultMethod = this.disbursementMethods.find(m => m.type === type);
-    this.newWithdrawalData.methodId = defaultMethod?.id ?? '';
-  }
-
-  setMaxAmount(): void {
-    if (this.selectedAccount) {
-      this.newWithdrawalData.amount = Math.min(
-        this.selectedAccount.availableBalance,
-        this.rules.maxPerMonth
-      );
-    }
-  }
-
-  submitWithdrawal(): void {
-    if (!this.canSubmitWithdrawal) {
-      this.showToast('Please fill in all required fields', 'warning');
+  submitRequest(): void {
+    if (!this.requestForm.amount || !this.requestForm.reason) {
+      this.showToast('Enter amount and reason to continue.', 'warning');
       return;
     }
-
-    const newWithdrawal: Withdrawal = {
-      id: `WDR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-      reference: `WDR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-      amount: this.newWithdrawalData.amount,
-      fee: this.rules.processingFee,
-      account: this.selectedAccount?.name ?? 'Ordinary',
-      method: this.newWithdrawalData.method,
-      methodDetails: this.selectedMethod?.details ?? '',
-      status: 'pending',
-      reason: this.newWithdrawalData.reason || this.newWithdrawalData.customReason,
-      submittedDate: new Date(),
-      estimatedCompletion: new Date(Date.now() + this.rules.noticePeriod * 24 * 60 * 60 * 1000),
-      currentStep: 1,
-      totalSteps: 4,
-      noticePeriodDays: this.rules.noticePeriod,
-      noticePeriodRemaining: this.rules.noticePeriod
-    };
-
-    this.withdrawals.unshift(newWithdrawal);
-    this.summary.availableBalance -= newWithdrawal.amount;
-
-    this.showToast('Withdrawal request submitted successfully!', 'success');
-    this.closeNewWithdrawalModal();
+    this.openModal('requestConfirm');
   }
 
-  // ============================================
-  // WITHDRAWAL DETAIL MODAL
-  // ============================================
-  openWithdrawalDetail(withdrawal: Withdrawal): void {
-    this.selectedWithdrawal = withdrawal;
-    this.withdrawalDetailModalOpen = true;
+  confirmRequest(): void {
+    this.closeModal();
+    this.showToast('Withdrawal request submitted for approval.', 'success');
   }
 
-  closeWithdrawalDetailModal(): void {
-    this.withdrawalDetailModalOpen = false;
-    this.selectedWithdrawal = null;
+  cancelRequest(): void {
+    this.closeModal();
+    this.showToast('Withdrawal request cancelled.', 'info');
   }
 
-  // ============================================
-  // TRACKING MODAL
-  // ============================================
-  openTrackingModal(withdrawal: Withdrawal): void {
-    this.selectedWithdrawal = withdrawal;
-    this.trackingModalOpen = true;
+  resubmitRequest(): void {
+    this.requestForm.amount = '50000';
+    this.requestForm.reason = 'Home Construction';
+    this.openModal('resubmit');
   }
 
-  closeTrackingModal(): void {
-    this.trackingModalOpen = false;
-  }
-
-  // ============================================
-  // CANCEL WITHDRAWAL MODAL
-  // ============================================
-  openCancelWithdrawalModal(withdrawal: Withdrawal): void {
-    this.selectedWithdrawal = withdrawal;
-    this.cancelWithdrawalModalOpen = true;
-  }
-
-  closeCancelWithdrawalModal(): void {
-    this.cancelWithdrawalModalOpen = false;
-  }
-
-  confirmCancelWithdrawal(): void {
-    if (this.selectedWithdrawal) {
-      this.selectedWithdrawal.status = 'cancelled';
-      this.summary.availableBalance += this.selectedWithdrawal.amount;
-      this.showToast('Withdrawal request cancelled', 'success');
-    }
-    this.closeCancelWithdrawalModal();
-    this.closeWithdrawalDetailModal();
-  }
-
-  // ============================================
-  // RESUBMIT MODAL
-  // ============================================
-  openResubmitModal(withdrawal: Withdrawal): void {
-    this.selectedWithdrawal = withdrawal;
-    this.resubmitModalOpen = true;
-  }
-
-  closeResubmitModal(): void {
-    this.resubmitModalOpen = false;
-  }
-
-  // ============================================
-  // POLICY MODAL
-  // ============================================
-  openPolicyModal(): void {
-    this.policyModalOpen = true;
-  }
-
-  closePolicyModal(): void {
-    this.policyModalOpen = false;
-  }
-
-  // ============================================
-  // CALCULATOR MODAL
-  // ============================================
-  openCalculatorModal(): void {
-    this.calcData = { amount: 0 };
-    this.calcResult = null;
-    this.calculatorModalOpen = true;
-  }
-
-  closeCalculatorModal(): void {
-    this.calculatorModalOpen = false;
-  }
-
-  calculateImpact(): void {
-    const currentSavings = this.summary.availableBalance;
-    const withdrawalAmount = this.calcData.amount;
-    const remainingSavings = currentSavings - withdrawalAmount;
-    
-    // Loan eligibility is typically 3x savings
-    const currentLoanEligibility = currentSavings * 3;
-    const newLoanEligibility = Math.max(0, remainingSavings * 3);
-    
-    // Dividend estimate (assuming 10% annual dividend rate)
-    const currentDividendEstimate = currentSavings * 0.10;
-    const newDividendEstimate = Math.max(0, remainingSavings * 0.10);
-
-    this.calcResult = {
-      currentSavings,
-      withdrawalAmount,
-      remainingSavings,
-      currentLoanEligibility,
-      newLoanEligibility,
-      eligibilityChange: newLoanEligibility - currentLoanEligibility,
-      currentDividendEstimate,
-      newDividendEstimate,
-      dividendImpact: newDividendEstimate - currentDividendEstimate
-    };
-  }
-
-  // ============================================
-  // UTILITY METHODS
-  // ============================================
-  getStatusColor(status: string): string {
-    const colors: Record<string, string> = {
-      pending: 'var(--ylw)',
-      approved: 'var(--blu)',
-      processing: 'var(--pri)',
-      completed: 'var(--grn)',
-      rejected: 'var(--red)',
-      cancelled: 'var(--txm)'
-    };
-    return colors[status] ?? 'var(--txm)';
-  }
-
-  getStatusBg(status: string): string {
-    const colors: Record<string, string> = {
-      pending: 'rgba(249,168,37,0.08)',
-      approved: 'rgba(2,136,209,0.06)',
-      processing: 'rgba(26,115,232,0.06)',
-      completed: 'rgba(0,200,83,0.08)',
-      rejected: 'rgba(229,57,53,0.06)',
-      cancelled: 'rgba(139,143,163,0.08)'
-    };
-    return colors[status] ?? 'rgba(139,143,163,0.08)';
-  }
-
-  getStatusBorder(status: string): string {
-    const colors: Record<string, string> = {
-      pending: 'rgba(249,168,37,0.18)',
-      approved: 'rgba(2,136,209,0.18)',
-      processing: 'rgba(26,115,232,0.2)',
-      completed: 'rgba(0,200,83,0.2)',
-      rejected: 'rgba(229,57,53,0.18)',
-      cancelled: 'rgba(139,143,163,0.15)'
-    };
-    return colors[status] ?? 'rgba(139,143,163,0.15)';
-  }
-
-  getStatusIcon(status: string): string {
-    const icons: Record<string, string> = {
-      pending: 'fa-clock',
-      approved: 'fa-check',
-      processing: 'fa-spinner',
-      completed: 'fa-check-circle',
-      rejected: 'fa-times-circle',
-      cancelled: 'fa-ban'
-    };
-    return icons[status] ?? 'fa-circle';
-  }
-
-  getMethodIcon(method: string): string {
-    return method === 'mpesa' ? 'fa-mobile-alt' : 'fa-university';
-  }
-
-  getMethodColor(method: string): string {
-    return method === 'mpesa' ? 'var(--grn)' : 'var(--blu)';
-  }
-
-  formatCurrency(amount: number): string {
-    return amount.toLocaleString();
-  }
-
-  getNoticePeriodProgress(withdrawal: Withdrawal): number {
-    if (!withdrawal.noticePeriodDays || !withdrawal.noticePeriodRemaining) return 100;
-    const elapsed = withdrawal.noticePeriodDays - withdrawal.noticePeriodRemaining;
-    return Math.round((elapsed / withdrawal.noticePeriodDays) * 100);
-  }
-
-  // ============================================
-  // TOAST SYSTEM
-  // ============================================
-  showToast(message: string, type: 'success' | 'warning' | 'danger' | 'info' | 'primary' = 'info'): void {
-    const iconMap: Record<string, string> = {
-      success: 'fa-check-circle',
-      warning: 'fa-exclamation-triangle',
-      danger: 'fa-times-circle',
-      info: 'fa-info-circle',
-      primary: 'fa-bell'
-    };
-
-    const colorMap: Record<string, string> = {
-      success: 'var(--grn)',
-      warning: 'var(--ylw)',
-      danger: 'var(--red)',
-      info: 'var(--blu)',
-      primary: 'var(--pri)'
-    };
-
-    const toast: Toast = {
-      type,
-      title: type.charAt(0).toUpperCase() + type.slice(1),
-      message,
-      icon: iconMap[type],
-      iconColor: colorMap[type]
-    };
-
-    this.toasts.push(toast);
-
-    setTimeout(() => {
-      const index = this.toasts.indexOf(toast);
-      if (index > -1) {
-        this.toasts.splice(index, 1);
-      }
-    }, 4000);
-  }
-
-  removeToast(index: number): void {
-    this.toasts.splice(index, 1);
-  }
-
-  downloadReceipt(withdrawal: Withdrawal): void {
-    this.showToast(`Downloading receipt for ${withdrawal.reference}...`, 'info');
+  submitResubmission(): void {
+    this.closeModal();
+    this.showToast('Withdrawal resubmitted for review.', 'success');
   }
 
   exportHistory(): void {
-    this.showToast('Exporting withdrawal history...', 'info');
+    this.closeModal();
+    this.showToast('Withdrawal export is being prepared.', 'info');
+  }
+
+  downloadReceipt(): void {
+    this.showToast('Receipt downloaded.', 'success');
+  }
+
+  submitSupport(): void {
+    this.closeModal();
+    this.showToast('Support ticket submitted.', 'info');
+  }
+
+  showToast(message: string, type: 'success' | 'info' | 'warning' | 'danger' = 'success'): void {
+    this.toast = { message, type };
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => (this.toast = null), 3200);
+  }
+
+  dismissToast(): void {
+    this.toast = null;
+  }
+
+  fmt(n: number): string {
+    return n.toLocaleString();
+  }
+
+  calculatorAmount(): number {
+    return Number(this.calculator.amount || 0);
+  }
+
+  afterWithdrawal(): number {
+    return this.totalSavings - this.calculatorAmount();
+  }
+
+  newLoanLimit(): number {
+    return this.afterWithdrawal() * 3;
+  }
+
+  private drawChart(): void {
+    const canvas = this.historyCanvas?.nativeElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+
+    const labels = this.chartRange === '6M' ? ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'] : ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
+    const values = this.chartRange === '6M' ? [15, 0, 5, 0, 10, 20] : [0, 5, 0, 10, 0, 0, 15, 0, 5, 0, 10, 20];
+    const max = 20;
+    const padL = 46;
+    const padR = 16;
+    const padT = 20;
+    const padB = 30;
+    const cw = w - padL - padR;
+    const ch = h - padT - padB;
+    const gap = cw / values.length;
+    const barW = Math.min(42, gap * 0.55);
+
+    ctx.strokeStyle = '#eef2f7';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 10; i++) {
+      const y = padT + (ch / 10) * i;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + cw, y);
+      ctx.stroke();
+      ctx.fillText(`KES ${Math.round((max / 10) * (10 - i))}K`, padL - 7, y + 3);
+    }
+
+    values.forEach((value, i) => {
+      const x = padL + i * gap + (gap - barW) / 2;
+      const bh = (value / max) * ch;
+      const y = padT + ch - bh;
+      const grad = ctx.createLinearGradient(0, y, 0, padT + ch);
+      grad.addColorStop(0, 'rgba(239, 68, 68, .78)');
+      grad.addColorStop(1, 'rgba(239, 68, 68, .35)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, bh, 6);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px system-ui';
+    ctx.textAlign = 'center';
+    labels.forEach((label, i) => ctx.fillText(label, padL + i * gap + gap / 2, h - 8));
   }
 }

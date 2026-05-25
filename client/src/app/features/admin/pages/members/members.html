@@ -30,7 +30,41 @@
     </div>
   </header>
 
-  <section class="stats-grid" aria-label="Member summary">
+  <!-- Tab Navigation Bar -->
+  <nav class="page-tabs" aria-label="Member sections">
+    <button
+      type="button"
+      class="page-tab"
+      [class.active]="activeTab === 'all'"
+      (click)="activeTab = 'all'">
+      All Members
+    </button>
+    <button
+      type="button"
+      class="page-tab"
+      [class.active]="activeTab === 'pending'"
+      (click)="activeTab = 'pending'">
+      Pending
+    </button>
+    <button
+      type="button"
+      class="page-tab"
+      [class.active]="activeTab === 'active'"
+      (click)="activeTab = 'active'">
+      Active
+    </button>
+    <button
+      type="button"
+      class="page-tab"
+      [class.active]="activeTab === 'exit'"
+      (click)="activeTab = 'exit'">
+      Member Exit
+    </button>
+  </nav>
+  
+
+  @if (activeTab !== 'exit') {
+<section class="stats-grid" aria-label="Member summary">
     <button type="button" class="stat-card stat-card--green" (click)="resetFilters()">
       <span class="stat-card-icon">ALL</span>
       <span class="stat-card-info"><span class="stat-label">Total Members</span><strong class="stat-value">{{
@@ -236,6 +270,513 @@
           [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button></div>
     </footer>
   </section>
+
+}
+
+<section *ngIf="activeTab === 'exit'" class="member-exit-tab">
+  <!-- Keep your existing content above. This is just a new section. -->
+
+  <div class="exit-header">
+    <div>
+      <h3 class="title">Member Exit</h3>
+      <p class="subtitle">
+        Manage voluntary exit (alive), death/default exit, transfers, payout and certificates.
+      </p>
+    </div>
+
+    <div class="exit-actions">
+      <button class="btn btn-outline" (click)="openExitWizard('ALIVE')">Start Exit</button>
+      <button class="btn btn-light" [disabled]="!selectedMember" (click)="downloadExitReport()">
+        Export Exit Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Member selector context (use your existing selected member pattern) -->
+  <div class="exit-context card" *ngIf="selectedMember; else noMemberSelected">
+    <div class="context-left">
+      <div class="avatar">{{ selectedMember?.name?.[0] || 'M' }}</div>
+      <div class="meta">
+        <div class="name">{{ selectedMember?.name }}</div>
+        <div class="small">
+          Member No: {{ selectedMember?.memberNo }} • ID: {{ selectedMember?.nationalId }} •
+          Status: <span class="pill" [ngClass]="selectedMember?.status">{{ selectedMember?.status }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="context-right">
+      <div class="mini">
+        <div class="label">Shares</div>
+        <div class="value">{{ exitSnapshot?.shares | number }}</div>
+      </div>
+      <div class="mini">
+        <div class="label">Savings</div>
+        <div class="value">KES {{ exitSnapshot?.savings | number }}</div>
+      </div>
+      <div class="mini">
+        <div class="label">Loan Balance</div>
+        <div class="value danger">KES {{ exitSnapshot?.loanBalance | number }}</div>
+      </div>
+      <div class="mini">
+        <div class="label">Pending Dues</div>
+        <div class="value warn">KES {{ exitSnapshot?.pendingDues | number }}</div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noMemberSelected>
+    <div class="exit-members-table">
+      <div class="table-header">
+        <h4>Recent Members</h4>
+        <span class="count">{{ exitMembers.length }} members available</span>
+      </div>
+      <div class="table-wrapper">
+        <table class="exit-table">
+          <thead>
+            <tr>
+              <th class="col-member">Member</th>
+              <th class="col-id">Member No / ID</th>
+              <th class="col-branch">Branch</th>
+              <th class="col-shares">Shares</th>
+              <th class="col-savings">Savings</th>
+              <th class="col-loans">Loans</th>
+              <th class="col-status">Status</th>
+              <th class="col-action">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let member of exitMembers; trackBy: trackExitMember">
+              <td class="col-member">
+                <div class="member-cell">
+                  <span class="avatar" [style.background]="member.avatarColor">{{ member.initials }}</span>
+                  <div class="member-name">
+                    <strong>{{ member.name }}</strong>
+                  </div>
+                </div>
+              </td>
+              <td class="col-id">
+                <div class="id-stack">
+                  <span class="id-no">{{ member.memberNo }}</span>
+                  <span class="id-nat">ID: {{ member.nationalId }}</span>
+                </div>
+              </td>
+              <td class="col-branch">{{ member.branch }}</td>
+              <td class="col-shares">{{ member.shares | number }}</td>
+              <td class="col-savings">KES {{ member.savings | number }}</td>
+              <td class="col-loans" [class.danger-text]="member.loanBalance > 0">
+                {{ member.loanBalance > 0 ? 'KES ' + (member.loanBalance | number) : 'None' }}
+              </td>
+              <td class="col-status">
+                <span class="status-badge" [ngClass]="member.status">{{ statusLabel(member.status) }}</span>
+              </td>
+              <td class="col-action">
+                <button class="btn btn-primary btn-sm" (click)="selectExitMember(member)">
+                  Select for Exit
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Exit features grid -->
+  <div class="exit-grid" *ngIf="selectedMember">
+    <!-- Voluntary Exit -->
+    <div class="card exit-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Voluntary Exit (Alive)</div>
+          <div class="card-sub">Checklist + settlement + payout + clearance certificate.</div>
+        </div>
+        <span class="tag tag-green">Advanced</span>
+      </div>
+
+      <div class="checklist">
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitChecklist.transferNonWithdrawableShares" />
+          <span>Transfer all Non‑Withdrawable Shares</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitChecklist.clearLoans" />
+          <span>Clear outstanding loan balances</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitChecklist.clearPendingLoanPayments" />
+          <span>Clear pending loan payments / arrears</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitChecklist.clearOtherDues" />
+          <span>Clear other pending dues (fees, penalties, charges)</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitChecklist.generateStatement" />
+          <span>Generate member statement + activity report</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitChecklist.issueClearanceCertificate" />
+          <span>Issue Clearance Certificate</span>
+        </label>
+      </div>
+
+      <div class="row">
+        <button
+          class="btn btn-primary"
+          [disabled]="!canProceedVoluntaryExit()"
+          (click)="openExitWizard('ALIVE')">
+          Execute Voluntary Exit
+        </button>
+
+        <button class="btn btn-light" (click)="previewClearanceCertificate()">
+          Preview Clearance Certificate
+        </button>
+      </div>
+
+      <div class="small muted">
+        Exit will be blocked automatically if balances/dues remain unless admin override is enabled.
+      </div>
+    </div>
+
+    <!-- Death Exit -->
+    <div class="card exit-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Death / Default Exit</div>
+          <div class="card-sub">
+            Transfer shares/holdings to Next of Kin (NOK) or payout via SaccoPay.
+          </div>
+        </div>
+        <span class="tag tag-amber">Sensitive</span>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>NOK Full Name</label>
+          <input class="input" [(ngModel)]="deathExit.nokName" placeholder="e.g. Jane Doe" />
+        </div>
+
+        <div class="field">
+          <label>NOK Relationship</label>
+          <input class="input" [(ngModel)]="deathExit.nokRelationship" placeholder="e.g. Spouse, Child" />
+        </div>
+
+        <div class="field">
+          <label>NOK Phone (Mobile Money)</label>
+          <input class="input" [(ngModel)]="deathExit.nokPhone" placeholder="+254..." />
+        </div>
+
+        <div class="field">
+          <label>NOK Bank Details (optional)</label>
+          <input class="input" [(ngModel)]="deathExit.nokBankAccount" placeholder="Bank • Account No" />
+        </div>
+
+        <div class="field">
+          <label>NOK Member on Platform?</label>
+          <select class="input" [(ngModel)]="deathExit.nokIsMember">
+            <option [ngValue]="true">Yes</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </div>
+
+        <div class="field" *ngIf="deathExit.nokIsMember">
+          <label>NOK Member No / ID</label>
+          <input class="input" [(ngModel)]="deathExit.nokMemberRef" placeholder="Member No or National ID" />
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-primary" (click)="openExitWizard('DEATH')">
+          Start Death Exit Process
+        </button>
+        <button class="btn btn-light" (click)="attachDeathDocuments()">
+          Attach Documents (Death Cert / Letters)
+        </button>
+      </div>
+
+      <div class="small muted">
+        If NOK is a SaccoPay member, system will initiate internal transfer of eligible assets by default.
+        Otherwise SaccoPay will pay out to NOK provided details (bank/mobile money).
+      </div>
+    </div>
+
+    <!-- Other relevant features -->
+    <div class="card exit-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Exit Controls & Audit</div>
+          <div class="card-sub">Holds, approvals, logs and notes.</div>
+        </div>
+        <span class="tag tag-gray">Admin</span>
+      </div>
+
+      <div class="checklist">
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitControls.requireTwoManApproval" />
+          <span>Require 2‑man approval (Maker‑Checker)</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitControls.freezeMemberAccountDuringExit" />
+          <span>Freeze member account during exit process</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="exitControls.allowAdminOverride" />
+          <span>Allow admin override (with reason + audit)</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Exit Notes (internal)</label>
+        <textarea class="input" rows="3" [(ngModel)]="exitControls.internalNotes"
+          placeholder="Add notes for audit, approvals, or special handling..."></textarea>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-outline" (click)="viewExitAuditTrail()">View Audit Trail</button>
+        <button class="btn btn-light" (click)="downloadMemberStatement()">Download Member Statement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multi-step Exit Wizard Modal -->
+  <div class="modal-backdrop" *ngIf="exitWizard.open" (click)="closeExitWizard()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-center-wrapper">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">
+            Exit Wizard • {{ exitWizard.type === 'ALIVE' ? 'Voluntary Exit' : 'Death Exit' }}
+          </div>
+          <div class="modal-sub">
+            Complete validations → settle obligations → payout/transfer → certificate + report.
+          </div>
+        </div>
+        <button class="icon-btn" (click)="closeExitWizard()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Stepper -->
+        <div class="stepper">
+          <div class="step" [class.active]="exitWizard.step === 1">Validate</div>
+          <div class="step" [class.active]="exitWizard.step === 2">Settlement</div>
+          <div class="step" [class.active]="exitWizard.step === 3">Payout / Transfer</div>
+          <div class="step" [class.active]="exitWizard.step === 4">Certificate & Report</div>
+        </div>
+
+        <!-- Step 1 -->
+        <div *ngIf="exitWizard.step === 1" class="step-panel">
+          <div class="panel-title">Validation & Readiness</div>
+
+          <div class="info-grid">
+            <div class="info">
+              <div class="k">Member</div>
+              <div class="v">{{ selectedMember?.name }} ({{ selectedMember?.memberNo }})</div>
+            </div>
+            <div class="info">
+              <div class="k">Shares (Total)</div>
+              <div class="v">{{ exitSnapshot?.shares | number }}</div>
+            </div>
+            <div class="info">
+              <div class="k">Non‑Withdrawable Shares</div>
+              <div class="v">{{ exitSnapshot?.nonWithdrawableShares | number }}</div>
+            </div>
+            <div class="info">
+              <div class="k">Loans / Arrears</div>
+              <div class="v">KES {{ exitSnapshot?.loanBalance | number }}</div>
+            </div>
+          </div>
+
+          <div class="alert warn" *ngIf="exitWizard.type === 'ALIVE' && !canProceedVoluntaryExit()">
+            Checklist not complete. Complete required checks to proceed.
+          </div>
+
+          <div class="alert danger" *ngIf="exitBlockingIssues?.length">
+            <div class="bold">Blocking issues detected</div>
+            <ul>
+              <li *ngFor="let i of exitBlockingIssues">{{ i }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div *ngIf="exitWizard.step === 2" class="step-panel">
+          <div class="panel-title">Settlement</div>
+
+          <div class="settlement-card">
+            <div class="settle-row">
+              <div>
+                <div class="bold">Loan Balance</div>
+                <div class="small muted">Must be cleared before exit, unless admin override.</div>
+              </div>
+              <div class="amount danger">KES {{ exitSnapshot?.loanBalance | number }}</div>
+            </div>
+
+            <div class="settle-row">
+              <div>
+                <div class="bold">Pending Dues</div>
+                <div class="small muted">Fees, penalties, unpaid installments.</div>
+              </div>
+              <div class="amount warn">KES {{ exitSnapshot?.pendingDues | number }}</div>
+            </div>
+
+            <hr />
+
+            <div class="settle-row">
+              <div>
+                <div class="bold">Total to Clear</div>
+              </div>
+              <div class="amount">KES {{ totalToClear() | number }}</div>
+            </div>
+
+            <div class="row">
+              <button class="btn btn-primary" (click)="openSettlementPaymentModal()">
+                Pay to Clear (Wallet/External)
+              </button>
+              <button class="btn btn-outline" (click)="markAsClearedAdminOverride()" [disabled]="!exitControls.allowAdminOverride">
+                Admin Override (requires reason)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div *ngIf="exitWizard.step === 3" class="step-panel">
+          <div class="panel-title">Payout / Transfer</div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Source</label>
+              <select class="input" [(ngModel)]="payout.source">
+                <option value="SACCOPAY_WALLET">SaccoPay Wallet</option>
+                <option value="EXTERNAL_WALLET">External Wallet</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Mode</label>
+              <select class="input" [(ngModel)]="payout.mode">
+                <option value="BANK">Bank</option>
+                <option value="MOBILE_MONEY">Mobile Money</option>
+                <option value="CARD">Card</option>
+                <option value="CASH">Cash</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Payout Amount (net)</label>
+              <input class="input" type="number" [(ngModel)]="payout.amount" />
+            </div>
+          </div>
+
+          <!-- Mode-specific inputs -->
+          <div class="form-grid" *ngIf="payout.mode === 'BANK'">
+            <div class="field">
+              <label>Bank Name</label>
+              <input class="input" [(ngModel)]="payout.bankName" />
+            </div>
+            <div class="field">
+              <label>Account Name</label>
+              <input class="input" [(ngModel)]="payout.bankAccountName" />
+            </div>
+            <div class="field">
+              <label>Account Number</label>
+              <input class="input" [(ngModel)]="payout.bankAccountNo" />
+            </div>
+          </div>
+
+          <div class="form-grid" *ngIf="payout.mode === 'MOBILE_MONEY'">
+            <div class="field">
+              <label>Network</label>
+              <select class="input" [(ngModel)]="payout.mobileNetwork">
+                <option value="MPESA">M-Pesa</option>
+                <option value="AIRTEL">Airtel Money</option>
+                <option value="TELKOM">T-Kash</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Phone</label>
+              <input class="input" [(ngModel)]="payout.mobilePhone" placeholder="+254..." />
+            </div>
+          </div>
+
+          <div class="form-grid" *ngIf="payout.mode === 'CARD'">
+            <div class="field">
+              <label>Card Reference</label>
+              <input class="input" [(ngModel)]="payout.cardRef" placeholder="Auth/Txn reference" />
+            </div>
+          </div>
+
+          <div class="form-grid" *ngIf="payout.mode === 'CASH'">
+            <div class="field">
+              <label>Cash Collection Point</label>
+              <input class="input" [(ngModel)]="payout.cashPoint" placeholder="Branch / Desk" />
+            </div>
+            <div class="field">
+              <label>Received By (name/ID)</label>
+              <input class="input" [(ngModel)]="payout.cashReceiver" />
+            </div>
+          </div>
+
+          <div class="alert info" *ngIf="exitWizard.type === 'DEATH'">
+            For Death Exit: payout may go to Next of Kin; if NOK is a member, internal transfer is preferred.
+          </div>
+
+          <div class="row">
+            <button class="btn btn-primary" (click)="processPayoutOrTransfer()">
+              Process Payout / Transfer
+            </button>
+            <button class="btn btn-light" (click)="simulateNetPayout()">
+              Recalculate Net Payout
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div *ngIf="exitWizard.step === 4" class="step-panel">
+          <div class="panel-title">Certificate & Report</div>
+
+          <div class="row">
+            <button class="btn btn-primary" (click)="generateClearanceCertificate()">
+              Generate Clearance Certificate
+            </button>
+            <button class="btn btn-outline" (click)="generateExitReport()">
+              Generate Exit Report (Transactions/Payments/Activities)
+            </button>
+            <button class="btn btn-light" (click)="finalizeExit()">
+              Finalize Exit (Deactivate Member)
+            </button>
+          </div>
+
+          <div class="alert warn">
+            Finalizing exit will lock the member account and mark status as Exited (or Deceased) per policy.
+          </div>
+        </div>
+      </div>
+
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-light" (click)="prevStep()" [disabled]="exitWizard.step === 1">Back</button>
+        <button class="btn btn-primary" (click)="nextStep()" [disabled]="!canGoNextStep()">
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
 
   @if (activeModal === 'addMember') {
   <div class="modal-overlay" (click)="closeModal()">

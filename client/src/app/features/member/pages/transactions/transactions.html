@@ -1,834 +1,216 @@
-
-<div class="min-h-screen bg-slate-50/60 text-slate-800 pb-12">
-  <!-- Page Content (No Header, No Sidebar - pure body content) -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-    
-    <!-- Alert Message (if any) -->
-    @if (errorMessage) {
-      <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl flex items-start space-x-3 animate-fade-in">
-        <span class="text-red-600 font-semibold">⚠️ Error:</span>
-        <p class="text-red-800 text-sm">{{ errorMessage }}</p>
+<!-- Transactions page main content only. No sidebar, no global header. -->
+<section class="tx-shell">
+  <!-- Hero summary -->
+  <article class="tx-hero">
+    <div class="tx-hero-orb"></div>
+    <div class="tx-hero-top">
+      <div>
+        <p class="tx-label">TOTAL MONTHLY ACTIVITY</p>
+        <h1>KES 142,500</h1>
+        <p class="tx-sub">Combined Inflows & Outflows for December 2024</p>
       </div>
-    }
+      <button class="tx-hero-btn" (click)="openModal('exportStatement')">Export Statement</button>
+    </div>
+    <div class="tx-summary-grid">
+      @for (s of summary; track s.label) {
+        <button class="tx-summary tone-{{s.tone}}" (click)="s.label === 'Pending Verifications' ? openModal('pendingVerification') : s.label === 'Success Rate' ? openModal('successRate') : openModal('monthlyActivity')">
+          <span>{{s.label}}</span>
+          <strong>{{s.value}}</strong>
+        </button>
+      }
+    </div>
+  </article>
 
-    <!-- Sacco Stats Summary Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-      
-      <!-- Share Capital Card -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden">
-        <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-600"></div>
-        <div class="flex justify-between items-start">
+  <!-- Insights -->
+  <div class="tx-insight-grid">
+    <article class="tx-card tx-chart-card">
+      <header class="tx-card-head">
+        <h6>Activity Insights (Inflows vs Outflows)</h6>
+        <button class="tx-link" (click)="openModal('insights')">Last 6 Months</button>
+      </header>
+      <div class="tx-chart-legend"><span><i class="blue"></i>Inflows (KES)</span><span><i class="cyan"></i>Outflows (KES)</span></div>
+      <div class="tx-chart"><canvas #activityCanvas></canvas></div>
+    </article>
+
+    <article class="tx-card">
+      <header class="tx-card-head"><h6>Outflow Breakdown</h6><button class="tx-link" (click)="openModal('outflowBreakdown')">Details</button></header>
+      <div class="tx-breakdown">
+        @for (b of outflowBreakdown; track b.label) {
           <div>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Share Capital Balance</p>
-            <h3 class="text-2xl font-bold text-slate-900 mt-2">
-              {{ stats.shareCapital | currency:'KES ':'symbol':'1.0-0' }}
-            </h3>
-            <p class="text-xs text-slate-400 mt-1">Non-withdrawable • Earns Dividends</p>
+            <p><span><i class="dot {{b.color}}"></i>{{b.label}}</span><strong>{{b.percent}}%</strong></p>
+            <div class="tx-progress"><span class="{{b.color}}" [style.width.%]="b.percent"></span></div>
           </div>
-          <div class="p-3 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-colors">
-            <!-- Lucide: PieChart / Landmark -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
-            </svg>
-          </div>
-        </div>
+        }
       </div>
+    </article>
+  </div>
 
-      <!-- Alpha Deposits Card -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden">
-        <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 to-indigo-600"></div>
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alpha withdrawable Deposits</p>
-            <h3 class="text-2xl font-bold text-slate-900 mt-2">
-              {{ stats.alphaDeposits | currency:'KES ':'symbol':'1.0-0' }}
-            </h3>
-            <p class="text-xs text-slate-400 mt-1">Normal Savings account</p>
-          </div>
-          <div class="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
-            <!-- Lucide: Wallet / Safe -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-            </svg>
-          </div>
-        </div>
+  <!-- Ledger toolbar -->
+  <article class="tx-card tx-ledger-card">
+    <header class="tx-toolbar">
+      <div class="tx-tabs">
+        @for (t of tabs; track t.key) {
+          <button [class.active]="activeTab === t.key" (click)="activeTab = t.key">
+            {{t.label}} <span>{{t.count}}</span>
+          </button>
+        }
       </div>
-
-      <!-- Outstanding Loans Card -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden">
-        <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-amber-500 to-orange-500"></div>
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Outstanding Loans</p>
-            <h3 class="text-2xl font-bold text-red-600 mt-2">
-              {{ stats.outstandingLoans | currency:'KES ':'symbol':'1.0-0' }}
-            </h3>
-            <p class="text-xs text-slate-400 mt-1">Emergency & Development</p>
-          </div>
-          <div class="p-3 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-100 transition-colors">
-            <!-- Lucide: Scale / Bank -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-        </div>
+      <div class="tx-search-row">
+        <input [(ngModel)]="searchTerm" placeholder="Search reference, account...">
+        <button class="tx-btn-outline" (click)="openModal('filters')">Filters</button>
       </div>
+    </header>
 
-      <!-- Total Count / Saved combined -->
-      <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden">
-        <div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-purple-500 to-fuchsia-600"></div>
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Saved / Invested</p>
-            <h3 class="text-2xl font-bold text-slate-900 mt-2">
-              {{ stats.totalSaved | currency:'KES ':'symbol':'1.0-0' }}
-            </h3>
-            <p class="text-xs text-slate-400 mt-1">Processed: {{ stats.totalCount }} Transactions</p>
-          </div>
-          <div class="p-3 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-100 transition-colors">
-            <!-- Lucide: BarChart -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-
+    <div class="tx-ledger-title">
+      <h6>Transaction Ledger</h6>
+      <small>Showing December 2024 Records</small>
     </div>
 
-    <!-- Workspace Header & Main Operations Panel -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6">
-      
-      <!-- Top Actions and Tab Navigation -->
-      <div class="border-b border-slate-100 p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h1 class="text-xl font-bold text-slate-900">Member Transactions Portal</h1>
-          <p class="text-xs text-slate-500 mt-1">Track, verify, and log your deposits, shares capital contributions, and loan payments.</p>
-        </div>
-
-        <!-- Action Buttons Group -->
-        <div class="flex items-center space-x-2 self-stretch lg:self-auto justify-end">
-          <button (click)="openAddModal()" class="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all text-xs font-semibold shadow-sm hover:shadow flex items-center space-x-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            <span>Record Deposit Slip</span>
-          </button>
-          <button (click)="openExportModal()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all text-xs font-semibold flex items-center space-x-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            <span>Export Data</span>
-          </button>
-          <button (click)="loadInitialData()" [disabled]="isLoading" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all" title="Refresh Transactions">
-            <svg class="w-4 h-4" [class.animate-spin]="isLoading" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Advanced Filters Section -->
-      <div class="bg-slate-50/70 p-6 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- Search Filter -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Search Keyword</label>
-          <div class="relative">
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Ref, ID, description..." class="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white transition-colors"/>
-            <svg class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Status filter -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Status</label>
-          <select [(ngModel)]="statusFilter" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-            <option value="All">All Statuses</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-            <option value="Failed">Failed</option>
-          </select>
-        </div>
-
-        <!-- Payment Mode channel -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Payment Channel</label>
-          <select [(ngModel)]="methodFilter" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-            <option value="All">All Channels</option>
-            <option value="M-Pesa">M-Pesa Code</option>
-            <option value="Bank">Bank Transfer</option>
-            <option value="Wave">Wave Diaspora</option>
-            <option value="Standing Order">Standing Order</option>
-          </select>
-        </div>
-
-        <!-- Min/Max Amount Filters -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Amount Range (KES)</label>
-          <div class="flex space-x-2">
-            <input type="number" [(ngModel)]="minAmount" placeholder="Min" class="w-1/2 px-2 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"/>
-            <input type="number" [(ngModel)]="maxAmount" placeholder="Max" class="w-1/2 px-2 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"/>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Category Tabs Row -->
-      <div class="px-6 border-b border-slate-100 bg-white flex items-center justify-between overflow-x-auto scrollbar-none">
-        <div class="flex space-x-1 py-2 text-xs font-semibold text-slate-600">
-          <button (click)="setTab('All')" [class.text-emerald-700]="selectedTab === 'All'" [class.border-b-2]="selectedTab === 'All'" [class.border-emerald-600]="selectedTab === 'All'" class="px-3 py-2.5 hover:text-emerald-600 transition-all relative">
-            All Transactions
-          </button>
-          <button (click)="setTab('Alpha Deposits')" [class.text-emerald-700]="selectedTab === 'Alpha Deposits'" [class.border-b-2]="selectedTab === 'Alpha Deposits'" [class.border-emerald-600]="selectedTab === 'Alpha Deposits'" class="px-3 py-2.5 hover:text-emerald-600 transition-all">
-            Alpha Deposits
-          </button>
-          <button (click)="setTab('Shares Capital')" [class.text-emerald-700]="selectedTab === 'Shares Capital'" [class.border-b-2]="selectedTab === 'Shares Capital'" [class.border-emerald-600]="selectedTab === 'Shares Capital'" class="px-3 py-2.5 hover:text-emerald-600 transition-all">
-            Share Capital
-          </button>
-          <button (click)="setTab('Loan Repayments')" [class.text-emerald-700]="selectedTab === 'Loan Repayments'" [class.border-b-2]="selectedTab === 'Loan Repayments'" [class.border-emerald-600]="selectedTab === 'Loan Repayments'" class="px-3 py-2.5 hover:text-emerald-600 transition-all">
-            Loan Repayments
-          </button>
-          <button (click)="setTab('Others')" [class.text-emerald-700]="selectedTab === 'Others'" [class.border-b-2]="selectedTab === 'Others'" [class.border-emerald-600]="selectedTab === 'Others'" class="px-3 py-2.5 hover:text-emerald-600 transition-all">
-            Other Ledger Fees
-          </button>
-        </div>
-
-        <!-- Filters Active Reset Helper -->
-        @if (searchQuery || statusFilter !== 'All' || methodFilter !== 'All' || startDateFilter || endDateFilter || minAmount !== null || maxAmount !== null) {
-          <button (click)="clearFilters()" class="text-[10px] text-rose-600 font-bold hover:text-rose-700 flex items-center space-x-1 whitespace-nowrap bg-rose-50 px-2.5 py-1 rounded-full my-2 transition-colors">
-            <span>Clear Active Filters</span>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        }
-      </div>
-
-      <!-- Main Data Table Section -->
-      <div class="overflow-x-auto">
-        
-        @if (isLoading) {
-          <div class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-3">
-            <svg class="w-8 h-8 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-            </svg>
-            <p class="text-xs text-slate-500 animate-pulse font-semibold">Reconciling transactions Ledger...</p>
-          </div>
-        } @else {
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50/60 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                <th class="pl-6 py-3.5">Transaction ID</th>
-                <th class="py-3.5 cursor-pointer hover:text-slate-600 select-none" (click)="toggleSort('date')">
-                  <div class="flex items-center space-x-1">
-                    <span>Date & Time</span>
-                    @if (sortBy === 'date') {
-                      <svg class="w-3 h-3 transition-transform" [class.rotate-180]="sortOrder === 'desc'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                      </svg>
-                    }
-                  </div>
-                </th>
-                <th class="py-3.5">Description</th>
-                <th class="py-3.5">Ledger Account</th>
-                <th class="py-3.5">Channel / Mode</th>
-                <th class="py-3.5 text-right cursor-pointer hover:text-slate-600 select-none" (click)="toggleSort('amount')">
-                  <div class="flex items-center justify-end space-x-1">
-                    <span>Amount</span>
-                    @if (sortBy === 'amount') {
-                      <svg class="w-3 h-3 transition-transform" [class.rotate-180]="sortOrder === 'desc'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                      </svg>
-                    }
-                  </div>
-                </th>
-                <th class="py-3.5 cursor-pointer hover:text-slate-600 select-none" (click)="toggleSort('status')">
-                  <div class="flex items-center space-x-1">
-                    <span>Status</span>
-                    @if (sortBy === 'status') {
-                      <svg class="w-3 h-3 transition-transform" [class.rotate-180]="sortOrder === 'desc'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                      </svg>
-                    }
-                  </div>
-                </th>
-                <th class="pr-6 py-3.5 text-right">Operations</th>
-              </tr>
-            </thead>
-            
-            <tbody class="divide-y divide-slate-50 text-xs">
-              
-              <!-- Angular v21 control flow template loop -->
-              @for (tx of paginatedTransactions; track tx.id) {
-                <tr class="hover:bg-slate-50/80 transition-all duration-150 group">
-                  
-                  <!-- Transaction ID -->
-                  <td class="pl-6 py-3.5 font-mono text-[11px] text-slate-400 group-hover:text-emerald-600 transition-colors">
-                    {{ tx?.id ?? 'N/A' }}
-                  </td>
-                  
-                  <!-- Date and Time -->
-                  <td class="py-3.5 text-slate-600">
-                    <!-- Strict null safety pipe evaluation -->
-                    {{ (tx?.date ?? '') | date:'MMM d, y, h:mm a' }}
-                  </td>
-                  
-                  <!-- Description & details -->
-                  <td class="py-3.5 font-medium text-slate-800">
-                    <div class="flex flex-col">
-                      <span>{{ tx?.description ?? 'N/A' }}</span>
-                      @if (tx?.reference) {
-                        <span class="text-[10px] text-slate-400 font-mono">Ref: {{ tx.reference }}</span>
-                      }
-                    </div>
-                  </td>
-                  
-                  <!-- Account Ledgers with custom styling mapping -->
-                  <td class="py-3.5">
-                    <span [ngClass]="{
-                      'bg-teal-50 text-teal-700': tx.accountType === 'Shares Capital',
-                      'bg-blue-50 text-blue-700': tx.accountType === 'Alpha Deposits',
-                      'bg-amber-50 text-amber-700': tx.accountType === 'Loan Repayments',
-                      'bg-purple-50 text-purple-700': tx.accountType === 'Registration',
-                      'bg-rose-50 text-rose-700': tx.accountType === 'Withdrawals'
-                    }" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                      {{ tx?.accountType ?? 'General Ledger' }}
-                    </span>
-                  </td>
-                  
-                  <!-- Payment Method Channel -->
-                  <td class="py-3.5 text-slate-500 font-medium flex items-center space-x-1.5">
-                    <!-- Icon styling depending on channels -->
-                    @if (tx.method.includes('M-Pesa')) {
-                      <span class="w-2 h-2 rounded-full bg-emerald-500" title="Mobile Wallet"></span>
-                    } @else if (tx.method.includes('Bank')) {
-                      <span class="w-2 h-2 rounded-full bg-blue-500" title="Bank wire transfer"></span>
-                    } @else {
-                      <span class="w-2 h-2 rounded-full bg-purple-400" title="Online gateway"></span>
-                    }
-                    <span>{{ tx?.method ?? 'Mobile Money' }}</span>
-                  </td>
-                  
-                  <!-- Amount with negative/positive indicator -->
-                  <td class="py-3.5 text-right font-bold">
-                    <span [class.text-emerald-600]="tx.type === 'credit'" [class.text-rose-600]="tx.type === 'debit'">
-                      {{ tx.type === 'credit' ? '+' : '-' }}{{ (tx?.amount ?? 0) | currency:'KES ':'symbol':'1.2-2' }}
-                    </span>
-                  </td>
-                  
-                  <!-- Status custom styled badges -->
-                  <td class="py-3.5">
-                    <span [ngClass]="{
-                      'bg-emerald-50 text-emerald-700 border-emerald-200': tx.status === 'Completed',
-                      'bg-amber-50 text-amber-700 border-amber-200': tx.status === 'Pending',
-                      'bg-rose-50 text-rose-700 border-rose-200': tx.status === 'Failed'
-                    }" class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold border">
-                      @if (tx.status === 'Pending') {
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse mr-1"></span>
-                      }
-                      {{ tx?.status ?? 'Unknown' }}
-                    </span>
-                  </td>
-                  
-                  <!-- Dynamic Operations Dropdowns or buttons -->
-                  <td class="pr-6 py-3.5 text-right">
-                    <div class="flex items-center justify-end space-x-1.5">
-                      <!-- RouterLink issue fixed: properly using routing modules inside standalone components instead of relative template bindings -->
-                      <button (click)="openReceiptModal(tx)" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-all" title="View Printable Receipt">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                      </button>
-                      <button (click)="simulateDownloadReceipt(tx)" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-all" title="Download Receipt PDF">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                      </button>
-                      <button (click)="openDisputeModal(tx)" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-rose-600 transition-all" title="Dispute Transaction Ledger">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-
-                </tr>
-              } @empty {
-                <!-- Handle zero matches seamlessly using Angular 21 @empty syntax inside @for -->
-                <tr>
-                  <td colspan="8" class="py-16 text-center text-slate-400">
-                    <div class="flex flex-col items-center justify-center space-y-2">
-                      <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                      </svg>
-                      <p class="text-xs font-semibold text-slate-500">No transactions match your filters.</p>
-                      <button (click)="clearFilters()" class="text-[11px] text-emerald-600 hover:underline font-bold">Reset all filters</button>
-                    </div>
-                  </td>
-                </tr>
-              }
-
-            </tbody>
-          </table>
-        }
-
-      </div>
-
-      <!-- Dynamic Pagination Controls -->
-      <div class="border-t border-slate-100 p-6 bg-slate-50/30 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p class="text-xs text-slate-400 font-medium">
-          Showing <span class="text-slate-600 font-semibold">{{ startEntryIndex }}</span> to 
-          <span class="text-slate-600 font-semibold">{{ endEntryIndex }}</span> of 
-          <span class="text-slate-600 font-semibold">{{ filteredTransactions.length }}</span> entries
-        </p>
-
-        <div class="flex items-center space-x-1">
-          <!-- Page size selector for high usability -->
-          <div class="flex items-center space-x-2 mr-4 border-r border-slate-200 pr-4">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase">Size:</span>
-            <select [(ngModel)]="pageSize" (change)="currentPage = 1" class="px-2 py-1 text-xs border rounded-lg bg-white text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-              <option [value]="5">5</option>
-              <option [value]="10">10</option>
-              <option [value]="20">20</option>
-              <option [value]="50">50</option>
-            </select>
-          </div>
-
-          <!-- Previous page selector -->
-          <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="p-1.5 rounded-lg border bg-white text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:hover:bg-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
-
-          <!-- Dynamic simple list or numbers -->
-          @for (p of [].constructor(totalPages); track $index) {
-            <button (click)="changePage($index + 1)" [class.bg-emerald-600]="$index + 1 === currentPage" [class.text-white]="$index + 1 === currentPage" [class.border-emerald-600]="$index + 1 === currentPage" class="px-3 py-1 rounded-lg border bg-white text-xs hover:bg-slate-50 transition-all">
-              {{ $index + 1 }}
-            </button>
+    <div class="tx-table-wrap">
+      <table class="tx-table">
+        <thead><tr><th>Transaction Details</th><th>Reference</th><th>Channel</th><th>Date & Time</th><th>Status</th><th>Amount (KES)</th><th>Action</th></tr></thead>
+        <tbody>
+          @for (tx of filteredTransactions; track tx.reference) {
+            <tr (click)="openReceipt(tx)">
+              <td>
+                <div class="tx-detail-cell">
+                  <span class="tx-type-icon" [class.deposit]="tx.amount > 0" [class.withdrawal]="tx.type === 'Withdrawal'" [class.repayment]="tx.type === 'Repayment'" [class.transfer]="tx.type === 'Transfer'" [class.share]="tx.type === 'Share Purchase'">
+                    @if (tx.type === 'Deposit') { in }
+                    @if (tx.type === 'Withdrawal') { out }
+                    @if (tx.type === 'Repayment') { pay }
+                    @if (tx.type === 'Transfer') { xfer }
+                    @if (tx.type === 'Share Purchase') { sh }
+                  </span>
+                  <div><strong>{{tx.title}}</strong><small>{{tx.description}}</small></div>
+                </div>
+              </td>
+              <td><span class="mono muted">{{tx.reference}}</span></td>
+              <td>{{tx.channel}}</td>
+              <td><span>{{tx.date}}</span><small>{{tx.time}}</small></td>
+              <td><span class="tx-status" [class.ok]="tx.status==='Success'" [class.warn]="tx.status==='Pending'" [class.danger]="tx.status==='Failed'">{{tx.status}}</span></td>
+              <td><strong class="tx-amount" [class.in]="tx.amount > 0" [class.out]="tx.amount < 0">{{tx.amount > 0 ? '+' : '-'}}{{fmt(tx.amount)}}</strong></td>
+              <td><button class="tx-view-btn" (click)="$event.stopPropagation(); openReceipt(tx)">View</button></td>
+            </tr>
           }
-
-          <!-- Next page selector -->
-          <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="p-1.5 rounded-lg border bg-white text-slate-500 hover:bg-slate-50 transition-all disabled:opacity-40 disabled:hover:bg-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
+        </tbody>
+      </table>
     </div>
-  </main>
+  </article>
+</section>
 
-  <!-- Modal Backdrop container for v21 templating models -->
+<!-- Modals -->
+@if (activeModal) { <div class="tx-overlay" (click)="closeModal()"></div> }
 
-  <!-- 1. ADD TRANSACTION / SLIP RECORD MODAL -->
-  @if (showAddModal) {
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-200">
-      <div class="bg-white rounded-2xl border border-slate-100 w-full max-w-lg overflow-hidden shadow-2xl animate-scale-up">
-        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-white flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-base">Submit Payment Reference</h3>
-            <p class="text-[10px] text-emerald-100 mt-0.5">Record your M-Pesa paybill confirmation code or banking slip details</p>
-          </div>
-          <button (click)="closeAddModal()" class="text-emerald-100 hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        
-        <form (submit)="submitTransaction()" class="p-6 space-y-4">
-          
-          <!-- Form field: Account Ledgers -->
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Select Ledger Account</label>
-            <select [(ngModel)]="newTransaction.accountType" name="accountType" class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-              <option value="Alpha Deposits">Alpha Deposits Account</option>
-              <option value="Shares Capital">Shares Capital contribution</option>
-              <option value="Loan Repayments">Loan Repayment</option>
-            </select>
-          </div>
-
-          <!-- Form grid (Amount & channel) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Deposit Amount (KES)</label>
-              <input type="number" [(ngModel)]="newTransaction.amount" name="amount" required placeholder="5000" class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Payment Channel</label>
-              <select [(ngModel)]="newTransaction.method" name="method" class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-                <option value="M-Pesa">M-Pesa Mobile Money</option>
-                <option value="Equity Bank Transfer">Equity Bank Transfer</option>
-                <option value="KCB Bank Transfer">KCB Bank Transfer</option>
-                <option value="Wave Remittance">Wave Remittance</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Slip reference details & Date -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Payment Reference (e.g. M-Pesa Code)</label>
-              <input type="text" [(ngModel)]="newTransaction.reference" name="reference" required placeholder="QJH987HK89" class="w-full px-3 py-2 border rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase"/>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Payment Date</label>
-              <input type="date" [(ngModel)]="newTransaction.date" name="date" class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Additional Slip Notes</label>
-            <textarea [(ngModel)]="newTransaction.notes" name="notes" placeholder="Include any relevant payment details..." rows="3" class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
-          </div>
-
-          <!-- Attachments -->
-          <div class="p-4 border border-dashed border-slate-200 rounded-xl text-center bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer">
-            <svg class="w-8 h-8 mx-auto text-slate-400 mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <p class="text-[10px] font-semibold text-slate-500">Click to upload payment slip or screenshot</p>
-            <p class="text-[9px] text-slate-400 mt-0.5">JPG, PNG or PDF formats only • Max 5MB</p>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
-            <button type="button" (click)="closeAddModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
-              Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-all flex items-center space-x-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Record Payment</span>
-            </button>
-          </div>
-          
-        </form>
+<!-- Receipt / Transaction detail -->
+@if (activeModal === 'receipt' && selectedTx) {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>Transaction Receipt</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body centered">
+      <div class="tx-receipt-top">
+        <h4 [class.in]="selectedTx.amount > 0" [class.out]="selectedTx.amount < 0">{{selectedTx.amount > 0 ? '+' : '-'}}KES {{fmt(selectedTx.amount)}}</h4>
+        <p>{{selectedTx.title}}</p>
+        <span class="tx-status ok">{{selectedTx.status}}</span>
       </div>
-    </div>
-  }
-
-  <!-- 2. TRANSACTION DETAILS RECEIPT MODAL -->
-  @if (showReceiptModal && selectedTransaction) {
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl border border-slate-100 w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
-        <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
-          <div>
-            <span class="text-[9px] font-bold tracking-wider uppercase text-emerald-400">Official Receipt</span>
-            <h3 class="font-mono text-sm mt-0.5">NO: {{ selectedTransaction.id }}</h3>
-          </div>
-          <button (click)="closeReceiptModal()" class="text-slate-400 hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Receipt Sheet body -->
-        <div class="p-6 bg-gradient-to-b from-slate-50/50 to-white">
-          
-          <!-- SaccoPay Brand & Barcode styling -->
-          <div class="text-center border-b border-dashed border-slate-200 pb-5 mb-5">
-            <span class="text-emerald-600 font-black tracking-wider text-lg uppercase">SaccoPay</span>
-            <p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Cooperative Savings & Credit Society</p>
-            
-            <!-- Barcode simulation -->
-            <div class="flex justify-center space-x-0.5 h-8 mt-4 max-w-[180px] mx-auto opacity-80">
-              <div class="w-1 bg-slate-900 h-full"></div>
-              <div class="w-0.5 bg-slate-900 h-full"></div>
-              <div class="w-1.5 bg-slate-900 h-full"></div>
-              <div class="w-0.5 bg-slate-900 h-full"></div>
-              <div class="w-2 bg-slate-900 h-full"></div>
-              <div class="w-0.5 bg-slate-900 h-full"></div>
-              <div class="w-1 bg-slate-900 h-full"></div>
-              <div class="w-0.5 bg-slate-900 h-full"></div>
-              <div class="w-2.5 bg-slate-900 h-full"></div>
-              <div class="w-0.5 bg-slate-900 h-full"></div>
-              <div class="w-1 h-full"></div>
-              <div class="w-1.5 bg-slate-900 h-full"></div>
-              <div class="w-0.5 bg-slate-900 h-full"></div>
-            </div>
-          </div>
-
-          <!-- Receipt Details Breakdown -->
-          <div class="space-y-3 text-xs">
-            
-            <!-- Row: Member Details -->
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400">Member ID</span>
-              <span class="font-semibold text-slate-700">{{ selectedTransaction.memberId }}</span>
-            </div>
-
-            <!-- Row: Transaction Date -->
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400">Date Processed</span>
-              <span class="font-semibold text-slate-700">
-                {{ selectedTransaction.date | date:'medium' }}
-              </span>
-            </div>
-
-            <!-- Row: Ledger Account -->
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400">Ledger Credited</span>
-              <span class="font-bold text-emerald-700 uppercase tracking-wide text-[10px] bg-emerald-50 px-2 py-0.5 rounded">
-                {{ selectedTransaction.accountType }}
-              </span>
-            </div>
-
-            <!-- Row: Channel -->
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400">Payment Method</span>
-              <span class="font-semibold text-slate-700">{{ selectedTransaction.method }}</span>
-            </div>
-
-            <!-- Row: Reference Code -->
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400">Transaction Reference</span>
-              <span class="font-mono font-bold text-slate-800 uppercase bg-slate-100 px-2 py-0.5 rounded text-[10px]">
-                {{ selectedTransaction.reference }}
-              </span>
-            </div>
-
-            <div class="border-t border-dashed border-slate-200 my-4 pt-3 space-y-1.5">
-              
-              <!-- Fee Breakdown calculations simulated with null safety -->
-              <div class="flex justify-between items-center text-slate-400">
-                <span>Subtotal Contribution</span>
-                <span>{{ selectedTransaction.amount | currency:'KES ' }}</span>
-              </div>
-              <div class="flex justify-between items-center text-slate-400">
-                <span>Transaction Fee (Reconcile)</span>
-                <span>{{ 0 | currency:'KES ' }}</span>
-              </div>
-              <div class="flex justify-between items-center text-slate-400">
-                <span>Excise Duty (Sacco levy)</span>
-                <span>{{ 0 | currency:'KES ' }}</span>
-              </div>
-              
-              <div class="flex justify-between items-center border-t border-slate-100 pt-2 mt-2">
-                <span class="font-bold text-slate-800 text-sm">Net Amount Credited</span>
-                <span class="font-black text-emerald-600 text-base">
-                  {{ selectedTransaction.amount | currency:'KES ':'symbol':'1.2-2' }}
-                </span>
-              </div>
-
-            </div>
-
-            <!-- Status Banner -->
-            <div [ngClass]="{
-              'bg-emerald-50 border-emerald-200 text-emerald-800': selectedTransaction.status === 'Completed',
-              'bg-amber-50 border-amber-200 text-amber-800': selectedTransaction.status === 'Pending',
-              'bg-red-50 border-red-200 text-red-800': selectedTransaction.status === 'Failed'
-            }" class="p-3 rounded-xl border text-center mt-4 font-bold flex items-center justify-center space-x-2">
-              @if (selectedTransaction.status === 'Pending') {
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              }
-              <span>Ledger Status: {{ selectedTransaction.status }}</span>
-            </div>
-
-            @if (selectedTransaction.notes) {
-              <div class="bg-slate-50 p-3 rounded-xl text-[11px] text-slate-500 border border-slate-100 mt-3">
-                <span class="block font-bold text-[9px] uppercase text-slate-400 mb-1">Note / Memo:</span>
-                {{ selectedTransaction.notes }}
-              </div>
-            }
-
-          </div>
-
-          <!-- Actions in Receipt details -->
-          <div class="mt-6 pt-4 border-t border-slate-100 flex gap-2">
-            <button (click)="closeReceiptModal()" class="w-1/2 py-2 border rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-              Close Receipt
-            </button>
-            <button (click)="simulateDownloadReceipt(selectedTransaction)" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center space-x-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-              </svg>
-              <span>Download PDF</span>
-            </button>
-          </div>
-
-        </div>
+      <div class="tx-receipt-list">
+        <p><span>Transaction Ref</span><strong class="mono">{{selectedTx.reference}}</strong></p>
+        <p><span>Payment Method</span><strong>{{selectedTx.channel}}</strong></p>
+        <p><span>Source</span><strong>{{selectedTx.source}}</strong></p>
+        <p><span>Destination</span><strong>{{selectedTx.destination}}</strong></p>
+        <p><span>Transaction Fee</span><strong>KES {{fmt(selectedTx.fee)}}</strong></p>
+        <p><span>Timestamp</span><strong>{{selectedTx.date}} {{selectedTx.time}}</strong></p>
       </div>
+      <div class="tx-note info">If you notice discrepancies, raise an official dispute right away.</div>
     </div>
-  }
+    <footer class="tx-modal-foot"><button class="tx-btn-outline" (click)="closeModal()">Close</button><button class="tx-btn-outline" (click)="downloadReceipt()">Download Receipt</button><button class="tx-btn-warn" (click)="openModal('dispute')">Raise Dispute</button></footer>
+  </div>
+}
 
-  <!-- 3. EXPORT DATA MODAL -->
-  @if (showExportModal) {
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl border border-slate-100 w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
-        <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 text-white flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-base">Export Transaction Ledger</h3>
-            <p class="text-[10px] text-slate-400 mt-0.5">Download audit-ready files for taxes or personal accounting</p>
-          </div>
-          <button (click)="closeExportModal()" class="text-slate-400 hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        <form (submit)="submitExport()" class="p-6 space-y-4 text-xs">
-          <!-- Select Export Format -->
-          <div>
-            <label class="block font-bold text-slate-500 uppercase mb-1.5">File Format</label>
-            <div class="grid grid-cols-3 gap-3">
-              <label class="border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all" [class.border-emerald-600]="exportFormat === 'pdf'" [class.bg-emerald-50/30]="exportFormat === 'pdf'">
-                <input type="radio" [(ngModel)]="exportFormat" name="exportFormat" value="pdf" class="sr-only"/>
-                <svg class="w-6 h-6 text-rose-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-                <span class="font-semibold text-[10px]">Adobe PDF</span>
-              </label>
-
-              <label class="border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all" [class.border-emerald-600]="exportFormat === 'excel'" [class.bg-emerald-50/30]="exportFormat === 'excel'">
-                <input type="radio" [(ngModel)]="exportFormat" name="exportFormat" value="excel" class="sr-only"/>
-                <svg class="w-6 h-6 text-emerald-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 00-2-2V5a2 2 0 00-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <span class="font-semibold text-[10px]">Excel XLSX</span>
-              </label>
-
-              <label class="border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all" [class.border-emerald-600]="exportFormat === 'csv'" [class.bg-emerald-50/30]="exportFormat === 'csv'">
-                <input type="radio" [(ngModel)]="exportFormat" name="exportFormat" value="csv" class="sr-only"/>
-                <svg class="w-6 h-6 text-blue-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v12m0 0l-4-4m4 4l4-4m0 6h12"/>
-                </svg>
-                <span class="font-semibold text-[10px]">Tabular CSV</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Choose fields -->
-          <div>
-            <label class="block font-bold text-slate-500 uppercase mb-1.5">Choose Fields to Include</label>
-            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" [(ngModel)]="exportFields.date" name="fieldDate" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
-                <span class="text-slate-600 text-[10px] font-semibold">Date & Time</span>
-              </label>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" [(ngModel)]="exportFields.id" name="fieldId" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
-                <span class="text-slate-600 text-[10px] font-semibold">Transaction ID</span>
-              </label>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" [(ngModel)]="exportFields.reference" name="fieldRef" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
-                <span class="text-slate-600 text-[10px] font-semibold">M-Pesa Reference</span>
-              </label>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" [(ngModel)]="exportFields.account" name="fieldAccount" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
-                <span class="text-slate-600 text-[10px] font-semibold">Ledger Account</span>
-              </label>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" [(ngModel)]="exportFields.amount" name="fieldAmt" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
-                <span class="text-slate-600 text-[10px] font-semibold">Amount</span>
-              </label>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" [(ngModel)]="exportFields.status" name="fieldStatus" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
-                <span class="text-slate-600 text-[10px] font-semibold">Status</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Form Footer Actions -->
-          <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
-            <button type="button" (click)="closeExportModal()" class="px-4 py-2 border rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-all">
-              Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center space-x-1.5">
-              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-              </svg>
-              <span>Generate Export</span>
-            </button>
-          </div>
-        </form>
-      </div>
+<!-- Pending verification -->
+@if (activeModal === 'pendingVerification') {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>Pending Verification</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body centered">
+      <span class="tx-status-orb warn">!</span>
+      <h3>Transaction Under Review</h3>
+      <p class="muted">{{selectedTx?.reference || 'TRX-2024-09808'}} is waiting for payment confirmation.</p>
+      <div class="tx-receipt-list"><p><span>Expected completion</span><strong>Within 24 hours</strong></p><p><span>Channel</span><strong>{{selectedTx?.channel || 'Bank Disburse'}}</strong></p><p><span>Status</span><strong class="text-amber">Pending</strong></p></div>
     </div>
-  }
+    <footer class="tx-modal-foot"><button class="tx-btn-outline" (click)="closeModal()">Close</button><button class="tx-btn-primary" (click)="openModal('channelDetails')">Channel Details</button></footer>
+  </div>
+}
 
-  <!-- 4. DISPUTE TRANSACTION MODAL -->
-  @if (showDisputeModal && disputedTransaction) {
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl border border-slate-100 w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
-        <div class="bg-rose-600 px-6 py-4 text-white flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-base">Dispute Ledger Transaction</h3>
-            <p class="text-[10px] text-rose-100 mt-0.5">Raise a dispute ticket for audit discrepancies or double charges</p>
-          </div>
-          <button (click)="closeDisputeModal()" class="text-rose-100 hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        <form (submit)="submitDispute()" class="p-6 space-y-4 text-xs">
-          
-          <!-- Disputed transaction summarized details -->
-          <div class="bg-rose-50/50 border border-rose-100 p-4 rounded-xl space-y-1.5">
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400 font-semibold">Disputed ID:</span>
-              <span class="font-mono text-rose-600 font-bold">{{ disputedTransaction.id }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400 font-semibold">Amount:</span>
-              <span class="font-bold text-slate-700">{{ disputedTransaction.amount | currency:'KES ' }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400 font-semibold">Ref / Code:</span>
-              <span class="font-mono text-slate-700 font-semibold">{{ disputedTransaction.reference }}</span>
-            </div>
-          </div>
-
-          <!-- Dispute Category -->
-          <div>
-            <label class="block font-bold text-slate-500 uppercase mb-1.5">Dispute Category</label>
-            <select [(ngModel)]="disputeCategory" name="disputeCategory" class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white">
-              <option value="Missing Transaction">Double Charge / Debit error</option>
-              <option value="Incorrect Amount">Incorrect Amount Credited</option>
-              <option value="Wrong Account">Wrong Ledger Credited</option>
-              <option value="Receipt Rejected">Admin slip rejection dispute</option>
-            </select>
-          </div>
-
-          <!-- Explanation -->
-          <div>
-            <label class="block font-bold text-slate-500 uppercase mb-1.5">Explanation of discrepancy</label>
-            <textarea [(ngModel)]="disputeExplanation" name="disputeExplanation" placeholder="Provide specific dates, true payment receipt codes, and what went wrong..." rows="4" required class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
-          </div>
-
-          <!-- Follow-up contact -->
-          <div>
-            <label class="block font-bold text-slate-500 uppercase mb-1.5">Follow-up email address</label>
-            <input type="email" [(ngModel)]="disputeEmail" name="disputeEmail" placeholder="member@saccopay.com" required class="w-full px-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"/>
-          </div>
-
-          <!-- Action buttons -->
-          <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
-            <button type="button" (click)="closeDisputeModal()" class="px-4 py-2 border rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-all">
-              Cancel
-            </button>
-            <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-all flex items-center space-x-1.5">
-              <svg class="w-4 h-4 text-rose-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-              </svg>
-              <span>Log Ticket</span>
-            </button>
-          </div>
-
-        </form>
-      </div>
+<!-- Failed transaction -->
+@if (activeModal === 'failedReason') {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>Failed Transaction</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body centered">
+      <span class="tx-status-orb danger">x</span>
+      <h3>Transaction Failed</h3>
+      <p class="muted">{{selectedTx?.reference || 'TRX-2024-09807'}}</p>
+      <div class="tx-note danger"><strong>Reason:</strong> Bank gateway rejected the transfer due to account validation failure.</div>
     </div>
-  }
+    <footer class="tx-modal-foot"><button class="tx-btn-outline" (click)="closeModal()">Close</button><button class="tx-btn-primary" (click)="openModal('dispute')">Report Issue</button></footer>
+  </div>
+}
 
-</div>
+<!-- Export Statement -->
+@if (activeModal === 'exportStatement') {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>Export Statement</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body">
+      <label>Statement Range</label><select [(ngModel)]="exportForm.range"><option>December 2024</option><option>Last 3 Months</option><option>Last 6 Months</option><option>Custom Range</option></select>
+      <label>Format</label><select [(ngModel)]="exportForm.format"><option value="pdf">PDF</option><option value="excel">Excel</option><option value="csv">CSV</option></select>
+      <label class="tx-check"><input type="checkbox" [(ngModel)]="exportForm.includeReceipts"> Include receipt references</label>
+      <label class="tx-check"><input type="checkbox" [(ngModel)]="exportForm.includeFailed"> Include failed transactions</label>
+    </div>
+    <footer class="tx-modal-foot"><button class="tx-btn-outline" (click)="closeModal()">Cancel</button><button class="tx-btn-primary" (click)="exportStatement()">Export Statement</button></footer>
+  </div>
+}
+
+<!-- Filters -->
+@if (activeModal === 'filters') {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>Transaction Filters</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body tx-form-grid">
+      <div><label>Status</label><select [(ngModel)]="filterStatus"><option value="">All Status</option><option>Success</option><option>Pending</option><option>Failed</option></select></div>
+      <div><label>Channel</label><select [(ngModel)]="filterChannel"><option value="">All Channels</option><option>M-Pesa PayBill</option><option>SACCO Wallet</option><option>Internal Transfer</option><option>Bank Disburse</option><option>EFT Gateway</option></select></div>
+      <div><label>From</label><input type="date" [(ngModel)]="filterFrom"></div>
+      <div><label>To</label><input type="date" [(ngModel)]="filterTo"></div>
+    </div>
+    <footer class="tx-modal-foot"><button class="tx-btn-outline" (click)="resetFilters()">Reset</button><button class="tx-btn-primary" (click)="applyFilters()">Apply Filters</button></footer>
+  </div>
+}
+
+<!-- Dispute -->
+@if (activeModal === 'dispute') {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>Raise Transaction Dispute</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body">
+      <label>Issue Category</label><select [(ngModel)]="disputeForm.category"><option>Wrong amount</option><option>Duplicate transaction</option><option>Unknown transaction</option><option>Delayed settlement</option></select>
+      <label>Message</label><textarea rows="4" [(ngModel)]="disputeForm.message" placeholder="Explain the issue..."></textarea>
+      <div class="tx-note warn">Disputes are reviewed by the SACCO support team within one business day.</div>
+    </div>
+    <footer class="tx-modal-foot"><button class="tx-btn-outline" (click)="closeModal()">Cancel</button><button class="tx-btn-primary" (click)="submitDispute()">Submit Dispute</button></footer>
+  </div>
+}
+
+<!-- Reusable info modals -->
+@if (activeModal === 'outflowBreakdown' || activeModal === 'insights' || activeModal === 'channelDetails' || activeModal === 'monthlyActivity' || activeModal === 'downloadReceipt' || activeModal === 'categorySummary' || activeModal === 'dateRange' || activeModal === 'successRate' || activeModal === 'searchHelp') {
+  <div class="tx-modal" (click)="$event.stopPropagation()">
+    <header class="tx-modal-head"><h5>{{activeModal === 'outflowBreakdown' ? 'Outflow Breakdown' : activeModal === 'insights' ? 'Activity Insights' : activeModal === 'channelDetails' ? 'Channel Details' : activeModal === 'successRate' ? 'Success Rate' : 'Transaction Summary'}}</h5><button class="tx-x" (click)="closeModal()">x</button></header>
+    <div class="tx-modal-body">
+      @if (activeModal === 'outflowBreakdown') {
+        @for (b of outflowBreakdown; track b.label) { <div class="tx-info-row"><span>{{b.label}}</span><strong>{{b.percent}}%</strong></div> }
+      }
+      @if (activeModal !== 'outflowBreakdown') {
+        <div class="tx-note info">This view explains the selected transaction metric and keeps all dashboard actions connected.</div>
+        <div class="tx-info-row"><span>Total records</span><strong>18</strong></div><div class="tx-info-row"><span>Success rate</span><strong>98.4%</strong></div><div class="tx-info-row"><span>Pending</span><strong>1 Transaction</strong></div>
+      }
+    </div>
+    <footer class="tx-modal-foot"><button class="tx-btn-primary" (click)="closeModal()">Close</button></footer>
+  </div>
+}
+
+@if (toast) {
+  <div class="tx-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'" [class.warn]="toast.type==='warning'" [class.danger]="toast.type==='danger'"><span>{{toast.type === 'success' ? 'ok' : toast.type === 'info' ? 'i' : toast.type === 'warning' ? '!' : 'x'}}</span><p>{{toast.message}}</p><button (click)="dismissToast()">x</button></div>
+}

@@ -1,526 +1,226 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
-// ═══════════════════════════════════════════════════════════════
-// INTERFACES — All properties the component + template need
-// ═══════════════════════════════════════════════════════════════
+export type TxType = 'Deposit' | 'Withdrawal' | 'Transfer' | 'Repayment' | 'Share Purchase';
+export type TxStatus = 'Success' | 'Pending' | 'Failed';
+export type ModalKey =
+  | 'receipt'
+  | 'exportStatement'
+  | 'filters'
+  | 'outflowBreakdown'
+  | 'insights'
+  | 'pendingVerification'
+  | 'failedReason'
+  | 'dispute'
+  | 'downloadReceipt'
+  | 'channelDetails'
+  | 'monthlyActivity'
+  | 'searchHelp'
+  | 'categorySummary'
+  | 'dateRange'
+  | 'successRate';
 
-export type TransactionTab = 'All' | 'Alpha Deposits' | 'Shares Capital' | 'Loan Repayments' | 'Others';
-
-export type TransactionType = 'credit' | 'debit';
-
-export type TransactionStatus = 'Completed' | 'Pending' | 'Failed' | 'Disputed';
-
-export interface Transaction {
-  id: string;
-  reference: string;
-  amount: number;
-  date: string;
-  status: TransactionStatus;
-  // Added missing properties:
+export interface TransactionRow {
+  title: string;
   description: string;
-  accountType: string;
-  method: string;
-  type: TransactionType;
-  memberId: string;
-  notes: string;
-  attachment: string | null;
-}
-
-export interface TransactionStats {
-  totalCount: number;
-  totalAmount?: number;  // ← optional
-  shareCapital: number;
-  alphaDeposits: number;
-  outstandingLoans: number;
-  totalSaved: number;
+  reference: string;
+  channel: string;
+  date: string;
+  time: string;
+  status: TxStatus;
+  amount: number;
+  type: TxType;
+  source: string;
+  destination: string;
+  fee: number;
 }
 
 @Component({
   selector: 'sacco-member-transactions',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
-  templateUrl: './transactions.html',
-  styleUrls: ['./transactions.scss']
+  imports: [CommonModule, FormsModule],
+  templateUrl:'./transactions.html',
+  styleUrls: ['./transactions.scss'],
 })
-export class TransactionsComponent implements OnInit {
-  // State variables
-  isLoading = false;
-  errorMessage: string | null = null;
+export class TransactionsComponent implements AfterViewInit {
+  @ViewChild('activityCanvas') activityCanvas?: ElementRef<HTMLCanvasElement>;
 
-  // Strict Null Safety declarations
-  transactions: Transaction[] = [];
-  selectedTab: TransactionTab = 'All';
+  activeTab: 'All' | TxType = 'All';
+  activeModal: ModalKey | null = null;
+  selectedTx: TransactionRow | null = null;
+  searchTerm = '';
+  showAdvancedFilters = false;
+  filterStatus = '';
+  filterChannel = '';
+  filterFrom = '';
+  filterTo = '';
+  exportForm = { range: 'December 2024', format: 'pdf', includeReceipts: true, includeFailed: true };
+  disputeForm = { category: 'Wrong amount', message: '' };
 
-  // Filters (Two-way binded via FormsModule ngModel)
-  searchQuery = '';
-  statusFilter = 'All';
-  methodFilter = 'All';
-  startDateFilter = '';
-  endDateFilter = '';
-  minAmount: number | null = null;
-  maxAmount: number | null = null;
+  summary = [
+    { label: 'Total Inflows', value: '+KES 85,000', tone: 'green' },
+    { label: 'Total Outflows', value: '-KES 57,500', tone: 'red' },
+    { label: 'Pending Verifications', value: '1 Transaction', tone: 'amber' },
+    { label: 'Success Rate', value: '98.4%', tone: 'light' },
+  ];
 
-  // Pagination
-  currentPage = 1;
-  pageSize = 10;
+  tabs: { key: 'All' | TxType; label: string; count: number }[] = [
+    { key: 'All', label: 'All Transactions', count: 18 },
+    { key: 'Deposit', label: 'Deposits', count: 6 },
+    { key: 'Withdrawal', label: 'Withdrawals', count: 3 },
+    { key: 'Transfer', label: 'Transfers', count: 5 },
+    { key: 'Repayment', label: 'Repayments', count: 4 },
+  ];
 
-  // Sorting
-  sortBy: 'date' | 'amount' | 'status' = 'date';
-  sortOrder: 'asc' | 'desc' = 'desc';
+  transactions: TransactionRow[] = [
+    { title: 'Deposit to Regular Savings', description: 'Savings Account Contribution', reference: 'TRX-2024-09812', channel: 'M-Pesa PayBill', date: 'Dec 18, 2024', time: '03:45 PM', status: 'Success', amount: 15000, type: 'Deposit', source: 'John Kamau', destination: 'Regular Savings', fee: 0 },
+    { title: 'Loan Repayment Installment', description: 'Personal Loan (LN-2024-00845)', reference: 'TRX-2024-09811', channel: 'SACCO Wallet', date: 'Dec 15, 2024', time: '11:20 AM', status: 'Success', amount: -12500, type: 'Repayment', source: 'SACCO Wallet', destination: 'Personal Loan', fee: 0 },
+    { title: 'Withdrawal from Emergency Fund', description: 'Cash Out Request', reference: 'TRX-2024-09810', channel: 'M-Pesa Disburse', date: 'Dec 12, 2024', time: '09:10 AM', status: 'Success', amount: -5000, type: 'Withdrawal', source: 'Emergency Fund', destination: 'M-Pesa', fee: 50 },
+    { title: 'Share Capital Purchase', description: 'Internal Capital Top-Up', reference: 'TRX-2024-09809', channel: 'Internal Transfer', date: 'Dec 10, 2024', time: '04:00 PM', status: 'Success', amount: 10000, type: 'Share Purchase', source: 'Savings', destination: 'Share Capital', fee: 0 },
+    { title: 'Transfer to SACCO Wallet', description: 'Wallet Fund Allocation', reference: 'TRX-2024-09808', channel: 'Bank Disburse', date: 'Dec 08, 2024', time: '01:30 PM', status: 'Pending', amount: 20000, type: 'Transfer', source: 'Bank EFT', destination: 'SACCO Wallet', fee: 0 },
+    { title: 'Withdrawal from Regular Savings', description: 'External Bank Transfer', reference: 'TRX-2024-09807', channel: 'EFT Gateway', date: 'Dec 05, 2024', time: '10:05 AM', status: 'Failed', amount: -15000, type: 'Withdrawal', source: 'Regular Savings', destination: 'External Bank', fee: 0 },
+  ];
 
-  // Modal Controls
-  showAddModal = false;
-  showReceiptModal = false;
-  showExportModal = false;
-  showDisputeModal = false;
+  outflowBreakdown = [
+    { label: 'Loan Repayments', percent: 65, color: 'blue' },
+    { label: 'Share Purchases', percent: 25, color: 'cyan' },
+    { label: 'External Withdrawals', percent: 10, color: 'amber' },
+  ];
 
-  // Selected items for detailed modals (Null-Safe default or optional type)
-  selectedTransaction: Transaction | null = null;
-  disputedTransaction: Transaction | null = null;
+  toast: { message: string; type: 'success' | 'info' | 'warning' | 'danger' } | null = null;
+  private toastTimer: any;
 
-  // Form variables for recording new transactions
-  newTransaction = {
-    accountType: 'Alpha Deposits',
-    amount: null as number | null,
-    method: 'M-Pesa',
-    reference: '',
-    notes: '',
-    date: ''
-  };
-
-  // Form variables for Exporting
-  exportFormat: 'csv' | 'pdf' | 'excel' = 'pdf';
-  exportDateRange: 'all' | 'month' | 'custom' = 'all';
-  exportFields = {
-    date: true,
-    id: true,
-    reference: true,
-    account: true,
-    amount: true,
-    status: true,
-    notes: true
-  };
-
-  // Form variables for Disputes
-  disputeCategory = 'Missing Transaction';
-  disputeExplanation = '';
-  disputeEmail = 'member@saccopay.com';
-
-  // Dynamic calculations for Sacco Stats
-  stats: TransactionStats = {
-    shareCapital: 0,
-    alphaDeposits: 0,
-    outstandingLoans: 0,
-    totalSaved: 0,
-    totalCount: 0,
-    totalAmount: 0  // ← ADD THIS
-  };
-
-  ngOnInit(): void {
-    this.loadInitialData();
+  ngAfterViewInit(): void {
+    setTimeout(() => this.drawChart(), 0);
+    window.addEventListener('resize', () => this.drawChart());
   }
 
-  loadInitialData(): void {
-    this.isLoading = true;
-
-    // Simulate API fetch
-    setTimeout(() => {
-      try {
-        this.transactions = [
-          {
-            id: 'TXN-10284',
-            date: '2026-02-20T14:35:00Z',
-            reference: 'QJH987HK89',
-            description: 'Monthly Alpha Deposits Contribution',
-            accountType: 'Alpha Deposits',
-            method: 'M-Pesa',
-            amount: 5000,
-            type: 'credit',
-            status: 'Completed',
-            memberId: 'MEM-80293',
-            notes: 'Automatic monthly contribution via Lipa na M-Pesa paybill.',
-            attachment: 'receipt_mpesa_qjh987.png'
-          },
-          {
-            id: 'TXN-10283',
-            date: '2026-02-19T09:12:00Z',
-            reference: 'EQT9834761',
-            description: 'Development Loan Repayment',
-            accountType: 'Loan Repayments',
-            method: 'Equity Bank Transfer',
-            amount: 12500,
-            type: 'debit',
-            status: 'Completed',
-            memberId: 'MEM-80293',
-            notes: 'Loan repayment for development loan Ref: LN-2025-89',
-            attachment: 'bank_slip_eqt983.pdf'
-          },
-          {
-            id: 'TXN-10282',
-            date: '2026-02-18T17:45:00Z',
-            reference: 'QJH234JK77',
-            description: 'Share Capital Top-up',
-            accountType: 'Shares Capital',
-            method: 'M-Pesa',
-            amount: 2000,
-            type: 'credit',
-            status: 'Completed',
-            memberId: 'MEM-80293',
-            notes: 'Buying extra cooperative shares to boost voting weight and dividends.',
-            attachment: null
-          },
-          {
-            id: 'TXN-10281',
-            date: '2026-02-18T10:30:00Z',
-            reference: 'WAV8893241',
-            description: 'Diaspora Prime Savings Deposit',
-            accountType: 'Alpha Deposits',
-            method: 'Wave Transfer',
-            amount: 15000,
-            type: 'credit',
-            status: 'Pending',
-            memberId: 'MEM-80293',
-            notes: 'Diaspora savings deposit pending bank clearing.',
-            attachment: 'wave_remit_8893.png'
-          },
-          {
-            id: 'TXN-10280',
-            date: '2026-02-15T11:00:00Z',
-            reference: 'QJH109AA32',
-            description: 'Emergency Loan Disbursement Cashout',
-            accountType: 'Withdrawals',
-            method: 'M-Pesa Withdrawal',
-            amount: 10000,
-            type: 'debit',
-            status: 'Completed',
-            memberId: 'MEM-80293',
-            notes: 'Emergency loan cash out to registered phone number.',
-            attachment: null
-          },
-          {
-            id: 'TXN-10279',
-            date: '2026-02-14T08:20:00Z',
-            reference: 'SO-903811',
-            description: 'Standing Order - Monthly Shares',
-            accountType: 'Shares Capital',
-            method: 'Standing Order',
-            amount: 1000,
-            type: 'credit',
-            status: 'Completed',
-            memberId: 'MEM-80293',
-            notes: 'Standing instruction from Prime Account to Shares Capital.',
-            attachment: null
-          },
-          {
-            id: 'TXN-10278',
-            date: '2026-02-12T15:50:00Z',
-            reference: 'QJH098UY12',
-            description: 'Cooperative Registration Fee',
-            accountType: 'Registration',
-            method: 'M-Pesa',
-            amount: 1500,
-            type: 'debit',
-            status: 'Completed',
-            memberId: 'MEM-80293',
-            notes: 'One-time member registration fee.',
-            attachment: 'registration_invoice.pdf'
-          },
-          {
-            id: 'TXN-10277',
-            date: '2026-02-10T13:15:00Z',
-            reference: 'KCB4489212',
-            description: 'Holiday Savings Deposit',
-            accountType: 'Alpha Deposits',
-            method: 'KCB Bank Transfer',
-            amount: 8000,
-            type: 'credit',
-            status: 'Failed',
-            memberId: 'MEM-80293',
-            notes: 'Rejected due to incorrect account number in receipt.',
-            attachment: 'bank_slip_kcb448.jpg'
-          }
-        ];
-        this.recalculateStats();
-      } catch (err) {
-        this.errorMessage = 'Failed to load transactions. Please try again later.';
-      } finally {
-        this.isLoading = false;
-      }
-    }, 800);
+  get filteredTransactions(): TransactionRow[] {
+    const q = this.searchTerm.trim().toLowerCase();
+    return this.transactions.filter((tx) => {
+      const tabOk = this.activeTab === 'All' || tx.type === this.activeTab;
+      const queryOk = !q || tx.title.toLowerCase().includes(q) || tx.reference.toLowerCase().includes(q) || tx.channel.toLowerCase().includes(q);
+      const statusOk = !this.filterStatus || tx.status === this.filterStatus;
+      const channelOk = !this.filterChannel || tx.channel === this.filterChannel;
+      return tabOk && queryOk && statusOk && channelOk;
+    });
   }
 
-  // Recalculate stats with null-safety checks
-  recalculateStats(): void {
-    let capital = 0;
-    let deposits = 0;
-    let loans = 0;
-
-    // Handle null or undefined transactions array safely
-    if (this.transactions && this.transactions.length > 0) {
-      for (const tx of this.transactions) {
-        // Null-safety fallback: use 0 if tx.amount is null/undefined
-        const amt = tx?.amount ?? 0;
-
-        if (tx.status === 'Completed' || tx.status === 'Pending') {
-          if (tx.accountType === 'Shares Capital') {
-            capital += amt;
-          } else if (tx.accountType === 'Alpha Deposits') {
-            if (tx.type === 'credit') deposits += amt;
-            else if (tx.type === 'debit') deposits -= amt;
-          } else if (tx.accountType === 'Loan Repayments') {
-            // Sacco loans reduce as members repay
-            loans -= amt;
-          } else if (tx.accountType === 'Withdrawals') {
-            deposits -= amt;
-          }
-        }
-      }
-    }
-
-    // Base loans in this mock starts at 90,500 KES and reduces with repayments
-    this.stats = {
-      shareCapital: capital,
-      alphaDeposits: deposits,
-      outstandingLoans: Math.max(0, 90500 + loans),
-      totalSaved: capital + deposits,
-      totalCount: this.transactions?.length ?? 0,
-      totalAmount: this.transactions?.reduce((sum, tx) => sum + (tx.amount ?? 0), 0) ?? 0  // ← ADD THIS
-    };
+  openModal(key: ModalKey): void {
+    if (key === 'pendingVerification') this.selectedTx = this.transactions.find((t) => t.status === 'Pending') || null;
+    if (key === 'failedReason') this.selectedTx = this.transactions.find((t) => t.status === 'Failed') || null;
+    this.activeModal = key;
+    document.body.style.overflow = 'hidden';
   }
 
-  // Filtering logic
-  get filteredTransactions(): Transaction[] {
-    if (!this.transactions) return [];
-
-    return this.transactions
-      .filter(tx => {
-        // Tab filtering
-        if (this.selectedTab === 'Alpha Deposits' && tx.accountType !== 'Alpha Deposits') return false;
-        if (this.selectedTab === 'Shares Capital' && tx.accountType !== 'Shares Capital') return false;
-        if (this.selectedTab === 'Loan Repayments' && tx.accountType !== 'Loan Repayments') return false;
-        if (this.selectedTab === 'Others' &&
-          (tx.accountType === 'Alpha Deposits' ||
-            tx.accountType === 'Shares Capital' ||
-            tx.accountType === 'Loan Repayments')) return false;
-
-        // Search query (null-safe)
-        if (this.searchQuery) {
-          const query = this.searchQuery.toLowerCase().trim();
-          const matchesId = tx.id?.toLowerCase().includes(query) ?? false;
-          const matchesRef = tx.reference?.toLowerCase().includes(query) ?? false;
-          const matchesDesc = tx.description?.toLowerCase().includes(query) ?? false;
-          const matchesMethod = tx.method?.toLowerCase().includes(query) ?? false;
-          if (!matchesId && !matchesRef && !matchesDesc && !matchesMethod) return false;
-        }
-
-        // Status filter
-        if (this.statusFilter !== 'All' && tx.status !== this.statusFilter) return false;
-
-        // Method channel filter
-        if (this.methodFilter !== 'All') {
-          const ch = this.methodFilter.toLowerCase();
-          const txCh = tx.method?.toLowerCase() ?? '';
-          if (!txCh.includes(ch)) return false;
-        }
-
-        // Date filter (null-safe parsing)
-        if (this.startDateFilter) {
-          const start = new Date(this.startDateFilter).getTime();
-          const txTime = new Date(tx.date).getTime();
-          if (txTime < start) return false;
-        }
-        if (this.endDateFilter) {
-          const end = new Date(this.endDateFilter).getTime();
-          const txTime = new Date(tx.date).getTime();
-          if (txTime > end) return false;
-        }
-
-        // Amount filters
-        const amt = tx.amount ?? 0;
-        if (this.minAmount !== null && amt < this.minAmount) return false;
-        if (this.maxAmount !== null && amt > this.maxAmount) return false;
-
-        return true;
-      })
-      .sort((a, b) => {
-        let comparison = 0;
-        if (this.sortBy === 'date') {
-          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
-        } else if (this.sortBy === 'amount') {
-          comparison = (a.amount ?? 0) - (b.amount ?? 0);
-        } else if (this.sortBy === 'status') {
-          comparison = a.status.localeCompare(b.status);
-        }
-        return this.sortOrder === 'desc' ? -comparison : comparison;
-      });
+  openReceipt(tx: TransactionRow): void {
+    this.selectedTx = tx;
+    if (tx.status === 'Pending') this.activeModal = 'pendingVerification';
+    else if (tx.status === 'Failed') this.activeModal = 'failedReason';
+    else this.activeModal = 'receipt';
+    document.body.style.overflow = 'hidden';
   }
 
-  // Pagination Calculations
-  get paginatedTransactions(): Transaction[] {
-    const list = this.filteredTransactions;
-    const startIdx = (this.currentPage - 1) * this.pageSize;
-    return list.slice(startIdx, startIdx + this.pageSize);
+  closeModal(): void {
+    this.activeModal = null;
+    document.body.style.overflow = '';
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.filteredTransactions.length / this.pageSize) || 1;
-  }
-
-  get startEntryIndex(): number {
-    if (this.filteredTransactions.length === 0) return 0;
-    return (this.currentPage - 1) * this.pageSize + 1;
-  }
-
-  get endEntryIndex(): number {
-    const limit = this.currentPage * this.pageSize;
-    const total = this.filteredTransactions.length;
-    return limit > total ? total : limit;
-  }
-
-  // Actions
-  setTab(tab: TransactionTab): void {
-    this.selectedTab = tab;
-    this.currentPage = 1;
-  }
-
-  changePage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-
-  toggleSort(field: 'date' | 'amount' | 'status'): void {
-    if (this.sortBy === field) {
-      this.sortOrder = this.sortOrder === 'desc' ? 'asc' : 'desc';
-    } else {
-      this.sortBy = field;
-      this.sortOrder = 'desc';
-    }
-    this.currentPage = 1;
-  }
-
-  clearFilters(): void {
-    this.searchQuery = '';
-    this.statusFilter = 'All';
-    this.methodFilter = 'All';
-    this.startDateFilter = '';
-    this.endDateFilter = '';
-    this.minAmount = null;
-    this.maxAmount = null;
-    this.currentPage = 1;
-  }
-
-  // Trigger Modals
-  openAddModal(): void {
-    const today = new Date();
-    this.newTransaction = {
-      accountType: 'Alpha Deposits',
-      amount: null,
-      method: 'M-Pesa',
-      reference: '',
-      notes: '',
-      date: today.toISOString().split('T')[0]
-    };
-    this.showAddModal = true;
-  }
-
-  closeAddModal(): void {
-    this.showAddModal = false;
-  }
-
-  submitTransaction(): void {
-    // Null-safety & validation guard
-    if (!this.newTransaction.amount || this.newTransaction.amount <= 0) {
-      alert('Please enter a valid transaction amount.');
-      return;
-    }
-    if (!this.newTransaction.reference) {
-      alert('Please enter a payment reference code.');
-      return;
-    }
-
-    const generatedId = `TXN-${Math.floor(10000 + Math.random() * 90000)}`;
-    const record: Transaction = {
-      id: generatedId,
-      date: this.newTransaction.date ? new Date(this.newTransaction.date).toISOString() : new Date().toISOString(),
-      reference: this.newTransaction.reference.toUpperCase().trim(),
-      description: `Member Contribution (${this.newTransaction.accountType})`,
-      accountType: this.newTransaction.accountType,
-      method: this.newTransaction.method,
-      amount: this.newTransaction.amount,
-      type: this.newTransaction.accountType === 'Withdrawals' ? 'debit' : 'credit',
-      status: 'Pending', // New member-recorded deposits default to pending until reconciled
-      memberId: 'MEM-80293',
-      notes: this.newTransaction.notes || 'Deposit receipt submitted by member.',
-      attachment: null
-    };
-
-    // Add to list
-    this.transactions = [record, ...this.transactions];
-    this.recalculateStats();
-
-    this.closeAddModal();
-
-    // Display feedback
-    alert(`Successfully logged Deposit Request! Transaction Reference: ${record.reference}. The Sacco admin will review and reconcile within 4 hours.`);
-  }
-
-  openReceiptModal(tx: Transaction): void {
-    this.selectedTransaction = tx;
-    this.showReceiptModal = true;
-  }
-
-  closeReceiptModal(): void {
-    this.showReceiptModal = false;
-    this.selectedTransaction = null;
-  }
-
-  simulateDownloadReceipt(tx: Transaction): void {
-    alert(`Downloading PDF Receipt for Transaction ID ${tx?.id ?? 'N/A'} (Ref: ${tx?.reference ?? 'N/A'}). Your browser will prompt you to save the PDF file.`);
-  }
-
-  openExportModal(): void {
-    this.showExportModal = true;
-  }
-
-  closeExportModal(): void {
-    this.showExportModal = false;
-  }
-
-  submitExport(): void {
-    this.isLoading = true;
-    this.showExportModal = false;
-
-    setTimeout(() => {
-      this.isLoading = false;
-      alert(`Successfully compiled and exported ${this.filteredTransactions.length} transactions as a ${this.exportFormat.toUpperCase()} document!`);
-    }, 1200);
-  }
-
-  openDisputeModal(tx: Transaction): void {
-    this.disputedTransaction = tx;
-    this.disputeCategory = 'Missing Transaction';
-    this.disputeExplanation = '';
-    this.showDisputeModal = true;
-  }
-
-  closeDisputeModal(): void {
-    this.showDisputeModal = false;
-    this.disputedTransaction = null;
+  exportStatement(): void {
+    this.closeModal();
+    this.showToast('Statement export is being prepared.', 'info');
   }
 
   submitDispute(): void {
-    if (!this.disputeExplanation.trim()) {
-      alert('Please explain the nature of your dispute.');
-      return;
-    }
-    const disputeTicket = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
-    this.showDisputeModal = false;
+    this.closeModal();
+    this.showToast('Dispute submitted for review.', 'success');
+  }
 
-    alert(`Dispute ticket ${disputeTicket} has been created successfully for transaction ${this.disputedTransaction?.id ?? 'N/A'}. Our customer care will contact you at ${this.disputeEmail} within 24 hours.`);
-    this.disputedTransaction = null;
+  downloadReceipt(): void {
+    this.showToast('Receipt downloaded.', 'success');
+  }
+
+  applyFilters(): void {
+    this.closeModal();
+  }
+
+  resetFilters(): void {
+    this.filterStatus = '';
+    this.filterChannel = '';
+    this.filterFrom = '';
+    this.filterTo = '';
+  }
+
+  showToast(message: string, type: 'success' | 'info' | 'warning' | 'danger' = 'success'): void {
+    this.toast = { message, type };
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => (this.toast = null), 3200);
+  }
+
+  dismissToast(): void {
+    this.toast = null;
+  }
+
+  abs(n: number): number {
+    return Math.abs(n);
+  }
+
+  fmt(n: number): string {
+    return Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  private drawChart(): void {
+    const canvas = this.activityCanvas?.nativeElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+
+    const labels = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const inflows = [75, 92, 68, 110, 88, 85];
+    const outflows = [42, 58, 50, 72, 60, 57.5];
+    const max = 120;
+    const padL = 46;
+    const padR = 20;
+    const padT = 24;
+    const padB = 32;
+    const cw = w - padL - padR;
+    const ch = h - padT - padB;
+    const group = cw / labels.length;
+    const barW = Math.min(34, group * 0.3);
+
+    ctx.strokeStyle = '#eef2f7';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 6; i++) {
+      const y = padT + (ch / 6) * i;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + cw, y);
+      ctx.stroke();
+      ctx.fillText(`${Math.round((max / 6) * (6 - i))},000`, padL - 7, y + 3);
+    }
+
+    labels.forEach((label, i) => {
+      const x = padL + i * group + group / 2;
+      const yIn = padT + ch - (inflows[i] / max) * ch;
+      const yOut = padT + ch - (outflows[i] / max) * ch;
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(x - barW - 3, yIn, barW, padT + ch - yIn);
+      ctx.fillStyle = '#2d9bf0';
+      ctx.fillRect(x + 3, yOut, barW, padT + ch - yOut);
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, h - 10);
+    });
   }
 }

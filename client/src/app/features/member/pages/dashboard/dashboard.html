@@ -1,642 +1,636 @@
-<!-- ═══════════════════════════════════════════════════════════════
-   SACCO PAY — MEMBER DASHBOARD COMPONENT TEMPLATE
-   ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════ MEMBER DASHBOARD — MAIN CONTENT ═══════════════════ -->
+<section class="md-shell">
 
-<div class="fade-in-up" (keydown.escape)="onKeydown($event)">
+  <!-- ─── Quick Stats ─── -->
+  <div class="md-stats">
+    @for (s of stats; track s.label) {
+      <article class="md-stat-card tone-{{s.tone}}" (click)="openStatDetail(s)">
+        <div class="md-stat-head">
+          <div class="md-stat-icon">
+            <ng-container [ngSwitch]="s.icon">
+              <svg *ngSwitchCase="'wallet'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+              <svg *ngSwitchCase="'chart'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+              <svg *ngSwitchCase="'bank'"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8"/><path d="M3 21h18"/></svg>
+              <svg *ngSwitchCase="'coins'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="8" cy="6" rx="6" ry="3"/><path d="M2 6v6c0 1.66 2.69 3 6 3s6-1.34 6-3V6"/><path d="M14 12c3.31 0 6 1.34 6 3v3c0 1.66-2.69 3-6 3s-6-1.34-6-3v-3"/></svg>
+            </ng-container>
+          </div>
+        </div>
+        <p class="md-stat-label">{{s.label}}</p>
+        <h3 class="md-stat-amount">{{s.amount}}</h3>
+        <p class="md-stat-trend" [class.down]="!s.trendUp">
+          <span class="arrow">{{ s.trendUp ? '↑' : '↓' }}</span>{{s.change}}
+        </p>
+        <a class="md-stat-link" (click)="$event.stopPropagation(); openStatDetail(s)">View Details ›</a>
+      </article>
+    }
+  </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-     SECTION: DASHBOARD
-     ═══════════════════════════════════════════════════════════════ -->
-
-  <!-- Quick Stats Row -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-sm-6 col-lg-3" *ngFor="let stat of stats">
-      <div class="stat-card stat-card--{{stat.variant}}">
-        <div class="stat-card-body">
-          <div class="stat-icon"><i class="bi {{stat.icon}}"></i></div>
-          <div class="stat-info">
-            <span class="stat-label">{{stat.label}}</span>
-            <h3 class="stat-value">{{stat.value}}</h3>
-            <span class="stat-change" [class.positive]="stat.changePositive" [class.negative]="!stat.changePositive">
-              <i class="bi" [class.bi-arrow-up-short]="stat.changePositive" [class.bi-arrow-down-short]="!stat.changePositive"></i>
-              {{stat.change}}
+  <!-- ─── Quick Actions + Account Summary ─── -->
+  <div class="md-row md-row-2">
+    <!-- Quick Actions -->
+    <article class="md-card md-actions">
+      <header class="md-card-head">
+        <h6><span class="ico-bolt">⚡</span> Quick Actions</h6>
+      </header>
+      <div class="md-actions-grid">
+        @for (a of quickActions; track a.key) {
+          <button class="md-action tone-{{a.tone}}" (click)="onQuickAction(a.key)">
+            <span class="md-action-ico">
+              <ng-container [ngSwitch]="a.icon">
+                <svg *ngSwitchCase="'plus'"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                <svg *ngSwitchCase="'bank'"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8"/><path d="M3 21h18"/></svg>
+                <svg *ngSwitchCase="'arrow-up'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <svg *ngSwitchCase="'transfer'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>
+                <svg *ngSwitchCase="'card'"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                <svg *ngSwitchCase="'doc'"      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <svg *ngSwitchCase="'headset'"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
+                <svg *ngSwitchCase="'user'"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              </ng-container>
             </span>
-          </div>
-        </div>
-        <div class="stat-card-footer">
-          <a href="javascript:void(0)" class="stat-link" (click)="navigateTo(stat.link)">
-            View Details <i class="bi bi-arrow-right"></i>
-          </a>
-        </div>
+            <span class="md-action-label">{{a.label}}</span>
+          </button>
+        }
       </div>
-    </div>
-  </div>
+    </article>
 
-  <!-- Quick Actions + Account Summary -->
-  <div class="row g-3 mb-4">
-    <div class="col-lg-8">
-      <div class="dashboard-card h-100">
-        <div class="card-header">
-          <h6 class="card-title mb-0">
-            <i class="bi bi-lightning-charge-fill text-accent me-2"></i>Quick Actions
-          </h6>
-        </div>
-        <div class="card-body">
-          <div class="row g-2">
-            <div class="col-6 col-md-3" *ngFor="let action of quickActions">
-              <button
-                class="btn btn-outline-accent w-100 quick-action-btn"
-                (click)="action.modal ? openModal(action.modal) : navigateTo(action.action!)"
-              >
-                <i class="bi {{action.icon}} d-block"></i>
-                <span>{{action.label}}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="dashboard-card h-100">
-        <div class="card-header">
-          <h6 class="card-title mb-0">
-            <i class="bi bi-person-badge-fill text-accent me-2"></i>Account Summary
-          </h6>
-        </div>
-        <div class="card-body p-0">
-          <ul class="list-group list-group-flush summary-list">
-            <li class="list-group-item">
-              <span class="text-muted">Member No.</span>
-              <strong>{{memberNumber}}</strong>
-            </li>
-            <li class="list-group-item">
-              <span class="text-muted">Joined</span>
-              <strong>{{memberSince}}</strong>
-            </li>
-            <li class="list-group-item">
-              <span class="text-muted">Status</span>
-              <span class="sp-badge badge-success">{{accountStatus}}</span>
-            </li>
-            <li class="list-group-item">
-              <span class="text-muted">Loan Limit</span>
-              <strong>{{loanLimit}}</strong>
-            </li>
-            <li class="list-group-item">
-              <span class="text-muted">Guarantors</span>
-              <strong>{{guarantorsAvailable}} Available</strong>
-            </li>
-            <li class="list-group-item">
-              <span class="text-muted">Next Contribution</span>
-              <strong class="text-accent">{{nextContribution}}</strong>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent Transactions + Loan Status -->
-  <div class="row g-3 mb-4">
-    <div class="col-lg-7">
-      <div class="dashboard-card">
-        <div class="card-header">
-          <h6 class="card-title mb-0">
-            <i class="bi bi-clock-history text-accent me-2"></i>Recent Transactions
-          </h6>
-          <button class="btn btn-sm btn-outline-accent" (click)="navigateTo('transactions')">View All</button>
-        </div>
-        <div class="card-body p-0">
-          <div class="sp-table-wrap">
-            <table class="table table-hover mb-0 align-middle sp-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Description</th>
-                  <th class="text-end">Amount</th>
-                  <th class="text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let tx of transactions">
-                  <td><small>{{tx.date}}</small></td>
-                  <td>
-                    <span class="sp-badge" [class]="'badge-' + tx.typeColor">{{tx.type}}</span>
-                  </td>
-                  <td>{{tx.description}}</td>
-                  <td class="text-end fw-semibold" [style.color]="'var(--' + tx.amountColor + ')'">{{tx.amount}}</td>
-                  <td class="text-center">
-                    <span class="sp-badge" [class]="'badge-' + tx.statusColor">{{tx.status}}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-5">
-      <div class="dashboard-card h-100">
-        <div class="card-header">
-          <h6 class="card-title mb-0">
-            <i class="bi bi-pie-chart-fill text-accent me-2"></i>Active Loans
-          </h6>
-          <button class="btn btn-sm btn-outline-accent" (click)="navigateTo('loans')">View All</button>
-        </div>
-        <div class="card-body">
-          <div class="loan-progress-card" *ngFor="let loan of loans">
-            <div class="d-flex justify-content-between mb-1">
-              <span class="fw-semibold">{{loan.name}}</span>
-              <span class="small text-muted">KES {{loan.repaid | number}} / {{loan.total | number}}</span>
-            </div>
-            <div class="sp-progress">
-              <div
-                class="sp-progress-fill"
-                [style.width.%]="loan.percent"
-                [style.background]="'var(--' + loan.color + ')'"
-              ></div>
-            </div>
-            <div class="d-flex justify-content-between mt-1">
-              <small class="text-muted">{{loan.percent}}% Repaid</small>
-              <small class="text-muted">Due: {{loan.dueDate}}</small>
-            </div>
-          </div>
-          <div class="alert alert-info-custom d-flex align-items-center mt-3 mb-0">
-            <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-            <div>
-              <strong>Total Outstanding:</strong> {{totalOutstanding}}<br>
-              <small>Next installment: {{nextInstallment}}</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Contribution Trend + Announcements -->
-  <div class="row g-3 mb-4">
-    <div class="col-lg-8">
-      <div class="dashboard-card">
-        <div class="card-header">
-          <h6 class="card-title mb-0">
-            <i class="bi bi-bar-chart-line-fill text-accent me-2"></i>Contribution Trend (2024)
-          </h6>
-          <div class="btn-group btn-group-sm" role="group">
-            <button
-              type="button"
-              class="btn btn-outline-accent"
-              [class.active]="chartPeriod === 'Monthly'"
-              (click)="setChartPeriod('Monthly')"
-            >Monthly</button>
-            <button
-              type="button"
-              class="btn btn-outline-accent"
-              [class.active]="chartPeriod === 'Quarterly'"
-              (click)="setChartPeriod('Quarterly')"
-            >Quarterly</button>
-            <button
-              type="button"
-              class="btn btn-outline-accent"
-              [class.active]="chartPeriod === 'Yearly'"
-              (click)="setChartPeriod('Yearly')"
-            >Yearly</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="chart-placeholder">
-            <div class="chart-bars">
-              <div class="chart-bar-item" *ngFor="let bar of chartBars">
-                <div
-                  class="chart-bar"
-                  [class.active-bar]="bar.isActive"
-                  [class.upcoming]="bar.isUpcoming"
-                  [style.height]="bar.height"
-                  [title]="bar.amount"
-                ></div>
-                <span>{{bar.month}}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="dashboard-card h-100">
-        <div class="card-header">
-          <h6 class="card-title mb-0">
-            <i class="bi bi-megaphone-fill text-accent me-2"></i>Announcements
-          </h6>
-        </div>
-        <div class="card-body p-0">
-          <div class="announcement-list">
-            <div
-              class="announcement-item"
-              *ngFor="let ann of announcements"
-              (click)="openAnnouncement(ann)"
-            >
-              <div class="mb-1" *ngIf="ann.badge">
-                <span class="sp-badge" [class]="'badge-' + ann.badgeColor">{{ann.badge}}</span>
-              </div>
-              <h6>{{ann.title}}</h6>
-              <p class="mb-1">{{ann.description}}</p>
-              <small><i class="bi bi-calendar3 me-1"></i>{{ann.date}}</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== FOOTER ========== -->
-  <footer class="content-footer">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-      <p class="mb-1 mb-md-0">&copy; 2024 SaccoPay. All rights reserved.</p>
-      <div class="d-flex gap-3">
-        <a href="javascript:void(0)" class="text-decoration-none">Privacy Policy</a>
-        <a href="javascript:void(0)" class="text-decoration-none">Terms of Service</a>
-        <a href="javascript:void(0)" class="text-decoration-none">Help Center</a>
-      </div>
-    </div>
-  </footer>
-
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-   MODALS
-   ═══════════════════════════════════════════════════════════════ -->
-
-<!-- MODAL: Make Contribution -->
-<div class="modal-overlay" *ngIf="activeModal === 'contribute'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h5><i class="bi bi-plus-circle-fill text-accent me-2"></i>Make Contribution</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form (ngSubmit)="handleContribute()">
-        <div class="mb-3">
-          <label class="form-label">Contribution Type</label>
-          <select class="form-select" [(ngModel)]="contributeForm.type" name="cType" required>
-            <option value="">Select type...</option>
-            <option>Monthly Savings</option>
-            <option>Extra Contribution</option>
-            <option>Share Capital</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Amount (KES)</label>
-          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="contributeForm.amount" name="cAmount" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Payment Method</label>
-          <select class="form-select" [(ngModel)]="contributeForm.method" name="cMethod" required>
-            <option value="">Select method...</option>
-            <option>M-Pesa</option>
-            <option>Bank Transfer</option>
-            <option>Card Payment</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Phone Number (for M-Pesa)</label>
-          <input type="tel" class="form-control" placeholder="e.g. 0712345678" [(ngModel)]="contributeForm.phone" name="cPhone" />
-        </div>
-        <div class="alert alert-info-custom small">
-          <i class="bi bi-info-circle-fill me-1"></i>An M-Pesa STK push will be sent to your phone. Please enter your PIN to complete.
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-accent" (click)="handleContribute()">
-        <i class="bi bi-send-fill me-2"></i>Submit Payment
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Apply Loan -->
-<div class="modal-overlay" *ngIf="activeModal === 'loanApply'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-header">
-      <h5><i class="bi bi-bank text-accent me-2"></i>Loan Application</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form (ngSubmit)="handleLoanApply()">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Loan Type</label>
-            <select class="form-select" [(ngModel)]="loanApplyForm.type" name="lType" required>
-              <option value="">Select loan type...</option>
-              <option>Normal Loan</option>
-              <option>Emergency Loan</option>
-              <option>Education Loan</option>
-              <option>Asset Finance</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Loan Amount (KES)</label>
-            <input type="number" class="form-control" placeholder="Enter amount" min="1000" [(ngModel)]="loanApplyForm.amount" name="lAmount" required />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Repayment Period (Months)</label>
-            <select class="form-select" [(ngModel)]="loanApplyForm.period" name="lPeriod" required>
-              <option value="">Select period...</option>
-              <option>6 Months</option>
-              <option>12 Months</option>
-              <option>18 Months</option>
-              <option>24 Months</option>
-              <option>36 Months</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Purpose</label>
-            <select class="form-select" [(ngModel)]="loanApplyForm.purpose" name="lPurpose" required>
-              <option value="">Select purpose...</option>
-              <option>Business</option>
-              <option>Education</option>
-              <option>Medical</option>
-              <option>Home Improvement</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="col-12">
-            <label class="form-label">Guarantor 1 (Member No.)</label>
-            <input type="text" class="form-control" placeholder="e.g. SP-2024-0123" [(ngModel)]="loanApplyForm.guarantor1" name="lGuarantor1" />
-          </div>
-          <div class="col-12">
-            <label class="form-label">Guarantor 2 (Member No.)</label>
-            <input type="text" class="form-control" placeholder="e.g. SP-2024-0456" [(ngModel)]="loanApplyForm.guarantor2" name="lGuarantor2" />
-          </div>
-          <div class="col-12">
-            <label class="form-label">Additional Notes</label>
-            <textarea class="form-control" rows="2" placeholder="Any additional information..." [(ngModel)]="loanApplyForm.notes" name="lNotes"></textarea>
-          </div>
-          <div class="col-12">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="loanTerms" [(ngModel)]="loanApplyForm.terms" name="lTerms" required>
-              <label class="form-check-label" for="loanTerms">I agree to the <a href="javascript:void(0)" class="text-accent">loan terms and conditions</a></label>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-accent" (click)="handleLoanApply()">
-        <i class="bi bi-send-fill me-2"></i>Submit Application
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Withdraw -->
-<div class="modal-overlay" *ngIf="activeModal === 'withdraw'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h5><i class="bi bi-cash-stack text-accent me-2"></i>Withdrawal Request</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form (ngSubmit)="handleWithdraw()">
-        <div class="mb-3">
-          <label class="form-label">Withdrawal From</label>
-          <select class="form-select" [(ngModel)]="withdrawForm.from" name="wFrom" required>
-            <option value="">Select account...</option>
-            <option>Savings Account (KES 245,000)</option>
-            <option>Dividends Account (KES 12,300)</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Amount (KES)</label>
-          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="withdrawForm.amount" name="wAmount" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Withdraw To</label>
-          <select class="form-select" [(ngModel)]="withdrawForm.to" name="wTo" required>
-            <option value="">Select method...</option>
-            <option>M-Pesa (0712***456)</option>
-            <option>Bank Account (KCB ***789)</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Reason</label>
-          <textarea class="form-control" rows="2" placeholder="Reason for withdrawal..." [(ngModel)]="withdrawForm.reason" name="wReason"></textarea>
-        </div>
-        <div class="alert alert-warning-custom small">
-          <i class="bi bi-exclamation-triangle-fill me-1"></i>Withdrawals are processed within 48 hours and may require admin approval.
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-accent" (click)="handleWithdraw()">
-        <i class="bi bi-send-fill me-2"></i>Submit Request
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Transfer -->
-<div class="modal-overlay" *ngIf="activeModal === 'transfer'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h5><i class="bi bi-arrow-left-right text-accent me-2"></i>Internal Transfer</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form (ngSubmit)="handleTransfer()">
-        <div class="mb-3">
-          <label class="form-label">From Account</label>
-          <select class="form-select" [(ngModel)]="transferForm.from" name="tFrom" required>
-            <option value="">Select source...</option>
-            <option>Savings Account</option>
-            <option>Dividends Account</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">To Account</label>
-          <select class="form-select" [(ngModel)]="transferForm.to" name="tTo" required>
-            <option value="">Select destination...</option>
-            <option>Share Capital</option>
-            <option>Loan Repayment</option>
-            <option>Another Member (Enter Member No.)</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Amount (KES)</label>
-          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="transferForm.amount" name="tAmount" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Narration</label>
-          <input type="text" class="form-control" placeholder="Transfer description..." [(ngModel)]="transferForm.narration" name="tNarration" />
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-accent" (click)="handleTransfer()">
-        <i class="bi bi-send-fill me-2"></i>Transfer Now
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Repay Loan -->
-<div class="modal-overlay" *ngIf="activeModal === 'repayLoan'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h5><i class="bi bi-credit-card-fill text-accent me-2"></i>Loan Repayment</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form (ngSubmit)="handleRepayLoan()">
-        <div class="mb-3">
-          <label class="form-label">Select Loan</label>
-          <select class="form-select" [(ngModel)]="repayLoanForm.loan" name="rLoan" required>
-            <option value="">Select loan...</option>
-            <option>Normal Loan (LN-2024-0089) — Bal: KES 40,000</option>
-            <option>Emergency Loan (LN-2024-0112) — Bal: KES 5,000</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Repayment Amount (KES)</label>
-          <input type="number" class="form-control" placeholder="Enter amount" min="100" [(ngModel)]="repayLoanForm.amount" name="rAmount" required />
-          <div class="form-text">Monthly installment: KES 8,500</div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Payment Method</label>
-          <select class="form-select" [(ngModel)]="repayLoanForm.method" name="rMethod" required>
-            <option value="">Select method...</option>
-            <option>M-Pesa</option>
-            <option>Bank Transfer</option>
-            <option>From Savings</option>
-          </select>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-accent" (click)="handleRepayLoan()">
-        <i class="bi bi-send-fill me-2"></i>Pay Now
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: New Support Ticket -->
-<div class="modal-overlay" *ngIf="activeModal === 'newTicket'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h5><i class="bi bi-ticket-detailed-fill text-accent me-2"></i>New Support Ticket</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form (ngSubmit)="handleNewTicket()">
-        <div class="mb-3">
-          <label class="form-label">Subject</label>
-          <input type="text" class="form-control" placeholder="Brief description of your issue" [(ngModel)]="ticketForm.subject" name="sSubject" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Category</label>
-          <select class="form-select" [(ngModel)]="ticketForm.category" name="sCategory" required>
-            <option value="">Select category...</option>
-            <option>Payments</option>
-            <option>Loans</option>
-            <option>Account</option>
-            <option>Technical</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Priority</label>
-          <select class="form-select" [(ngModel)]="ticketForm.priority" name="sPriority" required>
-            <option>Low</option>
-            <option selected>Medium</option>
-            <option>High</option>
-            <option>Critical</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea class="form-control" rows="4" placeholder="Describe your issue in detail..." [(ngModel)]="ticketForm.description" name="sDescription" required></textarea>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Attachment (Optional)</label>
-          <input type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event)" />
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-accent" (click)="handleNewTicket()">
-        <i class="bi bi-send-fill me-2"></i>Submit Ticket
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Announcement Detail -->
-<div class="modal-overlay" *ngIf="activeModal === 'announcement'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h5><i class="bi bi-megaphone-fill text-accent me-2"></i>Announcement</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body" *ngIf="selectedAnnouncement">
-      <h5>{{selectedAnnouncement.title}}</h5>
-      <p class="text-muted small mb-3"><i class="bi bi-calendar3 me-1"></i>Posted: {{selectedAnnouncement.date}}</p>
-      <p>Dear Members,</p>
-      <p>You are cordially invited to the SaccoPay Annual General Meeting scheduled for <strong>December 15, 2024 at 10:00 AM</strong> at the Nairobi Conference Center.</p>
-      <p><strong>Agenda:</strong></p>
-      <ul>
-        <li>Review of 2024 Financial Performance</li>
-        <li>Declaration of Dividends</li>
-        <li>Election of Board Members</li>
-        <li>New Product Launches for 2025</li>
-        <li>Any Other Business</li>
+    <!-- Account Summary -->
+    <article class="md-card md-summary">
+      <header class="md-card-head">
+        <h6><span class="ico-id">🪪</span> Account Summary</h6>
+      </header>
+      <ul class="md-summary-list">
+        <li><span>Member No.</span><strong>SP-2024-0451</strong></li>
+        <li><span>Joined</span><strong>Jan 15, 2020</strong></li>
+        <li><span>Status</span><span class="md-pill ok">Active</span></li>
+        <li><span>Loan Limit</span><strong>KES 500,000</strong></li>
+        <li><span>Guarantors</span><strong>3 Available</strong></li>
+        <li><span>Next Contribution</span><strong class="text-blue">Dec 1, 2024</strong></li>
       </ul>
-      <p>Please confirm your attendance by December 10, 2024.</p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Close</button>
-      <button type="button" class="btn btn-accent" (click)="confirmAttendance()">
-        <i class="bi bi-check-circle me-2"></i>Confirm Attendance
-      </button>
-    </div>
+    </article>
   </div>
-</div>
 
-<!-- MODAL: Logout Confirmation -->
-<div class="modal-overlay" *ngIf="activeModal === 'logout'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-header">
-      <h5><i class="bi bi-box-arrow-left text-danger me-2"></i>Logout</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body text-center">
-      <i class="bi bi-question-circle display-4 text-warning mb-3 d-block"></i>
-      <p>Are you sure you want to logout?</p>
-    </div>
-    <div class="modal-footer justify-content-center">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
-      <button type="button" class="btn btn-danger" (click)="handleLogout()">
-        <i class="bi bi-box-arrow-left me-2"></i>Logout
-      </button>
-    </div>
-  </div>
-</div>
+  <!-- ─── Recent Transactions + Active Loans ─── -->
+  <div class="md-row md-row-2">
+    <!-- Recent Transactions -->
+    <article class="md-card">
+      <header class="md-card-head with-action">
+        <h6><span class="ico-clock">🕒</span> Recent Transactions</h6>
+        <button class="md-btn-ghost" (click)="openModal('viewAllTx')">View All</button>
+      </header>
+      <div class="md-table-wrap">
+        <table class="md-table">
+          <thead>
+            <tr><th>DATE</th><th>TYPE</th><th>DESCRIPTION</th><th>AMOUNT</th><th>STATUS</th></tr>
+          </thead>
+          <tbody>
+            @for (t of transactions; track t.date + t.description) {
+              <tr>
+                <td><small>{{t.date}}</small></td>
+                <td>
+                  <span class="md-pill"
+                    [class.ok]="t.type==='Deposit'"
+                    [class.danger]="t.type==='Debit' || t.type==='Withdrawal'"
+                    [class.info]="t.type==='Transfer'"
+                    [class.warn]="t.type==='Withdrawal'">{{t.type}}</span>
+                </td>
+                <td>{{t.description}}</td>
+                <td class="amt"
+                  [class.pos]="t.amount.startsWith('+')"
+                  [class.neg]="t.amount.startsWith('-')"
+                  [class.neu]="!t.amount.startsWith('+') && !t.amount.startsWith('-')">{{t.amount}}</td>
+                <td>
+                  <span class="md-pill"
+                    [class.ok]="t.status==='Completed'"
+                    [class.warn]="t.status==='Pending'"
+                    [class.danger]="t.status==='Failed'">{{t.status}}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
 
-<!-- ═══════════════════════════════════════════════════════════════
-   TOAST CONTAINER
-   ═══════════════════════════════════════════════════════════════ -->
-<div class="sp-toast-container">
-  <div class="sp-toast {{toast.type}}" *ngFor="let toast of toasts">
-    <i class="bi {{getToastIcon(toast.type)}}" [style.color]="getToastColor(toast.type)" style="font-size:18px;flex-shrink:0;"></i>
-    <div class="toast-content">
-      <div class="toast-title">{{toast.type | titlecase}}</div>
-      <div class="toast-message">{{toast.message}}</div>
-    </div>
-    <button class="toast-close" (click)="removeToast(toast.id)">&times;</button>
+    <!-- Active Loans -->
+    <article class="md-card">
+      <header class="md-card-head with-action">
+        <h6><span class="ico-loan">💼</span> Active Loans</h6>
+        <button class="md-btn-ghost" (click)="openModal('viewAllTx')">View All</button>
+      </header>
+      <div class="md-loans">
+        @for (l of activeLoans; track l.name) {
+          <div class="md-loan" (click)="openLoanDetail(l)">
+            <p class="md-loan-head">
+              <span>{{l.name}}</span>
+              <span class="md-loan-amt">KES {{l.paid.toLocaleString()}} / {{l.total.toLocaleString()}}</span>
+            </p>
+            <div class="md-progress"><div class="md-progress-fill" [style.width.%]="loanPct(l)"
+                 [class.danger]="l.name==='Normal Loan'" [class.success]="l.name!=='Normal Loan'"></div></div>
+            <p class="md-loan-sub">
+              <small>{{loanPct(l)}}% Repaid</small>
+              <small>Due: {{l.due}}</small>
+            </p>
+          </div>
+        }
+        <div class="md-loan-summary">
+          <p>
+            <strong>Total Outstanding:</strong>
+            <span class="text-blue"> KES {{totalOutstanding().toLocaleString()}}</span>
+            <br><small>Next installment: KES 8,500 on Dec 5, 2024</small>
+          </p>
+        </div>
+      </div>
+    </article>
   </div>
-</div>
+
+  <!-- ─── Contribution Trend + Announcements ─── -->
+  <div class="md-row md-row-2">
+    <article class="md-card">
+      <header class="md-card-head with-action">
+        <h6><span class="ico-chart">📊</span> Contribution Trend ({{ chartRange === 'yearly' ? 'Yearly' : '2024' }})</h6>
+        <div class="md-seg">
+          <button [class.on]="chartRange==='monthly'"   (click)="setRange('monthly')">Monthly</button>
+          <button [class.on]="chartRange==='quarterly'" (click)="setRange('quarterly')">Quarterly</button>
+          <button [class.on]="chartRange==='yearly'"    (click)="setRange('yearly')">Yearly</button>
+        </div>
+      </header>
+      <div class="md-chart">
+        <canvas #chartCanvas></canvas>
+      </div>
+    </article>
+
+    <article class="md-card">
+      <header class="md-card-head">
+        <h6><span class="ico-mega">📣</span> Announcements</h6>
+      </header>
+      <ul class="md-news">
+        @for (a of announcements; track a.title) {
+          <li (click)="openAnnouncement(a)">
+            @if (a.badge) { <span class="md-pill new">{{a.badge}}</span> }
+            <h5>{{a.title}}</h5>
+            <p>{{a.body}}</p>
+            <small>📅 {{a.date}}</small>
+          </li>
+        }
+      </ul>
+    </article>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <footer class="md-footer">
+    <p>© 2024 SaccoPay. All rights reserved.</p>
+    <p>
+      <a (click)="showToast('Privacy Policy', 'info')">Privacy Policy</a>
+      <a (click)="showToast('Terms of Service', 'info')">Terms of Service</a>
+      <a (click)="openModal('support')">Help Center</a>
+    </p>
+  </footer>
+</section>
+
+
+<!-- ═══════════════════════════ MODALS ═══════════════════════════ -->
+
+<!-- Overlay -->
+@if (activeModal) {
+  <div class="md-overlay" (click)="closeModal()"></div>
+}
+
+<!-- Contribute -->
+@if (activeModal === 'contribute') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">⊕</span> Make Contribution</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>Contribution Type</label>
+      <select [(ngModel)]="contribute.type">
+        <option value="">Select type...</option>
+        <option value="monthly">Monthly Contribution</option>
+        <option value="share">Share Capital Top-up</option>
+        <option value="special">Special Contribution</option>
+      </select>
+
+      <label>Amount (KES)</label>
+      <input type="number" [(ngModel)]="contribute.amount" placeholder="Enter amount">
+
+      <label>Payment Method</label>
+      <select [(ngModel)]="contribute.method">
+        <option value="">Select method...</option>
+        <option value="mpesa">M-Pesa</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="card">Debit/Credit Card</option>
+      </select>
+
+      <label>Phone Number (for M-Pesa)</label>
+      <input type="tel" [(ngModel)]="contribute.phone" placeholder="e.g. 0712345678">
+
+      <div class="md-note info">
+        ⓘ An M-Pesa STK push will be sent to your phone. Please enter your PIN to complete.
+      </div>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitContribute()">✈ Submit Payment</button>
+    </footer>
+  </div>
+}
+
+<!-- Loan Application -->
+@if (activeModal === 'loan') {
+  <div class="md-modal lg" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">🏛</span> Loan Application</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body grid-2">
+      <div>
+        <label>Loan Type</label>
+        <select [(ngModel)]="loan.type">
+          <option value="">Select loan type...</option>
+          <option value="normal">Normal Loan</option>
+          <option value="emergency">Emergency Loan</option>
+          <option value="education">Education Loan</option>
+          <option value="asset">Asset Finance</option>
+        </select>
+      </div>
+      <div>
+        <label>Loan Amount (KES)</label>
+        <input type="number" [(ngModel)]="loan.amount" placeholder="Enter amount">
+      </div>
+      <div>
+        <label>Repayment Period (Months)</label>
+        <select [(ngModel)]="loan.period">
+          <option value="">Select period...</option>
+          <option value="6">6 Months</option>
+          <option value="12">12 Months</option>
+          <option value="24">24 Months</option>
+          <option value="36">36 Months</option>
+        </select>
+      </div>
+      <div>
+        <label>Purpose</label>
+        <select [(ngModel)]="loan.purpose">
+          <option value="">Select purpose...</option>
+          <option value="business">Business</option>
+          <option value="education">Education</option>
+          <option value="medical">Medical</option>
+          <option value="personal">Personal</option>
+        </select>
+      </div>
+      <div class="full">
+        <label>Guarantor 1 (Member No.)</label>
+        <input type="text" [(ngModel)]="loan.guarantor1" placeholder="e.g. SP-2024-0123">
+      </div>
+      <div class="full">
+        <label>Guarantor 2 (Member No.)</label>
+        <input type="text" [(ngModel)]="loan.guarantor2" placeholder="e.g. SP-2024-0456">
+      </div>
+      <div class="full">
+        <label>Additional Notes</label>
+        <textarea rows="3" [(ngModel)]="loan.notes" placeholder="Any additional information..."></textarea>
+      </div>
+      <div class="full md-check">
+        <label>
+          <input type="checkbox" [(ngModel)]="loan.agreed">
+          I agree to the <a>loan terms and conditions</a>
+        </label>
+      </div>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitLoan()">✈ Submit Application</button>
+    </footer>
+  </div>
+}
+
+<!-- Withdraw -->
+@if (activeModal === 'withdraw') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">📤</span> Withdrawal Request</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>Withdrawal From</label>
+      <select [(ngModel)]="withdraw.from">
+        <option value="">Select account...</option>
+        <option value="savings">Savings Account</option>
+        <option value="wallet">Wallet</option>
+        <option value="dividends">Dividends</option>
+      </select>
+      <label>Amount (KES)</label>
+      <input type="number" [(ngModel)]="withdraw.amount" placeholder="Enter amount">
+      <label>Withdraw To</label>
+      <select [(ngModel)]="withdraw.to">
+        <option value="">Select method...</option>
+        <option value="mpesa">M-Pesa</option>
+        <option value="bank">Bank Account</option>
+      </select>
+      <label>Reason</label>
+      <textarea rows="3" [(ngModel)]="withdraw.reason" placeholder="Reason for withdrawal..."></textarea>
+      <div class="md-note warn">⚠ Withdrawals are processed within 48 hours and may require admin approval.</div>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitWithdraw()">✈ Submit Request</button>
+    </footer>
+  </div>
+}
+
+<!-- Transfer -->
+@if (activeModal === 'transfer') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">⇄</span> Internal Transfer</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>From Account</label>
+      <select [(ngModel)]="transfer.from">
+        <option value="">Select source...</option>
+        <option value="savings">Savings</option>
+        <option value="wallet">Wallet</option>
+        <option value="shares">Share Capital</option>
+      </select>
+      <label>To Account</label>
+      <select [(ngModel)]="transfer.to">
+        <option value="">Select destination...</option>
+        <option value="savings">Savings</option>
+        <option value="wallet">Wallet</option>
+        <option value="shares">Share Capital</option>
+      </select>
+      <label>Amount (KES)</label>
+      <input type="number" [(ngModel)]="transfer.amount" placeholder="Enter amount">
+      <label>Narration</label>
+      <input type="text" [(ngModel)]="transfer.narration" placeholder="Transfer description...">
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitTransfer()">✈ Transfer Now</button>
+    </footer>
+  </div>
+}
+
+<!-- Repay Loan -->
+@if (activeModal === 'repay') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">💳</span> Repay Loan</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>Select Loan</label>
+      <select [(ngModel)]="repay.loan">
+        <option value="">Choose a loan...</option>
+        @for (l of activeLoans; track l.name) {
+          <option [value]="l.name">{{l.name}} (Outstanding: KES {{(l.total - l.paid).toLocaleString()}})</option>
+        }
+      </select>
+      <label>Amount (KES)</label>
+      <input type="number" [(ngModel)]="repay.amount" placeholder="Enter amount">
+      <label>Payment Method</label>
+      <select [(ngModel)]="repay.method">
+        <option value="">Select method...</option>
+        <option value="mpesa">M-Pesa</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="savings">Deduct from Savings</option>
+      </select>
+      <div class="md-note info">ⓘ Early repayment may attract a small processing fee.</div>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitRepay()">✈ Pay Now</button>
+    </footer>
+  </div>
+}
+
+<!-- Statements -->
+@if (activeModal === 'statements') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">📄</span> Generate Statement</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>Account Type</label>
+      <select [(ngModel)]="statements.type">
+        <option value="savings">Savings</option>
+        <option value="shares">Share Capital</option>
+        <option value="loans">Loans</option>
+        <option value="all">All Accounts</option>
+      </select>
+      <div class="grid-2">
+        <div>
+          <label>From</label>
+          <input type="date" [(ngModel)]="statements.from">
+        </div>
+        <div>
+          <label>To</label>
+          <input type="date" [(ngModel)]="statements.to">
+        </div>
+      </div>
+      <label>Format</label>
+      <select [(ngModel)]="statements.format">
+        <option value="pdf">PDF</option>
+        <option value="excel">Excel</option>
+        <option value="csv">CSV</option>
+      </select>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitStatements()">⬇ Download</button>
+    </footer>
+  </div>
+}
+
+<!-- Support -->
+@if (activeModal === 'support') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">🎧</span> Contact Support</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>Subject</label>
+      <input type="text" [(ngModel)]="support.subject" placeholder="Brief subject...">
+      <label>Category</label>
+      <select [(ngModel)]="support.category">
+        <option value="general">General Inquiry</option>
+        <option value="loan">Loan</option>
+        <option value="savings">Savings</option>
+        <option value="technical">Technical Issue</option>
+      </select>
+      <label>Message</label>
+      <textarea rows="4" [(ngModel)]="support.message" placeholder="Describe your issue..."></textarea>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitSupport()">✈ Send Ticket</button>
+    </footer>
+  </div>
+}
+
+<!-- Profile -->
+@if (activeModal === 'profile') {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">👤</span> My Profile</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <label>Full Name</label>
+      <input type="text" [(ngModel)]="profile.name">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="profile.email">
+      <label>Phone</label>
+      <input type="tel" [(ngModel)]="profile.phone">
+      <label>Address</label>
+      <input type="text" [(ngModel)]="profile.address">
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-primary" (click)="submitProfile()">✓ Save Changes</button>
+    </footer>
+  </div>
+}
+
+<!-- Logout -->
+@if (activeModal === 'logout') {
+  <div class="md-modal sm" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">⏻</span> Sign Out</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body"><p>Are you sure you want to sign out of your account?</p></div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Cancel</button>
+      <button class="md-btn-danger" (click)="confirmLogout()">Sign Out</button>
+    </footer>
+  </div>
+}
+
+<!-- View All Transactions -->
+@if (activeModal === 'viewAllTx') {
+  <div class="md-modal lg" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">🕒</span> All Transactions</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body scroll">
+      <div class="md-table-wrap">
+        <table class="md-table">
+          <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            @for (t of transactions; track t.date + t.description) {
+              <tr>
+                <td><small>{{t.date}}</small></td>
+                <td><span class="md-pill"
+                  [class.ok]="t.type==='Deposit'"
+                  [class.danger]="t.type==='Debit' || t.type==='Withdrawal'"
+                  [class.info]="t.type==='Transfer'"
+                  [class.warn]="t.type==='Withdrawal'">{{t.type}}</span></td>
+                <td>{{t.description}}</td>
+                <td class="amt" [class.pos]="t.amount.startsWith('+')" [class.neg]="t.amount.startsWith('-')">{{t.amount}}</td>
+                <td><span class="md-pill" [class.ok]="t.status==='Completed'" [class.warn]="t.status==='Pending'">{{t.status}}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Close</button>
+      <button class="md-btn-primary" (click)="openModal('statements')">⬇ Export</button>
+    </footer>
+  </div>
+}
+
+<!-- Loan Detail -->
+@if (activeModal === 'loanDetail' && selectedLoan) {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">💼</span> {{selectedLoan.name}} Details</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <ul class="md-detail-list">
+        <li><span>Principal</span><strong>KES {{selectedLoan.total.toLocaleString()}}</strong></li>
+        <li><span>Repaid</span><strong>KES {{selectedLoan.paid.toLocaleString()}}</strong></li>
+        <li><span>Outstanding</span><strong class="text-blue">KES {{(selectedLoan.total - selectedLoan.paid).toLocaleString()}}</strong></li>
+        <li><span>Progress</span><strong>{{loanPct(selectedLoan)}}%</strong></li>
+        <li><span>Due</span><strong>{{selectedLoan.due}}</strong></li>
+        <li><span>Next Installment</span><strong>KES 8,500</strong></li>
+        <li><span>Status</span><span class="md-pill ok">Active</span></li>
+      </ul>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Close</button>
+      <button class="md-btn-primary" (click)="openModal('repay')">💳 Pay Installment</button>
+    </footer>
+  </div>
+}
+
+<!-- Stat Detail -->
+@if (activeModal === 'statDetail' && selectedStat) {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">📊</span> {{selectedStat.label}}</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      <div class="md-stat-detail">
+        <h2>{{selectedStat.amount}}</h2>
+        <p class="md-stat-trend" [class.down]="!selectedStat.trendUp">
+          <span class="arrow">{{ selectedStat.trendUp ? '↑' : '↓' }}</span>{{selectedStat.change}} vs last period
+        </p>
+      </div>
+      <ul class="md-detail-list">
+        <li><span>Current Period</span><strong>{{selectedStat.amount}}</strong></li>
+        <li><span>Last Period</span><strong>KES 218,000</strong></li>
+        <li><span>Change</span><strong [class.text-green]="selectedStat.trendUp" [class.text-red]="!selectedStat.trendUp">{{selectedStat.change}}</strong></li>
+        <li><span>YTD</span><strong>KES 2,156,000</strong></li>
+      </ul>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-outline" (click)="closeModal()">Close</button>
+      <button class="md-btn-primary" (click)="openModal('statements')">View Statement</button>
+    </footer>
+  </div>
+}
+
+<!-- Announcement -->
+@if (activeModal === 'announcement' && selectedAnnouncement) {
+  <div class="md-modal" role="dialog">
+    <header class="md-modal-head">
+      <h5><span class="ico-blue">📣</span> {{selectedAnnouncement.title}}</h5>
+      <button class="md-x" (click)="closeModal()">×</button>
+    </header>
+    <div class="md-modal-body">
+      @if (selectedAnnouncement.badge) { <span class="md-pill new">{{selectedAnnouncement.badge}}</span> }
+      <p style="margin-top:.75rem">{{selectedAnnouncement.body}}</p>
+      <small style="color:#64748b">📅 {{selectedAnnouncement.date}}</small>
+    </div>
+    <footer class="md-modal-foot">
+      <button class="md-btn-primary" (click)="closeModal()">Got it</button>
+    </footer>
+  </div>
+}
+
+
+<!-- ═══════════════════════════ TOAST ═══════════════════════════ -->
+@if (toast) {
+  <div class="md-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'"
+       [class.warn]="toast.type==='warning'" [class.danger]="toast.type==='danger'">
+    <span class="md-toast-ico">
+      @switch (toast.type) {
+        @case ('success') { ✓ }
+        @case ('info')    { ⓘ }
+        @case ('warning') { ⚠ }
+        @case ('danger')  { ✕ }
+      }
+    </span>
+    <span class="md-toast-msg">{{toast.message}}</span>
+    <button class="md-toast-x" (click)="dismissToast()">×</button>
+  </div>
+}

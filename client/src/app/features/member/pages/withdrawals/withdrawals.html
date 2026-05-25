@@ -1,1003 +1,540 @@
-<!-- ============================================
-     FINANCE WITHDRAWALS — Angular v21 Standalone Component
-     Uses @if, @for control flow syntax
-============================================ -->
-
-<div class="p-3 p-lg-4 fiu" style="max-width:1440px;">
-  <!-- HEADER -->
-  <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+<!-- Withdrawals page main content only. No sidebar, no global header. -->
+<section class="wd-shell">
+  <header class="wd-page-head">
     <div>
-      <h1 class="h3 fw-bold mb-1">
-        <i class="fas fa-arrow-up me-2" style="color:var(--red);"></i>
-        <span style="color:var(--red);">Withdrawals</span>
-      </h1>
-      <p class="mb-0" style="color:var(--txm);font-size:14px;">
-        Request withdrawals, track status in real-time, and receive funds directly to M-Pesa, Bank, or Wallet.
-      </p>
+      <!-- <h4 class="wd-title"><span class="wd-title-icon">up</span> My <span>Withdrawals</span></h4> -->
+      <p>Request withdrawals, track status in real-time, and receive funds directly to M-Pesa, Bank, or Wallet.</p>
     </div>
-    <div class="d-flex gap-2">
-      <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="openCalculatorModal()">
-        <i class="fas fa-calculator me-1"></i> Impact Calculator
-      </button>
-      <button class="btn btn-sm text-white rounded-3 fw-semibold"
-              style="background:linear-gradient(135deg, #e53935 0%, #c62828 100%);box-shadow:0 4px 16px rgba(229,57,53,0.25);"
-              (click)="openNewWithdrawalModal()">
-        <i class="fas fa-plus-circle me-1"></i> New Withdrawal
-      </button>
+    <div class="wd-page-actions">
+      <button class="wd-btn-outline" (click)="openModal('policy')">Policy</button>
+      <button class="wd-btn-primary" (click)="openModal('requestWithdrawal')">Request Withdrawal</button>
     </div>
-  </div>
+  </header>
 
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- HERO: AVAILABLE BALANCE -->
-  <!-- ═══════════════════════════════════════════════ -->
-  <div class="hero p-4 p-lg-5 mb-4" style="background:linear-gradient(135deg, #1a1d2e 0%, #0d1117 100%);">
-    <div class="position-relative" style="z-index:1;">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-5">
-          <div style="font-size:12px;color:rgba(255,255,255,0.55);font-weight:500;text-transform:uppercase;letter-spacing:.1em;" class="mb-2">
-            Available for Withdrawal
-          </div>
-          <div class="display-5 fw-bold" style="font-family:var(--mono);letter-spacing:-.04em;">
-            <span style="font-size:.55em;opacity:.7;">KES</span>
-            {{ summary.availableBalance | number:'1.0-0' }}<span style="font-size:.45em;opacity:.4;">.00</span>
-          </div>
-          <button class="btn btn-sm text-white rounded-pill px-4 mt-3"
-                  style="background:linear-gradient(135deg, #e53935 0%, #c62828 100%);font-size:12px;font-weight:600;"
-                  (click)="openNewWithdrawalModal()">
-            <i class="fas fa-arrow-up me-1"></i> Request Withdrawal
-          </button>
+  <!-- Hero card -->
+  <article class="wd-hero">
+    <div class="wd-hero-orb"></div>
+    <div class="wd-hero-inner">
+      <div class="wd-hero-top">
+        <div>
+          <p class="wd-hero-label">AVAILABLE FOR WITHDRAWAL</p>
+          <h2 class="wd-hero-amount"><span>KES</span> {{fmt(available)}}<small>.00</small></h2>
+          <p class="wd-hero-meta"><span>Total: KES {{fmt(totalSavings)}}</span><span>Locked: KES
+              {{fmt(locked)}}</span><span>Notice: {{noticeDays}} days</span></p>
         </div>
-        <div class="col-lg-7">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Withdrawn (2025)</div>
-                <div class="v" style="color:var(--red);">KES {{ summary.withdrawnThisYear | number:'1.0-0' }}</div>
-                <div style="font-size:10px;color:rgba(255,255,255,0.4);">{{ summary.withdrawalCountThisYear }} withdrawals</div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Last Withdrawal</div>
-                <div class="v" style="color:#fff;">KES {{ summary.lastWithdrawalAmount | number:'1.0-0' }}</div>
-                <div style="font-size:10px;color:rgba(255,255,255,0.4);">
-                  {{ summary.lastWithdrawalDate | date:'MMM d, yyyy' }} • {{ summary.lastWithdrawalMethod }}
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="kpi" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);">
-                <div class="k" style="color:rgba(255,255,255,0.50);">Disbursement Methods</div>
-                <div class="d-flex gap-2 mt-1">
-                  <span class="b" style="background:rgba(0,200,83,0.15);color:var(--grn);border:1px solid rgba(0,200,83,0.25);font-size:10px;">
-                    <i class="fas fa-mobile-alt"></i> M-Pesa
-                  </span>
-                  <span class="b" style="background:rgba(2,136,209,0.15);color:var(--blu);border:1px solid rgba(2,136,209,0.25);font-size:10px;">
-                    <i class="fas fa-university"></i> Bank
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="wd-hero-actions">
+          <button (click)="openModal('requestWithdrawal')">New Request</button>
+          <button (click)="openModal('impactCalculator')">Calculator</button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- PENDING WITHDRAWALS -->
-  <!-- ═══════════════════════════════════════════════ -->
-  @if (pendingWithdrawals.length > 0) {
-    <div class="mb-4">
-      <h5 class="fw-bold mb-3">
-        <i class="fas fa-clock me-2" style="color:var(--ylw);"></i>Pending Withdrawals
-      </h5>
-      <div class="row g-3">
-        @for (withdrawal of pendingWithdrawals; track withdrawal.id) {
-          <div class="col-lg-6">
-            <div class="c withdrawal-card pending p-0" (click)="openWithdrawalDetail(withdrawal)">
-              <div class="p-3 p-lg-4">
-                <!-- Header -->
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                  <div>
-                    <div class="fw-bold" style="font-size:20px;font-family:var(--mono);color:var(--ylw);">
-                      KES {{ withdrawal.amount | number:'1.0-0' }}
-                    </div>
-                    <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">{{ withdrawal.reference }}</div>
-                    <span class="b mt-1" [style.background]="getStatusBg(withdrawal.status)"
-                          [style.color]="getStatusColor(withdrawal.status)"
-                          [style.border]="'1px solid ' + getStatusBorder(withdrawal.status)">
-                      <i class="fas" [ngClass]="getStatusIcon(withdrawal.status)"></i>
-                      {{ withdrawal.status === 'pending' ? 'Pending Approval' : (withdrawal.status | titlecase) }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Progress Steps -->
-                <div class="d-flex align-items-center justify-content-between mb-3 px-2">
-                  @for (step of [1,2,3,4]; track step; let i = $index) {
-                    <div class="d-flex flex-column align-items-center" style="flex:1;">
-                      <div class="step-dot"
-                           [class.done]="step < withdrawal.currentStep"
-                           [class.active]="step === withdrawal.currentStep"
-                           [class.pending]="step > withdrawal.currentStep">
-                        @if (step < withdrawal.currentStep) {
-                          <i class="fas fa-check" style="font-size:10px;"></i>
-                        } @else if (step === withdrawal.currentStep) {
-                          <i class="fas fa-hourglass-half" style="font-size:10px;"></i>
-                        } @else {
-                          <span style="font-size:10px;">{{ step }}</span>
-                        }
-                      </div>
-                      <div class="step-label" [class.active]="step === withdrawal.currentStep">
-                        @switch (step) {
-                          @case (1) { Submitted }
-                          @case (2) { Admin Review }
-                          @case (3) { Disburse }
-                          @case (4) { Done }
-                        }
-                      </div>
-                    </div>
-                    @if (i < 3) {
-                      <div class="step-line" [class.done]="step < withdrawal.currentStep"></div>
-                    }
-                  }
-                </div>
-
-                <!-- Details -->
-                <div class="d-flex flex-wrap gap-3" style="font-size:12px;color:var(--txm);">
-                  <span><strong>Submitted:</strong> {{ withdrawal.submittedDate | date:'MMM d, yyyy' }}</span>
-                  <span><strong>Via:</strong> 
-                    <i class="fas" [ngClass]="getMethodIcon(withdrawal.method)" [style.color]="getMethodColor(withdrawal.method)"></i>
-                    {{ withdrawal.method === 'mpesa' ? 'M-Pesa' : 'Bank' }}
-                  </span>
-                  <span><strong>Reason:</strong> {{ withdrawal.reason }}</span>
-                  @if (withdrawal.estimatedCompletion) {
-                    <span><strong>Est. Complete:</strong> {{ withdrawal.estimatedCompletion | date:'MMM d, yyyy' }}</span>
-                  }
-                </div>
-              </div>
-
-              <!-- Notice Period Progress -->
-              @if (withdrawal.noticePeriodRemaining) {
-                <div class="p-3 border-top" style="background:rgba(249,168,37,0.04);border-color:rgba(249,168,37,0.12)!important;">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="notice-circle">
-                      <svg width="50" height="50" viewBox="0 0 50 50">
-                        <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(249,168,37,0.2)" stroke-width="4"/>
-                        <circle cx="25" cy="25" r="20" fill="none" stroke="var(--ylw)" stroke-width="4"
-                                stroke-dasharray="125.6" [attr.stroke-dashoffset]="125.6 * (1 - getNoticePeriodProgress(withdrawal) / 100)"
-                                transform="rotate(-90 25 25)" stroke-linecap="round"/>
-                      </svg>
-                      <div class="notice-days">{{ withdrawal.noticePeriodRemaining }}</div>
-                    </div>
-                    <div>
-                      <div class="fw-semibold" style="font-size:13px;color:var(--ylw);">
-                        {{ withdrawal.noticePeriodRemaining }} days remaining
-                      </div>
-                      <div style="font-size:11px;color:var(--txm);">
-                        of {{ withdrawal.noticePeriodDays }}-day notice period (Admin policy)
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
+      <div class="wd-hero-stats">
+        @for (s of heroStats; track s.label) {
+        <button class="wd-hero-stat tone-{{s.tone}}" (click)="openModal(s.modal)">
+          <span>{{s.label}}</span>
+          <strong>{{s.value}}</strong>
+          <small>{{s.sub}}</small>
+        </button>
         }
       </div>
     </div>
-  }
+  </article>
 
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- RECENT COMPLETED / REJECTED -->
-  <!-- ═══════════════════════════════════════════════ -->
-  <div class="row g-4 mb-4">
-    <!-- Recent Completed -->
-    @if (completedWithdrawals.length > 0) {
-      <div class="col-lg-6">
-        <div class="c withdrawal-card completed p-0" (click)="openWithdrawalDetail(completedWithdrawals[0])">
-          <div class="p-3 p-lg-4">
-            <div class="d-flex align-items-start justify-content-between mb-3">
-              <div>
-                <div class="fw-bold" style="font-size:20px;font-family:var(--mono);">
-                  KES {{ completedWithdrawals[0].amount | number:'1.0-0' }}
-                </div>
-                <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">{{ completedWithdrawals[0].reference }}</div>
-                <span class="b mt-1" style="background:rgba(0,200,83,0.08);color:var(--grn);border:1px solid rgba(0,200,83,0.2);">
-                  <i class="fas fa-check-circle"></i> Completed
-                </span>
-              </div>
-            </div>
-            <div class="d-flex align-items-center justify-content-between mb-3">
-              @for (step of ['Submitted', 'Approved', 'Disbursed', 'Done']; track step; let i = $index) {
-                <div class="step-mini done">
-                  <i class="fas fa-check" style="font-size:8px;"></i>
-                </div>
-                @if (i < 3) {
-                  <div class="step-line-mini done"></div>
-                }
-              }
-            </div>
-            <div class="d-flex flex-wrap gap-3" style="font-size:12px;color:var(--txm);">
-              <span><strong>Completed:</strong> {{ completedWithdrawals[0].completedDate | date:'MMM d, yyyy' }}</span>
-              <span><strong>Via:</strong>
-                <i class="fas" [ngClass]="getMethodIcon(completedWithdrawals[0].method)" [style.color]="getMethodColor(completedWithdrawals[0].method)"></i>
-                {{ completedWithdrawals[0].method === 'mpesa' ? 'M-Pesa' : 'Bank' }}
+  <!-- Active requests -->
+  <section class="wd-section">
+    <header class="wd-section-head">
+      <h5>Active Requests</h5>
+      <select [(ngModel)]="activeStatusFilter">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </header>
+
+    <div class="wd-requests">
+      @for (r of visibleRequests; track r.reference) {
+      <article class="wd-request {{r.status}}" (click)="openRequestDetail(r)">
+        <div class="wd-request-main">
+          <div class="wd-request-left">
+            <span class="wd-req-icon {{r.status}}">{{r.status === 'pending' ? '!' : r.status === 'completed' ? 'ok' :
+              'x'}}</span>
+            <div>
+              <strong>KES {{fmt(r.amount)}}</strong>
+              <small>{{r.reference}}</small>
+              <span class="wd-pill" [class.warn]="r.status==='pending'" [class.ok]="r.status==='completed'"
+                [class.danger]="r.status==='rejected'">
+                {{r.status === 'pending' ? 'Pending Approval' : r.status === 'completed' ? 'Completed' : 'Rejected'}}
               </span>
-              <span><strong>Fee:</strong> KES {{ completedWithdrawals[0].fee }}</span>
             </div>
           </div>
-        </div>
-      </div>
-    }
 
-    <!-- Recent Rejected -->
-    @if (rejectedWithdrawals.length > 0) {
-      <div class="col-lg-6">
-        <div class="c withdrawal-card rejected p-0" (click)="openWithdrawalDetail(rejectedWithdrawals[0])">
-          <div class="p-3 p-lg-4">
-            <div class="d-flex align-items-start justify-content-between mb-3">
-              <div>
-                <div class="fw-bold" style="font-size:20px;font-family:var(--mono);color:var(--red);">
-                  KES {{ rejectedWithdrawals[0].amount | number:'1.0-0' }}
-                </div>
-                <div style="font-size:11px;font-family:var(--mono);color:var(--txm);">{{ rejectedWithdrawals[0].reference }}</div>
-                <span class="b mt-1" style="background:rgba(229,57,53,0.06);color:var(--red);border:1px solid rgba(229,57,53,0.18);">
-                  <i class="fas fa-times-circle"></i> Rejected
-                </span>
-              </div>
+          @if (r.status !== 'rejected') {
+          <div class="wd-steps" [class.done]="r.status === 'completed'">
+            @for (step of r.status === 'pending' ? ['Submitted','Admin Review','Disburse','Done'] :
+            ['Submitted','Approved','Disbursed','Done']; track step; let i = $index) {
+            <div class="wd-step" [class.complete]="r.status==='completed' || i===0"
+              [class.active]="r.status==='pending' && i===1">
+              <span>{{r.status==='completed' || i===0 ? 'ok' : i+1}}</span>
+              <small>{{step}}</small>
             </div>
-            @if (rejectedWithdrawals[0].rejectionReason) {
-              <div class="alert border-0 mb-3 py-2 px-3" style="background:rgba(229,57,53,0.04);border-radius:10px;font-size:12px;color:var(--red);">
-                <i class="fas fa-exclamation-triangle me-1"></i> <strong>Reason:</strong> {{ rejectedWithdrawals[0].rejectionReason }}
-              </div>
             }
-            <div class="d-flex align-items-center justify-content-between" style="font-size:12px;">
-              <span style="color:var(--txm);">{{ rejectedWithdrawals[0].submittedDate | date:'MMM d, yyyy' }}</span>
-              <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="$event.stopPropagation(); openResubmitModal(rejectedWithdrawals[0])">
-                <i class="fas fa-redo me-1"></i> Resubmit
-              </button>
-            </div>
+          </div>
+          }
+
+          @if (r.status === 'rejected') {
+          <div class="wd-reject-note"><strong>Reason:</strong> {{r.rejectionReason}}</div>
+          }
+
+          <div class="wd-request-meta">
+            @if (r.status === 'pending') {
+            <p><span>Submitted:</span> <strong>{{r.date}}</strong></p>
+            <p><span>Via:</span> <strong>{{r.method}}</strong></p>
+            <p><span>Reason:</span> <strong>{{r.reason}}</strong></p>
+            <p><span>Est. Complete:</span> <strong class="text-amber">{{r.estimate}}</strong></p>
+            }
+            @if (r.status === 'completed') {
+            <p><span>Completed:</span> <strong class="text-green">{{r.completedDate}}</strong></p>
+            <p><span>Via:</span> <strong>{{r.method}}</strong></p>
+            <p><span>Fee:</span> <strong>KES {{r.fee}}</strong></p>
+            }
+            @if (r.status === 'rejected') {
+            <p>{{r.date}}</p>
+            }
           </div>
         </div>
+
+        @if (r.status === 'pending') {
+        <div class="wd-request-extra">
+          <div class="wd-count"><span>{{r.daysRemaining}}</span></div>
+          <div><strong>{{r.daysRemaining}} days remaining</strong><small>of 14-day notice period (Admin policy)</small>
+          </div>
+          <div class="wd-card-actions">
+            <button class="wd-btn-danger-outline"
+              (click)="$event.stopPropagation(); selectedRequest = r; openModal('cancelRequest')">Cancel</button>
+            <button class="wd-btn-outline sm" (click)="$event.stopPropagation(); openRequestDetail(r)">Details</button>
+          </div>
+        </div>
+        }
+        @if (r.status === 'rejected') {
+        <div class="wd-card-actions rejected-actions">
+          <button class="wd-btn-primary sm"
+            (click)="$event.stopPropagation(); selectedRequest = r; resubmitRequest()">Re-submit</button>
+        </div>
+        }
+      </article>
+      }
+    </div>
+  </section>
+
+  <!-- Chart + side panels -->
+  <div class="wd-grid">
+    <article class="wd-card">
+      <header class="wd-card-head">
+        <h6>Withdrawal History</h6>
+        <div class="wd-seg">
+          @for (r of ['6M','1Y','All']; track r) { <button [class.on]="chartRange===r"
+            (click)="setRange($any(r))">{{r}}</button> }
+        </div>
+      </header>
+      <div class="wd-chart"><canvas #historyCanvas></canvas></div>
+      <div class="wd-chart-stats">
+        <div><small>Total Withdrawn (All Time)</small><strong class="text-blue">KES 85,000</strong></div>
+        <div><small>Avg. Withdrawal</small><strong>KES 12,143</strong></div>
+        <div><small>Total Fees Paid</small><strong class="text-red">KES 350</strong></div>
       </div>
-    }
+    </article>
+
+    <aside class="wd-side">
+      <button class="wd-side-card" (click)="openModal('policy')">
+        <h6>Withdrawal Rules <small>Admin-configured</small></h6>
+        <ul>
+          <li><span>Notice Period</span><strong>14 days</strong></li>
+          <li><span>Min. Amount</span><strong>KES 1,000</strong></li>
+          <li><span>Max. per Month</span><strong>KES 100,000</strong></li>
+          <li><span>Processing Fee</span><strong class="text-red">KES 50</strong></li>
+          <li><span>Disbursement</span><strong>M-Pesa / Bank EFT</strong></li>
+        </ul>
+        <p>Tap for full policy</p>
+      </button>
+
+      <button class="wd-side-card" (click)="openModal('impactCalculator')">
+        <h6>Impact Calculator <small>See how withdrawal affects you</small></h6>
+        <p>Check how a withdrawal impacts your loan eligibility, dividends, and savings goals before you request.</p>
+        <strong>Open Calculator</strong>
+      </button>
+
+      <button class="wd-side-card" (click)="openModal('methodDetails')">
+        <h6>Withdrawal Methods Used</h6>
+        <div class="wd-method-bars">
+          <div>
+            <p><span>M-Pesa</span><strong>71% (5)</strong></p>
+            <div><i style="width:71%"></i></div>
+          </div>
+          <div>
+            <p><span>Bank EFT</span><strong>29% (2)</strong></p>
+            <div><i class="bank" style="width:29%"></i></div>
+          </div>
+        </div>
+      </button>
+    </aside>
   </div>
 
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- STATS & RULES SECTION -->
-  <!-- ═══════════════════════════════════════════════ -->
-  <div class="row g-4 mb-4">
-    <!-- History Summary -->
-    <div class="col-lg-6">
-      <div class="c">
-        <div class="p-3 border-bottom d-flex align-items-center justify-content-between" style="border-color:rgba(26,29,46,0.06)!important;">
-          <h6 class="fw-bold mb-0">
-            <i class="fas fa-chart-bar me-2" style="color:var(--pur);"></i> Withdrawal History
-          </h6>
-          <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="exportHistory()">
-            <i class="fas fa-download"></i>
-          </button>
-        </div>
-        <div class="p-3">
-          <div class="row g-3 text-center">
-            <div class="col-4">
-              <div class="kpi">
-                <div class="k">Total Withdrawn (All Time)</div>
-                <div class="v" style="color:var(--red);">KES {{ summary.totalWithdrawnAllTime | number:'1.0-0' }}</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="kpi">
-                <div class="k">Avg. Withdrawal</div>
-                <div class="v">KES {{ summary.avgWithdrawal | number:'1.0-0' }}</div>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="kpi">
-                <div class="k">Total Fees Paid</div>
-                <div class="v" style="color:var(--txm);">KES {{ summary.totalFeesPaid | number:'1.0-0' }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+  <!-- History table -->
+  <article class="wd-card">
+    <header class="wd-card-head table-head">
+      <h6>All Withdrawals</h6>
+      <div class="wd-table-actions">
+        <select [(ngModel)]="tableRange">
+          <option>Last 6 Months</option>
+          <option>2025</option>
+          <option>2024</option>
+          <option>All Time</option>
+        </select>
+        <button class="wd-icon-btn" (click)="openModal('exportHistory')">DL</button>
       </div>
-    </div>
-
-    <!-- Rules & Calculator -->
-    <div class="col-lg-6">
-      <div class="row g-3">
-        <!-- Rules Card -->
-        <div class="col-12">
-          <div class="c rules-card" (click)="openPolicyModal()">
-            <div class="p-3">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="fw-bold" style="font-size:13px;">
-                  <i class="fas fa-gavel me-2" style="color:var(--ylw);"></i>Withdrawal Rules
-                </span>
-                <span class="b" style="background:rgba(249,168,37,0.08);color:var(--ylw);border:1px solid rgba(249,168,37,0.18);font-size:9px;">
-                  Admin-configured
-                </span>
-              </div>
-              <div class="row g-2" style="font-size:12px;">
-                <div class="col-6">
-                  <span style="color:var(--txm);">Notice Period</span>
-                  <span class="float-end fw-bold">{{ rules.noticePeriod }} days</span>
-                </div>
-                <div class="col-6">
-                  <span style="color:var(--txm);">Min. Amount</span>
-                  <span class="float-end fw-bold">KES {{ rules.minAmount | number:'1.0-0' }}</span>
-                </div>
-                <div class="col-6">
-                  <span style="color:var(--txm);">Max. per Month</span>
-                  <span class="float-end fw-bold">KES {{ rules.maxPerMonth | number:'1.0-0' }}</span>
-                </div>
-                <div class="col-6">
-                  <span style="color:var(--txm);">Processing Fee</span>
-                  <span class="float-end fw-bold">KES {{ rules.processingFee }}</span>
-                </div>
-                <div class="col-12">
-                  <span style="color:var(--txm);">Disbursement</span>
-                  <span class="float-end fw-bold">M-Pesa / Bank EFT</span>
-                </div>
-              </div>
-              <div class="text-center mt-2">
-                <small style="color:var(--pri);cursor:pointer;">
-                  <i class="fas fa-info-circle me-1"></i> Tap for full policy
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Calculator Card -->
-        <div class="col-6">
-          <div class="c calc-card" (click)="openCalculatorModal()">
-            <div class="p-3 text-center">
-              <div class="calc-icon">
-                <i class="fas fa-calculator"></i>
-              </div>
-              <div class="fw-bold" style="font-size:13px;">Impact Calculator</div>
-              <div style="font-size:11px;color:var(--txm);">See how withdrawal affects you</div>
-              <div style="font-size:10px;color:var(--pri);margin-top:4px;">
-                <i class="fas fa-arrow-right"></i> Open Calculator
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Methods Used Card -->
-        <div class="col-6">
-          <div class="c">
-            <div class="p-3">
-              <div class="fw-bold mb-2" style="font-size:11px;color:var(--txm);">
-                <i class="fas fa-pie-chart me-1"></i> Withdrawal Methods Used
-              </div>
-              <div class="d-flex flex-column gap-2">
-                <div class="method-bar">
-                  <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:11px;">
-                    <span><i class="fas fa-mobile-alt me-1" style="color:var(--grn);"></i> M-Pesa</span>
-                    <span class="fw-bold">{{ mpesaPercentage }}% ({{ mpesaWithdrawalsCount }})</span>
-                  </div>
-                  <div class="pr" style="height:4px;">
-                    <div class="pf" [style.width.%]="mpesaPercentage" style="background:var(--grn);"></div>
-                  </div>
-                </div>
-                <div class="method-bar">
-                  <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:11px;">
-                    <span><i class="fas fa-university me-1" style="color:var(--blu);"></i> Bank EFT</span>
-                    <span class="fw-bold">{{ bankPercentage }}% ({{ bankWithdrawalsCount }})</span>
-                  </div>
-                  <div class="pr" style="height:4px;">
-                    <div class="pf" [style.width.%]="bankPercentage" style="background:var(--blu);"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- WITHDRAWAL HISTORY TABLE -->
-  <!-- ═══════════════════════════════════════════════ -->
-  <div class="c">
-    <div class="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3" style="border-color:rgba(26,29,46,0.06)!important;">
-      <h6 class="fw-bold mb-0">
-        <i class="fas fa-history me-2" style="color:var(--txm);"></i> All Withdrawals
-      </h6>
-      <div class="d-flex gap-2">
-        <button class="pill" [class.act]="statusFilter === 'all'" (click)="setStatusFilter('all')">
-          All ({{ withdrawals.length }})
-        </button>
-        <button class="pill" [class.act]="statusFilter === 'pending'" (click)="setStatusFilter('pending')">
-          <i class="fas fa-clock me-1" style="color:var(--ylw);"></i> Pending
-        </button>
-        <button class="pill" [class.act]="statusFilter === 'completed'" (click)="setStatusFilter('completed')">
-          <i class="fas fa-check-circle me-1" style="color:var(--grn);"></i> Completed
-        </button>
-        <button class="pill" [class.act]="statusFilter === 'rejected'" (click)="setStatusFilter('rejected')">
-          <i class="fas fa-times-circle me-1" style="color:var(--red);"></i> Rejected
-        </button>
-      </div>
-    </div>
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" style="font-size:13px;">
+    </header>
+    <div class="wd-table-wrap">
+      <table class="wd-table">
         <thead>
-          <tr style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--txm);background:rgba(26,29,46,0.02);">
-            <th class="border-0 py-3 px-3">Date</th>
-            <th class="border-0">Reference</th>
-            <th class="border-0">Account</th>
-            <th class="border-0">Amount</th>
-            <th class="border-0">Fee</th>
-            <th class="border-0">Method</th>
-            <th class="border-0">Status</th>
-            <th class="border-0">Action</th>
+          <tr>
+            <th>Date</th>
+            <th>Reference</th>
+            <th>Account</th>
+            <th>Amount</th>
+            <th>Fee</th>
+            <th>Method</th>
+            <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          @for (withdrawal of displayedWithdrawals; track withdrawal.id) {
-            <tr class="withdrawal-row" (click)="openWithdrawalDetail(withdrawal)">
-              <td class="px-3">{{ withdrawal.submittedDate | date:'MMM d, yyyy' }}</td>
-              <td style="font-family:var(--mono);font-size:12px;color:var(--pri);">{{ withdrawal.reference }}</td>
-              <td>{{ withdrawal.account }}</td>
-              <td class="fw-bold" style="font-family:var(--mono);color:var(--red);">- KES {{ withdrawal.amount | number:'1.0-0' }}</td>
-              <td style="font-family:var(--mono);color:var(--txm);">
-                @if (withdrawal.fee > 0) {
-                  KES {{ withdrawal.fee }}
-                } @else {
-                  —
-                }
-              </td>
-              <td>
-                <span class="d-flex align-items-center gap-1">
-                  <i class="fas" [ngClass]="getMethodIcon(withdrawal.method)" [style.color]="getMethodColor(withdrawal.method)"></i>
-                  {{ withdrawal.method === 'mpesa' ? 'M-Pesa' : 'Bank' }}
-                </span>
-              </td>
-              <td>
-                <span class="b" [style.background]="getStatusBg(withdrawal.status)"
-                      [style.color]="getStatusColor(withdrawal.status)"
-                      [style.border]="'1px solid ' + getStatusBorder(withdrawal.status)">
-                  <i class="fas" [ngClass]="getStatusIcon(withdrawal.status)"></i>
-                  {{ withdrawal.status | titlecase }}
-                </span>
-              </td>
-              <td>
-                <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="$event.stopPropagation(); openWithdrawalDetail(withdrawal)">
-                  <i class="fas fa-eye"></i>
-                </button>
-              </td>
-            </tr>
+          @for (w of withdrawals; track w.reference) {
+          <tr (click)="openRowDetail(w)">
+            <td>{{w.date}}</td>
+            <td><strong class="mono" [class.text-green]="w.status==='Completed'"
+                [class.text-red]="w.status==='Rejected'"
+                [class.text-blue]="w.status==='Pending'">{{w.reference}}</strong></td>
+            <td>{{w.account}}</td>
+            <td><strong class="wd-amount" [class.rejected]="w.status==='Rejected'">- KES {{fmt(w.amount)}}</strong></td>
+            <td>{{w.fee ? 'KES ' + w.fee : '-'}}</td>
+            <td>{{w.method}}</td>
+            <td><span class="wd-pill" [class.warn]="w.status==='Pending'" [class.ok]="w.status==='Completed'"
+                [class.danger]="w.status==='Rejected'">{{w.status}}</span></td>
+            <td>
+              @if (w.status === 'Pending') { <button class="wd-icon-btn ghost"
+                (click)="$event.stopPropagation(); openRowDetail(w)">View</button> }
+              @if (w.status === 'Completed') { <button class="wd-icon-btn ghost"
+                (click)="$event.stopPropagation(); selectedRow = w; openModal('receipt')">DL</button> }
+              @if (w.status === 'Rejected') { <button class="wd-icon-btn ghost danger"
+                (click)="$event.stopPropagation(); resubmitRequest()">Retry</button> }
+            </td>
+          </tr>
           }
         </tbody>
       </table>
     </div>
-    <div class="p-3 border-top d-flex justify-content-between align-items-center" style="border-color:rgba(26,29,46,0.06)!important;font-size:12px;">
-      <span style="color:var(--txm);">Showing {{ displayedWithdrawals.length }} of {{ filteredWithdrawals.length }} withdrawals</span>
-      @if (displayedWithdrawals.length < filteredWithdrawals.length) {
-        <button class="btn btn-sm btn-link" (click)="showAllHistory()">
-          View All <i class="fas fa-arrow-right ms-1"></i>
-        </button>
-      }
+    <footer class="wd-table-foot">
+      <small>Showing 4 of 7 withdrawals</small>
+      <div><button [disabled]="currentPage===1" (click)="currentPage=currentPage-1">&lt;</button><button
+          [class.on]="currentPage===1" (click)="currentPage=1">1</button><button [class.on]="currentPage===2"
+          (click)="currentPage=2">2</button><button (click)="currentPage=currentPage+1">&gt;</button></div>
+    </footer>
+  </article>
+</section>
+
+<!-- Modals -->
+@if (activeModal) { <div class="wd-overlay" (click)="closeModal()"></div> }
+
+<!-- Request Withdrawal -->
+@if (activeModal === 'requestWithdrawal' || activeModal === 'resubmit') {
+<div class="wd-modal lg" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Request Withdrawal</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body">
+    <p class="muted">Funds will be disbursed automatically to your selected method after admin approval.</p>
+    <div class="wd-balance-row">
+      <div><small>Total Balance</small><strong>KES {{fmt(totalSavings)}}</strong></div>
+      <div class="locked"><small>Locked</small><strong>KES {{fmt(locked)}}</strong></div>
+      <div class="ok"><small>Withdrawable</small><strong>KES {{fmt(available)}}</strong></div>
     </div>
+    <div class="wd-form-grid">
+      <div><label>Withdraw From *</label><select [(ngModel)]="requestForm.from">
+          <option value="ordinary">Ordinary Savings - Avail: KES 73,750</option>
+          <option value="education">Education Fund - Avail: KES 5,000</option>
+          <option value="holiday">Holiday Savings - Avail: KES 15,000</option>
+        </select></div>
+      <div><label>Amount (KES) *</label>
+        <div class="wd-input-group"><span>KES</span><input type="number" [(ngModel)]="requestForm.amount"
+            placeholder="0.00"></div><small class="muted">Min: KES 1,000 • Max: KES 100,000/month • Fee: KES 50</small>
+      </div>
+    </div>
+    <label>Reason *</label><select [(ngModel)]="requestForm.reason">
+      <option value="">Select reason...</option>
+      <option>School Fees</option>
+      <option>Medical</option>
+      <option>Home Construction</option>
+      <option>Emergency</option>
+      <option>Other</option>
+    </select>
+    <label>Receive Via *</label>
+    <div class="wd-method-choice"><label [class.selected]="requestForm.method==='mpesa'"><input type="radio"
+          value="mpesa" [(ngModel)]="requestForm.method"
+          hidden><span>MP</span><strong>M-Pesa</strong><small>Auto-disbursement</small><em>Instant on
+          approval</em></label><label [class.selected]="requestForm.method==='bank'"><input type="radio" value="bank"
+          [(ngModel)]="requestForm.method" hidden><span>BK</span><strong>Bank
+          EFT</strong><small>Auto-transfer</small><em>1-2 business days</em></label></div>
+    @if (requestForm.method === 'mpesa') {
+      <label for="mpesaNumber">M-Pesa Number</label>
+      <div class="wd-input-group"><span>KE</span><input id="mpesaNumber" [(ngModel)]="requestForm.phone" placeholder="07XXXXXXXX"></div>
+      <div class="wd-note ok">Funds sent automatically to your M-Pesa once admin approves. No action needed from you.
+      </div>
+    }
+    @if (requestForm.method === 'bank') { <div class="wd-form-grid">
+      <div><label for="bankName">Bank</label><select id="bankName" [(ngModel)]="requestForm.bank">
+          <option>Co-operative Bank</option>
+          <option>KCB</option>
+          <option>Equity Bank</option>
+        </select></div>
+      <div><label for="bankAccountNo">Account No.</label><input id="bankAccountNo" [(ngModel)]="requestForm.accountNo" placeholder="1234567890"></div>
+    </div> }
   </div>
+  <footer class="wd-modal-foot"><button class="wd-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="wd-btn-primary" (click)="activeModal === 'resubmit' ? submitResubmission() : submitRequest()">Submit
+      Request</button></footer>
 </div>
-
-
-<!-- ═════════════════════════════════════════════════════════════ -->
-<!-- MODALS -->
-<!-- ═════════════════════════════════════════════════════════════ -->
-
-<!-- NEW WITHDRAWAL MODAL -->
-@if (newWithdrawalModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;max-height:90vh;">
-        <div style="height:3px;background:linear-gradient(135deg, #e53935 0%, #c62828 100%);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <div>
-            <h5 class="modal-title fw-bold">
-              <i class="fas fa-arrow-up me-2" style="color:var(--red);"></i>New Withdrawal Request
-            </h5>
-            <p class="mb-0 mt-1" style="font-size:12px;color:var(--txm);">
-              Request a withdrawal from your savings account
-            </p>
-          </div>
-          <button type="button" class="btn-close" (click)="closeNewWithdrawalModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <!-- Step 1: Select Account -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">
-              <i class="fas fa-wallet me-2" style="color:var(--pri);"></i>Select Account <span class="text-danger">*</span>
-            </label>
-            <div class="row g-2">
-              @for (account of savingsAccounts; track account.id) {
-                <div class="col-md-4">
-                  <div class="account-option" [class.selected]="newWithdrawalData.account === account.id"
-                       (click)="newWithdrawalData.account = account.id">
-                    <div class="fw-semibold" style="font-size:13px;">{{ account.name }}</div>
-                    <div style="font-size:11px;color:var(--txm);">
-                      Available: <span class="fw-bold" style="color:var(--grn);">KES {{ account.availableBalance | number:'1.0-0' }}</span>
-                    </div>
-                    @if (account.lockedAmount > 0) {
-                      <div style="font-size:10px;color:var(--ylw);">
-                        <i class="fas fa-lock me-1"></i>KES {{ account.lockedAmount | number:'1.0-0' }} locked
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Step 2: Amount -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">
-              <i class="fas fa-coins me-2" style="color:var(--ylw);"></i>Withdrawal Amount <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text fw-bold" style="border-radius:12px 0 0 12px;background:var(--inp);">KES</span>
-              <input type="number" class="form-control" [(ngModel)]="newWithdrawalData.amount"
-                     [max]="selectedAccount?.availableBalance || 0"
-                     [min]="rules.minAmount"
-                     placeholder="0"
-                     style="border-radius:0;font-family:var(--mono);font-size:18px;">
-              <button class="btn btn-outline-secondary" style="border-radius:0 12px 12px 0;" (click)="setMaxAmount()">
-                MAX
-              </button>
-            </div>
-            <div class="d-flex justify-content-between mt-1" style="font-size:11px;">
-              <span style="color:var(--txm);">Min: KES {{ rules.minAmount | number:'1.0-0' }}</span>
-              <span style="color:var(--txm);">Max: KES {{ (selectedAccount?.availableBalance || 0) | number:'1.0-0' }}</span>
-            </div>
-            @if (newWithdrawalData.amount > 0) {
-              <div class="alert border-0 mt-2 mb-0 py-2 px-3" style="background:rgba(249,168,37,0.06);border-radius:10px;font-size:12px;">
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">Processing Fee:</span>
-                  <span class="fw-bold">KES {{ rules.processingFee }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span style="color:var(--txm);">You'll Receive:</span>
-                  <span class="fw-bold" style="color:var(--grn);">KES {{ (newWithdrawalData.amount - rules.processingFee) | number:'1.0-0' }}</span>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Step 3: Disbursement Method -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">
-              <i class="fas fa-hand-holding-usd me-2" style="color:var(--grn);"></i>Disbursement Method <span class="text-danger">*</span>
-            </label>
-            <div class="row g-2 mb-2">
-              <div class="col-6">
-                <div class="method-option" [class.selected]="newWithdrawalData.method === 'mpesa'"
-                     (click)="setWithdrawalMethod('mpesa')">
-                  <div class="method-icon" style="background:rgba(0,200,83,0.08);color:var(--grn);">
-                    <i class="fas fa-mobile-alt"></i>
-                  </div>
-                  <div>
-                    <div class="fw-bold" style="font-size:13px;">M-Pesa</div>
-                    <div style="font-size:11px;color:var(--txm);">Instant after approval</div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="method-option" [class.selected]="newWithdrawalData.method === 'bank'"
-                     (click)="setWithdrawalMethod('bank')">
-                  <div class="method-icon" style="background:rgba(2,136,209,0.06);color:var(--blu);">
-                    <i class="fas fa-university"></i>
-                  </div>
-                  <div>
-                    <div class="fw-bold" style="font-size:13px;">Bank Transfer</div>
-                    <div style="font-size:11px;color:var(--txm);">1-2 business days</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <select class="form-select" style="border-radius:12px;" [(ngModel)]="newWithdrawalData.methodId">
-              @for (method of disbursementMethods; track method.id) {
-                @if (method.type === newWithdrawalData.method) {
-                  <option [value]="method.id">{{ method.name }} - {{ method.details }}</option>
-                }
-              }
-            </select>
-          </div>
-
-          <!-- Step 4: Reason -->
-          <div class="mb-4">
-            <label class="form-label fw-semibold" style="font-size:13px;">
-              <i class="fas fa-comment-alt me-2" style="color:var(--blu);"></i>Reason for Withdrawal <span class="text-danger">*</span>
-            </label>
-            <select class="form-select mb-2" style="border-radius:12px;" [(ngModel)]="newWithdrawalData.reason">
-              <option value="">Select reason...</option>
-              <option value="School Fees">School Fees</option>
-              <option value="Medical">Medical Expenses</option>
-              <option value="Business">Business/Investment</option>
-              <option value="Personal">Personal Use</option>
-              <option value="Emergency">Emergency</option>
-              <option value="Other">Other (specify below)</option>
-            </select>
-            @if (newWithdrawalData.reason === 'Other') {
-              <input type="text" class="form-control" style="border-radius:12px;" 
-                     placeholder="Please specify..." [(ngModel)]="newWithdrawalData.customReason">
-            }
-          </div>
-
-          <!-- Notice Period Warning -->
-          <div class="alert border-0 mb-4" style="background:rgba(249,168,37,0.06);border-radius:12px;border:1px solid rgba(249,168,37,0.18)!important;">
-            <div class="d-flex align-items-start gap-3">
-              <i class="fas fa-clock fa-lg" style="color:var(--ylw);margin-top:2px;"></i>
-              <div>
-                <div class="fw-semibold" style="color:var(--ylw);">{{ rules.noticePeriod }}-Day Notice Period</div>
-                <div style="font-size:12px;color:var(--tx2);">
-                  Your withdrawal will be processed after {{ rules.noticePeriod }} days from submission date as per SACCO policy.
-                  Estimated completion: <strong>{{ (newWithdrawalData.amount > 0 ? 'around ' : '') }}{{ rules.noticePeriod }} days</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Terms Checkboxes -->
-          <div class="mb-3">
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="checkbox" id="agreeTerms" [(ngModel)]="newWithdrawalData.agreeToTerms">
-              <label class="form-check-label" for="agreeTerms" style="font-size:12px;">
-                I understand the {{ rules.noticePeriod }}-day notice period and agree to the <a href="javascript:;" (click)="openPolicyModal()">withdrawal policy</a>
-              </label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="agreeFee" [(ngModel)]="newWithdrawalData.agreeToFee">
-              <label class="form-check-label" for="agreeFee" style="font-size:12px;">
-                I agree to the KES {{ rules.processingFee }} processing fee deduction
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <button class="btn btn-outline-secondary rounded-3" (click)="closeNewWithdrawalModal()">Cancel</button>
-          <button class="btn text-white rounded-3 fw-semibold" 
-                  style="background:linear-gradient(135deg, #e53935 0%, #c62828 100%);"
-                  [disabled]="!canSubmitWithdrawal"
-                  (click)="submitWithdrawal()">
-            <i class="fas fa-paper-plane me-1"></i> Submit Request
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
 }
 
-
-<!-- WITHDRAWAL DETAIL MODAL -->
-@if (withdrawalDetailModalOpen && selectedWithdrawal) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-        <div style="height:3px;" [style.background]="getStatusColor(selectedWithdrawal.status)"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold">
-            <i class="fas fa-file-invoice me-2" [style.color]="getStatusColor(selectedWithdrawal.status)"></i>
-            Withdrawal Details
-          </h5>
-          <button type="button" class="btn-close" (click)="closeWithdrawalDetailModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <!-- Amount & Status -->
-          <div class="text-center p-4 rounded-4 mb-4" style="background:var(--inp);">
-            <div style="font-size:12px;color:var(--txm);">Withdrawal Amount</div>
-            <div style="font-size:36px;font-weight:800;font-family:var(--mono);" [style.color]="getStatusColor(selectedWithdrawal.status)">
-              KES {{ selectedWithdrawal.amount | number:'1.0-0' }}
-            </div>
-            <div class="d-flex justify-content-center gap-2 mt-2">
-              <span class="b" [style.background]="getStatusBg(selectedWithdrawal.status)"
-                    [style.color]="getStatusColor(selectedWithdrawal.status)"
-                    [style.border]="'1px solid ' + getStatusBorder(selectedWithdrawal.status)">
-                <i class="fas" [ngClass]="getStatusIcon(selectedWithdrawal.status)"></i>
-                {{ selectedWithdrawal.status | titlecase }}
-              </span>
-              <span class="b" style="font-family:var(--mono);background:rgba(26,29,46,0.04);color:var(--txm);border:1px solid rgba(26,29,46,0.08);">
-                {{ selectedWithdrawal.reference }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Progress Tracker -->
-          @if (selectedWithdrawal.status !== 'rejected' && selectedWithdrawal.status !== 'cancelled') {
-            <div class="mb-4">
-              <div class="d-flex align-items-center justify-content-between px-3">
-                @for (step of [
-                  { num: 1, label: 'Submitted', icon: 'fa-paper-plane' },
-                  { num: 2, label: 'Admin Review', icon: 'fa-user-check' },
-                  { num: 3, label: 'Disbursing', icon: 'fa-hand-holding-usd' },
-                  { num: 4, label: 'Completed', icon: 'fa-check-circle' }
-                ]; track step.num; let i = $index) {
-                  <div class="d-flex flex-column align-items-center" style="flex:1;">
-                    <div class="detail-step"
-                         [class.done]="step.num < selectedWithdrawal.currentStep"
-                         [class.active]="step.num === selectedWithdrawal.currentStep"
-                         [class.pending]="step.num > selectedWithdrawal.currentStep">
-                      @if (step.num < selectedWithdrawal.currentStep) {
-                        <i class="fas fa-check"></i>
-                      } @else {
-                        <i class="fas" [ngClass]="step.icon"></i>
-                      }
-                    </div>
-                    <div class="detail-step-label" [class.active]="step.num === selectedWithdrawal.currentStep">
-                      {{ step.label }}
-                    </div>
-                  </div>
-                  @if (i < 3) {
-                    <div class="detail-step-line"
-                         [class.done]="(i + 1) < selectedWithdrawal.currentStep"
-                         [class.active]="(i + 1) === selectedWithdrawal.currentStep"></div>
-                  }
-                }
-              </div>
-            </div>
-          }
-
-          <!-- Rejection Reason -->
-          @if (selectedWithdrawal.rejectionReason) {
-            <div class="alert border-0 mb-4" style="background:rgba(229,57,53,0.04);border-radius:12px;border:1px solid rgba(229,57,53,0.18)!important;">
-              <div class="fw-semibold" style="color:var(--red);"><i class="fas fa-exclamation-triangle me-1"></i> Rejection Reason</div>
-              <div style="font-size:13px;color:var(--tx2);">{{ selectedWithdrawal.rejectionReason }}</div>
-            </div>
-          }
-
-          <!-- Details Grid -->
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="rounded-4 p-3" style="background:var(--inp);">
-                <div class="fw-semibold mb-2" style="font-size:13px;">
-                  <i class="fas fa-info-circle me-2" style="color:var(--pri);"></i>Request Details
-                </div>
-                <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Account</span>
-                    <span class="fw-semibold">{{ selectedWithdrawal.account }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Amount</span>
-                    <span class="fw-semibold" style="font-family:var(--mono);">KES {{ selectedWithdrawal.amount | number:'1.0-0' }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Processing Fee</span>
-                    <span class="fw-semibold" style="font-family:var(--mono);">KES {{ selectedWithdrawal.fee }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Net Amount</span>
-                    <span class="fw-bold" style="font-family:var(--mono);color:var(--grn);">KES {{ (selectedWithdrawal.amount - selectedWithdrawal.fee) | number:'1.0-0' }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Reason</span>
-                    <span class="fw-semibold">{{ selectedWithdrawal.reason }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="rounded-4 p-3" style="background:var(--inp);">
-                <div class="fw-semibold mb-2" style="font-size:13px;">
-                  <i class="fas fa-calendar-alt me-2" style="color:var(--blu);"></i>Timeline
-                </div>
-                <div class="d-flex flex-column gap-1" style="font-size:12px;">
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Submitted</span>
-                    <span class="fw-semibold">{{ selectedWithdrawal.submittedDate | date:'MMM d, yyyy h:mm a' }}</span>
-                  </div>
-                  @if (selectedWithdrawal.approvedDate) {
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Approved</span>
-                      <span class="fw-semibold">{{ selectedWithdrawal.approvedDate | date:'MMM d, yyyy' }}</span>
-                    </div>
-                  }
-                  @if (selectedWithdrawal.completedDate) {
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Completed</span>
-                      <span class="fw-semibold" style="color:var(--grn);">{{ selectedWithdrawal.completedDate | date:'MMM d, yyyy' }}</span>
-                    </div>
-                  }
-                  @if (selectedWithdrawal.estimatedCompletion && selectedWithdrawal.status === 'pending') {
-                    <div class="d-flex justify-content-between">
-                      <span style="color:var(--txm);">Est. Completion</span>
-                      <span class="fw-semibold" style="color:var(--ylw);">{{ selectedWithdrawal.estimatedCompletion | date:'MMM d, yyyy' }}</span>
-                    </div>
-                  }
-                  <div class="dv my-1"></div>
-                  <div class="d-flex justify-content-between">
-                    <span style="color:var(--txm);">Disbursement</span>
-                    <span class="fw-semibold">
-                      <i class="fas" [ngClass]="getMethodIcon(selectedWithdrawal.method)" [style.color]="getMethodColor(selectedWithdrawal.method)"></i>
-                      {{ selectedWithdrawal.method === 'mpesa' ? 'M-Pesa' : 'Bank' }} {{ selectedWithdrawal.methodDetails }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          @if (selectedWithdrawal.status === 'completed') {
-            <button class="btn btn-outline-secondary rounded-3" (click)="downloadReceipt(selectedWithdrawal)">
-              <i class="fas fa-download me-1"></i> Download Receipt
-            </button>
-          }
-          @if (selectedWithdrawal.status === 'rejected') {
-            <button class="btn btn-outline-primary rounded-3" (click)="closeWithdrawalDetailModal(); openResubmitModal(selectedWithdrawal)">
-              <i class="fas fa-redo me-1"></i> Resubmit
-            </button>
-          }
-          @if (selectedWithdrawal.status === 'pending') {
-            <button class="btn btn-outline-danger rounded-3" (click)="openCancelWithdrawalModal(selectedWithdrawal)">
-              <i class="fas fa-times me-1"></i> Cancel Request
-            </button>
-          }
-          <button class="btn btn-outline-secondary rounded-3" (click)="closeWithdrawalDetailModal()">Close</button>
-        </div>
-      </div>
+<!-- Request confirm -->
+@if (activeModal === 'requestConfirm') {
+<div class="wd-modal" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Confirm Withdrawal</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body centered"><span class="wd-status-orb warn">!</span>
+    <h4>Submit withdrawal request?</h4>
+    <p class="muted">Your request will enter admin review and the 14-day notice policy.</p>
+    <div class="wd-summary-box">
+      <ul>
+        <li><span>Amount</span><strong>KES {{fmt(+requestForm.amount || 0)}}</strong></li>
+        <li><span>Method</span><strong>{{requestForm.method === 'mpesa' ? 'M-Pesa' : 'Bank EFT'}}</strong></li>
+        <li><span>Fee</span><strong>KES 50</strong></li>
+      </ul>
     </div>
   </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- POLICY MODAL -->
-@if (policyModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-        <div style="height:3px;background:var(--ylw);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold">
-            <i class="fas fa-gavel me-2" style="color:var(--ylw);"></i>Withdrawal Policy
-          </h5>
-          <button type="button" class="btn-close" (click)="closePolicyModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <div class="rounded-4 p-4" style="background:var(--inp);white-space:pre-line;font-size:13px;line-height:1.6;">
-            {{ rules.policyText }}
-          </div>
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <button class="btn btn-outline-secondary rounded-3 w-100" (click)="closePolicyModal()">
-            I Understand
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- CALCULATOR MODAL -->
-@if (calculatorModalOpen) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-        <div style="height:3px;background:var(--grd);"></div>
-        <div class="modal-header border-0 px-4 pt-4 pb-0">
-          <h5 class="modal-title fw-bold">
-            <i class="fas fa-calculator me-2" style="color:var(--pri);"></i>Impact Calculator
-          </h5>
-          <button type="button" class="btn-close" (click)="closeCalculatorModal()"></button>
-        </div>
-        <div class="modal-body px-4 pb-4">
-          <p style="font-size:13px;color:var(--txm);">
-            See how a withdrawal affects your loan eligibility and dividend earnings.
-          </p>
-          <div class="mb-3">
-            <label class="form-label fw-semibold" style="font-size:13px;">Withdrawal Amount</label>
-            <div class="input-group">
-              <span class="input-group-text fw-bold" style="border-radius:12px 0 0 12px;background:var(--inp);">KES</span>
-              <input type="number" class="form-control" [(ngModel)]="calcData.amount"
-                     [max]="summary.availableBalance"
-                     placeholder="0"
-                     style="border-radius:0 12px 12px 0;font-family:var(--mono);font-size:18px;">
-            </div>
-          </div>
-          <button class="btn text-white rounded-3 w-100 fw-semibold mb-3" style="background:var(--grd);" (click)="calculateImpact()">
-            <i class="fas fa-calculator me-1"></i> Calculate Impact
-          </button>
-
-          @if (calcResult) {
-            <div class="rounded-4 p-3" style="background:var(--inp);">
-              <div class="row g-3 text-center">
-                <div class="col-6">
-                  <div class="k" style="font-size:10px;">Current Savings</div>
-                  <div class="fw-bold" style="font-family:var(--mono);">KES {{ calcResult.currentSavings | number:'1.0-0' }}</div>
-                </div>
-                <div class="col-6">
-                  <div class="k" style="font-size:10px;">After Withdrawal</div>
-                  <div class="fw-bold" style="font-family:var(--mono);color:var(--red);">KES {{ calcResult.remainingSavings | number:'1.0-0' }}</div>
-                </div>
-                <div class="col-12"><div class="dv"></div></div>
-                <div class="col-6">
-                  <div class="k" style="font-size:10px;">Current Loan Eligibility</div>
-                  <div class="fw-bold" style="font-family:var(--mono);color:var(--pri);">KES {{ calcResult.currentLoanEligibility | number:'1.0-0' }}</div>
-                </div>
-                <div class="col-6">
-                  <div class="k" style="font-size:10px;">New Loan Eligibility</div>
-                  <div class="fw-bold" style="font-family:var(--mono);" [style.color]="calcResult.eligibilityChange < 0 ? 'var(--red)' : 'var(--grn)'">
-                    KES {{ calcResult.newLoanEligibility | number:'1.0-0' }}
-                    <small>({{ calcResult.eligibilityChange > 0 ? '+' : '' }}{{ calcResult.eligibilityChange | number:'1.0-0' }})</small>
-                  </div>
-                </div>
-                <div class="col-12"><div class="dv"></div></div>
-                <div class="col-6">
-                  <div class="k" style="font-size:10px;">Est. Annual Dividend</div>
-                  <div class="fw-bold" style="font-family:var(--mono);color:var(--grn);">KES {{ calcResult.currentDividendEstimate | number:'1.0-0' }}</div>
-                </div>
-                <div class="col-6">
-                  <div class="k" style="font-size:10px;">New Dividend Estimate</div>
-                  <div class="fw-bold" style="font-family:var(--mono);" [style.color]="calcResult.dividendImpact < 0 ? 'var(--red)' : 'var(--grn)'">
-                    KES {{ calcResult.newDividendEstimate | number:'1.0-0' }}
-                    <small>({{ calcResult.dividendImpact > 0 ? '+' : '' }}{{ calcResult.dividendImpact | number:'1.0-0' }})</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-        <div class="modal-footer border-0 px-4 pb-4 pt-0">
-          <button class="btn btn-outline-secondary rounded-3" (click)="closeCalculatorModal()">Close</button>
-          <button class="btn text-white rounded-3 fw-semibold" 
-                  style="background:linear-gradient(135deg, #e53935 0%, #c62828 100%);"
-                  (click)="closeCalculatorModal(); newWithdrawalData.amount = calcData.amount; openNewWithdrawalModal()">
-            <i class="fas fa-arrow-up me-1"></i> Proceed to Withdraw
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- CANCEL WITHDRAWAL MODAL -->
-@if (cancelWithdrawalModalOpen && selectedWithdrawal) {
-  <div class="modal show" tabindex="-1" style="display:block;">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-      <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
-        <div class="modal-body p-4 text-center">
-          <div style="width:56px;height:56px;background:rgba(229,57,53,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--red);font-size:24px;">
-            <i class="fas fa-times-circle"></i>
-          </div>
-          <h5 class="fw-bold">Cancel Withdrawal?</h5>
-          <p style="font-size:13px;color:var(--txm);">
-            Are you sure you want to cancel withdrawal request <strong>{{ selectedWithdrawal.reference }}</strong> for <strong>KES {{ selectedWithdrawal.amount | number:'1.0-0' }}</strong>?
-          </p>
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary rounded-3 flex-fill" (click)="closeCancelWithdrawalModal()">Keep</button>
-            <button class="btn btn-danger rounded-3 flex-fill" (click)="confirmCancelWithdrawal()">
-              <i class="fas fa-times me-1"></i> Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" style="background-color:rgba(0,0,0,0.5);"></div>
-}
-
-
-<!-- TOAST CONTAINER -->
-<div class="toast-c">
-  @for (toast of toasts; track $index; let i = $index) {
-    <div class="t" [class]="toast.type">
-      <i class="fas" [ngClass]="toast.icon" style="font-size:18px;flex-shrink:0;" [style.color]="toast.iconColor"></i>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;">{{ toast.title }}</div>
-        <div style="font-size:11px;color:var(--txm);">{{ toast.message }}</div>
-      </div>
-      <button (click)="removeToast(i)" class="btn-close btn-close-sm ms-2" style="font-size:10px;"></button>
-    </div>
-  }
+  <footer class="wd-modal-foot"><button class="wd-btn-outline"
+      (click)="openModal('requestWithdrawal')">Back</button><button class="wd-btn-primary"
+      (click)="confirmRequest()">Confirm</button></footer>
 </div>
+}
+
+<!-- Detail modals -->
+@if (activeModal === 'pendingDetail' || activeModal === 'completedDetail' || activeModal === 'rejectedDetail') {
+<div class="wd-modal lg" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Withdrawal Details</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body centered">
+    <span class="wd-status-orb" [class.warn]="selectedRequest?.status==='pending'"
+      [class.ok]="selectedRequest?.status==='completed'"
+      [class.danger]="selectedRequest?.status==='rejected'">{{selectedRequest?.status === 'completed' ? 'ok' :
+      selectedRequest?.status === 'rejected' ? 'x' : '!'}}</span>
+    <strong class="wd-status-title" [class.text-amber]="selectedRequest?.status==='pending'"
+      [class.text-green]="selectedRequest?.status==='completed'"
+      [class.text-red]="selectedRequest?.status==='rejected'">{{selectedRequest?.status === 'pending' ? 'PENDING
+      APPROVAL' : selectedRequest?.status === 'completed' ? 'COMPLETED' : 'REJECTED'}}</strong>
+    <h2 class="mono" [class.text-amber]="selectedRequest?.status==='pending'"
+      [class.text-green]="selectedRequest?.status==='completed'"
+      [class.rejected-amount]="selectedRequest?.status==='rejected'">KES {{fmt(selectedRequest?.amount || 0)}}</h2>
+    <div class="wd-summary-box">
+      <ul>
+        <li><span>Reference</span><strong class="mono text-blue">{{selectedRequest?.reference}}</strong></li>
+        <li><span>Date</span><strong>{{selectedRequest?.date}}</strong></li>
+        <li><span>Account</span><strong>{{selectedRequest?.account}} Savings</strong></li>
+        <li><span>Reason</span><strong>{{selectedRequest?.reason}}</strong></li>
+        <li><span>Method</span><strong>{{selectedRequest?.method}}</strong></li>
+        <li><span>Fee</span><strong>{{selectedRequest?.fee ? 'KES ' + selectedRequest?.fee : '-'}}</strong></li>
+      </ul>
+    </div>
+    @if (selectedRequest?.status === 'pending') { <div class="wd-note warn">Waiting for admin approval.
+      {{selectedRequest?.daysRemaining}} days remaining on 14-day notice. Estimated completion:
+      {{selectedRequest?.estimate}}.</div> }
+    @if (selectedRequest?.status === 'rejected') { <div class="wd-note danger"><strong>Rejection Reason:</strong>
+      {{selectedRequest?.rejectionReason}} Maximum available was KES 73,750.</div> }
+  </div>
+  <footer class="wd-modal-foot">
+    <button class="wd-btn-outline" (click)="closeModal()">Close</button>
+    @if (selectedRequest?.status === 'pending') {
+    <button class="wd-btn-danger-outline" (click)="openModal('cancelRequest')">Cancel</button>
+    <button class="wd-btn-outline" (click)="openModal('support')">Support</button>
+    }
+    @if (selectedRequest?.status === 'completed') {
+    <button class="wd-btn-outline" (click)="openModal('receipt')">Receipt</button>
+    }
+    @if (selectedRequest?.status === 'rejected') {
+    <button class="wd-btn-primary" (click)="resubmitRequest()">Re-submit</button>
+    }
+  </footer>
+</div>
+}
+
+<!-- Cancel -->
+@if (activeModal === 'cancelRequest') {
+<div class="wd-modal sm" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Cancel Request?</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body centered"><span class="wd-status-orb danger">!</span>
+    <p>This will cancel withdrawal {{selectedRequest?.reference || 'WDR-2025-0045'}}. This action cannot be undone.</p>
+    <label>Reason (optional)</label><textarea rows="3" [(ngModel)]="cancelForm.reason"
+      placeholder="Why are you cancelling?"></textarea>
+  </div>
+  <footer class="wd-modal-foot"><button class="wd-btn-outline" (click)="closeModal()">Keep Request</button><button
+      class="wd-btn-danger" (click)="cancelRequest()">Cancel It</button></footer>
+</div>
+}
+
+<!-- Policy -->
+@if (activeModal === 'policy') {
+<div class="wd-modal" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Withdrawal Policy</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body">
+    <div class="wd-note info">These rules are set by your SACCO administrator and apply to all withdrawal requests.
+    </div>
+    <div class="wd-policy-list">
+      <div><span>Notice Period</span><strong>14 days</strong></div>
+      <div><span>Min. Withdrawal</span><strong>KES 1,000</strong></div>
+      <div><span>Max. per Month</span><strong>KES 100,000</strong></div>
+      <div><span>Processing Fee</span><strong class="text-red">KES 50 per request</strong></div>
+      <div><span>Min. Balance After</span><strong>KES 1,000</strong></div>
+      <div><span>Disbursement</span><strong>M-Pesa / Bank (Auto)</strong></div>
+      <div><span>Approval</span><strong>Admin review required</strong></div>
+    </div>
+  </div>
+  <footer class="wd-modal-foot"><button class="wd-btn-outline" (click)="closeModal()">Close</button><button
+      class="wd-btn-primary" (click)="openModal('requestWithdrawal')">Request Withdrawal</button></footer>
+</div>
+}
+
+<!-- Impact calculator -->
+@if (activeModal === 'impactCalculator') {
+<div class="wd-modal" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Withdrawal Impact Calculator</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body"><label>Withdrawal Amount</label>
+    <div class="wd-input-group"><span>KES</span><input type="number" [(ngModel)]="calculator.amount"></div>
+    <div class="wd-quick"><button (click)="calculator.amount='5000'">5K</button><button
+        (click)="calculator.amount='10000'">10K</button><button (click)="calculator.amount='20000'">20K</button><button
+        (click)="calculator.amount='50000'">50K</button></div>
+    <div class="wd-summary-box">
+      <ul>
+        <li><span>Current Savings</span><strong>KES {{fmt(totalSavings)}}</strong></li>
+        <li><span>After Withdrawal</span><strong class="text-green">KES {{fmt(afterWithdrawal())}}</strong></li>
+        <li><span>Current Loan Limit (3x)</span><strong class="text-blue">KES {{fmt(totalSavings * 3)}}</strong></li>
+        <li><span>New Loan Limit</span><strong>KES {{fmt(newLoanLimit())}}</strong></li>
+        <li><span>Loan Limit Change</span><strong class="text-red">- KES {{fmt(calculatorAmount() * 3)}}</strong></li>
+        <li><span>Goal Impact</span><strong class="text-amber">56% (was 63%)</strong></li>
+        <li><span>Monthly Interest Impact</span><strong class="text-red">-KES 117/mo</strong></li>
+      </ul>
+    </div>
+  </div>
+  <footer class="wd-modal-foot"><button class="wd-btn-outline" (click)="closeModal()">Close</button><button
+      class="wd-btn-primary" (click)="requestForm.amount=calculator.amount; openModal('requestWithdrawal')">Proceed to
+      Request</button></footer>
+</div>
+}
+
+<!-- Other modals -->
+@if (activeModal === 'exportHistory') { <div class="wd-modal" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Export Withdrawals</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body"><label>Range</label><select [(ngModel)]="exportForm.range">
+      <option>Last 6 Months</option>
+      <option>2025</option>
+      <option>2024</option>
+      <option>All Time</option>
+    </select><label>Status</label><select [(ngModel)]="exportForm.status">
+      <option>All Status</option>
+      <option>Pending</option>
+      <option>Completed</option>
+      <option>Rejected</option>
+    </select><label>Format</label><select [(ngModel)]="exportForm.format">
+      <option value="pdf">PDF</option>
+      <option value="excel">Excel</option>
+      <option value="csv">CSV</option>
+    </select></div>
+  <footer class="wd-modal-foot"><button class="wd-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="wd-btn-primary" (click)="exportHistory()">Export</button></footer>
+</div> }
+@if (activeModal === 'receipt') { <div class="wd-modal" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>Withdrawal Receipt</h5><button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body centered"><span class="wd-status-orb ok">ok</span>
+    <h3>Receipt Ready</h3>
+    <div class="wd-summary-box">
+      <ul>
+        <li><span>Reference</span><strong class="mono text-blue">{{selectedRequest?.reference || selectedRow?.reference
+            || 'WDR-2025-0031'}}</strong></li>
+        <li><span>Amount</span><strong>KES {{fmt(selectedRequest?.amount || selectedRow?.amount || 10000)}}</strong>
+        </li>
+        <li><span>Fee</span><strong>KES 50</strong></li>
+        <li><span>Method</span><strong>M-Pesa</strong></li>
+      </ul>
+    </div>
+  </div>
+  <footer class="wd-modal-foot"><button class="wd-btn-outline" (click)="closeModal()">Close</button><button
+      class="wd-btn-primary" (click)="downloadReceipt()">Download</button></footer>
+</div> }
+@if (activeModal === 'support' || activeModal === 'quickTips' || activeModal === 'feeBreakdown' || activeModal ===
+'noticeSchedule' || activeModal === 'methodDetails' || activeModal === 'timeline' || activeModal === 'statusFilter') {
+<div class="wd-modal" (click)="$event.stopPropagation()">
+  <header class="wd-modal-head">
+    <h5>{{activeModal === 'support' ? 'Contact Support' : activeModal === 'feeBreakdown' ? 'Fee Breakdown' : activeModal
+      === 'noticeSchedule' ? 'Notice Schedule' : activeModal === 'methodDetails' ? 'Disbursement Methods' : activeModal
+      === 'timeline' ? 'Withdrawal Timeline' : activeModal === 'statusFilter' ? 'Status Filter' : 'Withdrawal Tips'}}
+    </h5>
+    <button class="wd-x" (click)="closeModal()">x</button>
+  </header>
+  <div class="wd-modal-body">
+    @if (activeModal === 'support') {
+    <label>Subject</label>
+    <input [(ngModel)]="supportForm.subject">
+    <label>Message</label>
+    <textarea rows="4" [(ngModel)]="supportForm.message"></textarea>
+    }
+    @if (activeModal === 'methodDetails') {
+    <div class="wd-policy-list">
+      <div><span>M-Pesa</span><strong>Instant after approval</strong></div>
+      <div><span>Bank EFT</span><strong>1-2 business days</strong></div>
+      <div><span>Wallet</span><strong>Same day</strong></div>
+    </div>
+    }
+    @if (activeModal !== 'support' && activeModal !== 'methodDetails') {
+    <div class="wd-note info">This section explains the selected withdrawal item and prevents blank actions. Use it to
+      guide the member before continuing.</div>
+    <div class="wd-policy-list">
+      <div><span>Notice</span><strong>14 days</strong></div>
+      <div><span>Fee</span><strong>KES 50</strong></div>
+      <div><span>Approval</span><strong>Admin review</strong></div>
+    </div>
+    }
+  </div>
+  <footer class="wd-modal-foot">
+    <button class="wd-btn-outline" (click)="closeModal()">Close</button>
+    @if (activeModal === 'support') { <button class="wd-btn-primary" (click)="submitSupport()">Submit</button> }
+  </footer>
+</div>
+}
+
+@if (toast) {
+<div class="wd-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'"
+  [class.warn]="toast.type==='warning'" [class.danger]="toast.type==='danger'"><span>{{toast.type === 'success' ? 'ok' :
+    toast.type === 'info' ? 'i' : toast.type === 'warning' ? '!' : 'x'}}</span>
+  <p>{{toast.message}}</p><button (click)="dismissToast()">x</button>
+</div>
+}

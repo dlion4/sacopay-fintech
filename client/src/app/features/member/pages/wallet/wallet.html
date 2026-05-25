@@ -1,821 +1,586 @@
-<!-- ═══════════════════════════════════════════════════════════════
-   SACCO PAY — WALLET COMPONENT TEMPLATE
-   ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════ WALLET PAGE — MAIN CONTENT ═══════════════════ -->
+<section class="wl-shell">
 
-<div (keydown.escape)="onKeydown($event)">
-
-  <!-- ═══════════════════════════════════════════════════════════════
-     WALLET HERO
-     ═══════════════════════════════════════════════════════════════ -->
-  <div class="wallet-hero fade-in">
-    <div class="wh-inner">
-      <div class="wh-top">
-        <div>
-          <div class="wallet-chip"><div class="chip-inner"></div></div>
-          <div class="wh-balance-label">Available Balance</div>
-          <div class="wh-balance">
-            <span class="currency">KES</span>{{balanceFormatted}}<span class="cents">.00</span>
-          </div>
-          <div class="wallet-id-pill" (click)="copyWalletId()" title="Click to copy">
-            <i class="bi bi-wallet2" style="opacity:.5;"></i>
-            {{walletId}}
-            <i class="bi bi-copy copy-ic"></i>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-          <span class="wh-status active">
-            <i class="bi bi-circle-fill" style="font-size:.4rem;"></i> {{walletStatus}}
-          </span>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-ghost-s" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;" (click)="openModal('shareWallet')">
-              <i class="bi bi-share"></i> Share
-            </button>
-            <button class="btn-ghost-s" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;" (click)="openModal('qr')">
-              <i class="bi bi-qr-code"></i> QR
-            </button>
-          </div>
+  <!-- ─── Hero Balance Card ─── -->
+  <article class="wl-hero">
+    <div class="wl-hero-inner">
+      <div class="wl-hero-top">
+        <div class="wl-chip">💳</div>
+        <div class="wl-hero-badges">
+          <span class="wl-pill active">● Active</span>
+          <button class="wl-hero-btn" (click)="showToast('Share link copied!','info')">⤳ Share</button>
+          <button class="wl-hero-btn" (click)="showToast('QR code generated','info')">▦ QR</button>
         </div>
       </div>
-      <div class="wh-kpis">
-        <div class="kpi-box" *ngFor="let kpi of kpis" (click)="onKpiClick(kpi.action)">
-          <div class="k-label">{{kpi.label}}</div>
-          <div class="k-value" [style.color]="kpi.color === 'primary' ? 'var(--primary)' : kpi.color === 'danger' ? 'var(--red)' : kpi.color === 'success' ? 'var(--green)' : 'inherit'">{{kpi.value}}</div>
-          <div class="k-sub">{{kpi.sub}}</div>
+      <p class="wl-hero-label">AVAILABLE BALANCE</p>
+      <h2 class="wl-hero-amount">KES <span class="big">{{formatBal(balance)}}</span><span class="cents">.00</span></h2>
+      <div class="wl-hero-id" (click)="copyId()">
+        <span class="wl-id-badge">📋 {{walletId}} ⧉</span>
+      </div>
+      <div class="wl-summary-row">
+        @for (c of summaryCards; track c.label) {
+        <div class="wl-summary-card">
+          <span class="wl-summary-label">{{c.label}}</span>
+          <strong class="wl-summary-val" [class.green]="c.tone==='green'"
+            [class.red]="c.tone==='red'">{{c.value}}</strong>
+          <small>{{c.sub}}</small>
         </div>
+        }
       </div>
     </div>
-  </div>
+  </article>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-     ACTION TILES
-     ═══════════════════════════════════════════════════════════════ -->
-  <div class="action-grid fade-in">
-    <div class="action-tile" *ngFor="let tile of actionTiles" (click)="tile.modal === 'servicesTab' ? switchTab('services') : openModal(tile.modal)">
-      <div class="action-tile-icon" [style.background]="tile.iconBg" [style.color]="tile.iconColor === 'primary' ? 'var(--primary)' : tile.iconColor === 'danger' ? 'var(--red)' : tile.iconColor === 'blue' ? 'var(--blue)' : tile.iconColor === 'purple' ? 'var(--purple)' : tile.iconColor === 'orange' ? 'var(--orange)' : tile.iconColor === 'teal' ? 'var(--teal)' : tile.iconColor">
-        <i class="bi {{tile.icon}}"></i>
-      </div>
-      <h6>{{tile.label}}</h6>
-      <p>{{tile.description}}</p>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════
-     TABS
-     ═══════════════════════════════════════════════════════════════ -->
-  <div class="m-tabs fade-in">
-    <button class="m-tab" [class.active]="activeTab === 'history'" (click)="switchTab('history')">
-      <i class="bi bi-clock-history"></i> History
+  <!-- ─── Quick Actions ─── -->
+  <div class="wl-actions-grid">
+    @for (a of quickActions; track a.key) {
+    <button class="wl-action" (click)="onQuickAction(a.key)">
+      <span class="wl-action-ico">
+        <ng-container [ngSwitch]="a.icon">
+          <svg *ngSwitchCase="'deposit'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14" />
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+          </svg>
+          <svg *ngSwitchCase="'withdraw'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+          <svg *ngSwitchCase="'send'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13" />
+            <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
+          <svg *ngSwitchCase="'transfer'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 7h13l-3-3M17 17H4l3 3" />
+          </svg>
+          <svg *ngSwitchCase="'request'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <svg *ngSwitchCase="'services'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </ng-container>
+      </span>
+      <span class="wl-action-label">{{a.label}}</span>
+      <span class="wl-action-sub">{{a.sub}}</span>
     </button>
-    <button class="m-tab" [class.active]="activeTab === 'services'" (click)="switchTab('services')">
-      <i class="bi bi-lightning"></i> SACCOPay Services
-    </button>
-    <button class="m-tab" [class.active]="activeTab === 'controls'" (click)="switchTab('controls')">
-      <i class="bi bi-shield-lock"></i> Controls & Security
-    </button>
+    }
   </div>
 
-  <!-- TAB: HISTORY -->
-  <div class="tab-pane" [class.active]="activeTab === 'history'">
-    <div class="g-card">
-      <div class="g-card-header">
-        <h3><i class="bi bi-clock-history" style="color:var(--primary);"></i> Recent Wallet Activity</h3>
-        <button class="btn-ghost-s" (click)="navigateTo('statements')">
-          <i class="bi bi-file-text"></i> Full Statement
-        </button>
-      </div>
-      <div class="g-card-body" style="padding:var(--sp-md) var(--sp-xl);">
-        <div class="txn-row" *ngFor="let tx of transactions" (click)="openTxDetail(tx)">
-          <div class="txn-icon {{tx.type}}"><i class="bi {{tx.icon}}"></i></div>
-          <div class="txn-info">
-            <h6>{{tx.title}}</h6>
-            <p>{{tx.subtitle}}</p>
-          </div>
-          <div class="txn-amt">
-            <div class="amt" [style.color]="tx.amountColor === 'primary' ? 'var(--primary)' : tx.amountColor === 'danger' ? 'var(--red)' : 'var(--blue)'">{{tx.amount}}</div>
-            <div class="time">{{tx.date}}</div>
-          </div>
-        </div>
-      </div>
+  <!-- ─── Tabs ─── -->
+  <div class="wl-tabs-bar">
+    <div class="wl-tabs">
+      <button [class.active]="activeTab==='history'" (click)="activeTab='history'">🕒 History</button>
+      <button [class.active]="activeTab==='services'" (click)="activeTab='services'">⚡ SACCOPay Services</button>
+      <button [class.active]="activeTab==='controls'" (click)="activeTab='controls'">🛡 Controls & Security</button>
     </div>
   </div>
 
-  <!-- TAB: SERVICES -->
-  <div class="tab-pane" [class.active]="activeTab === 'services'">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--sp-lg);">
-      <div class="svc-card" *ngFor="let svc of services" (click)="openModal(svc.modal)">
-        <div class="svc-icon" [style.background]="svc.iconBg" [style.color]="svc.iconColor === 'primary' ? 'var(--primary)' : svc.iconColor === 'blue' ? 'var(--blue)' : svc.iconColor === 'purple' ? 'var(--purple)' : svc.iconColor === 'orange' ? 'var(--orange)' : svc.iconColor">
-          <i class="bi {{svc.icon}}"></i>
+  <!-- ═══ TAB: History ═══ -->
+  @if (activeTab === 'history') {
+  <article class="wl-card">
+    <header class="wl-card-head with-action">
+      <h6>🕒 Recent Wallet Activity</h6>
+      <button class="wl-link" (click)="openModal('fullStatement')">📄 Full Statement</button>
+    </header>
+    <ul class="wl-tx-list">
+      @for (tx of transactions; track tx.title + tx.date) {
+      <li (click)="openTxDetail(tx)">
+        <span class="wl-tx-dot" [class.in]="tx.positive" [class.out]="!tx.positive && tx.icon!=='transfer'"
+          [class.xfer]="tx.icon==='transfer'" [class.recv]="tx.icon==='received'" [class.sent]="tx.icon==='sent'">
+          <ng-container [ngSwitch]="tx.icon">
+            <span *ngSwitchCase="'in'">⬇</span>
+            <span *ngSwitchCase="'out'">⬆</span>
+            <span *ngSwitchCase="'transfer'">⇄</span>
+            <span *ngSwitchCase="'received'">⬇</span>
+            <span *ngSwitchCase="'sent'">➤</span>
+          </ng-container>
+        </span>
+        <div class="wl-tx-info">
+          <strong>{{tx.title}}</strong>
+          <small>{{tx.sub}}</small>
         </div>
-        <h5>{{svc.title}}</h5>
-        <p>{{svc.description}}</p>
-        <div style="display:flex;gap:6px;">
-          <span class="svc-tag {{tag.variant}}" *ngFor="let tag of svc.tags">
-            <i class="bi {{tag.icon}}"></i> {{tag.label}}
-          </span>
+        <div class="wl-tx-right">
+          <strong [class.pos]="tx.positive" [class.neg]="!tx.positive">{{tx.amount}}</strong>
+          <small>{{tx.date}}</small>
         </div>
-        <div style="margin-top:var(--sp-md);font-size:.82rem;color:var(--text1);">{{svc.details}}</div>
-      </div>
-    </div>
-    <div style="background:var(--primary-ultra);border:1px solid rgba(26,115,232,0.2);border-radius:var(--r-md);padding:var(--sp-lg);margin-top:var(--sp-xl);display:flex;align-items:center;gap:var(--sp-md);">
-      <i class="bi bi-info-circle-fill" style="color:var(--primary);font-size:1.2rem;flex-shrink:0;"></i>
-      <div style="font-size:.82rem;color:var(--text2);">SACCOPay services are provided directly by SACCOPay (PSP) — <strong>not from your SACCO savings</strong>. Your SACCO balances are never touched. Approvals are instant, no admin review needed.</div>
-    </div>
-  </div>
+      </li>
+      }
+    </ul>
+  </article>
+  }
 
-  <!-- TAB: CONTROLS -->
-  <div class="tab-pane" [class.active]="activeTab === 'controls'">
-    <div class="row g-4">
-      <div class="col-lg-6">
-        <div class="g-card mb-4">
-          <div class="g-card-header">
-            <h3><i class="bi bi-sliders" style="color:var(--primary);"></i> Wallet Controls</h3>
-          </div>
-          <div class="g-card-body">
-            <div class="ctrl-row" *ngFor="let ctrl of walletControls">
-              <div class="ctrl-info">
-                <h6>{{ctrl.title}}</h6>
-                <p>{{ctrl.description}}</p>
-              </div>
-              <div class="form-check form-switch mb-0">
-                <input class="form-check-input" type="checkbox" [checked]="ctrl.checked" (change)="toggleControl(ctrl)">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="g-card mb-4">
-          <div class="g-card-header">
-            <h3><i class="bi bi-shield-lock" style="color:var(--blue);"></i> Security</h3>
-          </div>
-          <div class="g-card-body">
-            <div class="ctrl-row" *ngFor="let ctrl of securityControls" [style.cursor]="ctrl.type === 'link' ? 'pointer' : 'default'" (click)="ctrl.type === 'link' ? openModal(ctrl.name === 'Transaction PIN' ? 'pinSetup' : 'limits') : null">
-              <div class="ctrl-info">
-                <h6>
-                  <i class="bi {{ctrl.icon}} me-1" *ngIf="ctrl.icon" [style.color]="ctrl.iconColor === 'primary' ? 'var(--primary)' : ctrl.iconColor === 'orange' ? 'var(--orange)' : 'inherit'"></i>
-                  {{ctrl.title}}
-                </h6>
-                <p>{{ctrl.description}}</p>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;" *ngIf="ctrl.type === 'link'">
-                <span style="font-size:.78rem;color:var(--primary);font-weight:600;" *ngIf="ctrl.detail">{{ctrl.detail}}</span>
-                <i class="bi bi-chevron-right" style="color:var(--text3);"></i>
-              </div>
-              <div class="form-check form-switch mb-0" *ngIf="ctrl.type === 'switch'">
-                <input class="form-check-input" type="checkbox" [checked]="ctrl.checked" (change)="toggleControl(ctrl)">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-   MODALS
-   ═══════════════════════════════════════════════════════════════ -->
-
-<!-- MODAL: Deposit (4-step wizard) -->
-<div class="modal-overlay" *ngIf="activeModal === 'deposit'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-header mh-green">
-      <h5><i class="bi bi-box-arrow-in-down me-2"></i>Deposit to Wallet</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <!-- Step Bar -->
-      <div class="step-bar">
-        <ng-container *ngFor="let step of depSteps; let last = last">
-          <div class="step-item">
-            <div class="step-dot" [class.done]="step.done" [class.active]="step.active" [class.pending]="!step.done && !step.active">
-              {{step.done ? '✓' : (depStepNames.indexOf(step.label) + 1)}}
-            </div>
-            <div class="step-label" [class.done]="step.done" [class.active]="step.active" [class.pending]="!step.done && !step.active">{{step.label}}</div>
-          </div>
-          <div class="step-line" [class.done]="step.done" [class.pending]="!step.done" *ngIf="!last"></div>
+  <!-- ═══ TAB: Services ═══ -->
+  @if (activeTab === 'services') {
+  <div class="wl-services-grid">
+    @for (s of serviceCards; track s.key) {
+    <article class="wl-service-card" (click)="openServiceModal(s)">
+      <div class="wl-service-icon {{s.icon}}">
+        <ng-container [ngSwitch]="s.icon">
+          <svg *ngSwitchCase="'overdraft'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          <svg *ngSwitchCase="'quickloan'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+          <svg *ngSwitchCase="'salary'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <path d="M2 10h20" />
+          </svg>
+          <svg *ngSwitchCase="'bnpl'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="18" rx="2" />
+            <path d="M8 7h8M8 11h5" />
+          </svg>
         </ng-container>
       </div>
-
-      <!-- Step 1: Method -->
-      <div *ngIf="depStep === 1">
-        <h6 style="font-weight:700;margin-bottom:var(--sp-md);"><i class="bi bi-credit-card me-1" style="color:var(--primary);"></i> Choose Deposit Method</h6>
-        <div class="ch-opt" *ngFor="let method of depMethods" [class.sel]="method.selected" (click)="selectDepositMethod(method.id)">
-          <div class="ch-icon" [style.background]="method.iconBg" [style.color]="method.iconColor"><i class="bi {{method.icon}}"></i></div>
-          <div>
-            <div class="ch-name">{{method.name}}</div>
-            <div class="ch-desc">{{method.desc}}</div>
-          </div>
-          <input type="radio" name="depCh" [checked]="method.selected" style="margin-left:auto;">
-        </div>
+      <h5>{{s.title}}</h5>
+      <p>{{s.desc}}</p>
+      <div class="wl-service-badges">
+        @for (b of s.badges; track b.label) {
+        <span class="wl-pill" [class.blue]="b.tone==='blue'" [class.green]="b.tone==='green'"
+          [class.red]="b.tone==='red'">⚡ {{b.label}}</span>
+        }
       </div>
+      <p class="wl-service-details">{{s.details}}</p>
+    </article>
+    }
+  </div>
+  <div class="wl-note info">
+    ⓘ SACCOPay services are provided directly by SACCOPay (PSP) — <strong>not from your SACCO savings</strong>. Your
+    SACCO balances are never touched. Approvals are instant, no admin review needed.
+  </div>
+  }
 
-      <!-- Step 2: Details -->
-      <div *ngIf="depStep === 2">
-        <h6 style="font-weight:700;margin-bottom:var(--sp-md);"><i class="bi bi-cash-stack me-1" style="color:var(--primary);"></i> Deposit Details</h6>
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="flbl">Amount (KES)</label>
-            <input type="number" class="form-control finput" [(ngModel)]="depAmount" name="depAmt">
-          </div>
-          <div class="col-md-6" *ngIf="depShowPhoneField">
-            <label class="flbl">M-Pesa Number</label>
-            <input type="tel" class="form-control finput" [(ngModel)]="depPhone" name="depPhone">
-          </div>
-          <div class="col-md-6" *ngIf="depShowBankFields">
-            <label class="flbl">Bank Name</label>
-            <select class="form-select fselect" [(ngModel)]="depBankName" name="depBank">
-              <option>KCB Bank</option>
-              <option>Equity Bank</option>
-              <option>Co-operative Bank</option>
-              <option>NCBA</option>
-              <option>Absa Kenya</option>
-            </select>
-          </div>
-          <div class="col-md-6" *ngIf="depShowBankFields">
-            <label class="flbl">Account Number</label>
-            <input type="text" class="form-control finput" [(ngModel)]="depAccountNumber" name="depAcct">
-          </div>
-          <div class="col-md-6" *ngIf="depShowCardFields">
-            <label class="flbl">Card Number</label>
-            <input type="text" class="form-control finput" [(ngModel)]="depCardNumber" name="depCard" maxlength="19" placeholder="XXXX XXXX XXXX XXXX">
-          </div>
-          <div class="col-md-3" *ngIf="depShowCardFields">
-            <label class="flbl">Expiry</label>
-            <input type="text" class="form-control finput" [(ngModel)]="depCardExpiry" name="depExp" maxlength="5" placeholder="MM/YY">
-          </div>
-          <div class="col-md-3" *ngIf="depShowCardFields">
-            <label class="flbl">CVV</label>
-            <input type="password" class="form-control finput" [(ngModel)]="depCardCvv" name="depCvv" maxlength="3" placeholder="***">
-          </div>
-        </div>
-        <div style="margin-top:var(--sp-lg);padding:var(--sp-lg);background:var(--bg3);border-radius:var(--r-md);">
-          <h6 style="font-size:.82rem;font-weight:700;color:var(--primary);margin-bottom:var(--sp-sm);"><i class="bi bi-receipt me-1"></i> Transaction Summary</h6>
-          <div class="drow"><span class="dl">Deposit Amount</span><span class="dv">KES {{depAmount | number}}</span></div>
-          <div class="drow"><span class="dl">Channel Fee</span><span class="dv">KES {{depFee | number}}</span></div>
-          <div class="drow"><span class="dl">Tax (Excise Duty)</span><span class="dv">KES {{depTax | number}}</span></div>
-          <div class="drow"><span class="dl"><strong>Total Charged</strong></span><span class="dv" style="color:var(--primary);font-size:1rem;"><strong>KES {{depTotalCharged | number}}</strong></span></div>
-          <div class="drow"><span class="dl">Current Balance</span><span class="dv">KES {{balance | number}}</span></div>
-          <div class="drow"><span class="dl"><strong>New Balance</strong></span><span class="dv" style="color:var(--primary);">KES {{depNewBalance | number}}</span></div>
-        </div>
-      </div>
+  <!-- ═══ TAB: Controls & Security ═══ -->
+  @if (activeTab === 'controls') {
+  <div class="wl-controls-grid">
+    <article class="wl-card">
+      <header class="wl-card-head">
+        <h6>⚙ Wallet Controls</h6>
+      </header>
+      <ul class="wl-toggle-list">
+        @for (c of walletControls; track c.label) {
+        <li>
+          <div><strong>{{c.label}}</strong><small>{{c.sub}}</small></div>
+          <label class="wl-switch">
+            <input type="checkbox" [(ngModel)]="c.enabled">
+            <span class="wl-slider"></span>
+          </label>
+        </li>
+        }
+      </ul>
+    </article>
+    <article class="wl-card">
+      <header class="wl-card-head">
+        <h6>🛡 Security</h6>
+      </header>
+      <ul class="wl-toggle-list">
+        @for (s of securityItems; track s.label) {
+        <li>
+          <div><strong>{{s.label}}</strong><small>{{s.sub}}</small></div>
+          @if (s.type === 'toggle') {
+          <label class="wl-switch">
+            <input type="checkbox" [(ngModel)]="s.enabled">
+            <span class="wl-slider"></span>
+          </label>
+          }
+          @if (s.type === 'link') {
+          <button class="wl-link-arrow" (click)="s.linkText ? openModal('pin') : openModal('limits')">
+            @if (s.linkText) { <span class="text-green">{{s.linkText}}</span> }
+            ›
+          </button>
+          }
+        </li>
+        }
+      </ul>
+    </article>
+  </div>
+  }
+</section>
 
-      <!-- Step 3: PIN -->
-      <div *ngIf="depStep === 3">
-        <div style="text-align:center;">
-          <div style="width:64px;height:64px;border-radius:50%;background:rgba(26,115,232,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-md);">
-            <i class="bi bi-shield-lock-fill" style="font-size:1.8rem;color:var(--primary);"></i>
-          </div>
-          <h5 style="font-weight:700;">Enter Transaction PIN</h5>
-          <p style="font-size:.82rem;color:var(--text2);">Confirm this deposit of <strong style="color:var(--primary);">KES {{depAmount | number}}</strong></p>
-          <div class="pin-row">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="depPin[0]" name="depPin0">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="depPin[1]" name="depPin1">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="depPin[2]" name="depPin2">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="depPin[3]" name="depPin3">
-          </div>
-        </div>
-      </div>
 
-      <!-- Step 4: Success -->
-      <div *ngIf="depStep === 4">
-        <div class="success-screen">
-          <div class="success-ring"><i class="bi bi-check-circle-fill" style="font-size:2.5rem;color:var(--primary);"></i></div>
-          <h4 style="font-weight:800;color:var(--primary);margin-bottom:4px;">Deposit Successful! 🎉</h4>
-          <p style="font-size:.88rem;color:var(--text2);">KES {{depAmount | number}} deposited via M-Pesa</p>
-          <div style="background:var(--bg3);border-radius:var(--r-md);padding:var(--sp-lg);margin:var(--sp-lg) auto;max-width:380px;text-align:left;">
-            <div class="drow"><span class="dl">Reference</span><span class="dv"><code>{{depRef}}</code></span></div>
-            <div class="drow"><span class="dl">Amount</span><span class="dv" style="color:var(--primary);">KES {{depAmount | number}}</span></div>
-            <div class="drow"><span class="dl">New Balance</span><span class="dv" style="font-weight:700;">KES {{depNewBalance | number}}</span></div>
-            <div class="drow"><span class="dl">Date</span><span class="dv">Dec 18, 2024 · 3:48 PM</span></div>
-          </div>
-          <div style="display:flex;gap:8px;justify-content:center;">
-            <button class="btn-o" (click)="downloadReceipt()"><i class="bi bi-download"></i> Download Receipt</button>
-            <button class="btn-ghost-s" (click)="shareReceipt()"><i class="bi bi-share"></i> Share</button>
-          </div>
-        </div>
-      </div>
+<!-- ═══════════════════════════ MODALS ═══════════════════════════ -->
+@if (activeModal) {
+<div class="wl-overlay" (click)="closeModal()"></div>
+}
+
+<!-- ═══ Deposit Wizard ═══ -->
+@if (activeModal === 'deposit') {
+<div class="wl-modal lg" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head blue">
+    <h5>📥 Deposit to Wallet</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <!-- stepper -->
+  <div class="wl-stepper">
+    @for (step of [1,2,3,4]; track step) {
+    <div class="wl-step" [class.done]="depositStep > step" [class.active]="depositStep === step"
+      [class.pending]="depositStep < step">
+      <span class="wl-step-num">{{ depositStep > step ? '✓' : step }}</span>
+      <small>{{ step === 1 ? 'Method' : step === 2 ? 'Details' : step === 3 ? 'PIN' : 'Complete' }}</small>
     </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()" *ngIf="depStep < 4">Cancel</button>
-      <button class="btn-ghost-s" (click)="depPrev()" *ngIf="depStep > 1 && depStep < 4"><i class="bi bi-arrow-left"></i> Back</button>
-      <button class="btn-g" (click)="depNext()" *ngIf="depStep < 3">Next <i class="bi bi-arrow-right"></i></button>
-      <button class="btn-g" (click)="depNext()" *ngIf="depStep === 3"><i class="bi bi-shield-check"></i> Confirm Deposit</button>
-      <button class="btn-g" (click)="closeModal()" *ngIf="depStep === 4"><i class="bi bi-check-circle"></i> Done</button>
+    @if (step < 4) { <div class="wl-step-line" [class.done]="depositStep > step">
+  </div> }
+  }
+</div>
+<div class="wl-modal-body">
+  <!-- step 1 -->
+  @if (depositStep === 1) {
+  <h6 class="wl-section-title">💳 Choose Deposit Method</h6>
+  <div class="wl-method-list">
+    @for (m of [{val:'mpesa',label:'M-Pesa',sub:'STK Push · Instant · Free'},{val:'airtel',label:'Airtel
+    Money',sub:'Push notification · Instant · Free'},{val:'bank',label:'Bank Transfer',sub:'1-2 business days · KES 50
+    fee'},{val:'card',label:'Debit / Credit Card',sub:'Visa / Mastercard · Instant · 1.5% fee'}]; track m.val) {
+    <label class="wl-method" [class.selected]="depositMethod === m.val">
+      <div class="wl-method-info">
+        <strong>{{m.label}}</strong>
+        <small>{{m.sub}}</small>
+      </div>
+      <input type="radio" name="depositMethod" [value]="m.val" [(ngModel)]="depositMethod">
+    </label>
+    }
+  </div>
+  }
+  <!-- step 2 -->
+  @if (depositStep === 2) {
+  <h6 class="wl-section-title">📝 Deposit Details</h6>
+  <div class="wl-form-grid">
+    <div>
+      <label>AMOUNT (KES)</label>
+      <input type="number" [(ngModel)]="depositAmount" placeholder="Enter amount">
+    </div>
+    <div>
+      <label>M-PESA NUMBER</label>
+      <input type="tel" [(ngModel)]="depositPhone" placeholder="+254 7XX XXX XXX">
     </div>
   </div>
-</div>
-
-<!-- MODAL: Withdraw (4-step wizard) -->
-<div class="modal-overlay" *ngIf="activeModal === 'withdraw'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-header mh-red">
-      <h5><i class="bi bi-box-arrow-up me-2"></i>Withdraw from Wallet</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="step-bar">
-        <ng-container *ngFor="let step of wdSteps; let last = last">
-          <div class="step-item">
-            <div class="step-dot" [class.done]="step.done" [class.active]="step.active" [class.pending]="!step.done && !step.active">
-              {{step.done ? '✓' : (wdStepNames.indexOf(step.label) + 1)}}
-            </div>
-            <div class="step-label" [class.done]="step.done" [class.active]="step.active" [class.pending]="!step.done && !step.active">{{step.label}}</div>
-          </div>
-          <div class="step-line" [class.done]="step.done" [class.pending]="!step.done" *ngIf="!last"></div>
-        </ng-container>
-      </div>
-
-      <!-- Step 1: Destination -->
-      <div *ngIf="wdStep === 1">
-        <h6 style="font-weight:700;margin-bottom:var(--sp-md);"><i class="bi bi-send me-1" style="color:var(--red);"></i> Withdraw To</h6>
-        <div class="ch-opt" *ngFor="let method of wdMethods" [class.sel]="method.selected" (click)="selectWithdrawMethod(method.id)">
-          <div class="ch-icon" [style.background]="method.iconBg" [style.color]="method.iconColor"><i class="bi {{method.icon}}"></i></div>
-          <div>
-            <div class="ch-name">{{method.name}}</div>
-            <div class="ch-desc">{{method.desc}}</div>
-          </div>
-          <input type="radio" name="wdCh" [checked]="method.selected" style="margin-left:auto;">
-        </div>
-      </div>
-
-      <!-- Step 2: Details -->
-      <div *ngIf="wdStep === 2">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="flbl">Amount (KES)</label>
-            <input type="number" class="form-control finput" [(ngModel)]="wdAmount" name="wdAmt">
-          </div>
-          <div class="col-md-6">
-            <label class="flbl">Phone / Account</label>
-            <input type="text" class="form-control finput" [(ngModel)]="wdPhone" name="wdPhone">
-          </div>
-        </div>
-        <div style="margin-top:var(--sp-lg);padding:var(--sp-lg);background:rgba(244,67,54,0.04);border:1px solid rgba(244,67,54,0.15);border-radius:var(--r-md);">
-          <div class="drow"><span class="dl">Withdrawal</span><span class="dv">KES {{wdAmount | number}}</span></div>
-          <div class="drow"><span class="dl">Fee</span><span class="dv">KES {{wdFee | number}}</span></div>
-          <div class="drow"><span class="dl">You Receive</span><span class="dv" style="color:var(--primary);font-size:1rem;"><strong>KES {{wdAmount | number}}</strong></span></div>
-          <div class="drow"><span class="dl">New Wallet Balance</span><span class="dv">KES {{wdNewBalance | number}}</span></div>
-        </div>
-      </div>
-
-      <!-- Step 3: PIN -->
-      <div *ngIf="wdStep === 3">
-        <div style="text-align:center;">
-          <div style="width:64px;height:64px;border-radius:50%;background:rgba(244,67,54,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-md);">
-            <i class="bi bi-shield-lock-fill" style="font-size:1.8rem;color:var(--red);"></i>
-          </div>
-          <h5>Enter Transaction PIN</h5>
-          <p style="font-size:.82rem;color:var(--text2);">Confirm withdrawal of <strong style="color:var(--red);">KES {{wdAmount | number}}</strong></p>
-          <div class="pin-row">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="wdPin[0]" name="wdPin0">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="wdPin[1]" name="wdPin1">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="wdPin[2]" name="wdPin2">
-            <input type="password" class="pin-box" maxlength="1" [(ngModel)]="wdPin[3]" name="wdPin3">
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 4: Success -->
-      <div *ngIf="wdStep === 4">
-        <div class="success-screen">
-          <div class="success-ring"><i class="bi bi-check-circle-fill" style="font-size:2.5rem;color:var(--primary);"></i></div>
-          <h4 style="font-weight:800;color:var(--primary);">Withdrawal Successful! 🎉</h4>
-          <p style="color:var(--text2);">KES {{wdAmount | number}} sent to M-Pesa {{wdPhone}}</p>
-          <div style="background:var(--bg3);border-radius:var(--r-md);padding:var(--sp-lg);margin:var(--sp-lg) auto;max-width:380px;text-align:left;">
-            <div class="drow"><span class="dl">Reference</span><span class="dv"><code>{{wdRef}}</code></span></div>
-            <div class="drow"><span class="dl">New Balance</span><span class="dv" style="font-weight:700;">KES {{wdNewBalance | number}}</span></div>
-          </div>
-          <button class="btn-o" (click)="downloadReceipt()"><i class="bi bi-download"></i> Download</button>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()" *ngIf="wdStep < 4">Cancel</button>
-      <button class="btn-ghost-s" (click)="wdPrev()" *ngIf="wdStep > 1 && wdStep < 4"><i class="bi bi-arrow-left"></i> Back</button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#c62828,#e53935);" (click)="wdNext()" *ngIf="wdStep < 3">Next <i class="bi bi-arrow-right"></i></button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#c62828,#e53935);" (click)="wdNext()" *ngIf="wdStep === 3"><i class="bi bi-shield-check"></i> Confirm</button>
-      <button class="btn-g" (click)="closeModal()" *ngIf="wdStep === 4"><i class="bi bi-check-circle"></i> Done</button>
+  <div class="wl-summary-box">
+    <h6 class="wl-section-title">💳 Transaction Summary</h6>
+    <ul class="wl-detail-list">
+      <li><span>Deposit Amount</span><strong>KES {{depositAmount || '0'}}</strong></li>
+      <li><span>Channel Fee</span><strong>KES 0</strong></li>
+      <li><span>Tax (Excise Duty)</span><strong>KES 0</strong></li>
+      <li class="bold"><span>Total Charged</span><strong class="text-blue">KES {{depositAmount || '0'}}</strong></li>
+      <li><span>Current Balance</span><strong>KES {{formatBal(balance)}}</strong></li>
+      <li class="bold"><span>New Balance</span><strong class="text-green">KES {{formatBal(balance + (+(depositAmount ||
+          0)))}}</strong></li>
+    </ul>
+  </div>
+  }
+  <!-- step 3 -->
+  @if (depositStep === 3) {
+  <div class="wl-pin-center">
+    <div class="wl-pin-icon">🔒</div>
+    <h5>Enter Transaction PIN</h5>
+    <p>Confirm this deposit of <strong class="text-blue">KES {{depositAmount}}</strong></p>
+    <div class="wl-pin-boxes">
+      @for (p of depositPin; track $index) {
+      <input type="password" maxlength="1" [value]="depositPin[$index]"
+        (input)="onPinInput($index, $any($event.target).value)" class="wl-pin-input">
+      }
     </div>
   </div>
-</div>
-
-<!-- MODAL: Send Money -->
-<div class="modal-overlay" *ngIf="activeModal === 'send'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-blue">
-      <h5><i class="bi bi-send me-2"></i>Send Money</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+  }
+  <!-- step 4 -->
+  @if (depositStep === 4) {
+  <div class="wl-success-center">
+    <div class="wl-success-icon">✓</div>
+    <h4 class="text-green">Deposit Successful! 🎉</h4>
+    <p>KES {{depositAmount}} deposited via {{depositMethod === 'mpesa' ? 'M-Pesa' : depositMethod}}</p>
+    <div class="wl-receipt-box">
+      <ul class="wl-detail-list">
+        <li><span>Reference</span><strong class="text-blue font-mono">WTX-20241218-0901</strong></li>
+        <li><span>Amount</span><strong>KES {{depositAmount}}</strong></li>
+        <li><span>New Balance</span><strong>KES {{formatBal(balance)}}</strong></li>
+        <li><span>Date</span><strong>Dec 18, 2024 · 3:48 PM</strong></li>
+      </ul>
     </div>
-    <div class="modal-body">
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="flbl">Send To</label>
-          <select class="form-select fselect" [(ngModel)]="sendToType" name="sendType">
-            <option value="wallet">SACCOPay Wallet (by ID or name)</option>
-            <option value="phone">Phone Number (M-Pesa)</option>
-          </select>
-        </div>
-        <div class="col-12" *ngIf="sendToType === 'wallet'">
-          <label class="flbl">Wallet ID or Member Name</label>
-          <input type="text" class="form-control finput" [(ngModel)]="sendWalletId" name="sendWallet" placeholder="e.g. SP-WAL-00234">
-        </div>
-        <div class="col-12" *ngIf="sendToType === 'phone'">
-          <label class="flbl">Phone Number</label>
-          <input type="tel" class="form-control finput" [(ngModel)]="sendPhone" name="sendPhone" placeholder="+254 7XX XXX XXX">
-        </div>
-        <div class="col-12">
-          <label class="flbl">Amount (KES)</label>
-          <input type="number" class="form-control finput" [(ngModel)]="sendAmount" name="sendAmt" placeholder="Amount">
-        </div>
-        <div class="col-12">
-          <label class="flbl">Note (Optional)</label>
-          <input type="text" class="form-control finput" [(ngModel)]="sendNote" name="sendNote" placeholder="What's this for?">
-        </div>
-      </div>
-      <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:var(--bg3);border-radius:var(--r-md);font-size:.82rem;">
-        <div class="drow"><span class="dl">Fee</span><span class="dv">KES 0</span></div>
-        <div class="drow"><span class="dl">Total</span><span class="dv" style="color:var(--blue);"><strong>KES {{sendAmount | number}}</strong></span></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#1565c0,#1976d2);" (click)="processSend()"><i class="bi bi-send"></i> Send Money</button>
+    <div class="wl-success-actions">
+      <button class="wl-btn-outline">⬇ Download Receipt</button>
+      <button class="wl-btn-ghost" (click)="showToast('Receipt shared!','info')">⤳ Share</button>
     </div>
   </div>
+  }
 </div>
+<footer class="wl-modal-foot">
+  <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+  @if (depositStep > 1 && depositStep < 4) { <button class="wl-btn-ghost" (click)="depositBack()">‹ Back</button>
+    }
+    @if (depositStep < 3) { <button class="wl-btn-primary" (click)="depositNext()">Next →</button>
+      }
+      @if (depositStep === 3) {
+      <button class="wl-btn-primary" (click)="depositNext()">✓ Confirm Deposit</button>
+      }
+      @if (depositStep === 4) {
+      <button class="wl-btn-primary" (click)="closeModal()">Done</button>
+      }
+</footer>
+</div>
+}
 
-<!-- MODAL: Transfer -->
-<div class="modal-overlay" *ngIf="activeModal === 'transfer'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-purple">
-      <h5><i class="bi bi-arrow-left-right me-2"></i>Internal Transfer</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="flbl">Transfer To</label>
-          <select class="form-select fselect" [(ngModel)]="transferTo" name="transTo">
-            <option>Regular Savings (KES 250,000)</option>
-            <option>Share Capital — Buy Shares (Non-withdrawable)</option>
-            <option>Emergency Fund (KES 18,000)</option>
-            <option>Fixed Deposit — Create New</option>
-            <option>Holiday Savings</option>
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="flbl">Amount (KES)</label>
-          <input type="number" class="form-control finput" [(ngModel)]="transferAmount" name="transAmt" placeholder="Amount">
-        </div>
-        <div class="col-12">
-          <label class="flbl">Narration</label>
-          <input type="text" class="form-control finput" [(ngModel)]="transferNarration" name="transNarr" placeholder="e.g. Monthly savings">
-        </div>
-      </div>
-      <div style="margin-top:var(--sp-md);padding:var(--sp-md);background:rgba(156,39,176,0.06);border:1px solid rgba(156,39,176,0.15);border-radius:var(--r-md);font-size:.82rem;color:#6a1b9a;">
-        <i class="bi bi-info-circle-fill me-1"></i>Transfers to <strong>Share Capital</strong> are non-withdrawable.
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);" (click)="processTransfer()"><i class="bi bi-arrow-left-right"></i> Transfer</button>
+<!-- ═══ Withdraw ═══ -->
+@if (activeModal === 'withdraw') {
+<div class="wl-modal" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>📤 Withdraw from Wallet</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <label>WITHDRAW TO</label>
+    <select [(ngModel)]="withdrawTo">
+      <option value="mpesa">M-Pesa</option>
+      <option value="airtel">Airtel Money</option>
+      <option value="bank">Bank Account</option>
+    </select>
+    <label>AMOUNT (KES)</label>
+    <input type="number" [(ngModel)]="withdrawAmount" placeholder="Enter amount">
+    <label>PHONE / ACCOUNT NUMBER</label>
+    <input type="text" [(ngModel)]="withdrawPhone" placeholder="e.g. 0722-XXX-123">
+    <div class="wl-note warn">⚠ Withdrawal fee: KES 30 for M-Pesa. Allow up to 5 minutes.</div>
+  </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="wl-btn-primary" (click)="submitWithdraw()">📤 Withdraw</button>
+  </footer>
+</div>
+}
+
+<!-- ═══ Send ═══ -->
+@if (activeModal === 'send') {
+<div class="wl-modal" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head blue">
+    <h5>✈ Send Money</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <label>SEND TO</label>
+    <select [(ngModel)]="sendTo">
+      <option value="wallet">SACCOPay Wallet (by ID or name)</option>
+      <option value="mpesa">M-Pesa Number</option>
+    </select>
+    <label>WALLET ID OR MEMBER NAME</label>
+    <input type="text" [(ngModel)]="sendId" placeholder="e.g. SP-WAL-00234">
+    <label>AMOUNT (KES)</label>
+    <input type="number" [(ngModel)]="sendAmount" placeholder="Enter amount">
+    <label>NOTE (OPTIONAL)</label>
+    <input type="text" [(ngModel)]="sendNote" placeholder="What's this for?">
+    <div class="wl-summary-box compact">
+      <ul class="wl-detail-list">
+        <li><span>Fee</span><strong>KES 0</strong></li>
+        <li class="bold"><span>Total</span><strong class="text-blue">KES {{sendAmount || '0'}}</strong></li>
+      </ul>
     </div>
   </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="wl-btn-primary" (click)="submitSend()">✈ Send Money</button>
+  </footer>
 </div>
+}
 
-<!-- MODAL: Request Money -->
-<div class="modal-overlay" *ngIf="activeModal === 'request'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-orange">
-      <h5><i class="bi bi-inbox me-2"></i>Request Money</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
+<!-- ═══ Transfer ═══ -->
+@if (activeModal === 'transfer') {
+<div class="wl-modal" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head purple">
+    <h5>⇄ Internal Transfer</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <label>TRANSFER TO</label>
+    <select [(ngModel)]="transferTo">
+      <option value="savings">Regular Savings (KES 250,000)</option>
+      <option value="shares">Share Capital (KES 50,000)</option>
+    </select>
+    <label>AMOUNT (KES)</label>
+    <input type="number" [(ngModel)]="transferAmount" placeholder="Enter amount">
+    <label>NARRATION</label>
+    <input type="text" [(ngModel)]="transferNarration" placeholder="e.g. Monthly savings">
+    <div class="wl-note info">ⓘ Transfers to <strong>Share Capital</strong> are non-withdrawable.</div>
+  </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="wl-btn-primary purple" (click)="submitTransfer()">⇄ Transfer</button>
+  </footer>
+</div>
+}
+
+<!-- ═══ Request ═══ -->
+@if (activeModal === 'request') {
+<div class="wl-modal" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>💬 Request Payment</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <label>REQUEST FROM (WALLET ID OR PHONE)</label>
+    <input type="text" [(ngModel)]="requestFrom" placeholder="e.g. SP-WAL-00234 or 0722-XXX-XXX">
+    <label>AMOUNT (KES)</label>
+    <input type="number" [(ngModel)]="requestAmount" placeholder="Enter amount">
+    <label>NOTE (OPTIONAL)</label>
+    <textarea rows="2" [(ngModel)]="requestNote" placeholder="Reason for request..."></textarea>
+  </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="wl-btn-primary" (click)="submitRequest()">📨 Send Request</button>
+  </footer>
+</div>
+}
+
+<!-- ═══ Service Modals (Overdraft, Quick Loan, etc) ═══ -->
+@if (activeModal === 'overdraft' || activeModal === 'quickloan' || activeModal === 'salaryadvance' || activeModal ===
+'bnpl') {
+<div class="wl-modal" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>⚡ {{ selectedService?.title || '' }}</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <p>{{selectedService?.desc}}</p>
+    <p class="wl-service-details">{{selectedService?.details}}</p>
+    <label>AMOUNT (KES)</label>
+    <input type="number" placeholder="Enter amount">
+    @if (activeModal === 'salaryadvance') {
+    <label>EMPLOYER</label>
+    <select>
+      <option>Select employer...</option>
+      <option>Rongo SACCO</option>
+    </select>
+    }
+    @if (activeModal === 'bnpl') {
+    <label>MERCHANT / ITEM</label>
+    <input type="text" placeholder="e.g. Electronics store – Laptop">
+    }
+    <div class="wl-note info">ⓘ Funds will be credited to your wallet instantly upon approval.</div>
+  </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="wl-btn-primary" (click)="applyService(selectedService?.title || '')">✓ Apply Now</button>
+  </footer>
+</div>
+}
+
+<!-- ═══ Full Statement ═══ -->
+@if (activeModal === 'fullStatement') {
+<div class="wl-modal lg" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>📄 Wallet Statement</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body scroll">
+    <div class="wl-form-grid">
+      <div><label>FROM</label><input type="date"></div>
+      <div><label>TO</label><input type="date"></div>
     </div>
-    <div class="modal-body">
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="flbl">Request From</label>
-          <input type="text" class="form-control finput" [(ngModel)]="requestFrom" name="reqFrom" placeholder="Member name, wallet ID, or phone number">
-        </div>
-        <div class="col-12">
-          <label class="flbl">Amount (KES)</label>
-          <input type="number" class="form-control finput" [(ngModel)]="requestAmount" name="reqAmt" placeholder="Amount">
-        </div>
-        <div class="col-12">
-          <label class="flbl">Reason</label>
-          <input type="text" class="form-control finput" [(ngModel)]="requestReason" name="reqReason" placeholder="e.g. Contribution for event">
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="processRequest()"><i class="bi bi-send"></i> Send Request</button>
+    <div class="wl-table-wrap">
+      <table class="wl-table">
+        <thead>
+          <tr>
+            <th>DATE</th>
+            <th>DESCRIPTION</th>
+            <th>AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tx of transactions; track tx.title+tx.date) {
+          <tr>
+            <td><small>{{tx.date}}</small></td>
+            <td>{{tx.title}}</td>
+            <td [class.pos]="tx.positive" [class.neg]="!tx.positive" class="amt">{{tx.amount}}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Close</button>
+    <button class="wl-btn-primary" (click)="showToast('Statement downloading...','info'); closeModal()">⬇ Download
+      PDF</button>
+  </footer>
 </div>
+}
 
-<!-- MODAL: Transaction Detail -->
-<div class="modal-overlay" *ngIf="activeModal === 'txDetail'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-green">
-      <h5><i class="bi bi-receipt me-2"></i>Transaction Details</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body" *ngIf="selectedTransaction">
-      <div style="text-align:center;margin-bottom:var(--sp-lg);">
-        <div style="width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-sm);font-size:1.5rem;"
-             [style.background]="selectedTransaction.type === 'Deposit' || selectedTransaction.type === 'Received' ? 'rgba(26,115,232,0.1)' : 'rgba(244,67,54,0.1)'"
-             [style.color]="selectedTransaction.type === 'Deposit' || selectedTransaction.type === 'Received' ? 'var(--primary)' : 'var(--red)'">
-          <i class="bi bi-{{selectedTransaction.type === 'Deposit' || selectedTransaction.type === 'Received' ? 'arrow-down' : 'arrow-up'}}-circle-fill"></i>
-        </div>
-        <h5 style="font-weight:700;">{{selectedTransaction.title}}</h5>
-        <h4 [style.color]="selectedTransaction.type === 'Deposit' || selectedTransaction.type === 'Received' ? 'var(--primary)' : 'var(--red)'">{{selectedTransaction.amount}}</h4>
-      </div>
-      <div class="drow"><span class="dl">Date & Time</span><span class="dv">{{selectedTransaction.date}}</span></div>
-      <div class="drow"><span class="dl">Channel</span><span class="dv">{{selectedTransaction.channel}}</span></div>
-      <div class="drow"><span class="dl">Status</span><span class="dv" style="color:var(--primary);"><i class="bi bi-check-circle-fill"></i> {{selectedTransaction.status}}</span></div>
-      <div class="drow"><span class="dl">Flow</span><span class="dv">{{selectedTransaction.flow}}</span></div>
-      <div class="drow"><span class="dl">Balance After</span><span class="dv" style="font-weight:700;">{{selectedTransaction.balanceAfter}}</span></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Close</button>
-      <button class="btn-o" (click)="downloadReceipt()"><i class="bi bi-download"></i> Receipt</button>
-      <button class="btn-ghost-s" (click)="shareReceipt()"><i class="bi bi-share"></i> Share</button>
-    </div>
+<!-- ═══ Transaction Detail ═══ -->
+@if (activeModal === 'txDetail' && selectedTx) {
+<div class="wl-modal sm" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>📋 Transaction Detail</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <ul class="wl-detail-list">
+      <li><span>Description</span><strong>{{selectedTx.title}}</strong></li>
+      <li><span>Amount</span><strong [class.pos]="selectedTx.positive"
+          [class.neg]="!selectedTx.positive">{{selectedTx.amount}}</strong></li>
+      <li><span>Reference</span><strong class="font-mono text-blue">{{selectedTx.sub}}</strong></li>
+      <li><span>Date</span><strong>{{selectedTx.date}}</strong></li>
+      <li><span>Status</span><span class="wl-pill ok">Completed</span></li>
+    </ul>
   </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Close</button>
+    <button class="wl-btn-ghost" (click)="showToast('Receipt downloaded','info')">⬇ Receipt</button>
+  </footer>
 </div>
+}
 
-<!-- MODAL: Overdraft -->
-<div class="modal-overlay" *ngIf="activeModal === 'overdraft'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-green">
-      <h5><i class="bi bi-cash-coin me-2"></i>SACCOPay Overdraft</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:var(--primary-ultra);border-radius:var(--r-md);padding:var(--sp-lg);margin-bottom:var(--sp-lg);text-align:center;">
-        <div style="font-size:.72rem;color:var(--text3);">Your Overdraft Limit</div>
-        <div style="font-size:1.8rem;font-weight:800;color:var(--primary);">KES {{overdraftLimit | number}}</div>
-        <div style="font-size:.78rem;color:var(--text2);">Available now · Instant disbursement</div>
-      </div>
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="flbl">Amount (KES)</label>
-          <input type="number" class="form-control finput" [(ngModel)]="overdraftAmount" name="odAmt" [max]="overdraftLimit" placeholder="Max: 50,000">
-        </div>
-      </div>
-      <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:var(--bg3);border-radius:var(--r-md);font-size:.82rem;">
-        <div class="drow"><span class="dl">Amount</span><span class="dv">KES {{overdraftAmount | number}}</span></div>
-        <div class="drow"><span class="dl">Interest (1.5%/mo)</span><span class="dv">KES {{overdraftInterest | number}}</span></div>
-        <div class="drow"><span class="dl">Repay By</span><span class="dv">{{overdraftRepayDate}}</span></div>
-        <div class="drow"><span class="dl">Total Repayable</span><span class="dv" style="color:var(--primary);"><strong>KES {{overdraftTotal | number}}</strong></span></div>
-      </div>
-      <div style="margin-top:var(--sp-md);font-size:.78rem;color:var(--text3);">
-        <i class="bi bi-info-circle me-1"></i>Provided by SACCOPay (PSP). Not from your SACCO savings. Auto-deducted from next wallet deposit.
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" (click)="processOverdraft()"><i class="bi bi-cash-coin"></i> Get Overdraft</button>
-    </div>
+<!-- ═══ PIN Modal ═══ -->
+@if (activeModal === 'pin') {
+<div class="wl-modal sm" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>🔑 Change Transaction PIN</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <label>CURRENT PIN</label>
+    <input type="password" placeholder="Enter current PIN" maxlength="4">
+    <label>NEW PIN</label>
+    <input type="password" placeholder="Enter new PIN" maxlength="4">
+    <label>CONFIRM NEW PIN</label>
+    <input type="password" placeholder="Re-enter new PIN" maxlength="4">
   </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-outline" (click)="closeModal()">Cancel</button>
+    <button class="wl-btn-primary" (click)="showToast('PIN updated successfully','success'); closeModal()">✓ Update
+      PIN</button>
+  </footer>
 </div>
+}
 
-<!-- MODAL: Quick Loan -->
-<div class="modal-overlay" *ngIf="activeModal === 'quickLoan'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-blue">
-      <h5><i class="bi bi-rocket-takeoff me-2"></i>SACCOPay Quick Loan</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:rgba(33,150,243,0.06);border-radius:var(--r-md);padding:var(--sp-lg);margin-bottom:var(--sp-lg);text-align:center;">
-        <div style="font-size:.72rem;color:var(--text3);">Your Quick Loan Limit</div>
-        <div style="font-size:1.8rem;font-weight:800;color:var(--blue);">KES {{quickLoanLimit | number}}</div>
-      </div>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="flbl">Amount (KES)</label>
-          <input type="number" class="form-control finput" [(ngModel)]="quickLoanAmount" name="qlAmt">
-        </div>
-        <div class="col-md-6">
-          <label class="flbl">Tenure</label>
-          <select class="form-select fselect" [(ngModel)]="quickLoanTenure" name="qlTenure">
-            <option>1 month</option>
-            <option>3 months</option>
-            <option>6 months</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:var(--bg3);border-radius:var(--r-md);font-size:.82rem;">
-        <div class="drow"><span class="dl">Amount</span><span class="dv">KES {{quickLoanAmount | number}}</span></div>
-        <div class="drow"><span class="dl">Interest (12% p.a.)</span><span class="dv">KES {{quickLoanInterest | number}}</span></div>
-        <div class="drow"><span class="dl">Monthly Payment</span><span class="dv">KES {{quickLoanMonthly | number}}</span></div>
-        <div class="drow"><span class="dl">Total Repayable</span><span class="dv" style="color:var(--blue);"><strong>KES {{quickLoanTotal | number}}</strong></span></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#1565c0,#1976d2);" (click)="processQuickLoan()"><i class="bi bi-rocket-takeoff"></i> Apply Now</button>
-    </div>
+<!-- ═══ Limits Modal ═══ -->
+@if (activeModal === 'limits') {
+<div class="wl-modal sm" role="dialog" (click)="$event.stopPropagation()">
+  <header class="wl-modal-head">
+    <h5>📊 Transaction Limits</h5>
+    <button class="wl-x" (click)="closeModal()">×</button>
+  </header>
+  <div class="wl-modal-body">
+    <ul class="wl-detail-list">
+      <li><span>Daily Limit</span><strong>KES 100,000</strong></li>
+      <li><span>Monthly Limit</span><strong>KES 1,000,000</strong></li>
+      <li><span>Single Transaction</span><strong>KES 70,000</strong></li>
+      <li><span>Daily Used</span><strong class="text-blue">KES 35,000</strong></li>
+      <li><span>Monthly Used</span><strong class="text-blue">KES 285,000</strong></li>
+    </ul>
+    <div class="wl-note info">ⓘ Contact support to request a limit increase.</div>
   </div>
+  <footer class="wl-modal-foot">
+    <button class="wl-btn-primary" (click)="closeModal()">Got it</button>
+  </footer>
 </div>
+}
 
-<!-- MODAL: Salary Advance -->
-<div class="modal-overlay" *ngIf="activeModal === 'salaryAdvance'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-purple">
-      <h5><i class="bi bi-calendar2-check me-2"></i>Salary Advance</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:rgba(156,39,176,0.06);border-radius:var(--r-md);padding:var(--sp-lg);margin-bottom:var(--sp-lg);text-align:center;">
-        <div style="font-size:.72rem;color:var(--text3);">Based on Your Salary</div>
-        <div style="font-size:1.8rem;font-weight:800;color:var(--purple);">KES {{salaryAdvanceMax | number}}</div>
-        <div style="font-size:.78rem;color:var(--text2);">50% of KES 85,000 net salary</div>
-      </div>
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="flbl">Amount (KES)</label>
-          <input type="number" class="form-control finput" [(ngModel)]="salaryAdvanceAmount" name="saAmt" [max]="salaryAdvanceMax">
-        </div>
-      </div>
-      <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:var(--bg3);border-radius:var(--r-md);font-size:.82rem;">
-        <div class="drow"><span class="dl">Advance</span><span class="dv">KES {{salaryAdvanceAmount | number}}</span></div>
-        <div class="drow"><span class="dl">Fee (3%)</span><span class="dv">KES {{salaryAdvanceFee | number}}</span></div>
-        <div class="drow"><span class="dl">You Receive</span><span class="dv" style="color:var(--purple);"><strong>KES {{salaryAdvanceReceive | number}}</strong></span></div>
-        <div class="drow"><span class="dl">Repay On</span><span class="dv">{{salaryAdvanceRepayDate}}</span></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);" (click)="processSalaryAdv()"><i class="bi bi-calendar2-check"></i> Get Advance</button>
-    </div>
-  </div>
-</div>
 
-<!-- MODAL: BNPL -->
-<div class="modal-overlay" *ngIf="activeModal === 'bnpl'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-orange">
-      <h5><i class="bi bi-bag-check me-2"></i>Buy Now Pay Later</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="text-align:center;padding:var(--sp-lg);">
-        <div style="font-size:2.5rem;margin-bottom:var(--sp-md);">🛍️</div>
-        <h5>Coming Soon!</h5>
-        <p style="color:var(--text2);font-size:.85rem;">Split purchases into 3 easy installments with 0% interest at partner merchants.</p>
-        <button class="btn-o mt-3" (click)="bnplNotify()"><i class="bi bi-bell"></i> Notify Me</button>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Close</button>
-    </div>
-  </div>
+<!-- ═══ Toast ═══ -->
+@if (toast) {
+<div class="wl-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'"
+  [class.warn]="toast.type==='warning'" [class.danger]="toast.type==='danger'">
+  <span class="wl-toast-ico">
+    @switch (toast.type) {
+    @case ('success') { ✓ }
+    @case ('info') { ⓘ }
+    @case ('warning') { ⚠ }
+    @case ('danger') { ✕ }
+    }
+  </span>
+  <span class="wl-toast-msg">{{toast.message}}</span>
+  <button class="wl-toast-x" (click)="dismissToast()">×</button>
 </div>
-
-<!-- MODAL: PIN Setup -->
-<div class="modal-overlay" *ngIf="activeModal === 'pinSetup'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-dark">
-      <h5><i class="bi bi-key me-2"></i>Transaction PIN</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="row g-3">
-        <div class="col-12">
-          <label class="flbl">Current PIN</label>
-          <input type="password" class="form-control finput" maxlength="4" [(ngModel)]="pinCurrent" name="pinCur" placeholder="Enter current PIN">
-        </div>
-        <div class="col-12">
-          <label class="flbl">New PIN</label>
-          <input type="password" class="form-control finput" maxlength="4" [(ngModel)]="pinNew" name="pinNew" placeholder="New 4-digit PIN">
-        </div>
-        <div class="col-12">
-          <label class="flbl">Confirm New PIN</label>
-          <input type="password" class="form-control finput" maxlength="4" [(ngModel)]="pinConfirm" name="pinConf" placeholder="Re-enter PIN">
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Cancel</button>
-      <button class="btn-g" (click)="changePin()"><i class="bi bi-key"></i> Update PIN</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Limits -->
-<div class="modal-overlay" *ngIf="activeModal === 'limits'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-dark">
-      <h5><i class="bi bi-speedometer2 me-2"></i>Transaction Limits</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="margin-bottom:var(--sp-md);">
-        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;">
-          <span>Daily Send</span><span style="font-weight:600;">KES {{limitDailySendUsed | number}} / {{limitDailySendMax | number}}</span>
-        </div>
-        <div style="height:6px;background:var(--bg3);border-radius:var(--r-full);overflow:hidden;">
-          <div style="height:100%;background:linear-gradient(90deg,var(--primary),var(--blue));border-radius:var(--r-full);"
-               [style.width.%]="(limitDailySendUsed / limitDailySendMax) * 100"></div>
-        </div>
-      </div>
-      <div style="margin-bottom:var(--sp-md);">
-        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;">
-          <span>Daily Withdrawal</span><span style="font-weight:600;">KES {{limitDailyWithdrawUsed | number}} / {{limitDailyWithdrawMax | number}}</span>
-        </div>
-        <div style="height:6px;background:var(--bg3);border-radius:var(--r-full);overflow:hidden;">
-          <div style="height:100%;background:linear-gradient(90deg,var(--blue),#42a5f5);border-radius:var(--r-full);"
-               [style.width.%]="(limitDailyWithdrawUsed / limitDailyWithdrawMax) * 100"></div>
-        </div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;">
-          <span>Monthly Volume</span><span style="font-weight:600;">KES {{limitMonthlyUsed | number}} / {{limitMonthlyMax | number}}</span>
-        </div>
-        <div style="height:6px;background:var(--bg3);border-radius:var(--r-full);overflow:hidden;">
-          <div style="height:100%;background:linear-gradient(90deg,var(--purple),#ba68c8);border-radius:var(--r-full);"
-               [style.width.%]="(limitMonthlyUsed / limitMonthlyMax) * 100"></div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Share Wallet -->
-<div class="modal-overlay" *ngIf="activeModal === 'shareWallet'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog">
-    <div class="modal-header mh-dark">
-      <h5><i class="bi bi-share me-2"></i>Share Payment Link</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body" style="text-align:center;">
-      <div style="width:64px;height:64px;border-radius:50%;background:rgba(26,115,232,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-md);">
-        <i class="bi bi-wallet2" style="font-size:1.5rem;color:var(--primary);"></i>
-      </div>
-      <h5 style="font-weight:700;">Pay {{userName}}</h5>
-      <p style="font-size:.82rem;color:var(--text2);">Share this link to receive money</p>
-      <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:2px solid var(--border);border-radius:var(--r-md);padding:10px 16px;margin:var(--sp-md) 0;cursor:pointer;font-family:'SF Mono','Consolas',monospace;font-size:.82rem;" (click)="copyPaymentLink()">
-        <i class="bi bi-link-45deg" style="color:var(--primary);"></i>
-        <span style="flex:1;text-align:left;">pay.saccopay.co.ke/{{walletId.replace('SP-WAL-','')}}</span>
-        <i class="bi bi-copy" style="color:var(--primary);"></i>
-      </div>
-      <div style="display:flex;justify-content:center;gap:var(--sp-md);">
-        <div style="width:42px;height:42px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" (click)="shareWhatsApp()">
-          <i class="bi bi-whatsapp" style="color:#25d366;"></i>
-        </div>
-        <div style="width:42px;height:42px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" (click)="shareSMS()">
-          <i class="bi bi-chat-dots" style="color:var(--blue);"></i>
-        </div>
-        <div style="width:42px;height:42px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" (click)="shareEmail()">
-          <i class="bi bi-envelope" style="color:var(--orange);"></i>
-        </div>
-        <div style="width:42px;height:42px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" (click)="copyPaymentLink()">
-          <i class="bi bi-clipboard" style="color:var(--purple);"></i>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost-s" (click)="closeModal()">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: QR Code -->
-<div class="modal-overlay" *ngIf="activeModal === 'qr'" (click)="closeModalOnBackdrop($event)">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-header mh-dark">
-      <h5><i class="bi bi-qr-code me-2"></i>Wallet QR</h5>
-      <button class="btn-close-custom" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body" style="text-align:center;">
-      <div style="width:160px;height:160px;margin:0 auto;background:white;border:3px solid var(--text1);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;">
-        <div class="qr-grid">
-          <div *ngFor="let cell of qrCells" class="qr-cell" [class.filled]="cell" [class.empty]="!cell"></div>
-        </div>
-      </div>
-      <p style="margin-top:var(--sp-md);font-size:.82rem;"><strong>{{walletId}}</strong></p>
-      <p style="font-size:.72rem;color:var(--text3);">Scan to pay {{userName}}</p>
-    </div>
-    <div class="modal-footer justify-content-center">
-      <button class="btn-o" style="font-size:.78rem;" (click)="downloadQR()"><i class="bi bi-download"></i> Download</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-   TOAST CONTAINER
-   ═══════════════════════════════════════════════════════════════ -->
-<div class="toast-container">
-  <div class="sp-toast" *ngFor="let toast of toasts">
-    <i class="bi bi-check-circle-fill"></i>
-    <span>{{toast.message}}</span>
-    <button class="toast-close" (click)="removeToast(toast.id)">&times;</button>
-  </div>
-</div>
+}

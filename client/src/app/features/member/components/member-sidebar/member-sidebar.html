@@ -1,4 +1,3 @@
-<!-- member-sidebar.component.html -->
 <aside class="sp-sidebar" [class.show]="isOpen" [class.minimized]="isMinimized" id="sidebar">
 
   <!-- Brand Header -->
@@ -17,7 +16,6 @@
 
   <!-- Member Badge -->
   <div class="member-badge" [class.justify-content-center]="isMinimized">
-    <!-- <div class="member-avatar">{{ userInitials }}</div> -->
     <div class="member-info" [class.d-none]="isMinimized">
       <div class="member-name">{{ userName }}</div>
       <div class="member-id">{{ memberId }}</div>
@@ -30,99 +28,22 @@
 
   <!-- Scrollable Navigation -->
   <nav class="sidebar-nav">
-    <!-- Main -->
-    <div class="nav-section">
-      <div class="section-label" [class.d-none]="isMinimized">Main</div>
-      <a routerLink="/member/dashboard" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-grid-fill"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Dashboard</span>
-      </a>
-      <a routerLink="/member/wallet" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-wallet2"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Wallet</span>
-      </a>
-      <a routerLink="/member/profile" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Sacco Profile</span>
-      </a>
-    </div>
+    <div class="nav-section" *ngFor="let section of navSections">
+      <div class="section-label" [class.d-none]="isMinimized">{{ section.label }}</div>
 
-    <!-- Finance -->
-    <div class="nav-section">
-      <div class="section-label" [class.d-none]="isMinimized">Finance</div>
-      <a routerLink="/member/savings" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-piggy-bank"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Savings</span>
-      </a>
-      <a routerLink="/member/deposits" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-arrow-down-circle"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Deposits</span>
-      </a>
-      <a routerLink="/member/withdrawals" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-arrow-up-circle"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Withdrawals</span>
-      </a>
-    </div>
+      <a *ngFor="let link of section.links"
+         [routerLink]="link.path"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: link.exact || false }"
+         class="nav-link"
+         (click)="onNavLinkClick()">
+        <span class="nav-icon"><i class="bi {{ link.icon }}"></i></span>
+        <span class="nav-text flex-grow-1" [class.d-none]="isMinimized">{{ link.label }}</span>
 
-    <!-- Loans -->
-    <div class="nav-section">
-      <div class="section-label" [class.d-none]="isMinimized">Loans</div>
-      <a routerLink="/member/loans" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-cash-stack"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">My Loans</span>
-      </a>
-      <a routerLink="/member/loan-repayments" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-credit-card"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Loan Repayment</span>
-      </a>
-    </div>
-
-    <!-- Membership -->
-    <div class="nav-section">
-      <div class="section-label" [class.d-none]="isMinimized">Membership</div>
-      <a routerLink="/member/shares" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-pie-chart"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Shares</span>
-      </a>
-      <a routerLink="/member/dividends" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-coin"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Dividends</span>
-      </a>
-      <a routerLink="/member/guarantors" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-people"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Guarantors</span>
-      </a>
-    </div>
-
-    <!-- Reports -->
-    <div class="nav-section">
-      <div class="section-label" [class.d-none]="isMinimized">Reports</div>
-      <a routerLink="/member/statements" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-file-text"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Statements</span>
-      </a>
-      <a routerLink="/member/transactions" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-arrow-left-right"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Transactions</span>
-      </a>
-    </div>
-
-    <!-- Account -->
-    <div class="nav-section">
-      <div class="section-label" [class.d-none]="isMinimized">Account</div>
-      <a routerLink="/member/notifications" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-bell"></i></span>
-        <span class="nav-text flex-grow-1" [class.d-none]="isMinimized">Notifications</span>
-        <span class="nav-badge" *ngIf="notificationCount > 0 && !isMinimized">{{ notificationCount }}</span>
-        <span class="nav-badge-dot" *ngIf="notificationCount > 0 && isMinimized"></span>
-      </a>
-      <a routerLink="/member/settings" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-gear"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Settings</span>
-      </a>
-      <a routerLink="/member/support" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
-        <span class="nav-icon"><i class="bi bi-question-circle"></i></span>
-        <span class="nav-text" [class.d-none]="isMinimized">Support</span>
+        <!-- Badge for minimized state -->
+        <span class="nav-badge-dot" *ngIf="hasBadge(link) && isMinimized"></span>
+        <!-- Badge for expanded state -->
+        <span class="nav-badge" *ngIf="hasBadge(link) && !isMinimized">{{ link.badge }}</span>
       </a>
     </div>
   </nav>

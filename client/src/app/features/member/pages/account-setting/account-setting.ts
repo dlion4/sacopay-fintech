@@ -1,501 +1,454 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 
-/* ═══════════════════════════════════════════════════════════════
-   INTERFACES
-   ═══════════════════════════════════════════════════════════════ */
+// ─── Tab Types ────────────────────────────────────────────────────────────────
+export type SettingsTab =
+  | 'profile' | 'employment' | 'emergency' | 'preferences'
+  | 'notifications' | 'security' | 'support';
 
-interface ProfileData {
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+export interface ProfileData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   nationalId: string;
-  dateOfBirth: string;
+  dob: string;
   address: string;
   county: string;
   postalCode: string;
 }
 
-interface EmploymentData {
+export interface EmploymentData {
   employerName: string;
   jobTitle: string;
-  monthlyIncome: number;
+  grossIncome: string;
   payrollNumber: string;
   employmentType: string;
-  yearsAtJob: number;
+  yearsAtJob: string;
   employerContact: string;
 }
 
-interface EmergencyData {
+export interface EmergencyData {
   contactName: string;
   relationship: string;
   phone: string;
   altPhone: string;
 }
 
-interface PreferencesData {
+export interface PreferencesData {
   language: string;
   currency: string;
   timezone: string;
   dateFormat: string;
 }
 
-interface KycItem {
-  id: string;
-  title: string;
-  description: string;
-  badgeText: string;
-  badgeClass: string;
-  badgeIcon: string;
-  canUpload: boolean;
+export interface NotifPrefs {
+  email: {
+    transactionAlerts: boolean;
+    loanStatusUpdates: boolean;
+    dividendDeclarations: boolean;
+    monthlyStatements: boolean;
+    agmAnnouncements: boolean;
+    saccoPayAlerts: boolean;
+  };
+  sms: {
+    paymentReminders: boolean;
+    otpSecurityCodes: boolean;
+    agmAnnouncements: boolean;
+    saccoPayUpdates: boolean;
+    loanReminders: boolean;
+  };
+  push: {
+    enabled: boolean;
+    transactions: boolean;
+    security: boolean;
+    reminders: boolean;
+  };
 }
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  enabled: boolean;
-  disabled: boolean;
+export interface SecurityData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  showCurrent: boolean;
+  showNew: boolean;
+  showConfirm: boolean;
+  twoFAEnabled: boolean;
 }
 
-interface SupportTicket {
+export interface KycItem {
   id: string;
-  subject: string;
-  priority: string;
-  priorityClass: string;
-  status: string;
-  statusClass: string;
+  label: string;
+  desc: string;
+  status: 'verified' | 'approved' | 'pending' | 'rejected';
 }
 
-interface Toast {
+export interface SessionItem {
+  device: string;
+  location: string;
+  date: string;
+  current: boolean;
+}
+
+export interface ToastMsg {
   id: number;
+  type: 'success' | 'danger' | 'info' | 'warning';
   message: string;
-  type: string;
+}
+
+export interface TabDef {
+  key: SettingsTab;
+  label: string;
   icon: string;
 }
-
-interface PasswordStrength {
-  width: number;
-  color: string;
-  label: string;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   COMPONENT
-   ═══════════════════════════════════════════════════════════════ */
 
 @Component({
   selector: 'app-account-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './account-setting.html',
-  styleUrls: ['./account-setting.scss']
+  styleUrls: ['./account-setting.scss'],
 })
-export class AccountSettingsComponent {
+export class AccountSettingsComponent implements OnInit {
 
-  /* ─── Active Tab ─── */
-  activeTab: string = 'profile';
+  // ── Active Tab ───────────────────────────────────────────────────────────────
+  activeTab: SettingsTab = 'profile';
+  lastUpdated = 'Feb 23, 2025';
 
-  /* ─── Dropdown Options ─── */
-  counties: string[] = ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Kiambu', 'Machakos'];
-  employmentTypes: string[] = ['Permanent & Pensionable', 'Contract', 'Casual', 'Self-Employed', 'Retired'];
-  relationships: string[] = ['Spouse', 'Parent', 'Sibling', 'Child', 'Friend', 'Other'];
-  languages: string[] = ['English (Kenya)', 'Swahili', 'English (US)', 'English (UK)'];
-  currencies: string[] = ['KES – Kenyan Shilling', 'USD – US Dollar', 'EUR – Euro', 'GBP – British Pound'];
-  timezones: string[] = ['Africa/Nairobi (GMT+3)', 'Africa/Lagos (GMT+1)', 'Europe/London (GMT+0)', 'America/New_York (GMT-5)'];
-  dateFormats: string[] = ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'D MMM YYYY'];
+  // ── Tabs Definition ──────────────────────────────────────────────────────────
+  tabs: TabDef[] = [
+    { key: 'profile',       label: 'Profile',       icon: 'user' },
+    { key: 'employment',    label: 'Employment',    icon: 'briefcase' },
+    { key: 'emergency',     label: 'Emergency',     icon: 'phone' },
+    { key: 'preferences',   label: 'Preferences',   icon: 'globe' },
+    { key: 'notifications', label: 'Notifications', icon: 'bell' },
+    { key: 'security',      label: 'Security',      icon: 'shield' },
+    { key: 'support',       label: 'Support',       icon: 'headphones' },
+  ];
 
-  /* ─── Profile Data ─── */
+  // ── Toast ────────────────────────────────────────────────────────────────────
+  toasts: ToastMsg[] = [];
+  private toastCounter = 0;
+
+  // ── Profile ──────────────────────────────────────────────────────────────────
   profile: ProfileData = {
     firstName: 'John',
     lastName: 'Doe',
     email: 'john.doe@enterprise-email.com',
     phone: '+254 712 345 678',
     nationalId: '12345678',
-    dateOfBirth: '1985-04-15',
+    dob: '04/15/1985',
     address: 'P.O Box 12345, Nairobi',
     county: 'Nairobi',
-    postalCode: '00100'
+    postalCode: '00100',
   };
+  profileOriginal: ProfileData = { ...this.profile };
 
-  private originalProfile: ProfileData = { ...this.profile };
-
-  /* ─── Employment Data ─── */
-  employment: EmploymentData = {
-    employerName: 'Kenya Revenue Authority',
-    jobTitle: 'Senior Tax Analyst',
-    monthlyIncome: 125000,
-    payrollNumber: 'KRA-0042891',
-    employmentType: 'Permanent & Pensionable',
-    yearsAtJob: 7,
-    employerContact: '+254 722 000 111'
-  };
-
-  private originalEmployment: EmploymentData = { ...this.employment };
-
-  /* ─── Emergency Data ─── */
-  emergency: EmergencyData = {
-    contactName: 'Jane Doe',
-    relationship: 'Spouse',
-    phone: '+254 723 456 789',
-    altPhone: '+254 700 987 654'
-  };
-
-  private originalEmergency: EmergencyData = { ...this.emergency };
-
-  /* ─── Preferences Data ─── */
-  preferences: PreferencesData = {
-    language: 'English (Kenya)',
-    currency: 'KES – Kenyan Shilling',
-    timezone: 'Africa/Nairobi (GMT+3)',
-    dateFormat: 'DD/MM/YYYY'
-  };
-
-  private originalPreferences: PreferencesData = { ...this.preferences };
-
-  /* ─── KYC Items ─── */
+  // ── KYC Items ────────────────────────────────────────────────────────────────
   kycItems: KycItem[] = [
-    {
-      id: 'identity',
-      title: 'Identity Verification',
-      description: 'National ID verified with Huduma Center on 12 Mar 2023',
-      badgeText: 'Verified',
-      badgeClass: 'verified',
-      badgeIcon: 'bi-check-circle-fill',
-      canUpload: false
-    },
-    {
-      id: 'address',
-      title: 'Address Verification',
-      description: 'Utility bill uploaded and approved on 15 Mar 2023',
-      badgeText: 'Verified',
-      badgeClass: 'verified',
-      badgeIcon: 'bi-check-circle-fill',
-      canUpload: false
-    },
-    {
-      id: 'kra',
-      title: 'Tax PIN (KRA)',
-      description: 'Required for dividend withholding tax compliance',
-      badgeText: 'Pending Upload',
-      badgeClass: 'pending',
-      badgeIcon: 'bi-clock-fill',
-      canUpload: true
-    },
-    {
-      id: 'photo',
-      title: 'Passport Photo',
-      description: 'Recent passport-size photo for member card',
-      badgeText: 'Approved',
-      badgeClass: 'approved',
-      badgeIcon: 'bi-image',
-      canUpload: false
-    }
+    { id: 'identity',  label: 'Identity Verification',  desc: 'National ID verified with Huduma Center on 12 Mar 2023', status: 'verified' },
+    { id: 'address',   label: 'Address Verification',   desc: 'Utility bill uploaded and approved on 15 Mar 2023',     status: 'verified' },
+    { id: 'tax',       label: 'Tax PIN (KRA)',           desc: 'Required for dividend withholding tax compliance',      status: 'pending'  },
+    { id: 'photo',     label: 'Passport Photo',          desc: 'Recent passport-size photo for member card',            status: 'approved' },
   ];
 
-  /* ─── Email Notifications ─── */
-  emailNotifications: NotificationItem[] = [
-    {
-      id: 'notifEmailTxn',
-      title: 'Transaction Alerts',
-      description: 'Receive email when deposits, withdrawals or repayments are processed.',
-      enabled: true,
-      disabled: false
-    },
-    {
-      id: 'notifEmailLoan',
-      title: 'Loan Status Updates',
-      description: 'Email when your loan application changes status.',
-      enabled: true,
-      disabled: false
-    },
-    {
-      id: 'notifEmailDiv',
-      title: 'Dividend Declarations',
-      description: 'Email when the board declares dividends or share earnings.',
-      enabled: false,
-      disabled: false
-    },
-    {
-      id: 'notifEmailStmt',
-      title: 'Monthly Statements',
-      description: 'Receive your monthly account statement via email.',
-      enabled: true,
-      disabled: false
-    }
-  ];
+  // ── Employment ───────────────────────────────────────────────────────────────
+  employment: EmploymentData = {
+    employerName:    'Kenya Revenue Authority',
+    jobTitle:        'Senior Tax Analyst',
+    grossIncome:     '125000',
+    payrollNumber:   'KRA-0042891',
+    employmentType:  'Permanent & Pensionable',
+    yearsAtJob:      '7',
+    employerContact: '+254 722 000 111',
+  };
+  employmentOriginal: EmploymentData = { ...this.employment };
 
-  private originalEmailNotifications: NotificationItem[] = JSON.parse(JSON.stringify(this.emailNotifications));
+  // ── Emergency ────────────────────────────────────────────────────────────────
+  emergency: EmergencyData = {
+    contactName:  'Jane Doe',
+    relationship: 'Spouse',
+    phone:        '+254 723 456 789',
+    altPhone:     '+254 700 987 654',
+  };
+  emergencyOriginal: EmergencyData = { ...this.emergency };
 
-  /* ─── SMS Notifications ─── */
-  smsNotifications: NotificationItem[] = [
-    {
-      id: 'notifSmsRemind',
-      title: 'Payment Reminders',
-      description: 'SMS reminders 5 days before each loan installment is due.',
-      enabled: true,
-      disabled: false
+  // ── Preferences ──────────────────────────────────────────────────────────────
+  prefs: PreferencesData = {
+    language:   'English (Kenya)',
+    currency:   'KES – Kenyan Shilling',
+    timezone:   'Africa/Nairobi (GMT+3)',
+    dateFormat: 'DD/MM/YYYY',
+  };
+  prefsOriginal: PreferencesData = { ...this.prefs };
+
+  languages  = ['English (Kenya)', 'Swahili (Kenya)', 'English (UK)', 'English (US)'];
+  currencies = ['KES – Kenyan Shilling', 'USD – US Dollar', 'EUR – Euro', 'GBP – British Pound'];
+  timezones  = ['Africa/Nairobi (GMT+3)', 'Africa/Lagos (GMT+1)', 'Europe/London (GMT+0)', 'America/New_York (GMT-5)'];
+  dateFormats = ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'D MMM YYYY'];
+
+  // ── Notification Prefs ───────────────────────────────────────────────────────
+  notifPrefs: NotifPrefs = {
+    email: {
+      transactionAlerts:   true,
+      loanStatusUpdates:   true,
+      dividendDeclarations: false,
+      monthlyStatements:   true,
+      agmAnnouncements:    false,
+      saccoPayAlerts:      true,
     },
-    {
-      id: 'notifSmsOtp',
-      title: 'OTP & Security Codes',
-      description: 'Always on – required for login and sensitive actions.',
-      enabled: true,
-      disabled: true
+    sms: {
+      paymentReminders:  true,
+      otpSecurityCodes:  true,
+      agmAnnouncements:  false,
+      saccoPayUpdates:   true,
+      loanReminders:     true,
     },
-    {
-      id: 'notifSmsAgm',
-      title: 'AGM & Sacco Announcements',
-      description: 'SMS alerts for meetings, AGM dates, and official announcements.',
-      enabled: false,
-      disabled: false
-    }
-  ];
+    push: {
+      enabled:      true,
+      transactions: true,
+      security:     true,
+      reminders:    false,
+    },
+  };
 
-  private originalSmsNotifications: NotificationItem[] = JSON.parse(JSON.stringify(this.smsNotifications));
-
-  /* ─── Security Data ─── */
-  security = {
+  // ── Security ─────────────────────────────────────────────────────────────────
+  security: SecurityData = {
     currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    newPassword:     '',
+    confirmPassword: '',
+    showCurrent:     false,
+    showNew:         false,
+    showConfirm:     false,
+    twoFAEnabled:    true,
   };
 
-  passStrength: PasswordStrength = {
-    width: 0,
-    color: 'var(--border-medium)',
-    label: ''
-  };
+  passwordStrength = 0;
+  passwordStrengthLabel = '';
+  passwordStrengthClass = '';
 
-  activeSessions: number = 2;
-
-  /* ─── Support Tickets ─── */
-  supportTickets: SupportTicket[] = [
-    {
-      id: '#TK-2024-089',
-      subject: 'M-Pesa payment not reflecting on portal log',
-      priority: 'Urgent',
-      priorityClass: 'ticket-priority-urgent',
-      status: 'Processing',
-      statusClass: 'ticket-status-processing'
-    },
-    {
-      id: '#TK-2024-085',
-      subject: 'Loan portfolio archival extraction validation',
-      priority: 'Low',
-      priorityClass: 'ticket-priority-low',
-      status: 'Closed',
-      statusClass: 'ticket-status-closed'
-    }
+  sessions: SessionItem[] = [
+    { device: 'Chrome on Windows 11',  location: 'Nairobi, Kenya',  date: 'Feb 23, 2025 – 10:45 AM', current: true  },
+    { device: 'Safari on iPhone 14',   location: 'Kisumu, Kenya',   date: 'Feb 22, 2025 – 08:20 PM', current: false },
   ];
 
-  /* ─── Toast System ─── */
-  toasts: Toast[] = [];
-  private toastIdCounter: number = 0;
+  // ── Modals ───────────────────────────────────────────────────────────────────
+  showSessionsModal     = false;
+  showLoginLogModal     = false;
+  showDownloadModal     = false;
+  showCloseAccountModal = false;
+  showUploadModal       = false;
+  showAvatarModal       = false;
+  showTwoFAModal        = false;
+  showSendMsgModal      = false;
+  uploadKycId           = '';
+  uploadFile: File | null = null;
 
-  /* ═══════════════════════════════════════════════════════════════
-     TAB NAVIGATION
-     ═══════════════════════════════════════════════════════════════ */
+  // New support message
+  supportMsgSubject = '';
+  supportMsgBody    = '';
+  supportMsgPriority = 'Normal';
 
-  setTab(tab: string): void {
-    this.activeTab = tab;
+  // ── Support — Admin Details ───────────────────────────────────────────────────
+  saccoAdmins = [
+    { name: 'Mr. David Ochieng',   role: 'SACCO Manager',          phone: '+254 700 123 456', email: 'manager@rongosacco.co.ke'   },
+    { name: 'Ms. Grace Akinyi',    role: 'Loans Officer',           phone: '+254 700 234 567', email: 'loans@rongosacco.co.ke'     },
+    { name: 'Mr. Peter Kamande',   role: 'Finance & ICT Officer',  phone: '+254 700 345 678', email: 'finance@rongosacco.co.ke'   },
+    { name: 'Ms. Ruth Wanjiku',    role: 'Member Services Officer', phone: '+254 700 456 789', email: 'members@rongosacco.co.ke'  },
+  ];
+
+  // Login log mock data
+  loginLogs = [
+    { device: 'Chrome on Windows 11', location: 'Nairobi, Kenya',  date: 'Feb 23, 2025 – 10:45 AM', status: 'success' },
+    { device: 'Safari on iPhone 14',  location: 'Kisumu, Kenya',   date: 'Feb 22, 2025 – 08:20 PM', status: 'success' },
+    { device: 'Chrome on Android',    location: 'Mombasa, Kenya',  date: 'Feb 20, 2025 – 03:10 PM', status: 'failed'  },
+    { device: 'Firefox on MacOS',     location: 'Nairobi, Kenya',  date: 'Feb 18, 2025 – 11:00 AM', status: 'success' },
+    { device: 'Chrome on Windows 10', location: 'Unknown',         date: 'Feb 15, 2025 – 09:30 PM', status: 'failed'  },
+  ];
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────────
+  ngOnInit(): void {}
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void { this.closeAllModals(); }
+
+  closeAllModals(): void {
+    this.showSessionsModal     = false;
+    this.showLoginLogModal     = false;
+    this.showDownloadModal     = false;
+    this.showCloseAccountModal = false;
+    this.showUploadModal       = false;
+    this.showAvatarModal       = false;
+    this.showTwoFAModal        = false;
+    this.showSendMsgModal      = false;
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     PROFILE ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
+  // ── Tab ───────────────────────────────────────────────────────────────────────
+  setTab(key: SettingsTab): void { this.activeTab = key; }
 
+  // ── Profile ───────────────────────────────────────────────────────────────────
   saveProfile(): void {
-    this.originalProfile = { ...this.profile };
-    this.showToast('Personal information saved successfully.', 'success');
+    this.profileOriginal = { ...this.profile };
+    this.lastUpdated = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    this.showToast('success', 'Profile updated successfully');
+  }
+  cancelProfile(): void { this.profile = { ...this.profileOriginal }; }
+
+  openUploadModal(kycId: string): void {
+    this.uploadKycId = kycId;
+    this.uploadFile = null;
+    this.showUploadModal = true;
   }
 
-  resetProfile(): void {
-    this.profile = { ...this.originalProfile };
-    this.showToast('Profile changes discarded.', 'info');
+  submitUpload(): void {
+    if (!this.uploadFile) { this.showToast('warning', 'Please select a file to upload'); return; }
+    const item = this.kycItems.find(k => k.id === this.uploadKycId);
+    if (item) item.status = 'pending';
+    this.showUploadModal = false;
+    this.showToast('success', 'Document uploaded successfully. Under review.');
   }
 
-  uploadKyc(id: string): void {
-    const item = this.kycItems.find(k => k.id === id);
-    if (item) {
-      this.showToast(`Upload dialog opened for ${item.title}.`, 'info');
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) this.uploadFile = input.files[0];
+  }
+
+  kycStatusClass(status: string): string {
+    switch (status) {
+      case 'verified': return 'status--verified';
+      case 'approved': return 'status--approved';
+      case 'pending':  return 'status--pending';
+      case 'rejected': return 'status--rejected';
+      default:         return '';
+    }
+  }
+  kycStatusLabel(status: string): string {
+    switch (status) {
+      case 'verified': return '✓ Verified';
+      case 'approved': return '✓ Approved';
+      case 'pending':  return '⏳ Pending Upload';
+      case 'rejected': return '✕ Rejected';
+      default:         return status;
     }
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     EMPLOYMENT ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
+  // ── Employment ────────────────────────────────────────────────────────────────
   saveEmployment(): void {
-    this.originalEmployment = { ...this.employment };
-    this.showToast('Employment details saved successfully.', 'success');
+    this.employmentOriginal = { ...this.employment };
+    this.showToast('success', 'Employment information saved');
   }
+  cancelEmployment(): void { this.employment = { ...this.employmentOriginal }; }
 
-  resetEmployment(): void {
-    this.employment = { ...this.originalEmployment };
-    this.showToast('Employment changes discarded.', 'info');
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     EMERGENCY ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
+  // ── Emergency ─────────────────────────────────────────────────────────────────
   saveEmergency(): void {
-    this.originalEmergency = { ...this.emergency };
-    this.showToast('Emergency contact saved successfully.', 'success');
+    this.emergencyOriginal = { ...this.emergency };
+    this.showToast('success', 'Emergency contact updated');
   }
+  cancelEmergency(): void { this.emergency = { ...this.emergencyOriginal }; }
 
-  resetEmergency(): void {
-    this.emergency = { ...this.originalEmergency };
-    this.showToast('Emergency contact changes discarded.', 'info');
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     PREFERENCES ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
+  // ── Preferences ───────────────────────────────────────────────────────────────
   savePreferences(): void {
-    this.originalPreferences = { ...this.preferences };
-    this.showToast('Regional preferences saved.', 'success');
+    this.prefsOriginal = { ...this.prefs };
+    this.showToast('success', 'Regional preferences saved');
   }
+  cancelPreferences(): void { this.prefs = { ...this.prefsOriginal }; }
 
-  resetPreferences(): void {
-    this.preferences = { ...this.originalPreferences };
-    this.showToast('Preference changes discarded.', 'info');
+  // ── Notifications ─────────────────────────────────────────────────────────────
+  saveNotifPrefs(): void {
+    this.showToast('success', 'Notification preferences saved');
   }
+  cancelNotifPrefs(): void {}
 
-  /* ═══════════════════════════════════════════════════════════════
-     NOTIFICATIONS ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  saveNotifications(): void {
-    this.originalEmailNotifications = JSON.parse(JSON.stringify(this.emailNotifications));
-    this.originalSmsNotifications = JSON.parse(JSON.stringify(this.smsNotifications));
-    this.showToast('Notification preferences saved.', 'success');
-  }
-
-  resetNotifications(): void {
-    this.emailNotifications = JSON.parse(JSON.stringify(this.originalEmailNotifications));
-    this.smsNotifications = JSON.parse(JSON.stringify(this.originalSmsNotifications));
-    this.showToast('Notification changes discarded.', 'info');
-  }
-
-  /* ═══════════════════════════════════════════════════════════════
-     SECURITY ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  checkPasswordStrength(): void {
-    const v = this.security.newPassword;
+  // ── Security ──────────────────────────────────────────────────────────────────
+  onPasswordInput(): void {
+    const pw = this.security.newPassword;
     let score = 0;
-
-    if (v.length >= 8) score++;
-    if (/[A-Z]/.test(v)) score++;
-    if (/[0-9]/.test(v)) score++;
-    if (/[^A-Za-z0-9]/.test(v)) score++;
-
-    const levels: PasswordStrength[] = [
-      { width: 0, color: 'var(--border-medium)', label: '' },
-      { width: 25, color: 'var(--danger)', label: 'Weak' },
-      { width: 50, color: '#f97316', label: 'Fair' },
-      { width: 75, color: 'var(--warning)', label: 'Good' },
-      { width: 100, color: 'var(--success)', label: 'Strong' }
-    ];
-
-    this.passStrength = v.length === 0 ? levels[0] : levels[score];
+    if (pw.length >= 8)              score++;
+    if (/[A-Z]/.test(pw))           score++;
+    if (/[0-9]/.test(pw))           score++;
+    if (/[^A-Za-z0-9]/.test(pw))   score++;
+    this.passwordStrength = score;
+    const labels: Record<number, string> = { 0: '', 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' };
+    const classes: Record<number, string> = { 0: '', 1: 'strength--weak', 2: 'strength--fair', 3: 'strength--good', 4: 'strength--strong' };
+    this.passwordStrengthLabel = labels[score];
+    this.passwordStrengthClass = classes[score];
   }
 
-  updatePassword(): void {
-    if (!this.security.currentPassword) {
-      this.showToast('Please enter your current password.', 'warning');
-      return;
-    }
-    if (this.security.newPassword.length < 8) {
-      this.showToast('New password must be at least 8 characters.', 'warning');
-      return;
-    }
-    if (this.security.newPassword !== this.security.confirmPassword) {
-      this.showToast('New passwords do not match.', 'danger');
-      return;
-    }
-
+  savePassword(): void {
+    if (!this.security.currentPassword) { this.showToast('warning', 'Please enter your current password'); return; }
+    if (this.security.newPassword.length < 8) { this.showToast('warning', 'New password must be at least 8 characters'); return; }
+    if (this.security.newPassword !== this.security.confirmPassword) { this.showToast('danger', 'Passwords do not match'); return; }
     this.security.currentPassword = '';
-    this.security.newPassword = '';
+    this.security.newPassword     = '';
     this.security.confirmPassword = '';
-    this.passStrength = { width: 0, color: 'var(--border-medium)', label: '' };
-    this.showToast('Password changed successfully.', 'success');
+    this.passwordStrength = 0;
+    this.showToast('success', 'Password changed successfully');
   }
-
-  resetPassword(): void {
+  cancelPassword(): void {
     this.security.currentPassword = '';
-    this.security.newPassword = '';
+    this.security.newPassword     = '';
     this.security.confirmPassword = '';
-    this.passStrength = { width: 0, color: 'var(--border-medium)', label: '' };
-    this.showToast('Password changes discarded.', 'info');
+    this.passwordStrength = 0;
   }
 
-  toggle2FA(): void {
-    this.showToast('2FA disable request submitted. Check your SMS.', 'warning');
+  toggleTwoFA(): void {
+    this.showTwoFAModal = false;
+    this.security.twoFAEnabled = !this.security.twoFAEnabled;
+    this.showToast('success', `Two-Factor Authentication ${this.security.twoFAEnabled ? 'enabled' : 'disabled'}`);
   }
 
-  signOutAll(): void {
-    this.activeSessions = 0;
-    this.showToast('All active sessions signed out successfully.', 'success');
+  revokeSession(index: number): void {
+    this.sessions.splice(index, 1);
+    this.showToast('success', 'Session revoked');
   }
 
-  viewLoginLog(): void {
-    this.showToast('Opening login activity log...', 'info');
+  downloadData(): void {
+    this.showDownloadModal = false;
+    this.showToast('success', 'Data export request received. You will receive an email within 24 hours.');
   }
 
-  requestDataExport(): void {
-    this.showToast('Data export request submitted. You will receive an email within 24hrs.', 'success');
+  confirmCloseAccount(): void {
+    this.showCloseAccountModal = false;
+    this.showToast('info', 'Account closure request submitted. Our team will contact you within 2 business days.');
   }
 
-  closeAccount(): void {
-    this.showToast('Account closure requires admin approval. Request submitted.', 'danger');
+  // ── Support ───────────────────────────────────────────────────────────────────
+  openSendMsgModal(): void {
+    this.supportMsgSubject  = '';
+    this.supportMsgBody     = '';
+    this.supportMsgPriority = 'Normal';
+    this.showSendMsgModal   = true;
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     SUPPORT ACTIONS
-     ═══════════════════════════════════════════════════════════════ */
-
-  newTicket(): void {
-    this.showToast('Redirecting to new ticket form...', 'info');
+  sendSupportMessage(): void {
+    if (!this.supportMsgSubject.trim() || !this.supportMsgBody.trim()) {
+      this.showToast('warning', 'Please fill in subject and message');
+      return;
+    }
+    this.showSendMsgModal = false;
+    this.showToast('success', 'Support message sent. Our team will respond shortly.');
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     TOAST SYSTEM
-     ═══════════════════════════════════════════════════════════════ */
-
-  showToast(message: string, type: string = 'success'): void {
-    const icons: Record<string, string> = {
-      success: 'bi-check-circle-fill',
-      info: 'bi-info-circle-fill',
-      warning: 'bi-exclamation-triangle-fill',
-      danger: 'bi-x-circle-fill',
-      primary: 'bi-bell-fill'
-    };
-
-    const toast: Toast = {
-      id: ++this.toastIdCounter,
-      message,
-      type,
-      icon: icons[type] || icons['success']
-    };
-
-    this.toasts.push(toast);
-
-    setTimeout(() => {
-      this.removeToast(toast.id);
-    }, 3200);
+  // ── Toast ─────────────────────────────────────────────────────────────────────
+  showToast(type: ToastMsg['type'], message: string): void {
+    const id = ++this.toastCounter;
+    this.toasts.push({ id, type, message });
+    setTimeout(() => this.removeToast(id), 4500);
   }
-
   removeToast(id: number): void {
-    const index = this.toasts.findIndex(t => t.id === id);
-    if (index !== -1) {
-      this.toasts.splice(index, 1);
-    }
+    this.toasts = this.toasts.filter(t => t.id !== id);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────────
+  get initials(): string {
+    const f = this.profile.firstName?.[0] ?? '';
+    const l = this.profile.lastName?.[0] ?? '';
+    return (f + l).toUpperCase();
+  }
+
+  get passwordStrengthWidth(): string {
+    return `${(this.passwordStrength / 4) * 100}%`;
   }
 }

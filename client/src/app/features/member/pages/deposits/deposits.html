@@ -1,958 +1,584 @@
-<!-- =====================================================
-     FINANCE DEPOSITS COMPONENT TEMPLATE
-     finance-deposits.component.html
-     ===================================================== -->
-
-<!-- ═══════════════════════════════════════════════════════════════
-     PAGE CONTENT — All sections, cards, modals preserved
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="sp-content fade-in-up">
-
-  <!-- ════════════════ PAGE HEADER ════════════════ -->
-  <div class="row g-3 mb-4 align-items-start">
-    <div class="col-12 col-md">
-      <h1 class="h3 fw-bold mb-1">
-        <i class="fas fa-arrow-circle-down me-2" style="color:var(--primary);"></i>
-        My <span style="color:var(--primary);">Deposits</span>
-      </h1>
-      <p class="mb-0" style="color:var(--text-muted);font-size:14px;">{{ pageSubtitle }}</p>
+<!-- Deposits page main content only: no sidebar and no top header -->
+<section class="dp-shell">
+  <header class="dp-page-head">
+    <div>
+      <!-- <h4 class="dp-title"><span class="dp-title-icon"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span> My <span>Deposits</span></h4> -->
+      <p>Deposit instantly via M-Pesa STK Push, Card, or Bank Transfer — fully automated.</p>
     </div>
-    <div class="col-12 col-md-auto">
-      <div class="d-flex flex-wrap gap-2 page-header-actions">
-        <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="showRecurringModal = true">
-          <i class="fas fa-sync-alt me-1"></i> Auto-Deposit
-        </button>
-        <button class="btn btn-sm text-white rounded-3 fw-semibold" style="background:var(--gradient-primary);box-shadow:var(--shadow-primary);" (click)="openDepositMethodModal()">
-          <i class="fas fa-plus-circle me-1"></i> Deposit Now
-        </button>
-      </div>
+    <div class="dp-page-actions">
+      <button class="dp-btn-outline" (click)="openModal('autoDeposit')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Auto-Deposit</button>
+      <button class="dp-btn-primary" (click)="openModal('instantDeposit')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Deposit Now</button>
     </div>
-  </div>
+  </header>
 
-  <!-- ════════════════ HERO BALANCE CARD ════════════════ -->
-  <div class="row g-3 mb-4">
-    <div class="col-12">
-      <div class="hero-deposit p-4 p-lg-5">
-        <div class="position-relative" style="z-index:1;">
-          <div class="row align-items-center g-3">
-            <div class="col-12 col-lg-7">
-              <div style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:500;text-transform:uppercase;letter-spacing:0.08em;" class="mb-2">Total Deposits (All Time)</div>
-              <div class="display-5 fw-bold mb-2" style="font-family:var(--font-mono);letter-spacing:-0.04em;">
-                <span style="font-size:0.6em;opacity:0.8;">KES</span> {{ totalDeposits | number:'1.0-0' }}<span style="font-size:0.5em;opacity:0.5;">.00</span>
-              </div>
-              <div class="d-flex flex-wrap align-items-center gap-3" style="font-size:13px;">
-                <span class="d-flex align-items-center gap-1" style="color:rgba(255,255,255,0.85);">
-                  <i class="fas fa-arrow-up" style="font-size:10px;"></i>
-                  <strong>+KES {{ thisMonthAmount | number:'1.0-0' }}</strong>
-                  <span style="opacity:0.65;">this month</span>
-                </span>
-                <span class="d-none d-sm-inline" style="width:1px;height:16px;background:rgba(255,255,255,0.2);"></span>
-                <span style="color:rgba(255,255,255,0.65);"><i class="fas fa-receipt me-1"></i> {{ totalDepositCount }} total deposits</span>
-              </div>
-            </div>
-            <div class="col-12 col-lg-5">
-              <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                <button class="btn btn-sm rounded-pill px-3 fw-semibold" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(10px);" (click)="openDepositMethodModal()">
-                  <i class="fas fa-bolt me-1"></i> Instant Deposit
-                </button>
-                <button class="btn btn-sm rounded-pill px-3 fw-semibold" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.25);" (click)="showExportModal = true">
-                  <i class="fas fa-download me-1"></i> Export
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════════ STAT CARDS ════════════════ -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-sm-6 col-lg-3" *ngFor="let stat of statCards">
-      <div class="sp-card clickable p-3 h-100" [class.clickable]="stat.clickable" (click)="stat.action ? stat.action() : openStatModal(stat.modalTarget!)">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span style="font-size:12px;color:var(--text-muted);font-weight:500;">{{ stat.label }}</span>
-          <div class="stat-icon" [style.background]="stat.iconBg" [style.color]="stat.iconColor" [style.border]="'1px solid ' + stat.iconBorder">
-            <i class="fas {{ stat.icon }}"></i>
-          </div>
-        </div>
-        <div class="stat-value" [style.color]="stat.valueColor">{{ stat.value }}</div>
-        <div *ngIf="stat.trend" class="d-flex align-items-center gap-1 mt-2" style="font-size:12px;color:var(--success);font-weight:500;">
-          <i class="fas {{ stat.trendIcon }}" style="font-size:10px;"></i> {{ stat.trend }}
-        </div>
-        <div *ngIf="stat.subtitle" style="font-size:12px;color:var(--text-muted);font-weight:500;margin-top:8px;">
-          <i *ngIf="stat.subtitleIcon" class="fas {{ stat.subtitleIcon }} me-1" [style.color]="stat.subtitleIconColor"></i>
-          {{ stat.subtitle }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════ CHART + SIDE PANELS ════════════ -->
-  <div class="row g-3 mb-4">
-    <!-- Chart -->
-    <div class="col-12 col-lg-8">
-      <div class="sp-card h-100">
-        <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom gap-2" style="border-color:var(--border-soft)!important;">
-          <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-chart-bar me-2" style="color:var(--primary);"></i> Deposit Trends</div>
-          <div class="btn-group btn-group-sm">
-            <button class="btn btn-sm rounded-start-3" *ngFor="let period of chartPeriods"
-              [class.btn-outline-secondary]="activeChartPeriod !== period"
-              [class.text-white]="activeChartPeriod === period"
-              [style.background]="activeChartPeriod === period ? 'var(--primary)' : ''"
-              (click)="setChartPeriod(period)">
-              {{ period }}
-            </button>
-          </div>
-        </div>
-        <div class="p-3">
-          <div style="height:280px;"><canvas #depositChartCanvas></canvas></div>
-          <div class="row text-center border-top pt-3 mt-3 g-0" style="border-color:var(--border-soft)!important;">
-            <div class="col-4 border-end" style="border-color:var(--border-soft)!important;">
-              <div style="font-size:11px;color:var(--text-muted);">Highest</div>
-              <div class="fw-bold" style="font-family:var(--font-mono);color:var(--success);">{{ chartSummary.highest.value }}</div>
-              <div style="font-size:10px;color:var(--text-muted);">{{ chartSummary.highest.date }}</div>
-            </div>
-            <div class="col-4 border-end" style="border-color:var(--border-soft)!important;">
-              <div style="font-size:11px;color:var(--text-muted);">Lowest</div>
-              <div class="fw-bold" style="font-family:var(--font-mono);color:var(--danger);">{{ chartSummary.lowest.value }}</div>
-              <div style="font-size:10px;color:var(--text-muted);">{{ chartSummary.lowest.date }}</div>
-            </div>
-            <div class="col-4">
-              <div style="font-size:11px;color:var(--text-muted);">Total</div>
-              <div class="fw-bold" style="font-family:var(--font-mono);color:var(--primary);">{{ chartSummary.total.value }}</div>
-              <div style="font-size:10px;color:var(--text-muted);">{{ chartSummary.total.period }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Side Panels -->
-    <div class="col-12 col-lg-4">
-      <div class="d-flex flex-column gap-3 h-100">
-        <!-- Pending Deposit -->
-        <div class="sp-card clickable sp-card-accent" (click)="showPendingModal = true">
-          <div class="p-3">
-            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <div style="width:36px;height:36px;background:rgba(249,168,37,0.1);border:1px solid rgba(249,168,37,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--warning);flex-shrink:0;">
-                  <i class="fas fa-hourglass-half"></i>
-                </div>
-                <div>
-                  <div style="font-size:13px;font-weight:600;">Pending Deposit</div>
-                  <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">{{ pendingDeposit.ref }}</div>
-                </div>
-              </div>
-              <span class="sp-badge" style="background:rgba(249,168,37,0.1);color:var(--warning);border:1px solid rgba(249,168,37,0.2);"><i class="fas fa-clock"></i> Verifying</span>
-            </div>
-            <div class="row g-2 text-center" style="font-size:12px;">
-              <div class="col-4"><span style="color:var(--text-muted);">Amount</span>
-                <div class="fw-bold" style="font-family:var(--font-mono);">KES {{ pendingDeposit.amount | number:'1.0-0' }}</div>
-              </div>
-              <div class="col-4"><span style="color:var(--text-muted);">Via</span>
-                <div class="fw-bold">{{ pendingDeposit.method }}</div>
-              </div>
-              <div class="col-4"><span style="color:var(--text-muted);">Submitted</span>
-                <div class="fw-bold" style="color:var(--warning);">{{ pendingDeposit.submittedAgo }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Monthly Contribution -->
-        <div class="sp-card clickable" (click)="showMonthlyReqModal = true">
-          <div class="p-3">
-            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-              <div class="d-flex align-items-center gap-2">
-                <div style="width:36px;height:36px;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--success);flex-shrink:0;">
-                  <i class="fas fa-check-double"></i>
-                </div>
-                <div>
-                  <div style="font-size:13px;font-weight:600;">Feb Contribution</div>
-                </div>
-              </div>
-              <span class="sp-badge" style="background:rgba(0,200,83,0.08);color:var(--success);border:1px solid rgba(0,200,83,0.2);"><i class="fas fa-check"></i> Met</span>
-            </div>
-            <div class="d-flex justify-content-between mb-1 flex-wrap" style="font-size:12px;">
-              <span style="color:var(--text-muted);">Required: KES {{ monthlyContribution.required | number:'1.0-0' }}</span>
-              <span class="fw-bold" style="color:var(--success);">KES {{ monthlyContribution.deposited | number:'1.0-0' }} ✓</span>
-            </div>
-            <div class="sp-progress">
-              <div class="sp-progress-fill shimmer" [style.width.%]="monthlyContribution.percentage" style="background:var(--success);"></div>
-            </div>
-            <div class="text-center mt-2" style="font-size:11px;color:var(--success);font-weight:600;">{{ monthlyContribution.label }}</div>
-          </div>
-        </div>
-
-        <!-- By Account -->
-        <div class="sp-card">
-          <div class="p-3">
-            <div class="fw-semibold mb-3" style="font-size:13px;"><i class="fas fa-chart-pie me-2" style="color:var(--primary);"></i> By Account</div>
-            <div class="d-flex flex-column gap-2">
-              <div *ngFor="let acct of accountBreakdown">
-                <div class="d-flex justify-content-between mb-1" style="font-size:12px;">
-                  <div class="d-flex align-items-center gap-2">
-                    <span style="width:8px;height:8px;border-radius:50%;display:inline-block;" [style.background]="acct.color"></span>
-                    {{ acct.label }}
-                  </div>
-                  <span class="fw-bold" style="font-family:var(--font-mono);">{{ acct.amount }}</span>
-                </div>
-                <div class="sp-progress">
-                  <div class="sp-progress-fill shimmer" [style.width.%]="acct.pct" [style.background]="acct.gradient"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════════ DEPOSIT HISTORY TABLE ════════════════ -->
-  <div class="row g-3 mb-4">
-    <div class="col-12">
-      <div class="sp-card">
-        <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom gap-2" style="border-color:var(--border-soft)!important;">
-          <div class="fw-semibold" style="font-size:14px;"><i class="fas fa-list-alt me-2" style="color:var(--primary);"></i> Deposit History</div>
-          <div class="d-flex flex-wrap gap-2">
-            <select class="form-select form-select-sm" style="width:auto;font-size:12px;border-radius:8px;" [(ngModel)]="accountFilter" (change)="onFilterChange()">
-              <option value="all">All Accounts</option>
-              <option>Ordinary</option>
-              <option>Fixed Deposit</option>
-              <option>Holiday</option>
-              <option>Education</option>
-            </select>
-            <select class="form-select form-select-sm" style="width:auto;font-size:12px;border-radius:8px;" [(ngModel)]="statusFilter" (change)="onFilterChange()">
-              <option value="all">All Status</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </select>
-            <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="showExportModal = true"><i class="fas fa-download"></i></button>
-          </div>
-        </div>
-        <div class="sp-table-wrap">
-          <table class="table table-hover align-middle mb-0 sp-table">
-            <thead>
-              <tr>
-                <th class="border-0 py-3 px-3">Date</th>
-                <th class="border-0">Reference</th>
-                <th class="border-0">Account</th>
-                <th class="border-0">Method</th>
-                <th class="border-0">Amount</th>
-                <th class="border-0">Status</th>
-                <th class="border-0 text-end">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let d of filteredDeposits" style="cursor:pointer;" [style.opacity]="d.status === 'failed' ? '0.7' : '1'" (click)="openDepositDetail(d.ref, d.status)">
-                <td class="px-3">{{ d.date }}</td>
-                <td><span style="font-family:var(--font-mono);font-size:11px;" [style.color]="d.status === 'failed' ? 'var(--danger)' : 'var(--primary)'">{{ d.ref }}</span></td>
-                <td>{{ d.account }}</td>
-                <td><i class="fas {{ d.methodIcon }} me-1" [style.color]="d.methodColor" style="font-size:11px;"></i>{{ d.method }}</td>
-                <td>
-                  <span style="font-family:var(--font-mono);font-weight:700;" [style.color]="d.status === 'failed' ? 'var(--text-muted)' : 'var(--success)'" [style.text-decoration]="d.status === 'failed' ? 'line-through' : 'none'">
-                    +KES {{ d.amount | number:'1.0-0' }}
-                  </span>
-                </td>
-                <td>
-                  <span class="sp-badge" [ngStyle]="getStatusBadgeStyle(d.status)">
-                    <i class="fas" [ngClass]="getStatusIcon(d.status)"></i> {{ d.statusLabel }}
-                  </span>
-                </td>
-                <td class="text-end">
-                  <button *ngIf="d.status === 'pending'" class="btn btn-sm btn-outline-secondary border-0" (click)="$event.stopPropagation(); showPendingModal = true"><i class="fas fa-eye"></i></button>
-                  <button *ngIf="d.status === 'confirmed'" class="btn btn-sm btn-outline-secondary border-0" (click)="$event.stopPropagation(); downloadReceipt(d.ref)"><i class="fas fa-download"></i></button>
-                  <button *ngIf="d.status === 'failed'" class="btn btn-sm btn-outline-danger border-0" (click)="$event.stopPropagation(); showFailedModal = true"><i class="fas fa-redo"></i></button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top gap-2" style="border-color:var(--border-soft)!important;font-size:12px;color:var(--text-muted);">
-          <span>Showing {{ filteredDeposits.length }} of {{ tableTotal }} deposits</span>
-          <nav>
-            <ul class="pagination pagination-sm mb-0">
-              <li class="page-item">
-                <a class="page-link rounded-2" href="#" (click)="$event.preventDefault(); prevPage()">
-                  <i class="fas fa-chevron-left"></i>
-                </a>
-              </li>
-              <li class="page-item" *ngFor="let p of tablePages" [class.active]="tablePage === p">
-                <a class="page-link rounded-2" href="#" [style.background]="tablePage === p ? 'var(--primary)' : ''" [style.border-color]="tablePage === p ? 'var(--primary)' : ''" [style.color]="tablePage === p ? '#fff' : ''" (click)="$event.preventDefault(); goToPage(p)">{{ p }}</a>
-              </li>
-              <li class="page-item">
-                <a class="page-link rounded-2" href="#" (click)="$event.preventDefault(); nextPage()">
-                  <i class="fas fa-chevron-right"></i>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /sp-content -->
-
-
-<!-- ═════════════════════════════════════════════════════════════════ -->
-<!--                            ALL MODALS                              -->
-<!-- ═════════════════════════════════════════════════════════════════ -->
-
-<!-- MODAL: Deposit Method Chooser -->
-<div class="modal-overlay" [class.active]="showDepositMethodModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showDepositMethodModal">
-    <div style="height:3px;background:var(--gradient-primary);"></div>
-    <div class="modal__header">
+  <!-- Hero -->
+  <article class="dp-hero">
+    <div class="dp-hero-orb"></div>
+    <div class="dp-hero-inner">
       <div>
-        <h5 class="modal__title"><i class="fas fa-bolt me-2" style="color:var(--primary);"></i>Instant Deposit</h5>
-        <p class="mb-0 mt-1" style="font-size:13px;color:var(--text-muted);">Choose your preferred payment method. All transactions are automated.</p>
+        <p class="dp-hero-label">TOTAL DEPOSITS (ALL TIME)</p>
+        <h2 class="dp-hero-amount"><span>KES</span> {{fmt(totalDeposits)}}<<small>.00</small></h2>
+        <p class="dp-hero-meta"><strong><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+            +KES {{fmt(monthTotal)}}</strong> this month <span></span> {{totalCount}} total deposits</p>
       </div>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <div class="mb-4">
-        <label class="form-label fw-semibold" style="font-size:13px;">Deposit To <span class="text-danger">*</span></label>
-        <select class="form-select" style="border-radius:12px;" [(ngModel)]="depositToAccount">
-          <option *ngFor="let acct of accounts" [value]="acct.value">{{ acct.label }} ({{ acct.balance }})</option>
-        </select>
-      </div>
-
-      <label class="form-label fw-semibold" style="font-size:13px;">Payment Method</label>
-      <div class="row g-3 mb-3">
-        <div class="col-6 col-md-3 pay-method-col" *ngFor="let pm of paymentMethods">
-          <div class="pay-method" [class.active]="selectedMethod === pm.id" (click)="selectMethod(pm.id)">
-            <div class="pay-icon" [style.background]="pm.bg" [style.color]="pm.color" [style.border]="'1px solid ' + pm.border">
-              <i class="fas {{ pm.icon }}"></i>
-            </div>
-            <div class="fw-bold" style="font-size:13px;">{{ pm.label }}</div>
-            <div style="font-size:11px;color:var(--text-muted);">{{ pm.sublabel }}</div>
-            <span class="sp-badge mt-2" [style.background]="pm.bg" [style.color]="pm.color" [style.border]="'1px solid ' + pm.border" style="font-size:9px;">
-              <i class="fas {{ pm.badgeIcon }}"></i> {{ pm.badge }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="font-size:13px;">Amount (KES) <span class="text-danger">*</span></label>
-        <div class="input-group">
-          <span class="input-group-text fw-bold" style="border-radius:12px 0 0 12px;background:var(--bg-input);border-color:var(--border-medium);font-size:14px;">KES</span>
-          <input type="number" class="form-control form-control-lg" placeholder="0.00" [(ngModel)]="depositAmount" style="border-radius:0 12px 12px 0;border-color:var(--border-medium);font-family:var(--font-mono);font-size:18px;">
-        </div>
-        <div class="d-flex flex-wrap gap-2 mt-2">
-          <button class="btn btn-sm btn-outline-secondary rounded-pill" *ngFor="let qa of quickAmounts" (click)="setQuickAmount(qa.value)" [class.fw-semibold]="qa.isMin" [style.border-color]="qa.isMin ? 'var(--primary-border)' : ''" [style.color]="qa.isMin ? 'var(--primary)' : ''" [style.background]="qa.isMin ? 'var(--primary-subtle)' : ''">
-            {{ qa.label }} <span *ngIf="qa.isMin" style="font-size:9px;opacity:0.7;">(min)</span>
-          </button>
-        </div>
+      <div class="dp-hero-actions">
+        <button (click)="openModal('instantDeposit')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Instant Deposit</button>
+        <button (click)="openModal('export')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Export</button>
       </div>
     </div>
-    <div class="modal__footer">
-      <button type="button" class="btn btn--outline rounded-3" (click)="closeAllModals()">Cancel</button>
-      <button type="button" class="btn btn--primary text-white rounded-3 fw-semibold px-4" style="background:var(--gradient-primary);box-shadow:var(--shadow-primary);" (click)="proceedToPayment()">
-        <i class="fas fa-arrow-right me-1"></i> Proceed to Pay
+  </article>
+
+  <!-- Stats -->
+  <div class="dp-stats">
+    @for (s of statCards; track s.title) {
+    <button class="dp-stat" (click)="openModal(s.modal)">
+      <span class="dp-stat-icon tone-{{s.tone}}">
+        @if (s.icon === 'calendar') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> }
+        @if (s.icon === 'growth') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg> }
+        @if (s.icon === 'clock') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> }
+        @if (s.icon === 'scale') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> }
+      </span>
+      <small>{{s.title}}</small>
+      <strong>{{s.value}}</strong>
+      <em>{{s.sub}}</em>
+    </button>
+    }
+  </div>
+
+  <!-- Chart and side panels -->
+  <div class="dp-grid">
+    <article class="dp-card dp-chart-card">
+      <header class="dp-card-head">
+        <h6><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Deposit Trends</h6>
+        <div class="dp-seg">
+          @for (r of ['6M','1Y','All']; track r) {
+          <button [class.on]="chartRange === r" (click)="setRange($any(r))">{{r}}</button>
+          }
+        </div>
+      </header>
+      <div class="dp-chart-wrap">
+        <canvas #trendCanvas></canvas>
+      </div>
+      <div class="dp-chart-summary">
+        <div><small>Highest</small><strong class="text-green">KES 15K</strong><span>Dec 2024</span></div>
+        <div><small>Lowest</small><strong class="text-red">KES 5K</strong><span>Apr 2024</span></div>
+        <div><small>Total</small><strong class="text-blue">KES 145K</strong><span>14 months</span></div>
+      </div>
+    </article>
+
+    <aside class="dp-side">
+      <button class="dp-side-card pending" (click)="openModal('pendingDeposit')">
+        <div class="dp-side-top">
+          <span class="dp-side-icon"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <div><strong>Pending Deposit</strong><small>DEP-2025-00195</small></div>
+          <span class="dp-pill warn"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Verifying</span>
+        </div>
+        <div class="dp-side-cols">
+          <span><small>Amount</small><strong>KES 15K</strong></span>
+          <span><small>Via</small><strong>Bank</strong></span>
+          <span><small>Submitted</small><strong class="text-amber">2h ago</strong></span>
+        </div>
       </button>
-    </div>
+
+      <button class="dp-side-card" (click)="openModal('monthlyReq')">
+        <div class="dp-side-top">
+          <span class="dp-side-icon ok"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+          <div><strong>Feb Contribution</strong><small>Monthly deposit minimum</small></div>
+          <span class="dp-pill ok"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Met</span>
+        </div>
+        <div class="dp-progress"><span style="width: 100%"></span></div>
+        <p class="dp-min-row"><span>Required: KES 5,000</span><strong>KES 12,500 <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></strong></p>
+        <p class="dp-excellent">250% of minimum — Excellent! <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></p>
+      </button>
+
+      <button class="dp-side-card" (click)="openModal('byAccount')">
+        <h6><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> By Account</h6>
+        <div class="dp-account-bars">
+          @for (a of accountBreakdown; track a.name) {
+          <div class="dp-acct-line">
+            <p><span class="dot {{a.color}}"></span>{{a.name}} <strong>KES {{fmt(a.amount / 1000)}}K</strong></p>
+            <div><span class="{{a.color}}" [style.width.%]="a.width"></span></div>
+          </div>
+          }
+        </div>
+      </button>
+    </aside>
   </div>
-</div>
 
-<!-- MODAL: M-Pesa STK Push -->
-<div class="modal-overlay" [class.active]="showMpesaStkModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showMpesaStkModal">
-    <div style="height:3px;background:var(--success);"></div>
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-mobile-alt me-2" style="color:var(--success);"></i>M-Pesa STK Push</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <!-- Phase 1 -->
-      <div *ngIf="stkPhase === 1">
-        <div class="alert border-0 mb-4" style="background:rgba(0,200,83,0.06);color:var(--success);border-radius:12px;">
-          <div class="d-flex align-items-start gap-2">
-            <i class="fas fa-info-circle mt-1"></i>
-            <div style="font-size:12px;">A payment prompt will be sent directly to your phone. Just enter your M-Pesa PIN when prompted — <strong>no transaction codes needed!</strong></div>
-          </div>
-        </div>
-        <div class="text-center mb-4 p-3 rounded-4" style="background:var(--bg-input);">
-          <div style="font-size:12px;color:var(--text-muted);">You are depositing</div>
-          <div class="fw-bold mt-1" style="font-size:28px;font-family:var(--font-mono);color:var(--primary);">{{ formattedDepositAmount }}</div>
-          <div style="font-size:12px;color:var(--text-muted);">to {{ selectedAccountLabel }}</div>
-        </div>
-        <div class="mb-4">
-          <label class="form-label fw-semibold" style="font-size:13px;">M-Pesa Phone Number <span class="text-danger">*</span></label>
-          <div class="phone-input-group">
-            <span class="flag">🇰🇪</span>
-            <span class="prefix">+254</span>
-            <input type="tel" class="form-control form-control-lg" style="border-radius:14px;border-color:var(--border-medium);" placeholder="712 345 890" [(ngModel)]="stkPhone" maxlength="10">
-          </div>
-          <div class="form-text" style="font-size:11px;">Safaricom number registered for M-Pesa</div>
-        </div>
-        <button class="btn btn-lg w-100 text-white fw-semibold rounded-3" style="background:var(--success);box-shadow:0 4px 16px rgba(0,200,83,0.3);" (click)="initiateSTKPush()">
-          <i class="fas fa-paper-plane me-2"></i> Send STK Push
-        </button>
-      </div>
-
-      <!-- Phase 2 -->
-      <div *ngIf="stkPhase === 2">
-        <div class="stk-loader">
-          <div class="stk-spinner"></div>
-          <div class="text-center">
-            <h5 class="fw-bold mb-2" style="color:var(--success);">Check Your Phone</h5>
-            <p style="font-size:13px;color:var(--text-muted);max-width:300px;margin:0 auto;">An M-Pesa payment prompt has been sent to <strong style="color:var(--text-primary);">0712***890</strong>. Enter your M-Pesa PIN to complete.</p>
-          </div>
-          <div class="position-relative" style="width:80px;height:80px;">
-            <svg width="80" height="80" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(26,29,46,0.06)" stroke-width="6" />
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#00C853" stroke-width="6" stroke-linecap="round" stroke-dasharray="283" style="animation: countDown 60s linear forwards;" />
-            </svg>
-            <div class="position-absolute top-50 start-50 translate-middle text-center">
-              <div class="fw-bold" style="font-size:20px;font-family:var(--font-mono);color:var(--text-primary);">{{ stkCountdown }}</div>
-              <div style="font-size:9px;color:var(--text-muted);">seconds</div>
-            </div>
-          </div>
-          <div class="d-flex gap-2 w-100 mt-2">
-            <button class="btn btn-outline-secondary btn-sm rounded-3 flex-fill" (click)="resetStk()"><i class="fas fa-redo me-1"></i> Resend</button>
-            <button class="btn btn-outline-secondary btn-sm rounded-3 flex-fill" (click)="closeAllModals()"><i class="fas fa-times me-1"></i> Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Phase 3 -->
-      <div *ngIf="stkPhase === 3">
-        <div class="text-center py-3">
-          <div style="width:72px;height:72px;background:rgba(0,200,83,0.1);border:2px solid rgba(0,200,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--success);">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <h5 class="fw-bold" style="color:var(--success);">Deposit Successful!</h5>
-          <div class="fw-bold mt-2" style="font-size:28px;font-family:var(--font-mono);color:var(--text-primary);">{{ formattedDepositAmount }}.00</div>
-          <p class="mt-2 mb-3" style="font-size:13px;color:var(--text-muted);">Has been credited to your {{ selectedAccountLabel }}</p>
-          <div class="p-3 rounded-4 text-start" style="background:var(--bg-input);">
-            <div class="d-flex justify-content-between mb-2" style="font-size:12px;"><span style="color:var(--text-muted);">Reference</span><span class="fw-semibold" style="font-family:var(--font-mono);color:var(--primary);">DEP-2025-00201</span></div>
-            <div class="d-flex justify-content-between mb-2" style="font-size:12px;"><span style="color:var(--text-muted);">M-Pesa Code</span><span class="fw-semibold" style="font-family:var(--font-mono);">SHL3KM8R2Q</span></div>
-            <div class="d-flex justify-content-between mb-2" style="font-size:12px;"><span style="color:var(--text-muted);">Date</span><span>Feb 25, 2025 5:42 PM</span></div>
-            <div class="d-flex justify-content-between" style="font-size:12px;"><span style="color:var(--text-muted);">New Balance</span><span class="fw-bold" style="color:var(--success);font-family:var(--font-mono);">KES 103,750.00</span></div>
-          </div>
-          <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-outline-secondary rounded-3 flex-fill" (click)="downloadReceipt('DEP-2025-00201')"><i class="fas fa-download me-1"></i> Receipt</button>
-            <button class="btn text-white rounded-3 flex-fill fw-semibold" style="background:var(--gradient-primary);" (click)="closeAllModals()"><i class="fas fa-check me-1"></i> Done</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Card Payment -->
-<div class="modal-overlay" [class.active]="showCardModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showCardModal">
-    <div style="height:3px;background:linear-gradient(90deg,#AB00D9,#7B1FA2);"></div>
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-credit-card me-2" style="color:var(--purple);"></i>Card Payment</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <!-- Phase 1 -->
-      <div *ngIf="cardPhase === 1">
-        <div class="text-center mb-4 p-3 rounded-4" style="background:var(--bg-input);">
-          <div style="font-size:12px;color:var(--text-muted);">Depositing</div>
-          <div class="fw-bold" style="font-size:24px;font-family:var(--font-mono);color:var(--primary);">{{ formattedDepositAmount }}</div>
-        </div>
-        <div class="card-visual mb-4">
-          <div style="font-size:11px;opacity:0.7;">DEBIT/CREDIT CARD</div>
-          <div class="card-number">{{ cardNumberDisplay }}</div>
-          <div class="d-flex justify-content-between align-items-end">
-            <div>
-              <div style="font-size:9px;opacity:0.5;">CARD HOLDER</div>
-              <div style="font-size:13px;font-weight:600;">{{ cardHolderDisplay }}</div>
-            </div>
-            <div>
-              <div style="font-size:9px;opacity:0.5;">EXPIRES</div>
-              <div style="font-size:13px;font-weight:600;">{{ cardExpiryDisplay }}</div>
-            </div>
-          </div>
-          <div class="card-brand"><i class="fab fa-cc-visa"></i></div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold" style="font-size:13px;">Card Number <span class="text-danger">*</span></label>
-          <div class="input-group">
-            <input type="text" class="form-control" placeholder="4242 4242 4242 4242" maxlength="19" style="border-radius:12px 0 0 12px;font-family:var(--font-mono);letter-spacing:2px;" [(ngModel)]="cardNumber" (input)="formatCardNumber()">
-            <span class="input-group-text" style="border-radius:0 12px 12px 0;background:#fff;"><i class="fab fa-cc-visa" style="color:#1A1F71;"></i> <i class="fab fa-cc-mastercard ms-1" style="color:#EB001B;"></i></span>
-          </div>
-        </div>
-        <div class="row g-3 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-semibold" style="font-size:13px;">Expiry <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" placeholder="MM/YY" maxlength="5" style="border-radius:12px;font-family:var(--font-mono);" [(ngModel)]="cardExpiry" (input)="formatExpiry()">
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold" style="font-size:13px;">CVV <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" placeholder="•••" maxlength="4" style="border-radius:12px;font-family:var(--font-mono);" [(ngModel)]="cardCvv">
-          </div>
-        </div>
-        <div class="mb-4">
-          <label class="form-label fw-semibold" style="font-size:13px;">Cardholder Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" placeholder="JOHN KAMAU" style="border-radius:12px;text-transform:uppercase;" [(ngModel)]="cardName">
-        </div>
-        <div class="d-flex align-items-center gap-2 p-3 rounded-3 mb-3" style="background:rgba(171,0,217,0.04);border:1px solid rgba(171,0,217,0.12);">
-          <i class="fas fa-shield-alt" style="color:var(--purple);"></i>
-          <span style="font-size:11px;color:var(--text-secondary);">Your card details are encrypted with <strong>256-bit SSL</strong> and processed via PCI-DSS compliant gateway.</span>
-        </div>
-        <button class="btn btn-lg w-100 text-white fw-semibold rounded-3" style="background:linear-gradient(135deg,#AB00D9,#7B1FA2);box-shadow:0 4px 16px rgba(171,0,217,0.3);" (click)="processCardPayment()">
-          <i class="fas fa-lock me-2"></i> Pay KES {{ depositAmount ? (depositAmount | number:'1.0-0') : '0' }}
-        </button>
-      </div>
-
-      <!-- Phase 2 -->
-      <div *ngIf="cardPhase === 2">
-        <div class="stk-loader">
-          <div class="stk-spinner" style="border-top-color:var(--purple);"></div>
-          <div class="text-center">
-            <h5 class="fw-bold" style="color:var(--purple);">Processing Payment</h5>
-            <p style="font-size:13px;color:var(--text-muted);">Securely processing your card payment. Please do not close this window...</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Phase 3 -->
-      <div *ngIf="cardPhase === 3">
-        <div class="text-center py-3">
-          <div style="width:72px;height:72px;background:rgba(0,200,83,0.1);border:2px solid rgba(0,200,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:var(--success);">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <h5 class="fw-bold" style="color:var(--success);">Payment Successful!</h5>
-          <div class="fw-bold mt-2" style="font-size:28px;font-family:var(--font-mono);">KES {{ depositAmount ? (depositAmount | number:'1.0-0') : '0' }}.00</div>
-          <p class="mt-2" style="font-size:13px;color:var(--text-muted);">Credited to {{ selectedAccountLabel }}</p>
-          <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-outline-secondary rounded-3 flex-fill" (click)="downloadReceipt()"><i class="fas fa-download me-1"></i> Receipt</button>
-            <button class="btn text-white rounded-3 flex-fill fw-semibold" style="background:var(--gradient-primary);" (click)="closeAllModals()"><i class="fas fa-check me-1"></i> Done</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Bank Transfer -->
-<div class="modal-overlay" [class.active]="showBankModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showBankModal">
-    <div style="height:3px;background:var(--info);"></div>
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-university me-2" style="color:var(--info);"></i>Bank Transfer</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <div class="alert border-0 mb-4" style="background:rgba(2,136,209,0.06);color:var(--info);border-radius:12px;">
-        <div class="d-flex align-items-start gap-2">
-          <i class="fas fa-info-circle mt-1"></i>
-          <div style="font-size:12px;">Transfer from your bank to our account below. Use your <strong>Member Number</strong> as the reference. Deposits are confirmed within 1-24 hours.</div>
-        </div>
-      </div>
-      <div class="p-4 rounded-4 mb-4" style="background:var(--bg-input);">
-        <div class="row g-3" style="font-size:13px;">
-          <div class="col-12 col-sm-6">
-            <div style="color:var(--text-muted);font-size:11px;margin-bottom:2px;">Bank Name</div>
-            <div class="fw-bold">{{ bankDetails.bankName }}</div>
-          </div>
-          <div class="col-12 col-sm-6">
-            <div style="color:var(--text-muted);font-size:11px;margin-bottom:2px;">Branch</div>
-            <div class="fw-bold">{{ bankDetails.branch }}</div>
-          </div>
-          <div class="col-12 col-sm-6">
-            <div style="color:var(--text-muted);font-size:11px;margin-bottom:2px;">Account No.</div>
-            <div class="fw-bold" style="font-family:var(--font-mono);">{{ bankDetails.accountNo }}</div>
-          </div>
-          <div class="col-12 col-sm-6">
-            <div style="color:var(--text-muted);font-size:11px;margin-bottom:2px;">Account Name</div>
-            <div class="fw-bold">{{ bankDetails.accountName }}</div>
-          </div>
-          <div class="col-12 mt-2">
-            <div style="color:var(--text-muted);font-size:11px;margin-bottom:2px;">Your Reference (use this!)</div>
-            <div class="fw-bold fs-5" style="color:var(--primary);font-family:var(--font-mono);">{{ bankDetails.memberRef }}</div>
-          </div>
-        </div>
-        <button class="btn btn-sm btn-outline-primary rounded-pill mt-3 w-100" (click)="copyBankDetails()"><i class="fas fa-copy me-1"></i> Copy All Details</button>
-      </div>
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="font-size:13px;">Amount Transferred (KES)</label>
-        <input type="number" class="form-control" placeholder="Enter amount" style="border-radius:12px;font-family:var(--font-mono);" [(ngModel)]="bankAmount">
-      </div>
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="font-size:13px;">Transfer Date</label>
-        <input type="date" class="form-control" style="border-radius:12px;" [(ngModel)]="bankTransferDate">
-      </div>
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="font-size:13px;">Upload Proof (optional)</label>
-        <div class="border rounded-3 p-3 text-center" style="border-style:dashed!important;border-color:var(--border-medium)!important;cursor:pointer;" (click)="fileInput.click()">
-          <i class="fas fa-cloud-upload-alt d-block mb-1" style="font-size:20px;color:var(--text-muted);"></i>
-          <span style="font-size:12px;color:var(--text-muted);">{{ bankProofFileName || 'Drop receipt or click to upload' }}</span>
-          <input type="file" #fileInput style="display:none;" (change)="onBankProofSelected($event)">
-        </div>
-      </div>
-    </div>
-    <div class="modal__footer">
-      <button class="btn btn--outline rounded-3" (click)="closeAllModals()">Cancel</button>
-      <button class="btn text-white rounded-3 fw-semibold" style="background:var(--info);box-shadow:0 4px 16px rgba(2,136,209,0.25);" (click)="submitBankTransfer()"><i class="fas fa-paper-plane me-1"></i> Notify SACCO</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Confirmed Deposit Detail -->
-<div class="modal-overlay" [class.active]="showDepositDetailModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showDepositDetailModal">
-    <div style="height:3px;background:var(--success);"></div>
-    <div class="modal__body p-4">
-      <div class="text-center mb-4">
-        <div style="width:64px;height:64px;background:rgba(0,200,83,0.1);border:2px solid rgba(0,200,83,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;color:var(--success);">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div style="font-size:11px;color:var(--success);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;">Confirmed</div>
-        <div class="fw-bold mt-1" style="font-size:28px;font-family:var(--font-mono);color:var(--success);">+ KES {{ selectedDeposit?.amount | number:'1.0-0' }}.00</div>
-        <div style="font-size:13px;color:var(--text-muted);">Savings Deposit</div>
-      </div>
-      <div class="rounded-4 overflow-hidden" style="background:var(--bg-input);">
-        <div class="d-flex justify-content-between p-3 border-bottom flex-wrap gap-2" style="font-size:13px;border-color:var(--border-soft)!important;"><span style="color:var(--text-muted);">Reference</span><span class="fw-semibold" style="font-family:var(--font-mono);color:var(--primary);">{{ selectedDeposit?.ref }}</span></div>
-        <div class="d-flex justify-content-between p-3 border-bottom flex-wrap gap-2" style="font-size:13px;border-color:var(--border-soft)!important;"><span style="color:var(--text-muted);">Date</span><span>{{ selectedDeposit?.date }}</span></div>
-        <div class="d-flex justify-content-between p-3 border-bottom flex-wrap gap-2" style="font-size:13px;border-color:var(--border-soft)!important;"><span style="color:var(--text-muted);">Account</span><span>{{ selectedDeposit?.account }}</span></div>
-        <div class="d-flex justify-content-between p-3 border-bottom flex-wrap gap-2" style="font-size:13px;border-color:var(--border-soft)!important;"><span style="color:var(--text-muted);">Method</span><span><i class="fas {{ selectedDeposit?.methodIcon }} me-1" style="color:var(--success);"></i>{{ selectedDeposit?.method }}</span></div>
-        <div class="d-flex justify-content-between p-3 border-bottom flex-wrap gap-2" style="font-size:13px;border-color:var(--border-soft)!important;"><span style="color:var(--text-muted);">M-Pesa Code</span><span class="fw-semibold" style="font-family:var(--font-mono);">SQJ1XK3T5A</span></div>
-        <div class="d-flex justify-content-between p-3 flex-wrap gap-2" style="font-size:13px;"><span style="color:var(--text-muted);">Balance After</span><span class="fw-bold" style="font-family:var(--font-mono);">KES 98,750.00</span></div>
-      </div>
-    </div>
-    <div class="modal__footer">
-      <button class="btn btn--outline rounded-3" (click)="closeAllModals()">Close</button>
-      <button class="btn btn--outline rounded-3" (click)="downloadReceipt(selectedDeposit?.ref)"><i class="fas fa-download me-1"></i> Receipt</button>
-      <button class="btn btn--outline rounded-3" style="color:var(--warning);border-color:var(--warning);" (click)="reportIssue()"><i class="fas fa-flag me-1"></i> Report</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Pending Deposit -->
-<div class="modal-overlay" [class.active]="showPendingModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showPendingModal">
-    <div style="height:3px;background:var(--warning);"></div>
-    <div class="modal__body p-4">
-      <div class="text-center mb-4">
-        <div style="width:64px;height:64px;background:rgba(249,168,37,0.1);border:2px solid rgba(249,168,37,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;color:var(--warning);">
-          <i class="fas fa-clock"></i>
-        </div>
-        <div style="font-size:11px;color:var(--warning);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;">Awaiting Verification</div>
-        <div class="fw-bold mt-1" style="font-size:28px;font-family:var(--font-mono);color:var(--warning);">KES {{ pendingDeposit.amount | number:'1.0-0' }}.00</div>
-      </div>
-      <div class="d-flex flex-column gap-3 mb-4 ps-2">
-        <div class="d-flex gap-3 align-items-start">
-          <div class="step-dot done"><i class="fas fa-check" style="font-size:10px;"></i></div>
-          <div>
-            <div style="font-size:13px;font-weight:600;">Submitted</div>
-            <div style="font-size:11px;color:var(--text-muted);">Feb 25, 4:15 PM</div>
-          </div>
-        </div>
-        <div class="d-flex gap-3 align-items-start">
-          <div class="step-dot done"><i class="fas fa-check" style="font-size:10px;"></i></div>
-          <div>
-            <div style="font-size:13px;font-weight:600;">Proof Uploaded</div>
-            <div style="font-size:11px;color:var(--text-muted);">bank_receipt.pdf</div>
-          </div>
-        </div>
-        <div class="d-flex gap-3 align-items-start">
-          <div class="step-dot active"><i class="fas fa-hourglass-half" style="font-size:10px;"></i></div>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:var(--primary);">Admin Verification</div>
-            <div style="font-size:11px;color:var(--text-muted);">Usually within 24 hours</div>
-          </div>
-        </div>
-        <div class="d-flex gap-3 align-items-start">
-          <div class="step-dot pending">4</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:var(--text-muted);">Confirmed</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal__footer">
-      <button class="btn btn--outline rounded-3" (click)="closeAllModals()">Close</button>
-      <a href="support.html" class="btn btn--outline rounded-3" style="color:var(--primary);border-color:var(--primary);"><i class="fas fa-headset me-1"></i> Contact Support</a>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Failed Deposit -->
-<div class="modal-overlay" [class.active]="showFailedModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showFailedModal">
-    <div style="height:3px;background:var(--danger);"></div>
-    <div class="modal__body p-4">
-      <div class="text-center mb-4">
-        <div style="width:64px;height:64px;background:rgba(229,57,53,0.06);border:2px solid rgba(229,57,53,0.18);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;color:var(--danger);">
-          <i class="fas fa-times-circle"></i>
-        </div>
-        <div style="font-size:11px;color:var(--danger);font-weight:600;text-transform:uppercase;">Failed</div>
-        <div class="fw-bold mt-1" style="font-size:24px;font-family:var(--font-mono);color:var(--text-muted);text-decoration:line-through;">KES {{ failedAmount | number:'1.0-0' }}.00</div>
-      </div>
-      <div class="alert border-0" style="background:rgba(229,57,53,0.06);color:var(--danger);border-radius:12px;">
-        <div class="fw-semibold mb-1" style="font-size:13px;"><i class="fas fa-exclamation-triangle me-1"></i> Failure Reason</div>
-        <div style="font-size:12px;">{{ failedReason }}</div>
-      </div>
-    </div>
-    <div class="modal__footer">
-      <button class="btn btn--outline rounded-3" (click)="closeAllModals()">Close</button>
-      <button class="btn text-white rounded-3 fw-semibold" style="background:var(--gradient-primary);" (click)="closeAllModals(); openDepositMethodModal();"><i class="fas fa-redo me-1"></i> Retry Deposit</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Recurring/Auto Deposit -->
-<div class="modal-overlay" [class.active]="showRecurringModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showRecurringModal">
-    <div style="height:3px;background:var(--gradient-primary);"></div>
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-sync-alt me-2" style="color:var(--primary);"></i>Auto-Deposit Setup</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <div class="alert border-0 mb-4" style="background:var(--primary-subtle);border-radius:12px;">
-        <div class="d-flex align-items-start gap-2" style="font-size:12px;color:var(--primary);">
-          <i class="fas fa-robot mt-1"></i>
-          <div>Set up automatic deposits via M-Pesa Standing Order. Your phone will receive an STK push on the set day automatically — <strong>fully hands-free!</strong></div>
-        </div>
-      </div>
-      <div class="row g-3">
-        <div class="col-12 col-sm-6">
-          <label class="form-label fw-semibold" style="font-size:13px;">Amount</label>
-          <div class="input-group">
-            <span class="input-group-text" style="border-radius:12px 0 0 12px;">KES</span>
-            <input type="number" class="form-control" [(ngModel)]="recurringAmount" style="border-radius:0 12px 12px 0;font-family:var(--font-mono);">
-          </div>
-        </div>
-        <div class="col-12 col-sm-6">
-          <label class="form-label fw-semibold" style="font-size:13px;">Frequency</label>
-          <select class="form-select" style="border-radius:12px;" [(ngModel)]="recurringFrequency">
-            <option>Monthly</option>
-            <option>Bi-weekly</option>
-            <option>Weekly</option>
-          </select>
-        </div>
-        <div class="col-12 col-sm-6">
-          <label class="form-label fw-semibold" style="font-size:13px;">Day of Month</label>
-          <select class="form-select" style="border-radius:12px;" [(ngModel)]="recurringDay">
-            <option>1st</option>
-            <option>5th</option>
-            <option>15th</option>
-            <option selected>25th</option>
-            <option>Last day</option>
-          </select>
-        </div>
-        <div class="col-12 col-sm-6">
-          <label class="form-label fw-semibold" style="font-size:13px;">Account</label>
-          <select class="form-select" style="border-radius:12px;" [(ngModel)]="recurringAccount">
-            <option selected>Ordinary Savings</option>
-            <option>Holiday</option>
-            <option>Education</option>
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="form-label fw-semibold" style="font-size:13px;">M-Pesa Number</label>
-          <div class="phone-input-group">
-            <span class="flag">🇰🇪</span>
-            <span class="prefix">+254</span>
-            <input type="tel" class="form-control" style="border-radius:14px;" placeholder="712 345 890" [(ngModel)]="recurringPhone">
-          </div>
-        </div>
-      </div>
-      <div class="d-flex flex-column gap-2 mt-4">
-        <div class="form-check form-switch d-flex align-items-center gap-3 p-3 rounded-3" style="background:var(--bg-input);">
-          <input class="form-check-input" type="checkbox" [(ngModel)]="recurringSmsReminder" style="width:44px;height:22px;margin:0;">
-          <div>
-            <div style="font-size:13px;font-weight:600;">SMS Reminder</div>
-            <div style="font-size:11px;color:var(--text-muted);">1 day before auto-debit</div>
-          </div>
-        </div>
-        <div class="form-check form-switch d-flex align-items-center gap-3 p-3 rounded-3" style="background:var(--bg-input);">
-          <input class="form-check-input" type="checkbox" [(ngModel)]="recurringEmailNotification" style="width:44px;height:22px;margin:0;">
-          <div>
-            <div style="font-size:13px;font-weight:600;">Email Notification</div>
-            <div style="font-size:11px;color:var(--text-muted);">After each auto-deposit</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal__footer">
-      <button class="btn btn--outline rounded-3 btn-sm" style="color:var(--danger);border-color:var(--danger);" (click)="disableRecurring()"><i class="fas fa-pause me-1"></i> Disable</button>
-      <button class="btn btn--outline rounded-3" (click)="closeAllModals()">Cancel</button>
-      <button class="btn text-white rounded-3 fw-semibold" style="background:var(--gradient-primary);box-shadow:var(--shadow-primary);" (click)="saveRecurring()"><i class="fas fa-save me-1"></i> Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Export -->
-<div class="modal-overlay" [class.active]="showExportModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal modal--sm" *ngIf="showExportModal">
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-download me-2" style="color:var(--primary);"></i>Export</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <div class="mb-3">
-        <label class="form-label fw-semibold" style="font-size:13px;">Period</label>
-        <select class="form-select" style="border-radius:12px;" [(ngModel)]="exportPeriod">
-          <option>This Month</option>
-          <option>Last 3 Months</option>
-          <option selected>Last 6 Months</option>
-          <option>This Year</option>
-          <option>All Time</option>
+  <!-- Deposit History -->
+  <article class="dp-card">
+    <header class="dp-card-head history-head">
+      <h6><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg> Deposit History
+      </h6>
+      <div class="dp-filters">
+        <select [(ngModel)]="filterAccount">
+          <option value="">All Accounts</option>
+          <option value="Ordinary">Ordinary</option>
+          <option value="Fixed Deposit">Fixed Deposit</option>
+          <option value="Holiday">Holiday</option>
+          <option value="Education">Education</option>
         </select>
+        <select [(ngModel)]="filterStatus">
+          <option value="">All Status</option>
+          <option value="Pending">Pending</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Failed">Failed</option>
+        </select>
+        <button class="dp-icon-btn" (click)="openModal('export')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-outline-danger rounded-3 flex-fill" (click)="exportTransactions('pdf')"><i class="fas fa-file-pdf"></i> PDF</button>
-        <button class="btn btn-outline-success rounded-3 flex-fill" (click)="exportTransactions('excel')"><i class="fas fa-file-excel"></i> Excel</button>
-        <button class="btn btn-outline-primary rounded-3 flex-fill" (click)="exportTransactions('csv')"><i class="fas fa-file-csv"></i> CSV</button>
+    </header>
+
+    <div class="dp-table-wrap">
+      <table class="dp-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Reference</th>
+            <th>Account</th>
+            <th>Method</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of filteredDeposits; track d.reference) {
+          <tr (click)="openDepositDetail(d)">
+            <td>{{d.date}}</td>
+            <td><strong class="mono" [class.text-red]="d.status === 'Failed'"
+                [class.text-blue]="d.status !== 'Failed'">{{d.reference}}</strong></td>
+            <td>{{d.account}}</td>
+            <td>
+              <span class="dp-method" [class.bank]="d.method === 'Bank'" [class.card]="d.method === 'Card'" [class.mpesa]="d.method === 'M-Pesa STK'">
+                @if (d.method === 'Bank') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M8 10v10M16 10v10M12 10v10"/></svg>
+                }
+                @if (d.method === 'Card') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                }
+                @if (d.method === 'Airtel') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M8 6h8M8 10h8"/></svg>
+                }
+                @if (d.method !== 'Bank' && d.method !== 'Card' && d.method !== 'Airtel') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                }
+                {{d.method}}
+              </span>
+            </td>
+            <td><strong class="amount" [class.failed]="d.status === 'Failed'">{{d.amount}}</strong></td>
+            <td>
+              <span class="dp-pill" [class.ok]="d.status === 'Confirmed'" [class.warn]="d.status === 'Pending'" [class.danger]="d.status === 'Failed'">
+                @if (d.status === 'Confirmed') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                }
+                @if (d.status === 'Pending') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                }
+                @if (d.status === 'Failed') {
+                  <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                }
+                {{d.status}}
+              </span>
+            </td>
+            <td>
+              @if (d.status === 'Pending') { <button class="dp-icon-btn ghost"
+                (click)="$event.stopPropagation(); openDepositDetail(d)"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button> }
+              @if (d.status === 'Confirmed') { <button class="dp-icon-btn ghost"
+                (click)="$event.stopPropagation(); selectedDeposit = d; openModal('receipt')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button> }
+              @if (d.status === 'Failed') { <button class="dp-icon-btn ghost danger"
+                (click)="$event.stopPropagation(); selectedDeposit = d; openDepositDetail(d)"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button> }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <footer class="dp-table-foot">
+      <small>Showing {{filteredDeposits.length}} of {{totalCount}} deposits</small>
+      <div>
+        <button class="dp-page-btn" [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        @for (p of [1,2,3]; track p) { <button class="dp-page-btn" [class.on]="currentPage === p"
+          (click)="currentPage = p">{{p}}</button> }
+        <button class="dp-page-btn" (click)="currentPage = currentPage + 1"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
       </div>
+    </footer>
+  </article>
+</section>
+
+<!-- ═══════════════════════════ MODALS ═══════════════════════════ -->
+@if (activeModal) { <div class="dp-overlay" (click)="closeModal()"></div> }
+
+<!-- Instant Deposit -->
+@if (activeModal === 'instantDeposit' || activeModal === 'retryDeposit') {
+<div class="dp-modal lg" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Instant Deposit</h5><button
+      class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body">
+    <p class="muted">Choose your preferred payment method. All transactions are automated.</p>
+    <label>Deposit To *</label>
+    <select [(ngModel)]="depositForm.account">
+      @for (a of accounts; track a.value) { <option [value]="a.value">{{a.label}}</option> }
+    </select>
+    <label>Payment Method</label>
+    <div class="dp-method-grid">
+      @for (m of paymentMethods; track m.key) {
+      <label class="dp-pay-method" [class.selected]="depositForm.method === m.key">
+        <input type="radio" [value]="m.key" [(ngModel)]="depositForm.method" hidden>
+        <span class="dp-pay-icon tone-{{m.tone}}">
+          @if (m.icon === 'phone') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> }
+          @if (m.icon === 'card') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> }
+          @if (m.icon === 'bank') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M8 10v10M16 10v10M12 10v10"/></svg> }
+          @if (m.icon === 'sim') { <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M8 6h8M8 10h8"/></svg> }
+        </span>
+        <strong>{{m.label}}</strong>
+        <small>{{m.sub}}</small>
+        <span class="dp-pill {{m.badgeTone}} sm">{{m.badge}}</span>
+      </label>
+      }
+    </div>
+    <label>Amount (KES) *</label>
+    <div class="dp-input-group"><span>KES</span><input type="number" [(ngModel)]="depositForm.amount"
+        placeholder="0.00"></div>
+    <div class="dp-quick-amounts">
+      @for (q of ['1K','2K','5K','10K','25K','50K']; track q) {
+      <button [class.on]="q === '25K'" (click)="depositForm.amount = q.replace('K','000')">
+        {{q}} @if (q === '5K') { <small>(min)</small> }
+      </button>
+      }
     </div>
   </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="dp-btn-primary" (click)="proceedToPay()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Proceed to Pay</button></footer>
+</div>
+}
+<!-- STK Push -->
+@if (activeModal === 'stkPush') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head green">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> M-Pesa STK Push</h5><button
+      class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body">
+    <div class="dp-note ok"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> A payment prompt
+      will be sent directly to your phone. Just enter your M-Pesa PIN when prompted — no transaction codes needed!</div>
+    <div class="dp-amount-box"><small>You are depositing</small>
+      <h3>KES {{fmt(+depositForm.amount)}}</h3><small>to Ordinary Savings (SAV-001)</small>
+    </div>
+    <label>M-Pesa Phone Number *</label>
+    <div class="dp-input-group"><span>KE</span><input type="tel" [(ngModel)]="stkForm.phone"></div>
+    <small class="muted">Safaricom number registered for M-Pesa</small>
+  </div>
+  <footer class="dp-modal-foot single"><button class="dp-btn-success" (click)="sendStkPush()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Send STK Push</button></footer>
+</div>
+}
+
+<!-- Pending Deposit -->
+@if (activeModal === 'pendingDeposit') {
+<div class="dp-modal status" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head amber">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Pending Deposit
+    </h5><button class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body centered">
+    <span class="dp-status-orb amber"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+    <strong class="status-label text-amber">AWAITING VERIFICATION</strong>
+    <h2 class="mono text-amber">KES {{amountNumber(selectedDeposit)}}.00</h2>
+    <div class="dp-timeline">
+      <div class="done"><span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><strong>Submitted</strong><small>Feb
+          25, 4:15 PM</small></div>
+      <div class="done"><span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><strong>Proof
+          Uploaded</strong><small>bank_receipt.pdf</small></div>
+      <div class="active"><span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><strong>Admin
+          Verification</strong><small>Usually within 24 hours</small></div>
+      <div><span>4</span><strong>Confirmed</strong></div>
+    </div>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Close</button><button
+      class="dp-btn-primary" (click)="openModal('support')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> Contact Support</button></footer>
+</div>
+}
+
+<!-- Confirmed Deposit -->
+@if (activeModal === 'confirmedDeposit' || activeModal === 'receipt') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head green">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Deposit Confirmed</h5><button
+      class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body centered">
+    <span class="dp-status-orb green"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+    <strong class="status-label text-green">CONFIRMED</strong>
+    <h2 class="mono text-green">+ KES {{amountNumber(selectedDeposit)}}.00</h2>
+    <p class="muted">Savings Deposit</p>
+    <div class="dp-summary-box">
+      <ul class="dp-detail-list">
+        <li><span>Reference</span><strong class="mono text-blue">{{selectedDeposit?.reference ||
+            'DEP-2025-00189'}}</strong></li>
+        <li><span>Date</span><strong>Feb 25, 2025 2:30 PM</strong></li>
+        <li><span>Account</span><strong>Ordinary Savings</strong></li>
+        <li><span>Method</span><strong><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            {{selectedDeposit?.method || 'M-Pesa STK'}}</strong></li>
+        <li><span>M-Pesa Code</span><strong class="mono">{{selectedDeposit?.code || 'SQJ1XK3T5A'}}</strong></li>
+        <li><span>Balance After</span><strong class="mono">KES 98,750.00</strong></li>
+      </ul>
+    </div>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Close</button><button
+      class="dp-btn-outline" (click)="downloadReceipt()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Receipt</button><button class="dp-btn-warn" (click)="openModal('report')"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Report</button></footer>
+</div>
+}
+
+<!-- Failed Deposit -->
+@if (activeModal === 'failedDeposit') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head red">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg> Deposit Failed</h5><button
+      class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body centered">
+    <span class="dp-status-orb red"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span>
+    <strong class="status-label text-red">FAILED</strong>
+    <h2 class="mono failed-amount">KES {{amountNumber(selectedDeposit)}}.00</h2>
+    <div class="dp-note danger"><strong><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Failure Reason</strong><br>Card payment declined — insufficient funds. The charge of KES
+      {{amountNumber(selectedDeposit)}} to card ending ****4242 was rejected by the issuing bank.</div>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Close</button><button
+      class="dp-btn-primary" (click)="retryDeposit()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Retry Deposit</button>
+  </footer>
+</div>
+}
+<!-- Auto Deposit -->
+@if (activeModal === 'autoDeposit') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Auto-Deposit Setup</h5><button
+      class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body">
+    <div class="dp-note info">Set up automatic deposits via M-Pesa Standing Order. Your phone will receive an STK push
+      on the set day automatically — fully hands-free!</div>
+    <div class="dp-form-grid">
+      <div><label>Amount</label>
+        <div class="dp-input-group"><span>KES</span><input type="number" [(ngModel)]="autoDeposit.amount"></div>
+      </div>
+      <div><label>Frequency</label><select [(ngModel)]="autoDeposit.frequency">
+          <option>Monthly</option>
+          <option>Weekly</option>
+          <option>Quarterly</option>
+        </select></div>
+      <div><label>Day of Month</label><select [(ngModel)]="autoDeposit.day">
+          <option>5th</option>
+          <option>15th</option>
+          <option>25th</option>
+          <option>28th</option>
+        </select></div>
+      <div><label>Account</label><select [(ngModel)]="autoDeposit.account">
+          <option>Ordinary Savings</option>
+          <option>Fixed Deposit</option>
+          <option>Holiday</option>
+          <option>Education</option>
+        </select></div>
+    </div>
+    <label>M-Pesa Number</label>
+    <div class="dp-input-group"><span>KE</span><input [(ngModel)]="autoDeposit.phone"></div>
+    <label class="dp-toggle-line"><span><strong>SMS Reminder</strong><small>1 day before auto-debit</small></span><input
+        type="checkbox" [(ngModel)]="autoDeposit.smsReminder"></label>
+    <label class="dp-toggle-line"><span><strong>Email Notification</strong><small>After each
+          auto-deposit</small></span><input type="checkbox" [(ngModel)]="autoDeposit.emailNotification"></label>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-danger-outline"
+      (click)="closeModal(); showToast('Auto-deposit disabled','info')">Disable</button><button class="dp-btn-outline"
+      (click)="closeModal()">Cancel</button><button class="dp-btn-primary" (click)="saveAutoDeposit()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save</button></footer>
+</div>
+}
+
+<!-- Simple info modals -->
+@if (activeModal === 'monthDetail' || activeModal === 'yearDetail' || activeModal === 'trends' || activeModal ===
+'monthlyReq' || activeModal === 'byAccount') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5>
+      @if (activeModal === 'monthDetail') { <span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> This Month Deposits</span> }
+      @if (activeModal === 'yearDetail') { <span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg> This Year Deposits</span> }
+      @if (activeModal === 'trends') { <span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Deposit Trend Insights</span> }
+      @if (activeModal === 'monthlyReq') { <span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> Monthly Contribution</span> }
+      @if (activeModal === 'byAccount') { <span><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Deposits by Account</span> }
+    </h5><button class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body">
+    @if (activeModal === 'monthDetail') {
+    <div class="dp-summary-box">
+      <ul class="dp-detail-list">
+        <li><span>Total</span><strong class="text-blue">KES 12,500</strong></li>
+        <li><span>Last Month</span><strong>KES 10,000</strong></li>
+        <li><span>Growth</span><strong class="text-green">+25%</strong></li>
+        <li><span>Minimum</span><strong>KES 5,000</strong></li>
+      </ul>
+    </div>
+    }
+    @if (activeModal === 'yearDetail') {
+    <div class="dp-summary-box">
+      <ul class="dp-detail-list">
+        <li><span>2025 Total</span><strong class="text-green">KES 25,000</strong></li>
+        <li><span>Deposit Count</span><strong>4</strong></li>
+        <li><span>Average Deposit</span><strong>KES 6,250</strong></li>
+        <li><span>Projection</span><strong class="text-blue">KES 150,000</strong></li>
+      </ul>
+    </div>
+    }
+    @if (activeModal === 'trends') {
+    <div class="dp-tip"><strong>Strong consistency</strong>
+      <p>Your deposits are above the KES 5K minimum and peaked in December.</p>
+    </div>
+    <div class="dp-tip"><strong>Recommendation</strong>
+      <p>Enable Auto-Deposit to keep every month above target.</p>
+    </div>
+    }
+    @if (activeModal === 'monthlyReq') {
+    <div class="dp-progress big"><span style="width:100%"></span></div>
+    <p class="dp-excellent">You deposited KES 12,500, which is 250% of your minimum monthly requirement.</p>
+    }
+    @if (activeModal === 'byAccount') {
+    <div class="dp-account-bars modal-bars">
+      @for (a of accountBreakdown; track a.name) {
+      <div class="dp-acct-line">
+        <p><span class="dot {{a.color}}"></span>{{a.name}} <strong>KES {{fmt(a.amount)}}</strong></p>
+        <div><span class="{{a.color}}" [style.width.%]="a.width"></span></div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-primary" (click)="closeModal()">Close</button></footer>
+</div>
+}
+
+<!-- Export -->
+@if (activeModal === 'export') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Export Deposits
+    </h5><button class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body">
+    <div class="dp-form-grid">
+      <div><label>Account</label><select [(ngModel)]="exportForm.account">
+          <option value="all">All Accounts</option>
+          <option>Ordinary</option>
+          <option>Fixed Deposit</option>
+        </select></div>
+      <div><label>Status</label><select [(ngModel)]="exportForm.status">
+          <option value="all">All Status</option>
+          <option>Confirmed</option>
+          <option>Pending</option>
+          <option>Failed</option>
+        </select></div>
+      <div><label>From</label><input type="date" [(ngModel)]="exportForm.from"></div>
+      <div><label>To</label><input type="date" [(ngModel)]="exportForm.to"></div>
+    </div>
+    <label>Format</label><select [(ngModel)]="exportForm.format">
+      <option value="pdf">PDF</option>
+      <option value="excel">Excel</option>
+      <option value="csv">CSV</option>
+    </select>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="dp-btn-primary" (click)="exportDeposits()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Export</button>
+  </footer>
+</div>
+}
+
+<!-- Bank Instructions -->
+@if (activeModal === 'bankInstructions') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M8 10v10M16 10v10M12 10v10"/></svg> Bank Transfer Instructions</h5><button
+      class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body">
+    <div class="dp-summary-box">
+      <ul class="dp-detail-list">
+        <li><span>Bank</span><strong>Co-operative Bank</strong></li>
+        <li><span>Account Name</span><strong>Rongo SACCO Deposits</strong></li>
+        <li><span>Account No.</span><strong class="mono">0110028-DEP</strong></li>
+        <li><span>Reference</span><strong class="mono text-blue">MEM-2024-0045</strong></li>
+        <li><span>Amount</span><strong>KES {{fmt(+depositForm.amount)}}</strong></li>
+      </ul>
+    </div>
+    <div class="dp-note info">Upload proof after transfer. Verification normally completes within 24 hours.</div>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Close</button><button
+      class="dp-btn-primary" (click)="openModal('pendingDeposit')">I Have Paid</button></footer>
+</div>
+}
+
+<!-- Card Payment -->
+@if (activeModal === 'cardPayment') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Card Payment</h5>
+    <button class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body"><label>Card Number</label><input placeholder="4242 4242 4242 4242">
+    <div class="dp-form-grid">
+      <div><label>Expiry</label><input placeholder="MM/YY"></div>
+      <div><label>CVV</label><input placeholder="123"></div>
+    </div><label>Name on Card</label><input placeholder="John Kamau">
+    <div class="dp-note info">Card deposits are instant after bank authorization.</div>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="dp-btn-primary" (click)="submitCardPayment()">Pay KES {{fmt(+depositForm.amount)}}</button></footer>
+</div>
+}
+<!-- Support / Report -->
+@if (activeModal === 'support' || activeModal === 'report') {
+<div class="dp-modal" (click)="$event.stopPropagation()">
+  <header class="dp-modal-head">
+    <h5>
+      @if (activeModal === 'support') {
+        <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        Contact Support
+      } @else {
+        <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Report Deposit
+      }
+    </h5><button class="dp-x" (click)="closeModal()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </header>
+  <div class="dp-modal-body"><label>Subject</label><input
+      [(ngModel)]="supportForm.subject"><label>Message</label><textarea rows="4" [(ngModel)]="supportForm.message"
+      placeholder="Describe the issue..."></textarea>
+    <div class="dp-note info">Our support team responds within one business day.</div>
+  </div>
+  <footer class="dp-modal-foot"><button class="dp-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="dp-btn-primary" (click)="submitSupport()">Submit</button></footer>
+</div>
+}
+
+@if (toast) {
+<div class="dp-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'"
+  [class.warn]="toast.type==='warning'" [class.danger]="toast.type==='danger'">
+  <span>
+    @if (toast.type === 'success') {
+      <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    }
+    @if (toast.type === 'info') {
+      <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    }
+    @if (toast.type === 'warning') {
+      <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    }
+    @if (toast.type === 'danger') {
+      <svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    }
+  </span>
+  <p>{{toast.message}}</p>
+  <button (click)="dismissToast()"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
 </div>
 
-<!-- MODAL: Month Detail -->
-<div class="modal-overlay" [class.active]="showMonthDetailModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal modal--sm" *ngIf="showMonthDetailModal">
-    <div class="modal__body p-4 text-center">
-      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">{{ monthDetail.month }}</div>
-      <div class="fw-bold mt-1" style="font-size:32px;font-family:var(--font-mono);color:var(--primary);">{{ monthDetail.amount }}</div>
-      <div class="mt-2"><span class="sp-badge" style="background:rgba(0,200,83,0.08);color:var(--success);border:1px solid rgba(0,200,83,0.2);"><i class="fas fa-arrow-up"></i> {{ monthDetail.trend }}</span></div>
-      <hr>
-      <div style="font-size:13px;color:var(--text-muted);">{{ monthDetail.deposits }} deposits this month</div>
-      <button class="btn text-white rounded-3 w-100 mt-3 fw-semibold" style="background:var(--gradient-primary);" (click)="closeAllModals(); openDepositMethodModal();"><i class="fas fa-plus me-1"></i> Deposit More</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Year Detail -->
-<div class="modal-overlay" [class.active]="showYearDetailModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal modal--sm" *ngIf="showYearDetailModal">
-    <div class="modal__body p-4 text-center">
-      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">{{ yearDetail.year }} Total</div>
-      <div class="fw-bold mt-1" style="font-size:32px;font-family:var(--font-mono);color:var(--success);">{{ yearDetail.total }}</div>
-      <div class="mt-2" style="font-size:12px;color:var(--text-muted);">{{ yearDetail.deposits }} deposits across 2 months</div>
-      <hr>
-      <div style="font-size:12px;"><strong>Projected:</strong> <span style="color:var(--primary);">{{ yearDetail.projected }}</span></div>
-      <button class="btn btn-outline-secondary rounded-3 w-100 mt-3" (click)="closeAllModals(); showExportModal = true;"><i class="fas fa-download me-1"></i> Export</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Trends -->
-<div class="modal-overlay" [class.active]="showTrendsModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showTrendsModal">
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-chart-line me-2" style="color:var(--primary);"></i>Deposit Analysis</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body">
-      <div class="row g-3 text-center">
-        <div class="col-6">
-          <div class="p-3 rounded-3" style="background:var(--bg-input);">
-            <div style="font-size:11px;color:var(--text-muted);">Consistency</div>
-            <div class="fw-bold" style="font-size:24px;color:var(--success);">{{ trendsData.consistency }}%</div>
-            <div style="font-size:10px;color:var(--text-muted);">{{ trendsData.consistencyLabel }}</div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="p-3 rounded-3" style="background:var(--bg-input);">
-            <div style="font-size:11px;color:var(--text-muted);">Top Method</div>
-            <div class="fw-bold" style="font-size:24px;color:var(--success);"><i class="fas fa-mobile-alt"></i></div>
-            <div style="font-size:10px;color:var(--text-muted);">{{ trendsData.topMethod }} {{ trendsData.topMethodPct }}%</div>
-          </div>
-        </div>
-      </div>
-      <hr>
-      <div class="fw-semibold mb-2" style="font-size:13px;">By Method</div>
-      <div class="mb-2" *ngFor="let m of trendsData.methods">
-        <div class="d-flex justify-content-between" style="font-size:12px;"><span>{{ m.label }}</span><span class="fw-semibold">{{ m.pct }}%</span></div>
-        <div class="sp-progress">
-          <div class="sp-progress-fill" [style.width.%]="m.pct" [style.background]="m.color"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Monthly Requirement -->
-<div class="modal-overlay" [class.active]="showMonthlyReqModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal modal--sm" *ngIf="showMonthlyReqModal">
-    <div class="modal__body p-4 text-center">
-      <div style="width:80px;height:80px;margin:0 auto 12px;position:relative;">
-        <svg width="80" height="80" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
-          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(26,29,46,0.06)" stroke-width="8" />
-          <circle cx="50" cy="50" r="42" fill="none" stroke="#00C853" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="0" />
-        </svg>
-        <div class="position-absolute top-50 start-50 translate-middle fw-bold" style="font-size:18px;font-family:var(--font-mono);color:var(--success);">{{ monthlyReq.percentage }}%</div>
-      </div>
-      <span class="sp-badge" style="background:rgba(0,200,83,0.08);color:var(--success);border:1px solid rgba(0,200,83,0.2);"><i class="fas fa-trophy"></i> Exceeded!</span>
-      <hr>
-      <div class="text-start" style="font-size:13px;">
-        <div class="d-flex justify-content-between mb-1"><span style="color:var(--text-muted);">Required</span><span class="fw-semibold" style="font-family:var(--font-mono);">KES {{ monthlyReq.required | number:'1.0-0' }}</span></div>
-        <div class="d-flex justify-content-between"><span style="color:var(--text-muted);">Deposited</span><span class="fw-bold" style="font-family:var(--font-mono);color:var(--success);">KES {{ monthlyReq.deposited | number:'1.0-0' }}</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Notifications -->
-<div class="modal-overlay" [class.active]="showNotificationsModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal" *ngIf="showNotificationsModal">
-    <div class="modal__header">
-      <h5 class="modal__title"><i class="fas fa-bell me-2" style="color:var(--primary);"></i>Notifications</h5>
-      <button class="modal__close" (click)="closeAllModals()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal__body" style="max-height:350px;overflow-y:auto;">
-      <div class="d-flex align-items-start gap-3 p-2 rounded-3 mb-1" style="cursor:pointer;" *ngFor="let n of notifications; let i = index" [style.background]="i === 0 ? 'var(--primary-subtle)' : 'transparent'" (click)="n.action()">
-        <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;" [style.background]="n.iconBg" [style.color]="n.iconColor">
-          <i class="fas {{ n.icon }}"></i>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:600;">{{ n.title }}</div>
-          <div style="font-size:11px;color:var(--text-muted);">{{ n.subtitle }}</div>
-        </div>
-      </div>
-    </div>
-    <div class="modal__footer">
-      <a href="notifications.html" class="btn btn--outline rounded-3 w-100"><i class="fas fa-external-link-alt me-1"></i> All Notifications</a>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Logout -->
-<div class="modal-overlay" [class.active]="showLogoutModal" (click)="$event.target === $event.currentTarget && closeAllModals()">
-  <div class="modal modal--sm" *ngIf="showLogoutModal">
-    <div class="modal__body p-4 text-center">
-      <div style="width:56px;height:56px;background:rgba(229,57,53,0.06);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--danger);font-size:24px;">
-        <i class="fas fa-sign-out-alt"></i>
-      </div>
-      <h5 class="fw-bold">Logout?</h5>
-      <p style="font-size:13px;color:var(--text-muted);">Are you sure you want to log out?</p>
-      <div class="d-flex gap-2">
-        <button class="btn btn--outline rounded-3 flex-fill" (click)="closeAllModals()">Stay</button>
-        <a href="login.html" class="btn btn-danger rounded-3 flex-fill"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     TOAST CONTAINER
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="sp-toast-container">
-  <div class="sp-toast" *ngFor="let t of toasts" [class.success]="t.type === 'success'" [class.warning]="t.type === 'warning'" [class.danger]="t.type === 'danger'" [class.info]="t.type === 'info'" [class.primary]="t.type === 'primary'">
-    <i class="fas" [ngClass]="{
-      'fa-check-circle': t.type === 'success',
-      'fa-exclamation-triangle': t.type === 'warning',
-      'fa-exclamation-circle': t.type === 'danger',
-      'fa-info-circle': t.type === 'info',
-      'fa-bell': t.type === 'primary'
-    }" style="font-size:18px;flex-shrink:0;" [style.color]="t.type === 'success' ? 'var(--success)' : t.type === 'warning' ? 'var(--warning)' : t.type === 'danger' ? 'var(--danger)' : t.type === 'info' ? 'var(--info)' : 'var(--primary)'"></i>
-    <div style="flex:1;min-width:0;">
-      <div style="font-size:13px;font-weight:600;">{{ t.type | titlecase }}</div>
-      <div style="font-size:11px;color:var(--text-muted);">{{ t.message }}</div>
-    </div>
-    <button (click)="removeToast(t.id)" class="btn-close btn-close-sm ms-2" style="font-size:10px;"></button>
-  </div>
-</div>
+}

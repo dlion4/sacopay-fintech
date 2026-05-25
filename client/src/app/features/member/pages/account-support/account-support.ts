@@ -1,773 +1,745 @@
-// member-support.component.ts
-// Angular v21 Standalone — Member Support Page — Body Only
-// NO animations — no Zone.js required
-
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 
-/* ─────────────────────────────────────────────── */
-/*  INTERFACES                                      */
-/* ─────────────────────────────────────────────── */
+// ==================== MODELS ====================
 
-interface Ticket {
+export type TicketStatus = 'Open' | 'Pending' | 'Resolved' | 'Closed' | 'Escalated';
+export type TicketPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type TicketCategory = 'Loan Issues' | 'Savings' | 'Payments' | 'Shares' | 'Account' | 'General' | 'Dividends';
+export type EscalationLevel = 'SACCO Admin' | 'SACCO Manager' | 'SaccoPay Support' | 'SaccoPay Technical';
+
+export interface TicketMessage {
+  id: string;
+  author: string;
+  role: 'Member' | 'SACCO Admin' | 'SACCO Manager' | 'SaccoPay Support' | 'SaccoPay Technical';
+  message: string;
+  timestamp: Date;
+  attachments?: string[];
+}
+
+export interface SupportTicket {
   id: string;
   subject: string;
   preview: string;
-  category: string;
-  priority: 'high' | 'medium' | 'low';
-  priorityLabel: string;
-  status: 'open' | 'pending' | 'resolved' | 'closed';
-  statusLabel: string;
+  description: string;
+  category: TicketCategory;
+  priority: TicketPriority;
+  status: TicketStatus;
   lastUpdate: string;
-  fullDescription?: string;
-  replies?: TicketReply[];
+  createdAt: Date;
+  escalationLevel: EscalationLevel;
+  escalated: boolean;
+  escalationReason?: string;
+  messages: TicketMessage[];
+  attachments?: string[];
 }
 
-interface TicketReply {
-  id: string;
-  author: string;
-  role: 'member' | 'support' | 'admin';
-  message: string;
-  timestamp: string;
-}
-
-interface FaqItem {
+export interface FaqItem {
   id: string;
   question: string;
   answer: string;
-  open: boolean;
+  category: string;
+  helpful: number;
+  expanded?: boolean;
 }
 
-interface VideoGuide {
-  title: string;
-  duration: string;
-  url?: string;
-}
-
-interface ResourceItem {
-  name: string;
-  desc: string;
-  type: 'document' | 'form' | 'policy' | 'calendar' | 'contact';
-  typeLabel: string;
-  typeIcon: string;
-  actionLabel: string;
-  fileSize?: string;
-  fileUrl?: string;
-}
-
-interface FeedbackItem {
-  ticket: string;
-  stars: string;
-  quote: string;
-  date: string;
-}
-
-interface SupportMetric {
-  label: string;
-  value: string;
-  icon: string;
-}
-
-interface ToastItem {
-  id: number;
-  type: 'ok' | 'info' | 'warn' | 'error';
-  message: string;
-  icon: string;
-}
-
-interface PageTab {
+export interface ResourceItem {
   id: string;
-  label: string;
-  icon: string;
+  title: string;
+  description: string;
+  type: 'DOCUMENT' | 'FORM' | 'POLICY' | 'CALENDAR' | 'CONTACT';
+  action: string;
+  url: string;
 }
 
-interface ModalState {
-  ticketView: boolean;
-  newTicket: boolean;
-  videoPlayer: boolean;
-  resourcePreview: boolean;
-  policyReader: boolean;
-  directoryView: boolean;
-  confirmAction: boolean;
+export interface FeedbackEntry {
+  id: string;
+  ticketRef: string;
+  ticketTitle: string;
+  rating: number;
+  comment: string;
+  submittedAt: Date;
 }
 
-/* ─────────────────────────────────────────────── */
-/*  COMPONENT                                       */
-/* ─────────────────────────────────────────────── */
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  timestamp: Date;
+  read: boolean;
+  action?: string;
+  link?: string;
+}
+
+type Tab = 'tickets' | 'faq' | 'resources' | 'feedback' | 'notifications';
+
+// ==================== COMPONENT ====================
 
 @Component({
-  selector: 'app-member-support',
+  selector: 'app-account-support',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './account-support.html',
-  styleUrls: ['./account-support.scss']
+  templateUrl:'./account-support.html',
+  styleUrls: ['./account-support.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe
+  ]
 })
 export class MemberSupportComponent implements OnInit {
 
-  /* ── Active Tab ── */
-  activeTab = 'tickets';
+  activeTab: Tab = 'tickets';
 
-  pageTabs: PageTab[] = [
-    { id: 'tickets', label: 'My Tickets', icon: 'bi-ticket-perforated-fill' },
-    { id: 'faq', label: 'FAQ', icon: 'bi-patch-question-fill' },
-    { id: 'resources', label: 'Resources', icon: 'bi-folder2-open' },
-    { id: 'feedback', label: 'Feedback', icon: 'bi-star-fill' }
-  ];
-
-  /* ── Stats ── */
+  // Stats
   stats = {
     openTickets: 3,
     resolvedThisWeek: 2,
     avgResponseTime: '2h',
     pendingEscalation: 1,
     satisfactionScore: 92,
-    ratingCount: 12
+    totalRatings: 12,
+    firstResponseTime: '2.1 hours',
+    resolutionRate: '94%',
+    memberSatisfaction: '4.6 / 5.0',
+    ticketsResolvedThisMonth: 142
   };
 
-  /* ── Modal States ── */
-  modals: ModalState = {
-    ticketView: false,
-    newTicket: false,
-    videoPlayer: false,
-    resourcePreview: false,
-    policyReader: false,
-    directoryView: false,
-    confirmAction: false
-  };
+  // Tickets
+  tickets: SupportTicket[] = [];
+  filteredTickets: SupportTicket[] = [];
+  searchTerm = '';
+  filterStatus: 'all' | TicketStatus = 'all';
 
-  /* ── Selected Items for Modals ── */
-  selectedTicket: Ticket | null = null;
-  selectedVideo: VideoGuide | null = null;
-  selectedResource: ResourceItem | null = null;
-  confirmActionData = {
-    title: '',
-    message: '',
-    action: '',
-    confirmLabel: 'Confirm',
-    cancelLabel: 'Cancel'
-  };
+  // Modals
+  showNewTicketModal = false;
+  showTicketDetailModal = false;
+  showEscalateModal = false;
+  showInfoModal = false;
+  showNotificationsPanel = false;
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'info' | 'warning' | 'error' = 'success';
 
-  /* ── New Ticket Form ── */
-  newTicketForm = {
-    subject: '',
-    category: '',
-    priority: 'medium',
-    description: '',
-    attachments: [] as File[]
-  };
+  selectedTicket: SupportTicket | null = null;
+  newReply = '';
 
-  ticketCategories = [
-    'Loan Issues',
-    'Savings',
-    'Payments',
-    'Shares',
-    'Account',
-    'General Inquiry'
-  ];
+  // Forms
+  newTicketForm!: FormGroup;
+  escalateForm!: FormGroup;
+  feedbackForm!: FormGroup;
 
-  /* ── Tickets ── */
-  tickets: Ticket[] = [
-    {
-      id: '#SUP-2025-0042',
-      subject: 'Emergency Loan Disbursement Delay',
-      preview: 'Applied 3 days ago but funds not yet reflected in my M-Pesa...',
-      category: 'Loan Issues',
-      priority: 'high',
-      priorityLabel: 'High',
-      status: 'open',
-      statusLabel: 'Open',
-      lastUpdate: '2 hours ago',
-      fullDescription: `I applied for an Emergency Loan on February 22, 2025, and received approval notification on February 23. However, as of today (February 25), the funds have not been disbursed to my M-Pesa account. I have checked my M-Pesa messages and there is no transaction. My M-Pesa number is 254712345678. Please help resolve this urgently as I need the funds for a medical emergency.`,
-      replies: [
-        {
-          id: 'r1',
-          author: 'Jane Wanjiku',
-          role: 'support',
-          message: 'Thank you for contacting us. We have received your request and are investigating the disbursement delay. We will update you within 2 hours.',
-          timestamp: 'Feb 25, 2025 — 10:30 AM'
-        },
-        {
-          id: 'r2',
-          author: 'System',
-          role: 'admin',
-          message: 'Internal Note: Disbursement queue shows pending status. M-Pesa API timeout detected at 09:15 AM. Retrying now.',
-          timestamp: 'Feb 25, 2025 — 11:00 AM'
-        }
-      ]
-    },
-    {
-      id: '#SUP-2025-0038',
-      subject: 'Missing Monthly Interest Credit',
-      preview: 'January interest of KES 720 not credited to savings account...',
-      category: 'Savings',
-      priority: 'medium',
-      priorityLabel: 'Medium',
-      status: 'pending',
-      statusLabel: 'Pending',
-      lastUpdate: 'Yesterday',
-      fullDescription: `My January 2025 interest credit of KES 720 was not reflected in my savings account. I have maintained the minimum balance requirement. Please review and credit the missing interest.`,
-      replies: [
-        {
-          id: 'r1',
-          author: 'Peter Ochieng',
-          role: 'support',
-          message: 'We have forwarded your request to the savings department. They will review your account and process the interest credit if valid.',
-          timestamp: 'Feb 24, 2025 — 2:15 PM'
-        }
-      ]
-    },
-    {
-      id: '#SUP-2025-0031',
-      subject: 'M-Pesa STK Push Not Working',
-      preview: 'When trying to repay loan via M-Pesa, STK push prompt does not appear...',
-      category: 'Payments',
-      priority: 'high',
-      priorityLabel: 'High',
-      status: 'open',
-      statusLabel: 'Open',
-      lastUpdate: '4 hours ago',
-      fullDescription: `When I try to make a loan repayment using the M-Pesa STK push option in the app, the prompt does not appear on my phone. I have tried multiple times today. My M-Pesa is working fine for other transactions.`,
-      replies: []
-    },
-    {
-      id: '#SUP-2025-0025',
-      subject: 'Request for Dividend Statement',
-      preview: 'Need official FY 2024 dividend statement for tax filing purposes...',
-      category: 'Shares',
-      priority: 'low',
-      priorityLabel: 'Low',
-      status: 'resolved',
-      statusLabel: 'Resolved',
-      lastUpdate: 'Feb 20, 2025',
-      fullDescription: `I need an official dividend statement for FY 2024 for my tax filing. The statement should show the dividend amount, date paid, and SACCO details.`,
-      replies: [
-        {
-          id: 'r1',
-          author: 'Mary Kamau',
-          role: 'support',
-          message: 'Your dividend statement has been generated and sent to your registered email address. Please check your inbox and spam folder.',
-          timestamp: 'Feb 20, 2025 — 9:00 AM'
-        },
-        {
-          id: 'r2',
-          author: 'You',
-          role: 'member',
-          message: 'Received, thank you for the quick turnaround!',
-          timestamp: 'Feb 20, 2025 — 11:30 AM'
-        }
-      ]
-    },
-    {
-      id: '#SUP-2025-0019',
-      subject: 'Update KYC Documents',
-      preview: 'Submitted new ID copy and utility bill for address update...',
-      category: 'Account',
-      priority: 'medium',
-      priorityLabel: 'Medium',
-      status: 'closed',
-      statusLabel: 'Closed',
-      lastUpdate: 'Feb 15, 2025',
-      fullDescription: `I have submitted my new National ID copy and a recent utility bill to update my KYC records. My address has changed from Nairobi to Mombasa.`,
-      replies: [
-        {
-          id: 'r1',
-          author: 'Admin Team',
-          role: 'admin',
-          message: 'Your KYC documents have been verified and your address updated successfully.',
-          timestamp: 'Feb 15, 2025 — 3:00 PM'
-        }
-      ]
-    }
-  ];
-
-  /* ── FAQ ── */
-  faqs: FaqItem[] = [
-    {
-      id: 'faq1',
-      question: 'How do I apply for a loan?',
-      answer: `Navigate to <strong>My Loans &gt; Apply New Loan</strong>, select your desired product, fill in the amount and purpose, upload required documents, and nominate guarantors if needed. Approval typically takes 1–3 business days. You will receive SMS and email notifications at each stage.`,
-      open: false
-    },
-    {
-      id: 'faq2',
-      question: 'Why is my M-Pesa payment not reflecting?',
-      answer: `M-Pesa payments may take up to <strong>15 minutes</strong> to reflect during peak hours. If it exceeds 30 minutes, check your M-Pesa confirmation message, then raise a ticket under <strong>M-Pesa / Payments</strong> with the transaction code. Our team will reconcile within 2 hours.`,
-      open: false
-    },
-    {
-      id: 'faq3',
-      question: 'Can I change my loan guarantor?',
-      answer: `Guarantor changes are only permitted <strong>before loan disbursement</strong>. Go to your pending loan application, click <strong>Manage Guarantors</strong>, remove the existing guarantor, and send a new request. The new guarantor must accept within 48 hours.`,
-      open: false
-    },
-    {
-      id: 'faq4',
-      question: 'What is the minimum monthly savings contribution?',
-      answer: `The minimum monthly savings contribution is <strong>KES 1,000</strong>. However, to maintain loan eligibility at 3x multiplier, we recommend contributing at least <strong>KES 5,000</strong> monthly. You can set up a standing order via M-Pesa PayBill 522522.`,
-      open: false
-    },
-    {
-      id: 'faq5',
-      question: 'How are dividends calculated and paid?',
-      answer: `Dividends are calculated as a percentage of your <strong>share capital</strong> at the end of the financial year. The Board declares the rate at the AGM. For FY 2024, the rate is <strong>12.5%</strong>. Payments are processed via M-Pesa or bank transfer by March 31.`,
-      open: false
-    },
-    {
-      id: 'faq6',
-      question: 'How do I withdraw from my savings?',
-      answer: `You may request a withdrawal anytime, but <strong>minimum balance rules apply</strong>. You must retain at least KES 2,000 as a retention amount. Withdrawals are processed within 24 hours on business days. Large withdrawals above KES 50,000 require SACCO admin approval.`,
-      open: false
-    }
-  ];
-
-  /* ── Search Pills ── */
-  searchPills = [
-    'Loan application',
-    'M-Pesa payment',
-    'Guarantor',
-    'Dividends',
-    'Withdrawal rules',
-    'KYC update'
-  ];
-
-  /* ── Video Guides ── */
-  videoGuides: VideoGuide[] = [
-    { title: 'How to Apply for a Loan', duration: '3 min 42 sec', url: 'https://saccopay.co/guides/loan-application' },
-    { title: 'M-Pesa Payment Guide', duration: '2 min 15 sec', url: 'https://saccopay.co/guides/mpesa-payment' },
-    { title: 'Understanding Your Dashboard', duration: '5 min 08 sec', url: 'https://saccopay.co/guides/dashboard-overview' }
-  ];
-
-  /* ── Resources ── */
-  resources: ResourceItem[] = [
-    {
-      name: 'SACCO Constitution & Bylaws',
-      desc: 'Full governing document covering membership rights, loan policies, dividend distribution, and AGM procedures.',
-      type: 'document',
-      typeLabel: 'Document',
-      typeIcon: 'bi-file-earmark-pdf-fill',
-      actionLabel: 'Download PDF',
-      fileSize: '2.4 MB',
-      fileUrl: '/assets/docs/sacco-constitution-2025.pdf'
-    },
-    {
-      name: 'Loan Application Checklist',
-      desc: 'Step-by-step checklist for all loan products including required documents, guarantor rules, and approval timelines.',
-      type: 'document',
-      typeLabel: 'Document',
-      typeIcon: 'bi-file-earmark-check-fill',
-      actionLabel: 'Download PDF',
-      fileSize: '856 KB',
-      fileUrl: '/assets/docs/loan-checklist.pdf'
-    },
-    {
-      name: 'M-Pesa PayBill Guide',
-      desc: 'Detailed instructions for deposits, loan repayments, and share purchases using our M-Pesa PayBill number.',
-      type: 'document',
-      typeLabel: 'Document',
-      typeIcon: 'bi-phone-fill',
-      actionLabel: 'Download PDF',
-      fileSize: '1.2 MB',
-      fileUrl: '/assets/docs/mpesa-guide.pdf'
-    },
-    {
-      name: 'Withdrawal Request Form',
-      desc: 'Official form for processing savings withdrawals. Must be submitted 48 hours before the desired processing date.',
-      type: 'form',
-      typeLabel: 'Form',
-      typeIcon: 'bi-file-earmark-text-fill',
-      actionLabel: 'Download Form',
-      fileSize: '245 KB',
-      fileUrl: '/assets/forms/withdrawal-form.pdf'
-    },
-    {
-      name: 'Guarantor Nomination Form',
-      desc: 'Use this form when nominating guarantors for Development, School Fees, or Business loans.',
-      type: 'form',
-      typeLabel: 'Form',
-      typeIcon: 'bi-people-fill',
-      actionLabel: 'Download Form',
-      fileSize: '312 KB',
-      fileUrl: '/assets/forms/guarantor-form.pdf'
-    },
-    {
-      name: 'Data Privacy Policy',
-      desc: 'How SaccoPay collects, stores, and protects your personal and financial data in compliance with Kenyan Data Protection Act.',
-      type: 'policy',
-      typeLabel: 'Policy',
-      typeIcon: 'bi-shield-lock-fill',
-      actionLabel: 'Read Policy',
-      fileUrl: '/assets/policies/data-privacy.html'
-    },
-    {
-      name: 'Interest & Penalty Schedule',
-      desc: 'Current interest rates for all loan products, late payment penalties, and default recovery procedures.',
-      type: 'policy',
-      typeLabel: 'Policy',
-      typeIcon: 'bi-percent',
-      actionLabel: 'Download PDF',
-      fileSize: '1.8 MB',
-      fileUrl: '/assets/docs/interest-schedule.pdf'
-    },
-    {
-      name: '2025 SACCO Events Calendar',
-      desc: 'Key dates for AGMs, dividend declarations, loan product launches, and member education days.',
-      type: 'calendar',
-      typeLabel: 'Calendar',
-      typeIcon: 'bi-calendar-event-fill',
-      actionLabel: 'Download Calendar',
-      fileSize: '1.1 MB',
-      fileUrl: '/assets/docs/events-calendar-2025.ics'
-    },
-    {
-      name: 'SACCO Office Directory',
-      desc: 'Phone numbers, email addresses, and office hours for all SACCO departments including loans, savings, and shares.',
-      type: 'contact',
-      typeLabel: 'Contact',
-      typeIcon: 'bi-telephone-fill',
-      actionLabel: 'View Directory'
-    }
-  ];
-
-  /* ── Office Directory Data ── */
-  officeDirectory = [
-    { department: 'Loans Department', phone: '+254 712 345 001', email: 'loans@saccopay.co', hours: 'Mon–Fri, 8:00 AM – 5:00 PM' },
-    { department: 'Savings & Shares', phone: '+254 712 345 002', email: 'savings@saccopay.co', hours: 'Mon–Fri, 8:00 AM – 5:00 PM' },
-    { department: 'Member Support', phone: '+254 712 345 003', email: 'support@saccopay.co', hours: 'Mon–Sat, 7:00 AM – 8:00 PM' },
-    { department: 'IT & Technical', phone: '+254 712 345 004', email: 'it@saccopay.co', hours: 'Mon–Fri, 8:00 AM – 6:00 PM' },
-    { department: 'Accounts & Finance', phone: '+254 712 345 005', email: 'accounts@saccopay.co', hours: 'Mon–Fri, 8:00 AM – 5:00 PM' },
-    { department: 'Compliance & KYC', phone: '+254 712 345 006', email: 'compliance@saccopay.co', hours: 'Mon–Fri, 9:00 AM – 4:00 PM' }
-  ];
-
-  /* ── Feedback Form ── */
-  currentRating = 0;
+  // Feedback
+  rating = 0;
   hoverRating = 0;
-  starLabel = 'Click a star to rate';
+  feedbackHistory: FeedbackEntry[] = [];
 
-  feedbackForm = {
-    ticket: '',
-    positive: '',
-    improvement: '',
-    consent: false
-  };
+  // FAQ
+  faqs: FaqItem[] = [];
+  faqSearch = '';
+  faqCategory = 'all';
 
-  feedbackTickets = [
-    '#SUP-2025-0042 — Emergency Loan Disbursement Delay',
-    '#SUP-2025-0038 — Missing Monthly Interest Credit',
-    '#SUP-2025-0031 — M-Pesa STK Push Not Working',
-    '#SUP-2025-0025 — Request for Dividend Statement',
-    '#SUP-2025-0019 — Update KYC Documents',
-    'General — Platform Usability'
-  ];
+  // Resources
+  resources: ResourceItem[] = [];
 
-  ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'];
+  // Notifications
+  notifications: NotificationItem[] = [];
+  unreadCount = 0;
 
-  /* ── Feedback History ── */
-  feedbackHistory: FeedbackItem[] = [
-    {
-      ticket: '#SUP-2025-0025 — Dividend Statement',
-      stars: '★★★★★',
-      quote: 'The admin team responded within 2 hours and sent the statement immediately. Very impressed!',
-      date: 'Submitted on Feb 21, 2025'
-    },
-    {
-      ticket: 'General — Platform Usability',
-      stars: '★★★★☆',
-      quote: 'Great app but would love dark mode and biometric login. Otherwise very smooth experience.',
-      date: 'Submitted on Jan 15, 2025'
-    }
-  ];
+  categories: TicketCategory[] = ['Loan Issues', 'Savings', 'Payments', 'Shares', 'Account', 'Dividends', 'General'];
+  priorities: TicketPriority[] = ['Low', 'Medium', 'High', 'Critical'];
+  escalationOptions: EscalationLevel[] = ['SACCO Manager', 'SaccoPay Support', 'SaccoPay Technical'];
 
-  /* ── Support Metrics ── */
-  supportMetrics: SupportMetric[] = [
-    { label: 'First Response Time', value: '2.1 hours', icon: 'bi-stopwatch' },
-    { label: 'Resolution Rate', value: '94%', icon: 'bi-check-circle' },
-    { label: 'Member Satisfaction', value: '4.6 / 5.0', icon: 'bi-emoji-smile' },
-    { label: 'Tickets Resolved This Month', value: '142', icon: 'bi-ticket-perforated' }
-  ];
+  // Quick action for FAQ still need help
+  faqTicketSubject = '';
 
-  /* ── Toasts ── */
-  toasts: ToastItem[] = [];
-  private toastId = 0;
-
-  /* ── New Ticket Reply ── */
-  newReplyText = '';
-
-  /* ─────────────────────────────────────────────── */
-  /*  LIFECYCLE                                       */
-  /* ─────────────────────────────────────────────── */
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
-    // Component initialized
+    this.initForms();
+    this.seedData();
+    this.applyFilters();
+    this.updateUnreadCount();
   }
 
-  /* ─────────────────────────────────────────────── */
-  /*  TABS                                            */
-  /* ─────────────────────────────────────────────── */
+  initForms(): void {
+    this.newTicketForm = this.fb.group({
+      subject: ['', [Validators.required, Validators.minLength(5)]],
+      category: ['', Validators.required],
+      priority: ['Medium', Validators.required],
+      description: ['', [Validators.required, Validators.minLength(20)]]
+    });
 
-  setTab(tabId: string): void {
-    this.activeTab = tabId;
+    this.escalateForm = this.fb.group({
+      escalateTo: ['SaccoPay Support', Validators.required],
+      reason: ['', [Validators.required, Validators.minLength(15)]],
+      acknowledge: [false, Validators.requiredTrue]
+    });
+
+    this.feedbackForm = this.fb.group({
+      ticketRef: ['', Validators.required],
+      whatWentWell: [''],
+      whatToImprove: [''],
+      consent: [false, Validators.requiredTrue]
+    });
   }
 
-  /* ─────────────────────────────────────────────── */
-  /*  MODAL MANAGEMENT                                */
-  /* ─────────────────────────────────────────────── */
+  seedData(): void {
+    this.tickets = [
+      {
+        id: '#SUP-2025-0042',
+        subject: 'Emergency Loan Disbursement Delay',
+        preview: 'Applied 3 days ago but funds not yet reflected in my M-Pesa.',
+        description: 'I applied for an Emergency Loan of KES 15,000 on Feb 24, 2025. I received approval SMS but the funds have not been disbursed to my M-Pesa (07XX XXX 421) yet. Kindly assist.',
+        category: 'Loan Issues',
+        priority: 'High',
+        status: 'Open',
+        lastUpdate: '2 hours ago',
+        createdAt: new Date(Date.now() - 86400000 * 3),
+        escalationLevel: 'SACCO Admin',
+        escalated: false,
+        messages: [
+          { id: 'm1', author: 'John Doe', role: 'Member', message: 'Applied for KES 15,000 emergency loan. Funds not received yet.', timestamp: new Date(Date.now() - 86400000 * 3) },
+          { id: 'm2', author: 'Mary K. (SACCO Admin)', role: 'SACCO Admin', message: 'Hello John, we are checking with the disbursement team. Please allow 24 hours.', timestamp: new Date(Date.now() - 7200000) }
+        ]
+      },
+      {
+        id: '#SUP-2025-0038',
+        subject: 'Missing Monthly Interest Credit',
+        preview: 'January interest of KES 720 not credited to savings account.',
+        description: 'My January savings interest of KES 720 was not posted to my account. Last credit was December 2024.',
+        category: 'Savings',
+        priority: 'Medium',
+        status: 'Pending',
+        lastUpdate: 'Yesterday',
+        createdAt: new Date(Date.now() - 86400000 * 5),
+        escalationLevel: 'SACCO Admin',
+        escalated: false,
+        messages: [
+          { id: 'm1', author: 'John Doe', role: 'Member', message: 'Interest not credited for January.', timestamp: new Date(Date.now() - 86400000 * 5) }
+        ]
+      },
+      {
+        id: '#SUP-2025-0031',
+        subject: 'M-Pesa STK Push Not Working',
+        preview: 'When trying to repay loan via M-Pesa, STK push prompt does not appear.',
+        description: 'STK push fails repeatedly when initiating loan repayment from the app.',
+        category: 'Payments',
+        priority: 'High',
+        status: 'Open',
+        lastUpdate: '4 hours ago',
+        createdAt: new Date(Date.now() - 86400000 * 2),
+        escalationLevel: 'SaccoPay Support',
+        escalated: true,
+        escalationReason: 'Technical payment gateway issue beyond SACCO admin scope.',
+        messages: [
+          { id: 'm1', author: 'John Doe', role: 'Member', message: 'STK push not coming through.', timestamp: new Date(Date.now() - 86400000 * 2) },
+          { id: 'm2', author: 'SaccoPay Support', role: 'SaccoPay Support', message: 'Escalated to our payments engineering team. Reference: SP-INC-7821.', timestamp: new Date(Date.now() - 14400000) }
+        ]
+      },
+      {
+        id: '#SUP-2025-0025',
+        subject: 'Request for Dividend Statement',
+        preview: 'Need official FY 2024 dividend statement for tax filing purposes.',
+        description: 'Kindly issue FY2024 dividend statement.',
+        category: 'Shares',
+        priority: 'Low',
+        status: 'Resolved',
+        lastUpdate: 'Feb 20, 2025',
+        createdAt: new Date('2025-02-18'),
+        escalationLevel: 'SACCO Admin',
+        escalated: false,
+        messages: [
+          { id: 'm1', author: 'John Doe', role: 'Member', message: 'Please send FY2024 dividend statement.', timestamp: new Date('2025-02-18') },
+          { id: 'm2', author: 'Mary K. (SACCO Admin)', role: 'SACCO Admin', message: 'Statement emailed to you. Kindly confirm receipt.', timestamp: new Date('2025-02-20') }
+        ]
+      },
+      {
+        id: '#SUP-2025-0019',
+        subject: 'Update KYC Documents',
+        preview: 'Submitted new ID copy and utility bill for address update...',
+        description: 'KYC update request.',
+        category: 'Account',
+        priority: 'Medium',
+        status: 'Closed',
+        lastUpdate: 'Feb 15, 2025',
+        createdAt: new Date('2025-02-10'),
+        escalationLevel: 'SACCO Admin',
+        escalated: false,
+        messages: [
+          { id: 'm1', author: 'John Doe', role: 'Member', message: 'Submitted updated KYC documents.', timestamp: new Date('2025-02-10') },
+          { id: 'm2', author: 'Mary K. (SACCO Admin)', role: 'SACCO Admin', message: 'Documents verified and updated. Your profile is now complete.', timestamp: new Date('2025-02-15') }
+        ]
+      }
+    ];
 
-  openModal(modalName: keyof ModalState): void {
-    this.modals[modalName] = true;
-    document.body.style.overflow = 'hidden';
+    this.faqs = [
+      { id: 'f1', question: 'How long does loan disbursement take?', answer: 'Most loans are disbursed within 24 hours of approval. Emergency loans process within 2-4 hours during business days.', category: 'Loans', helpful: 142 },
+      { id: 'f2', question: 'Why is my M-Pesa STK push not appearing?', answer: 'Ensure your phone has network, SIM is active, and you have sufficient M-Pesa balance. If it persists, raise a ticket and we will escalate to SaccoPay payments team.', category: 'Payments', helpful: 98 },
+      { id: 'f3', question: 'How do I become a guarantor?', answer: 'You must be an active member for 6+ months with good standing. Use the Guarantor Nomination Form under Resources.', category: 'Loans', helpful: 76 },
+      { id: 'f4', question: 'When are dividends paid?', answer: 'Dividends are declared at the AGM (March) and paid within 30 days to your savings account.', category: 'Shares', helpful: 211 },
+      { id: 'f5', question: 'How do I update my KYC details?', answer: 'Go to Sacco Profile > KYC Documents and upload new ID/utility bill. Verification takes 2-3 business days.', category: 'Account', helpful: 54 },
+      { id: 'f6', question: 'What happens if I miss a loan repayment?', answer: 'A 2% penalty applies on the overdue amount. After 30 days, recovery from guarantors begins.', category: 'Loans', helpful: 88 },
+      { id: 'f7', question: 'How do I escalate an unresolved issue?', answer: 'If your SACCO Admin cannot resolve the issue within 48 hours, click "Escalate" in the ticket detail view to route to SACCO Manager or SaccoPay Support.', category: 'General', helpful: 45 },
+      { id: 'f8', question: 'Where do I check for ticket updates?', answer: 'All ticket updates, replies, and status changes appear in the Notifications section. You will also receive email alerts.', category: 'General', helpful: 67 }
+    ];
+
+    this.resources = [
+      { id: 'r1', title: 'SACCO Constitution & Bylaws', description: 'Full governing document covering membership rights, loan policies, dividend distribution, and AGM procedures.', type: 'DOCUMENT', action: 'Download PDF', url: '#' },
+      { id: 'r2', title: 'Loan Application Checklist', description: 'Step-by-step checklist for all loan products including required documents, guarantor rules, and approval timelines.', type: 'DOCUMENT', action: 'Download PDF', url: '#' },
+      { id: 'r3', title: 'M-Pesa PayBill Guide', description: 'Detailed instructions for deposits, loan repayments, and share purchases using our M-Pesa PayBill number.', type: 'DOCUMENT', action: 'Download PDF', url: '#' },
+      { id: 'r4', title: 'Withdrawal Request Form', description: 'Official form for processing savings withdrawals. Must be submitted 48 hours before the desired processing date.', type: 'FORM', action: 'Download Form', url: '#' },
+      { id: 'r5', title: 'Guarantor Nomination Form', description: 'Use this form when nominating guarantors for Development, School Fees, or Business loans.', type: 'FORM', action: 'Download Form', url: '#' },
+      { id: 'r6', title: 'Data Privacy Policy', description: 'How SaccoPay collects, stores, and protects your personal and financial data in compliance with Kenyan Data Protection Act.', type: 'POLICY', action: 'Read Policy', url: '#' },
+      { id: 'r7', title: 'Interest & Penalty Schedule', description: 'Current interest rates for all loan products, late payment penalties, and default recovery procedures.', type: 'POLICY', action: 'Download PDF', url: '#' },
+      { id: 'r8', title: '2025 SACCO Events Calendar', description: 'Key dates for AGMs, dividend declarations, loan product launches, and member education days.', type: 'CALENDAR', action: 'Download Calendar', url: '#' },
+      { id: 'r9', title: 'SACCO Office Directory', description: 'Phone numbers, email addresses, and office hours for all SACCO departments including loans, savings, and shares.', type: 'CONTACT', action: 'View Directory', url: '#' },
+      { id: 'r10', title: 'Escalation Policy Guide', description: 'Learn when and how to escalate issues beyond SACCO Admin to SACCO Manager or SaccoPay Technical team.', type: 'POLICY', action: 'Read Guide', url: '#' }
+    ];
+
+    this.feedbackHistory = [
+      { id: 'fb1', ticketRef: '#SUP-2025-0025', ticketTitle: 'Dividend Statement', rating: 5, comment: 'The admin team responded within 2 hours and sent the statement immediately. Very impressed!', submittedAt: new Date('2025-02-21') },
+      { id: 'fb2', ticketRef: 'General', ticketTitle: 'Platform Usability', rating: 4, comment: 'Great app but would love dark mode and biometric login. Otherwise very smooth experience.', submittedAt: new Date('2025-01-15') }
+    ];
+
+    // Seed notifications
+    this.notifications = [
+      { id: 'n1', title: 'Ticket Updated', message: 'SACCO Admin replied to #SUP-2025-0042', type: 'info', timestamp: new Date(Date.now() - 7200000), read: false, action: 'View Ticket', link: '#SUP-2025-0042' },
+      { id: 'n2', title: 'Escalation Confirmed', message: '#SUP-2025-0031 escalated to SaccoPay Support', type: 'warning', timestamp: new Date(Date.now() - 14400000), read: false, action: 'View Details', link: '#SUP-2025-0031' },
+      { id: 'n3', title: 'Ticket Resolved', message: '#SUP-2025-0025 marked as resolved. Please rate your experience.', type: 'success', timestamp: new Date('2025-02-20'), read: true, action: 'Rate Now', link: 'feedback' },
+      { id: 'n4', title: 'Payment Reminder', message: 'Your Emergency Loan installment of KES 3,200 is due on Mar 1, 2025', type: 'warning', timestamp: new Date(Date.now() - 86400000), read: false, action: 'Pay Now', link: 'payment' },
+      { id: 'n5', title: 'System Maintenance', message: 'Scheduled maintenance on Feb 28, 2025 from 2:00 AM to 4:00 AM', type: 'info', timestamp: new Date('2025-02-25'), read: true, action: 'Learn More', link: '#' }
+    ];
   }
 
-  closeModal(modalName: keyof ModalState): void {
-    this.modals[modalName] = false;
-    const anyOpen = Object.values(this.modals).some(v => v);
-    if (!anyOpen) {
-      document.body.style.overflow = '';
+  // === TAB SWITCHING ===
+  setTab(tab: Tab): void {
+    this.activeTab = tab;
+    if (tab === 'notifications') {
+      this.showNotificationsPanel = true;
+    } else {
+      this.showNotificationsPanel = false;
     }
   }
 
-  closeAllModals(): void {
-    Object.keys(this.modals).forEach(key => {
-      this.modals[key as keyof ModalState] = false;
+  // === NOTIFICATIONS ===
+  get unreadNotifications(): NotificationItem[] {
+    return this.notifications.filter(n => !n.read);
+  }
+
+  get readNotifications(): NotificationItem[] {
+    return this.notifications.filter(n => n.read);
+  }
+
+  markNotificationRead(notification: NotificationItem): void {
+    notification.read = true;
+    this.updateUnreadCount();
+  }
+
+  markAllRead(): void {
+    this.notifications.forEach(n => n.read = true);
+    this.updateUnreadCount();
+    this.notify('All notifications marked as read', 'success');
+  }
+
+  deleteNotification(notification: NotificationItem): void {
+    const index = this.notifications.indexOf(notification);
+    if (index > -1) {
+      this.notifications.splice(index, 1);
+      this.updateUnreadCount();
+    }
+  }
+
+  handleNotificationAction(notification: NotificationItem): void {
+    this.markNotificationRead(notification);
+    if (notification.link?.startsWith('#SUP')) {
+      const ticket = this.tickets.find(t => t.id === notification.link);
+      if (ticket) {
+        this.setTab('tickets');
+        this.openTicketDetail(ticket);
+      }
+    } else if (notification.link === 'feedback') {
+      this.setTab('feedback');
+      this.feedbackForm.patchValue({ ticketRef: notification.link });
+    } else if (notification.link === 'payment') {
+      this.payNow();
+    }
+    this.showNotificationsPanel = false;
+  }
+
+  updateUnreadCount(): void {
+    this.unreadCount = this.notifications.filter(n => !n.read).length;
+  }
+
+  closeNotifications(): void {
+    this.showNotificationsPanel = false;
+    if (this.activeTab === 'notifications') {
+      this.activeTab = 'tickets';
+    }
+  }
+
+  // === FILTERING ===
+  applyFilters(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    this.filteredTickets = this.tickets.filter(t => {
+      const matchTerm = !term || t.subject.toLowerCase().includes(term) || t.id.toLowerCase().includes(term) || t.category.toLowerCase().includes(term);
+      const matchStatus = this.filterStatus === 'all' || t.status === this.filterStatus;
+      return matchTerm && matchStatus;
     });
-    document.body.style.overflow = '';
   }
 
-  /* ─────────────────────────────────────────────── */
-  /*  TICKETS                                         */
-  /* ─────────────────────────────────────────────── */
-
-  viewTicket(ticket: Ticket): void {
-    this.selectedTicket = ticket;
-    this.openModal('ticketView');
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.filterStatus = 'all';
+    this.applyFilters();
   }
 
-  closeTicketModal(): void {
-    this.selectedTicket = null;
-    this.closeModal('ticketView');
-  }
-
+  // === NEW TICKET ===
   openNewTicketModal(): void {
-    this.newTicketForm = {
-      subject: '',
-      category: '',
-      priority: 'medium',
-      description: '',
-      attachments: []
-    };
-    this.openModal('newTicket');
+    this.newTicketForm.reset({ priority: 'Medium' });
+    this.showNewTicketModal = true;
+  }
+
+  closeNewTicketModal(): void {
+    this.showNewTicketModal = false;
   }
 
   submitNewTicket(): void {
-    if (!this.newTicketForm.subject.trim()) {
-      this.showToast('Please enter a subject for your ticket.', 'warn');
+    if (this.newTicketForm.invalid) {
+      this.newTicketForm.markAllAsTouched();
       return;
     }
-    if (!this.newTicketForm.category) {
-      this.showToast('Please select a category.', 'warn');
-      return;
-    }
-    if (!this.newTicketForm.description.trim()) {
-      this.showToast('Please describe your issue.', 'warn');
-      return;
-    }
-
-    const newId = '#SUP-2025-00' + (43 + this.tickets.filter(t => t.id.startsWith('#SUP-2025')).length);
-    const newTicket: Ticket = {
+    const f = this.newTicketForm.value;
+    const newId = `#SUP-2025-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+    const ticket: SupportTicket = {
       id: newId,
-      subject: this.newTicketForm.subject,
-      preview: this.newTicketForm.description.substring(0, 80) + '...',
-      category: this.newTicketForm.category,
-      priority: this.newTicketForm.priority as 'high' | 'medium' | 'low',
-      priorityLabel: this.newTicketForm.priority.charAt(0).toUpperCase() + this.newTicketForm.priority.slice(1),
-      status: 'open',
-      statusLabel: 'Open',
+      subject: f.subject,
+      preview: f.description.substring(0, 80) + '...',
+      description: f.description,
+      category: f.category,
+      priority: f.priority,
+      status: 'Open',
       lastUpdate: 'Just now',
-      fullDescription: this.newTicketForm.description,
-      replies: []
+      createdAt: new Date(),
+      escalationLevel: 'SACCO Admin',
+      escalated: false,
+      messages: [
+        { id: 'm0', author: 'John Doe', role: 'Member', message: f.description, timestamp: new Date() }
+      ]
     };
-
-    this.tickets.unshift(newTicket);
+    this.tickets.unshift(ticket);
     this.stats.openTickets++;
-    this.closeModal('newTicket');
-    this.showToast('Ticket ' + newId + ' created successfully!', 'ok');
-    this.activeTab = 'tickets';
+    this.applyFilters();
+    this.closeNewTicketModal();
+    this.showInfoModal = true;
+
+    // Add notification
+    this.notifications.unshift({
+      id: 'n' + Date.now(),
+      title: 'New Ticket Created',
+      message: `Ticket ${newId} has been created and routed to SACCO Admin`,
+      type: 'success',
+      timestamp: new Date(),
+      read: false,
+      action: 'View Ticket',
+      link: newId
+    });
+    this.updateUnreadCount();
+
+    this.notify('Ticket submitted! Check Notifications for updates.', 'success');
   }
 
-  replyToTicket(): void {
-    if (!this.selectedTicket || !this.newReplyText.trim()) {
-      this.showToast('Please type a reply message.', 'warn');
+  // === TICKET DETAIL ===
+  openTicketDetail(ticket: SupportTicket): void {
+    this.selectedTicket = ticket;
+    this.newReply = '';
+    this.showTicketDetailModal = true;
+  }
+
+  closeTicketDetail(): void {
+    this.showTicketDetailModal = false;
+    this.selectedTicket = null;
+  }
+
+  sendReply(): void {
+    if (!this.selectedTicket || !this.newReply.trim()) return;
+    const msg: TicketMessage = {
+      id: 'm' + Date.now(),
+      author: 'John Doe',
+      role: 'Member',
+      message: this.newReply.trim(),
+      timestamp: new Date()
+    };
+    this.selectedTicket.messages.push(msg);
+    this.selectedTicket.lastUpdate = 'Just now';
+    if (this.selectedTicket.status === 'Resolved' || this.selectedTicket.status === 'Closed') {
+      this.selectedTicket.status = 'Open';
+      this.stats.openTickets++;
+    }
+    this.newReply = '';
+
+    // Add notification for reply
+    this.notifications.unshift({
+      id: 'n' + Date.now(),
+      title: 'Reply Sent',
+      message: `You replied to ${this.selectedTicket.id}`,
+      type: 'info',
+      timestamp: new Date(),
+      read: true,
+      action: 'View Ticket',
+      link: this.selectedTicket.id
+    });
+
+    this.notify('Reply sent successfully', 'success');
+  }
+
+  markResolved(): void {
+    if (!this.selectedTicket) return;
+    this.selectedTicket.status = 'Resolved';
+    this.selectedTicket.lastUpdate = 'Just now';
+    this.stats.openTickets = Math.max(0, this.stats.openTickets - 1);
+    this.stats.resolvedThisWeek++;
+
+    // Add notification
+    this.notifications.unshift({
+      id: 'n' + Date.now(),
+      title: 'Ticket Resolved',
+      message: `${this.selectedTicket.id} marked as resolved. Please rate your experience.`,
+      type: 'success',
+      timestamp: new Date(),
+      read: false,
+      action: 'Rate Now',
+      link: 'feedback'
+    });
+    this.updateUnreadCount();
+
+    this.notify('Ticket marked as resolved. Please rate your experience under Feedback.', 'success');
+    this.closeTicketDetail();
+    this.applyFilters();
+  }
+
+  reopenTicket(): void {
+    if (!this.selectedTicket) return;
+    this.selectedTicket.status = 'Open';
+    this.selectedTicket.lastUpdate = 'Just now';
+    this.stats.openTickets++;
+
+    // Add notification
+    this.notifications.unshift({
+      id: 'n' + Date.now(),
+      title: 'Ticket Reopened',
+      message: `${this.selectedTicket.id} has been reopened`,
+      type: 'info',
+      timestamp: new Date(),
+      read: false,
+      action: 'View Ticket',
+      link: this.selectedTicket.id
+    });
+    this.updateUnreadCount();
+
+    this.notify('Ticket re-opened', 'info');
+    this.applyFilters();
+  }
+
+  // === ESCALATION ===
+  openEscalateModal(): void {
+    if (!this.selectedTicket) return;
+    this.escalateForm.reset({ escalateTo: 'SaccoPay Support', acknowledge: false });
+    this.showEscalateModal = true;
+  }
+
+  closeEscalateModal(): void {
+    this.showEscalateModal = false;
+  }
+
+  confirmEscalate(): void {
+    if (this.escalateForm.invalid || !this.selectedTicket) {
+      this.escalateForm.markAllAsTouched();
       return;
     }
-
-    const reply: TicketReply = {
-      id: 'r' + ((this.selectedTicket.replies?.length || 0) + 1),
-      author: 'You',
-      role: 'member',
-      message: this.newReplyText,
-      timestamp: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    };
-
-    if (!this.selectedTicket.replies) {
-      this.selectedTicket.replies = [];
-    }
-    this.selectedTicket.replies.push(reply);
+    const f = this.escalateForm.value;
+    this.selectedTicket.escalated = true;
+    this.selectedTicket.status = 'Escalated';
+    this.selectedTicket.escalationLevel = f.escalateTo as EscalationLevel;
+    this.selectedTicket.escalationReason = f.reason;
+    this.selectedTicket.priority = this.selectedTicket.priority === 'Low' ? 'Medium' : 'High';
     this.selectedTicket.lastUpdate = 'Just now';
-    this.newReplyText = '';
-    this.showToast('Reply sent successfully.', 'ok');
+    this.selectedTicket.messages.push({
+      id: 'esc' + Date.now(),
+      author: 'System',
+      role: 'SaccoPay Support',
+      message: `Ticket escalated to ${f.escalateTo}. Reason: ${f.reason}. A specialist will respond within 4 business hours.`,
+      timestamp: new Date()
+    });
+    this.stats.pendingEscalation++;
+
+    // Add notification
+    this.notifications.unshift({
+      id: 'n' + Date.now(),
+      title: 'Ticket Escalated',
+      message: `${this.selectedTicket.id} escalated to ${f.escalateTo}`,
+      type: 'warning',
+      timestamp: new Date(),
+      read: false,
+      action: 'View Details',
+      link: this.selectedTicket.id
+    });
+    this.updateUnreadCount();
+
+    this.closeEscalateModal();
+    this.closeTicketDetail();
+    this.applyFilters();
+    this.notify(`Escalated to ${f.escalateTo}. Track updates in Notifications.`, 'warning');
   }
 
-  /* ─────────────────────────────────────────────── */
-  /*  FAQ                                             */
-  /* ─────────────────────────────────────────────── */
-
-  toggleFaq(faqId: string): void {
-    const faq = this.faqs.find(f => f.id === faqId);
-    if (faq) {
-      faq.open = !faq.open;
-    }
+  // === FEEDBACK ===
+  setRating(n: number): void {
+    this.rating = n;
   }
-
-  /* ─────────────────────────────────────────────── */
-  /*  RESOURCES                                       */
-  /* ─────────────────────────────────────────────── */
-
-  downloadResource(res: ResourceItem): void {
-    this.selectedResource = res;
-
-    if (res.actionLabel === 'Read Policy') {
-      this.openModal('policyReader');
-    } else if (res.actionLabel === 'View Directory') {
-      this.openModal('directoryView');
-    } else {
-      this.openModal('resourcePreview');
-    }
-  }
-
-  confirmResourceDownload(): void {
-    if (this.selectedResource) {
-      this.showToast('Downloading ' + this.selectedResource.name + '...', 'ok');
-    }
-    this.closeModal('resourcePreview');
-  }
-
-  /* ─────────────────────────────────────────────── */
-  /*  VIDEO GUIDES                                    */
-  /* ─────────────────────────────────────────────── */
-
-  playVideo(video: VideoGuide): void {
-    this.selectedVideo = video;
-    this.openModal('videoPlayer');
-  }
-
-  closeVideoModal(): void {
-    this.selectedVideo = null;
-    this.closeModal('videoPlayer');
-  }
-
-  /* ─────────────────────────────────────────────── */
-  /*  STAR RATING                                     */
-  /* ─────────────────────────────────────────────── */
-
-  setRating(val: number): void {
-    this.currentRating = val;
-    this.starLabel = this.ratingLabels[val] + ' (' + val + '/5)';
-  }
-
-  setHover(val: number): void {
-    this.hoverRating = val;
-  }
-
-  clearHover(): void {
-    this.hoverRating = 0;
-  }
-
-  /* ─────────────────────────────────────────────── */
-  /*  FEEDBACK SUBMIT                                 */
-  /* ─────────────────────────────────────────────── */
 
   submitFeedback(): void {
-    if (!this.currentRating) {
-      this.showToast('Please select a star rating first.', 'warn');
+    if (this.rating === 0) {
+      this.notify('Please select a star rating', 'error');
       return;
     }
-    if (!this.feedbackForm.consent) {
-      this.showToast('Please consent to feedback usage.', 'warn');
+    if (this.feedbackForm.invalid) {
+      this.feedbackForm.markAllAsTouched();
       return;
     }
-    this.showToast('Thank you! Your feedback has been submitted ✓', 'ok');
+    const f = this.feedbackForm.value;
+    const entry: FeedbackEntry = {
+      id: 'fb' + Date.now(),
+      ticketRef: f.ticketRef,
+      ticketTitle: 'Support Experience',
+      rating: this.rating,
+      comment: f.whatWentWell || f.whatToImprove || 'No comment',
+      submittedAt: new Date()
+    };
+    this.feedbackHistory.unshift(entry);
+    this.stats.totalRatings++;
+    this.stats.satisfactionScore = Math.round((this.stats.satisfactionScore * (this.stats.totalRatings - 1) + this.rating * 20) / this.stats.totalRatings);
+
+    // Add notification
+    this.notifications.unshift({
+      id: 'n' + Date.now(),
+      title: 'Feedback Submitted',
+      message: 'Thank you for your feedback! It helps us improve.',
+      type: 'success',
+      timestamp: new Date(),
+      read: true
+    });
+
     this.clearFeedback();
+    this.notify('Thanks! Your feedback helps us improve.', 'success');
   }
 
   clearFeedback(): void {
-    this.currentRating = 0;
+    this.rating = 0;
     this.hoverRating = 0;
-    this.starLabel = 'Click a star to rate';
-    this.feedbackForm = {
-      ticket: '',
-      positive: '',
-      improvement: '',
-      consent: false
-    };
+    this.feedbackForm.reset({ ticketRef: '', consent: false });
   }
 
-  /* ─────────────────────────────────────────────── */
-  /*  TOASTS                                          */
-  /* ─────────────────────────────────────────────── */
+  // === FAQ ===
+  toggleFaq(faq: FaqItem): void {
+    faq.expanded = !faq.expanded;
+  }
 
-  showToast(message: string, type: 'ok' | 'info' | 'warn' | 'error' = 'info'): void {
-    const icons: Record<string, string> = {
-      ok: 'bi-check-circle-fill',
-      info: 'bi-info-circle-fill',
-      warn: 'bi-exclamation-triangle-fill',
-      error: 'bi-x-circle-fill'
-    };
+  markFaqHelpful(faq: FaqItem): void {
+    faq.helpful++;
+    this.notify('Thanks for your feedback!', 'success');
+  }
 
-    const toast: ToastItem = {
-      id: ++this.toastId,
-      type,
-      message,
-      icon: icons[type] || 'bi-info-circle-fill'
-    };
+  faqStillNeedHelp(faq: FaqItem): void {
+    this.faqTicketSubject = `Need more help: ${faq.question}`;
+    this.openNewTicketModal();
+    this.newTicketForm.patchValue({ 
+      subject: this.faqTicketSubject,
+      category: faq.category === 'Loans' ? 'Loan Issues' : faq.category === 'Shares' ? 'Shares' : faq.category === 'Account' ? 'Account' : 'General',
+      description: `I read the FAQ about "${faq.question}" but I still need assistance. Please help me with this issue.`
+    });
+  }
 
-    this.toasts.push(toast);
+  get filteredFaqs(): FaqItem[] {
+    const term = this.faqSearch.toLowerCase().trim();
+    return this.faqs.filter(f => {
+      const matchTerm = !term || f.question.toLowerCase().includes(term) || f.answer.toLowerCase().includes(term);
+      const matchCat = this.faqCategory === 'all' || f.category === this.faqCategory;
+      return matchTerm && matchCat;
+    });
+  }
 
+  get faqCategories(): string[] {
+    return ['all', ...Array.from(new Set(this.faqs.map(f => f.category)))];
+  }
+
+  // === RESOURCES ===
+  downloadResource(r: ResourceItem): void {
+    this.notify(`Preparing ${r.title}...`, 'info');
     setTimeout(() => {
-      this.removeToast(toast.id);
-    }, 3200);
+      this.notify(`${r.title} downloaded. Check Notifications for confirmation.`, 'success');
+
+      // Add notification
+      this.notifications.unshift({
+        id: 'n' + Date.now(),
+        title: 'Download Complete',
+        message: `${r.title} has been downloaded successfully`,
+        type: 'success',
+        timestamp: new Date(),
+        read: false
+      });
+      this.updateUnreadCount();
+    }, 1200);
   }
 
-  removeToast(id: number): void {
-    this.toasts = this.toasts.filter(t => t.id !== id);
+  // === INFO / NOTIFICATIONS ===
+  goToNotifications(): void {
+    this.showInfoModal = false;
+    this.setTab('notifications');
+    this.showNotificationsPanel = true;
+    this.notify('Opening Notifications...', 'info');
   }
 
-  /* ─────────────────────────────────────────────── */
-  /*  UTILITY                                         */
-  /* ─────────────────────────────────────────────── */
-
-  onBackdropClick(event: MouseEvent, modalName: keyof ModalState): void {
-    if (event.target === event.currentTarget) {
-      this.closeModal(modalName);
-    }
+  payNow(): void {
+    this.notify('Opening loan repayment flow...', 'info');
+    setTimeout(() => {
+      this.notify('Redirecting to M-Pesa payment gateway...', 'info');
+    }, 1000);
   }
 
-  getPriorityColor(priority: string): string {
-    const colors: Record<string, string> = {
-      high: '#dc2626',
-      medium: '#f59e0b',
-      low: '#16a34a'
-    };
-    return colors[priority] || '#6b7280';
+  // === TOAST ===
+  notify(message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    setTimeout(() => (this.showToast = false), 3500);
   }
 
-  getStatusColor(status: string): string {
-    const colors: Record<string, string> = {
-      open: '#dc2626',
-      pending: '#f59e0b',
-      resolved: '#16a34a',
-      closed: '#6b7280'
-    };
-    return colors[status] || '#6b7280';
+  // === HELPERS ===
+  priorityClass(p: TicketPriority): string {
+    return `priority-${p.toLowerCase()}`;
+  }
+  statusClass(s: TicketStatus): string {
+    return `status-${s.toLowerCase()}`;
+  }
+  resourceClass(t: string): string {
+    return `type-${t.toLowerCase()}`;
+  }
+  notificationClass(t: string): string {
+    return `notif-${t}`;
+  }
+
+  trackById(_: number, item: any): string {
+    return item.id;
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  formatTime(date: Date): string {
+    return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
 }

@@ -73,9 +73,9 @@ app-member-layout app-member-sidebar {
 app-member-layout .sp-main-content {
   flex: 1 1 auto !important;
   min-width: 0;
-  margin-left: 260px !important;           /* ← SIDEBAR WIDTH OFFSET */
-  width: calc(100% - 260px) !important;    /* ← CONTENT WIDTH */
-  max-width: calc(100% - 260px) !important;
+  margin-left: 200px !important;           /* ← SIDEBAR WIDTH OFFSET */
+  width: calc(100% - 200px) !important;    /* ← CONTENT WIDTH */
+  // max-width: calc(100% - 260px) !important;
   display: flex !important;
   flex-direction: column;
   box-sizing: border-box;
@@ -139,15 +139,15 @@ app-member-layout .sp-page-body {
 
 @media (min-width: 992px) and (max-width: 1199px) {
   app-member-layout .sp-main-content {
-    margin-left: 220px !important;
-    width: calc(100% - 220px) !important;
-    max-width: calc(100% - 220px) !important;
+    margin-left: 200px !important;
+    width: calc(100% - 200px) !important;
+    max-width: calc(100% - 200px) !important;
   }
 
   app-member-layout .sp-layout-wrapper.sidebar-minimized .sp-main-content {
-    margin-left: 68px !important;
-    width: calc(100% - 68px) !important;
-    max-width: calc(100% - 68px) !important;
+    margin-left: 55px !important;
+    width: calc(100% - 55px) !important;
+    max-width: calc(100% - 55px) !important;
   }
 }
 

@@ -1,688 +1,836 @@
-<!-- ============================================
-     STATEMENTS COMPONENT — SACCOPay Member Portal
-     Angular v21 Standalone Component
-     ============================================ -->
+<!-- ══════════════════ STATEMENTS PAGE — MAIN CONTENT ══════════════════ -->
+<section class="st-shell">
 
-<!-- ─── PAGE HEADER ─── -->
-<div class="pg-header fade-in">
-    <h2><i class="bi bi-file-text" style="color:var(--primary);"></i> Account Statements</h2>
-    <p>Generate, download, and schedule statements for any of your accounts</p>
-</div>
+  <!-- Page title -->
+  <header class="st-page-head">
+    <div>
+      <!-- <h4>Account <span>Statements</span></h4> -->
+      <p>Generate, download, and schedule statements for any of your accounts</p>
+    </div>
+  </header>
 
-<!-- ─── STAT STRIP ─── -->
-<div class="stat-strip fade-in">
-    <div class="stat-tile" (click)="switchTab('generate')">
-        <div class="st-icon" style="background:rgba(0,208,132,0.1);color:var(--primary);"><i class="bi bi-file-earmark-plus"></i></div>
-        <div class="st-label">Generate New</div>
-        <div class="st-value">Now</div>
-        <div class="st-sub">Custom statement</div>
-    </div>
-    <div class="stat-tile" (click)="switchTab('downloads')">
-        <div class="st-icon" style="background:rgba(33,150,243,0.1);color:var(--blue);"><i class="bi bi-download"></i></div>
-        <div class="st-label">Recent Downloads</div>
-        <div class="st-value">8</div>
-        <div class="st-sub">Last 30 days</div>
-    </div>
-    <div class="stat-tile" (click)="switchTab('scheduled')">
-        <div class="st-icon" style="background:rgba(255,152,0,0.1);color:var(--orange);"><i class="bi bi-calendar-check"></i></div>
-        <div class="st-label">Auto Statements</div>
-        <div class="st-value">2</div>
-        <div class="st-sub">Active schedules</div>
-    </div>
-    <div class="stat-tile" (click)="switchTab('certificates')">
-        <div class="st-icon" style="background:rgba(156,39,176,0.1);color:var(--purple);"><i class="bi bi-patch-check"></i></div>
-        <div class="st-label">Certificates</div>
-        <div class="st-value">5</div>
-        <div class="st-sub">Loan, Tax, Audit</div>
-    </div>
-</div>
+  <!-- Stat strip – clickable, switch tabs -->
+  <div class="st-stat-strip">
+    @for (s of stats; track s.tab) {
+    <button class="st-stat" [class.active]="activeTab === s.tab" (click)="activeTab = s.tab">
+      <span class="st-stat-label">{{s.label}}</span>
+      <strong>{{s.value}}</strong>
+      <small>{{s.sub}}</small>
+    </button>
+    }
+  </div>
 
-<!-- ─── TABS ─── -->
-<div class="m-tabs fade-in">
-    <button class="m-tab" [class.active]="activeTab === 'generate'" (click)="switchTab('generate')">
-        <i class="bi bi-file-earmark-plus"></i> Generate
-    </button>
-    <button class="m-tab" [class.active]="activeTab === 'downloads'" (click)="switchTab('downloads')">
-        <i class="bi bi-clock-history"></i> Recent Downloads
-    </button>
-    <button class="m-tab" [class.active]="activeTab === 'scheduled'" (click)="switchTab('scheduled')">
-        <i class="bi bi-calendar-check"></i> Scheduled
-    </button>
-    <button class="m-tab" [class.active]="activeTab === 'certificates'" (click)="switchTab('certificates')">
-        <i class="bi bi-patch-check"></i> Certificates
-    </button>
-</div>
+  <!-- Tabs nav -->
+  <nav class="st-tabs">
+    <button [class.active]="activeTab==='generate'" (click)="activeTab='generate'"><svg class="svg-icon svg-icon-md"
+        width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <polyline points="10 9 9 9 8 9" />
+      </svg> Generate</button>
+    <button [class.active]="activeTab==='downloads'" (click)="activeTab='downloads'"><svg class="svg-icon svg-icon-md"
+        width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="23 4 23 10 17 10" />
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+      </svg> Recent Downloads</button>
+    <button [class.active]="activeTab==='scheduled'" (click)="activeTab='scheduled'"><svg class="svg-icon svg-icon-md"
+        width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg> Scheduled</button>
+    <button [class.active]="activeTab==='certificates'" (click)="activeTab='certificates'"><svg
+        class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <polyline points="9 16 12 13 15 16" />
+      </svg> Certificates</button>
+  </nav>
 
-<!-- ════════════════════════════════════════════════
-     TAB: GENERATE
-     ════════════════════════════════════════════════ -->
-@if (activeTab === 'generate') {
-<div class="tab-pane active" id="pane-generate">
-    <div class="g-card">
-        <div class="g-card-header">
-            <h3><i class="bi bi-file-earmark-plus" style="color:var(--primary);"></i> Generate New Statement</h3>
+  <!-- ════════ TAB: GENERATE ════════ -->
+  @if (activeTab === 'generate') {
+  <article class="st-card">
+    <header class="st-card-head">
+      <h6><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg> Generate New Statement</h6>
+    </header>
+    <div class="st-generate-body">
+
+      <!-- Account / type selector -->
+      <section class="st-section">
+        <label>SELECT ACCOUNT / STATEMENT TYPE</label>
+        <div class="st-type-grid">
+          @for (t of stmtTypes; track t.key) {
+          <button class="st-type" [class.active]="stmtType === t.key" (click)="stmtType = t.key">
+            <h6>{{t.label}}</h6>
+            <small>{{t.sub}}</small>
+          </button>
+          }
         </div>
-        <div class="g-card-body">
+      </section>
 
-            <!-- Account Type -->
-            <div style="margin-bottom:var(--sp-xl);">
-                <label style="font-size:.78rem;font-weight:700;color:var(--text1);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:var(--sp-md);">Select Account / Statement Type</label>
-                <div class="stype-grid">
-                    <div class="stype-card" [class.sel]="selectedStmtType === 'all'" (click)="selectStmtType('all')">
-                        <div class="stype-icon" style="background:rgba(0,208,132,0.1);color:var(--primary);"><i class="bi bi-collection"></i></div>
-                        <div><h6>All Accounts</h6><p>Combined statement</p></div>
-                    </div>
-                    <div class="stype-card" [class.sel]="selectedStmtType === 'savings'" (click)="selectStmtType('savings')">
-                        <div class="stype-icon" style="background:rgba(33,150,243,0.1);color:var(--blue);"><i class="bi bi-piggy-bank"></i></div>
-                        <div><h6>Savings Account</h6><p>Deposits & balance</p></div>
-                    </div>
-                    <div class="stype-card" [class.sel]="selectedStmtType === 'shares'" (click)="selectStmtType('shares')">
-                        <div class="stype-icon" style="background:rgba(26,35,126,0.1);color:#1a237e;"><i class="bi bi-shield-lock"></i></div>
-                        <div><h6>Share Capital</h6><p>Holdings & dividends</p></div>
-                    </div>
-                    <div class="stype-card" [class.sel]="selectedStmtType === 'loans'" (click)="selectStmtType('loans')">
-                        <div class="stype-icon" style="background:rgba(244,67,54,0.1);color:var(--red);"><i class="bi bi-cash-stack"></i></div>
-                        <div><h6>Loans</h6><p>Repayments & balances</p></div>
-                    </div>
-                    <div class="stype-card" [class.sel]="selectedStmtType === 'wallet'" (click)="selectStmtType('wallet')">
-                        <div class="stype-icon" style="background:rgba(156,39,176,0.1);color:var(--purple);"><i class="bi bi-wallet2"></i></div>
-                        <div><h6>Wallet</h6><p>SACCOPay activity</p></div>
-                    </div>
-                    <div class="stype-card" [class.sel]="selectedStmtType === 'mini'" (click)="selectStmtType('mini')">
-                        <div class="stype-icon" style="background:rgba(255,152,0,0.1);color:var(--orange);"><i class="bi bi-receipt"></i></div>
-                        <div><h6>Mini Statement</h6><p>Last 10 transactions</p></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Range -->
-            <div style="margin-bottom:var(--sp-md);">
-                <label style="font-size:.78rem;font-weight:700;color:var(--text1);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:var(--sp-md);">Quick Date Range</label>
-                <div class="quick-range">
-                    <button class="qr-btn" [class.active]="quickRange === '7d'" (click)="setQuickRange('7d')">Last 7 Days</button>
-                    <button class="qr-btn" [class.active]="quickRange === '30d'" (click)="setQuickRange('30d')">Last 30 Days</button>
-                    <button class="qr-btn" [class.active]="quickRange === '3m'" (click)="setQuickRange('3m')">Last 3 Months</button>
-                    <button class="qr-btn" [class.active]="quickRange === '6m'" (click)="setQuickRange('6m')">Last 6 Months</button>
-                    <button class="qr-btn" [class.active]="quickRange === 'ytd'" (click)="setQuickRange('ytd')">Year to Date</button>
-                    <button class="qr-btn" [class.active]="quickRange === 'lyr'" (click)="setQuickRange('lyr')">Last Year</button>
-                    <button class="qr-btn" [class.active]="quickRange === 'all'" (click)="setQuickRange('all')">All Time</button>
-                </div>
-            </div>
-
-            <!-- Custom Range -->
-            <div class="filter-bar">
-                <div>
-                    <label>From Date</label>
-                    <input type="date" class="finput" [(ngModel)]="dateFrom" id="dateFrom">
-                </div>
-                <div>
-                    <label>To Date</label>
-                    <input type="date" class="finput" [(ngModel)]="dateTo" id="dateTo">
-                </div>
-                <div>
-                    <label>Format</label>
-                    <div class="fmt-pills">
-                        <div class="fmt-pill" [class.sel]="selectedFormat === 'pdf'" (click)="selectFormat('pdf')">
-                            <i class="bi bi-file-earmark-pdf-fill" style="color:#e53935;"></i> PDF
-                        </div>
-                        <div class="fmt-pill" [class.sel]="selectedFormat === 'excel'" (click)="selectFormat('excel')">
-                            <i class="bi bi-file-earmark-excel-fill" style="color:#43a047;"></i> Excel
-                        </div>
-                        <div class="fmt-pill" [class.sel]="selectedFormat === 'csv'" (click)="selectFormat('csv')">
-                            <i class="bi bi-file-earmark-text-fill" style="color:#1e88e5;"></i> CSV
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Options -->
-            <div style="margin-top:var(--sp-lg);padding:var(--sp-lg);background:var(--bg3);border-radius:var(--r-md);">
-                <h6 style="font-size:.82rem;font-weight:700;margin-bottom:var(--sp-md);"><i class="bi bi-sliders me-1"></i>Statement Options</h6>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="optHeader" [(ngModel)]="optHeader">
-                            <label class="form-check-label" for="optHeader" style="font-size:.82rem;">Include SACCO header & branding</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="optBalance" [(ngModel)]="optBalance">
-                            <label class="form-check-label" for="optBalance" style="font-size:.82rem;">Show running balance column</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="optSummary" [(ngModel)]="optSummary">
-                            <label class="form-check-label" for="optSummary" style="font-size:.82rem;">Include opening/closing summary</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="optCharts" [(ngModel)]="optCharts">
-                            <label class="form-check-label" for="optCharts" style="font-size:.82rem;">Include charts & graphs (PDF only)</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="optStamp" [(ngModel)]="optStamp">
-                            <label class="form-check-label" for="optStamp" style="font-size:.82rem;">Add SACCO stamp (verified)</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="optPwd" [(ngModel)]="optPwd">
-                            <label class="form-check-label" for="optPwd" style="font-size:.82rem;">Password-protect PDF</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div style="margin-top:var(--sp-xl);display:flex;gap:var(--sp-md);flex-wrap:wrap;">
-                <button class="btn-g" (click)="openModal('previewModal')"><i class="bi bi-eye"></i> Preview Statement</button>
-                <button class="btn-o" (click)="openModal('deliveryModal')"><i class="bi bi-envelope"></i> Email Statement</button>
-                <button class="btn-o" (click)="generateAndDownload()"><i class="bi bi-download"></i> Generate & Download</button>
-                <button class="btn-ghost-s" (click)="openModal('scheduleModal')"><i class="bi bi-calendar-plus"></i> Schedule Auto-Generation</button>
-            </div>
+      <!-- Quick date ranges -->
+      <section class="st-section">
+        <label>QUICK DATE RANGE</label>
+        <div class="st-ranges">
+          @for (r of quickRanges; track r) {
+          <button [class.active]="quickRange === r" (click)="setQuickRange(r)">{{r}}</button>
+          }
         </div>
+      </section>
+
+      <!-- Custom dates + format -->
+      <section class="st-date-row">
+        <div>
+          <label>FROM DATE</label>
+          <div class="st-date-input"><input type="date" [(ngModel)]="fromDate"></div>
+        </div>
+        <div>
+          <label>TO DATE</label>
+          <div class="st-date-input"><input type="date" [(ngModel)]="toDate"></div>
+        </div>
+        <div>
+          <label>FORMAT</label>
+          <div class="st-format-btns">
+            <button [class.active]="format==='pdf'" (click)="format='pdf'"><svg class="svg-icon svg-icon-sm" width="16"
+                height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg> PDF</button>
+            <button [class.active]="format==='excel'" (click)="format='excel'"><svg class="svg-icon svg-icon-sm"
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="8" y1="13" x2="16" y2="13" />
+                <line x1="8" y1="17" x2="16" y2="17" />
+              </svg> Excel</button>
+            <button [class.active]="format==='csv'" (click)="format='csv'"><svg class="svg-icon svg-icon-sm" width="16"
+                height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg> CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Statement options -->
+      <section class="st-section st-options-section">
+        <label><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg> Statement Options</label>
+        <div class="st-options-grid">
+          <label class="st-check"><input type="checkbox" [(ngModel)]="options.header"> Include SACCO header &
+            branding</label>
+          <label class="st-check"><input type="checkbox" [(ngModel)]="options.balance"> Show running balance
+            column</label>
+          <label class="st-check"><input type="checkbox" [(ngModel)]="options.summary"> Include opening/closing
+            summary</label>
+          <label class="st-check"><input type="checkbox" [(ngModel)]="options.charts"> Include charts & graphs (PDF
+            only)</label>
+          <label class="st-check"><input type="checkbox" [(ngModel)]="options.stamp"> Add SACCO stamp (verified)</label>
+          <label class="st-check"><input type="checkbox" [(ngModel)]="options.password"> Password-protect PDF</label>
+        </div>
+      </section>
+
+      <!-- Action buttons -->
+      <div class="st-generate-actions">
+        <button class="st-btn-primary" (click)="previewStatement()"><svg class="svg-icon svg-icon-sm" width="16"
+            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg> Preview Statement</button>
+        <button class="st-btn-outline" (click)="openModal('emailStatement')"><svg class="svg-icon svg-icon-sm"
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg> Email Statement</button>
+        <button class="st-btn-primary" (click)="openModal('downloadComplete')"><svg class="svg-icon svg-icon-sm"
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg> Generate & Download</button>
+        <button class="st-btn-outline" (click)="openModal('scheduleAutoGen')"><svg class="svg-icon svg-icon-sm"
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg> Schedule Auto-Generation</button>
+      </div>
     </div>
-</div>
-}
+  </article>
+  }
 
-<!-- ════════════════════════════════════════════════
-     TAB: RECENT DOWNLOADS
-     ════════════════════════════════════════════════ -->
-@if (activeTab === 'downloads') {
-<div class="tab-pane active" id="pane-downloads">
-    <div class="g-card">
-        <div class="g-card-header">
-            <h3><i class="bi bi-clock-history" style="color:var(--blue);"></i> Recent Downloads</h3>
-            <div style="display:flex;gap:8px;">
-                <select class="fselect" style="font-size:.78rem;padding:6px 10px;width:auto;">
-                    <option>All Types</option>
-                    <option>Savings</option>
-                    <option>Loans</option>
-                    <option>Wallet</option>
-                </select>
-                <button class="btn-ghost-s" (click)="showToast('All downloads cleared')"><i class="bi bi-trash"></i> Clear</button>
-            </div>
+  <!-- ════════ TAB: RECENT DOWNLOADS ════════ -->
+  @if (activeTab === 'downloads') {
+  <article class="st-card">
+    <header class="st-card-head with-action">
+      <h6><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10" />
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+        </svg> Recent Downloads</h6>
+      <div class="st-dl-filters">
+        <select [(ngModel)]="downloadFilter">
+          <option value="">All Types</option>
+          <option value="pdf">PDF</option>
+          <option value="excel">Excel</option>
+          <option value="csv">CSV</option>
+        </select>
+        <button class="st-btn-outline sm" (click)="downloadFilter = ''"><svg class="svg-icon svg-icon-sm" width="16"
+            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg> Clear</button>
+      </div>
+    </header>
+    <ul class="st-dl-list">
+      @for (d of filteredDownloads; track d.name) {
+      <li>
+        <span class="st-dl-icon {{d.iconCls}}">{{d.icon}}</span>
+        <div class="st-dl-info" (click)="openDownload(d)">
+          <strong>{{d.name}}</strong>
+          <small>{{d.period}}</small>
         </div>
-        <div class="g-card-body">
-            @for (stmt of recentDownloads; track stmt.name) {
-            <div class="stmt-row" (click)="openStmtDetail(stmt)">
-                <div class="stmt-icon" [class.pdf]="stmt.format === 'PDF'" [class.excel]="stmt.format === 'Excel'" [class.csv]="stmt.format === 'CSV'">
-                    <i class="bi" [class.bi-file-earmark-pdf-fill]="stmt.format === 'PDF'"
-                       [class.bi-file-earmark-excel-fill]="stmt.format === 'Excel'"
-                       [class.bi-file-earmark-text-fill]="stmt.format === 'CSV'"></i>
-                </div>
-                <div class="stmt-info">
-                    <h6>{{ stmt.name }}</h6>
-                    <p>{{ stmt.description }}</p>
-                </div>
-                <div class="stmt-meta">
-                    <div class="stmt-date">{{ stmt.date }}</div>
-                    <div class="stmt-size">{{ stmt.size }}</div>
-                </div>
-                <div class="stmt-actions">
-                    <button class="btn-icon-s" title="Download" (click)="$event.stopPropagation(); downloadStmt(stmt.name)"><i class="bi bi-download"></i></button>
-                    <button class="btn-icon-s" title="Email" (click)="$event.stopPropagation(); emailStmt(stmt.name)"><i class="bi bi-envelope"></i></button>
-                    <button class="btn-icon-s" title="Share" (click)="$event.stopPropagation(); shareStmt(stmt.name)"><i class="bi bi-share"></i></button>
-                    <button class="btn-icon-s danger" title="Delete" (click)="$event.stopPropagation(); deleteStmt(stmt.name)"><i class="bi bi-trash"></i></button>
-                </div>
-            </div>
+        <div class="st-dl-meta">
+          <span>{{d.date}}</span>
+          <small>{{d.size}}</small>
+        </div>
+        <div class="st-dl-actions">
+          <button title="Download" (click)="downloadItem()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg></button>
+          <button title="Email" (click)="sendItemEmail()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg></button>
+          <button title="Share" (click)="shareItem()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg></button>
+          <button title="Delete" class="danger" (click)="openDownload(d)"><svg class="svg-icon svg-icon-sm" width="16"
+              height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg></button>
+        </div>
+      </li>
+      }
+    </ul>
+  </article>
+  }
+
+  <!-- ════════ TAB: SCHEDULED ════════ -->
+  @if (activeTab === 'scheduled') {
+  <article class="st-card">
+    <header class="st-card-head with-action">
+      <h6><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg> Scheduled Auto-Statements</h6>
+      <button class="st-btn-primary" (click)="openModal('newSchedule')"><svg class="svg-icon svg-icon-sm" width="16"
+          height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+        </svg> New Schedule</button>
+    </header>
+    <ul class="st-sched-list">
+      @for (s of schedules; track s.name) {
+      <li>
+        <span class="st-sched-icon {{s.iconCls}}">{{s.icon}}</span>
+        <div class="st-sched-info">
+          <strong>{{s.name}}</strong>
+          <small>{{s.desc}}</small>
+        </div>
+        <div class="st-sched-meta">
+          <span class="st-pill" [class.ok]="s.active" [class.muted]="!s.active">{{s.active ? 'Active' :
+            'Paused'}}</span>
+        </div>
+        <div class="st-sched-actions">
+          <button title="Edit" (click)="openEditSchedule(s)"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg></button>
+          <button title="Pause" (click)="toggleSchedule(s)">
+            @if (s.active) {
+            <svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="6" y="4" width="4" height="16" />
+              <rect x="14" y="4" width="4" height="16" />
+            </svg>
+            } @else {
+            <svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
             }
+          </button>
+          <button title="Delete" class="danger" (click)="openDeleteSchedule(s)"><svg class="svg-icon svg-icon-sm"
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg></button>
         </div>
+      </li>
+      }
+    </ul>
+    <div class="st-note info">
+      <svg class="svg-icon svg-icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg> Scheduled statements are automatically generated and emailed on the configured date.
+      You can also access them in <strong>Recent Downloads</strong>.
     </div>
+  </article>
+  }
+
+  <!-- ════════ TAB: CERTIFICATES ════════ -->
+  @if (activeTab === 'certificates') {
+  <article class="st-card">
+    <header class="st-card-head">
+      <h6><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <polyline points="9 16 12 13 15 16" />
+        </svg> Official Certificates</h6>
+    </header>
+    <ul class="st-cert-list">
+      @for (c of certificates; track c.name) {
+      <li (click)="openCert(c)">
+        <span class="st-cert-icon {{c.iconCls}}">{{c.icon}}</span>
+        <div class="st-cert-info">
+          <strong>{{c.name}}</strong>
+          <small>{{c.desc}}</small>
+        </div>
+        <div class="st-cert-meta">
+          @if (c.available) {
+          <span class="st-pill ok">Available</span>
+          <button class="st-dl-btn" (click)="$event.stopPropagation(); downloadCert()"><svg class="svg-icon svg-icon-sm"
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg></button>
+          } @else {
+          <span class="st-pill warn">Request Required</span>
+          <button class="st-btn-outline sm" (click)="$event.stopPropagation(); openCert(c)">Request</button>
+          }
+        </div>
+      </li>
+      }
+    </ul>
+  </article>
+  }
+
+</section>
+
+
+<!-- ══════════════════════════ MODALS ══════════════════════════ -->
+@if (activeModal) { <div class="st-overlay" (click)="closeModal()"></div> }
+
+<!-- Email Statement -->
+@if (activeModal === 'emailStatement') {
+<div class="st-modal" (click)="$event.stopPropagation()">
+  <header class="st-modal-head blue">
+    <h5><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg> Email Statement</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body">
+    <label>TO EMAIL</label><input type="email" [(ngModel)]="emailForm.to">
+    <label>CC (OPTIONAL)</label><input type="email" [(ngModel)]="emailForm.cc" placeholder="Add another email">
+    <label>SUBJECT</label><input type="text" [(ngModel)]="emailForm.subject">
+    <label>MESSAGE (OPTIONAL)</label><textarea rows="4" [(ngModel)]="emailForm.message"
+      placeholder="Add a personal note..."></textarea>
+    <label class="st-check"><input type="checkbox" [(ngModel)]="emailForm.protect"> Password-protect attachment (sent
+      via SMS)</label>
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="st-btn-primary" (click)="sendEmail()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <line x1="22" y1="2" x2="11" y2="13" />
+        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      </svg> Send Email</button></footer>
 </div>
 }
 
-<!-- ════════════════════════════════════════════════
-     TAB: SCHEDULED
-     ════════════════════════════════════════════════ -->
-@if (activeTab === 'scheduled') {
-<div class="tab-pane active" id="pane-scheduled">
-    <div class="g-card">
-        <div class="g-card-header">
-            <h3><i class="bi bi-calendar-check" style="color:var(--orange);"></i> Scheduled Auto-Statements</h3>
-            <button class="btn-g" (click)="openModal('scheduleModal')"><i class="bi bi-plus"></i> New Schedule</button>
-        </div>
-        <div class="g-card-body">
-            @for (sched of schedules; track sched.id) {
-            <div class="sched-row">
-                <div style="display:flex;align-items:center;gap:var(--sp-md);">
-                    <div class="stmt-icon" [class.pdf]="sched.format === 'PDF'" [class.excel]="sched.format === 'Excel'">
-                        <i class="bi" [class.bi-calendar-month]="sched.frequency === 'Monthly'"
-                           [class.bi-calendar3]="sched.frequency === 'Quarterly'"></i>
-                    </div>
-                    <div class="sched-info">
-                        <h6>{{ sched.name }}</h6>
-                        <p>{{ sched.description }}</p>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span class="sbadge" [class.ready]="sched.status === 'Active'" [class.processing]="sched.status === 'Paused'">{{ sched.status }}</span>
-                    <button class="btn-icon-s" title="Edit" (click)="openModal('editScheduleModal')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn-icon-s" title="Pause" (click)="toggleSchedule(sched)">
-                        <i class="bi" [class.bi-pause]="sched.status === 'Active'" [class.bi-play]="sched.status === 'Paused'"></i>
-                    </button>
-                    <button class="btn-icon-s danger" title="Delete" (click)="deleteSchedule(sched)"><i class="bi bi-trash"></i></button>
-                </div>
-            </div>
-            }
-
-            <div style="margin-top:var(--sp-lg);padding:var(--sp-md);background:rgba(33,150,243,0.06);border:1px solid rgba(33,150,243,0.15);border-radius:var(--r-md);font-size:.82rem;color:#1565c0;display:flex;gap:var(--sp-sm);align-items:flex-start;">
-                <i class="bi bi-info-circle-fill" style="margin-top:2px;flex-shrink:0;"></i>
-                <div>Scheduled statements are automatically generated and emailed on the configured date. You can also access them in <strong>Recent Downloads</strong>.</div>
-            </div>
-        </div>
+<!-- Preview Statement -->
+@if (activeModal === 'previewStatement') {
+<div class="st-modal lg" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg> Preview Statement</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body scroll">
+    <div class="st-preview-box">
+      <div class="st-preview-header"><strong>SACCOPay Member Portal</strong><span>Account Statement</span></div>
+      <p class="st-preview-member">Member: John Kamau · MEM-2024-0045 · Rongo SACCO</p>
+      <p class="st-preview-period">Period: {{fromDate}} to {{toDate}}</p>
+      <div class="st-preview-table">
+        <div class="st-preview-row header">
+          <span>Date</span><span>Description</span><span>Amount</span><span>Balance</span></div>
+        <div class="st-preview-row"><span>Dec 18</span><span>Deposit to Savings</span><span
+            class="in">+15,000</span><span>98,750</span></div>
+        <div class="st-preview-row"><span>Dec 15</span><span>Loan Repayment</span><span
+            class="out">-12,500</span><span>83,750</span></div>
+        <div class="st-preview-row"><span>Dec 12</span><span>Withdrawal</span><span
+            class="out">-5,000</span><span>78,750</span></div>
+      </div>
+      <p class="st-preview-footer">© 2024 SaccoPay. Verified SACCO document.</p>
     </div>
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-outline" (click)="closeModal()">Close</button><button
+      class="st-btn-primary" (click)="generateDownload()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg> Generate & Download</button></footer>
 </div>
 }
 
-<!-- ════════════════════════════════════════════════
-     TAB: CERTIFICATES
-     ════════════════════════════════════════════════ -->
-@if (activeTab === 'certificates') {
-<div class="tab-pane active" id="pane-certificates">
-    <div class="g-card">
-        <div class="g-card-header">
-            <h3><i class="bi bi-patch-check" style="color:var(--purple);"></i> Official Certificates</h3>
-        </div>
-        <div class="g-card-body">
-            @for (cert of certificates; track cert.name) {
-            <div class="stmt-row" (click)="openCertModal(cert)">
-                <div class="stmt-icon" [style.background]="cert.iconBg" [style.color]="cert.iconColor">
-                    <i class="bi" [class.bi-patch-check-fill]="cert.icon === 'patch-check-fill'"
-                       [class.bi-receipt-cutoff]="cert.icon === 'receipt-cutoff'"
-                       [class.bi-shield-fill-check]="cert.icon === 'shield-fill-check'"
-                       [class.bi-person-badge]="cert.icon === 'person-badge'"
-                       [class.bi-file-earmark-check]="cert.icon === 'file-earmark-check'"></i>
-                </div>
-                <div class="stmt-info">
-                    <h6>{{ cert.name }}</h6>
-                    <p>{{ cert.description }}</p>
-                </div>
-                <div class="stmt-meta">
-                    <span class="sbadge" [class.ready]="cert.status === 'Available'" [class.processing]="cert.status === 'Request Required'">{{ cert.status }}</span>
-                </div>
-                <div class="stmt-actions">
-                    @if (cert.status === 'Available' && cert.fileName) {
-                    <button class="btn-icon-s" (click)="$event.stopPropagation(); downloadStmt(cert.fileName!)"><i class="bi bi-download"></i></button>
-                    } @else {
-                    <button class="btn-o" style="font-size:.72rem;padding:6px 12px;" (click)="$event.stopPropagation(); openModal('certRequestModal')">Request</button>
-                    }
-                </div>
-            </div>
-            }
-        </div>
+<!-- Schedule Auto-Generation -->
+@if (activeModal === 'scheduleAutoGen' || activeModal === 'newSchedule' || activeModal === 'editSchedule') {
+<div class="st-modal" (click)="$event.stopPropagation()">
+<header class="st-modal-head">
+  <h5>
+    <svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+    </svg> 
+    {{ activeModal === 'editSchedule' ? 'Edit Schedule' : 'New Auto-Schedule' }}
+  </h5>
+      
+  <button class="st-x" (click)="closeModal()">
+    <svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  </button>
+</header>
+  <div class="st-modal-body">
+    <div class="st-form-grid">
+      <div><label>Account / Type</label><select [(ngModel)]="scheduleForm.type">
+          <option value="all">All Accounts</option>
+          <option value="savings">Savings</option>
+          <option value="loans">Loans</option>
+          <option value="shares">Shares</option>
+        </select></div>
+      <div><label>Frequency</label><select [(ngModel)]="scheduleForm.frequency">
+          <option>Monthly</option>
+          <option>Quarterly</option>
+          <option>Bi-Annual</option>
+          <option>Annual</option>
+        </select></div>
+      <div><label>Day</label><select [(ngModel)]="scheduleForm.day">
+          <option>1st</option>
+          <option>15th</option>
+          <option>Last day</option>
+        </select></div>
+      <div><label>Format</label><select [(ngModel)]="scheduleForm.format">
+          <option value="pdf">PDF</option>
+          <option value="excel">Excel</option>
+          <option value="csv">CSV</option>
+        </select></div>
     </div>
+    <label>Send To Email</label><input type="email" [(ngModel)]="scheduleForm.email">
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="st-btn-primary" (click)="saveSchedule()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+        <polyline points="17 21 17 13 7 13 7 21" />
+        <polyline points="7 3 7 8 15 8" />
+      </svg> Save Schedule</button></footer>
 </div>
 }
 
-<!-- ════════════════════════════════════════════════
-     MODALS
-     ════════════════════════════════════════════════ -->
-
-<!-- PREVIEW MODAL -->
-@if (showPreviewModal) {
-<div class="modal-overlay" (click)="closeModal('previewModal')">
-    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-green">
-                <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Statement Preview</h5>
-                <button type="button" class="btn-close" (click)="closeModal('previewModal')"></button>
-            </div>
-            <div class="modal-body">
-                <div class="doc-preview">
-                    <div style="text-align:center;border-bottom:2px solid var(--border);padding-bottom:var(--sp-md);margin-bottom:var(--sp-md);">
-                        <div style="font-size:.7rem;color:var(--primary);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">RONGO SACCO SOCIETY LTD</div>
-                        <h2>Combined Account Statement</h2>
-                        <div class="doc-meta">Member: John Kamau · SP-10015 · Period: Nov 18 – Dec 18, 2024</div>
-                    </div>
-                    <div class="row" style="font-size:.78rem;margin-bottom:var(--sp-md);">
-                        <div class="col-6"><strong>Opening Balance:</strong> KES 95,000</div>
-                        <div class="col-6 text-end"><strong>Closing Balance:</strong> KES 128,450</div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th style="text-align:right;">Debit</th>
-                                <th style="text-align:right;">Credit</th>
-                                <th style="text-align:right;">Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (tx of previewTransactions; track tx.date + tx.description) {
-                            <tr>
-                                <td>{{ tx.date }}</td>
-                                <td>{{ tx.description }}</td>
-                                <td style="text-align:right;">{{ tx.debit }}</td>
-                                <td style="text-align:right;">{{ tx.credit }}</td>
-                                <td style="text-align:right;">{{ tx.balance }}</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                    <div style="margin-top:var(--sp-md);padding-top:var(--sp-md);border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.75rem;">
-                        <div>Generated: Dec 18, 2024 · 3:45 PM</div>
-                        <div style="color:var(--primary);">✓ Verified · Stamp Applied</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('previewModal')">Close</button>
-                <button class="btn-o" (click)="emailStmt('preview')"><i class="bi bi-envelope"></i> Email</button>
-                <button class="btn-g" (click)="generateAndDownload()"><i class="bi bi-download"></i> Download Now</button>
-            </div>
-        </div>
-    </div>
+<!-- Delete Schedule -->
+@if (activeModal === 'deleteSchedule') {
+<div class="st-modal sm" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      </svg> Delete Schedule</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body centered">
+    <div class="st-status-orb danger"><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+        aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg></div>
+    <h4>Delete this schedule?</h4>
+    <p>This will remove <strong>{{selectedSchedule?.name}}</strong>. This cannot be undone.</p>
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="st-btn-danger" (click)="deleteScheduleConfirm()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      </svg> Delete</button></footer>
 </div>
 }
 
-<!-- DELIVERY MODAL -->
-@if (showDeliveryModal) {
-<div class="modal-overlay" (click)="closeModal('deliveryModal')">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-blue">
-                <h5 class="modal-title"><i class="bi bi-envelope me-2"></i>Email Statement</h5>
-                <button type="button" class="btn-close" (click)="closeModal('deliveryModal')"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">To Email</label>
-                        <input type="email" class="finput" [(ngModel)]="deliveryEmail">
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">CC (Optional)</label>
-                        <input type="email" class="finput" [(ngModel)]="deliveryCc" placeholder="Add another email">
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Subject</label>
-                        <input type="text" class="finput" [(ngModel)]="deliverySubject">
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Message (Optional)</label>
-                        <textarea class="finput" rows="3" [(ngModel)]="deliveryMessage" placeholder="Add a personal note..."></textarea>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="deliveryPwd" [(ngModel)]="deliveryPwd">
-                            <label class="form-check-label" for="deliveryPwd" style="font-size:.82rem;">Password-protect attachment (sent via SMS)</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('deliveryModal')">Cancel</button>
-                <button class="btn-g" style="background:linear-gradient(135deg,#1565c0,#1976d2);" (click)="sendEmail()">
-                    <i class="bi bi-send"></i> Send Email
-                </button>
-            </div>
-        </div>
+<!-- Statement Download Detail -->
+@if (activeModal === 'stmtDetail' && selectedDownload) {
+<div class="st-modal" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5>{{selectedDownload.icon}} {{selectedDownload.name}}</h5><button class="st-x" (click)="closeModal()"><svg
+        class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body">
+    <div class="st-detail-list">
+      <p><span>Period</span><strong>{{selectedDownload.period}}</strong></p>
+      <p><span>Generated</span><strong>{{selectedDownload.date}}</strong></p>
+      <p><span>File Size</span><strong>{{selectedDownload.size}}</strong></p>
+      <p><span>Format</span><strong>{{selectedDownload.iconCls.toUpperCase()}}</strong></p>
     </div>
+  </div>
+  <footer class="st-modal-foot">
+    <button class="st-btn-outline" (click)="closeModal()">Close</button>
+    <button class="st-btn-outline" (click)="openModal('emailStatement')"><svg class="svg-icon svg-icon-sm" width="16"
+        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg> Email</button>
+    <button class="st-btn-outline" (click)="openModal('shareStatement')"><svg class="svg-icon svg-icon-sm" width="16"
+        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+      </svg> Share</button>
+    <button class="st-btn-primary" (click)="downloadItem(); closeModal()"><svg class="svg-icon svg-icon-sm" width="16"
+        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg> Download</button>
+  </footer>
 </div>
 }
 
-<!-- SCHEDULE MODAL -->
-@if (showScheduleModal) {
-<div class="modal-overlay" (click)="closeModal('scheduleModal')">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-orange">
-                <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>Schedule Auto-Statement</h5>
-                <button type="button" class="btn-close" (click)="closeModal('scheduleModal')"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Statement Type</label>
-                        <select class="fselect" [(ngModel)]="scheduleType">
-                            <option>Combined (All Accounts)</option>
-                            <option>Savings Only</option>
-                            <option>Loans Only</option>
-                            <option>Wallet Only</option>
-                            <option>Share Capital Only</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Frequency</label>
-                        <select class="fselect" [(ngModel)]="scheduleFrequency">
-                            <option>Weekly</option>
-                            <option>Bi-weekly</option>
-                            <option selected>Monthly</option>
-                            <option>Quarterly</option>
-                            <option>Annually</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Day / Date</label>
-                        <select class="fselect" [(ngModel)]="scheduleDay">
-                            <option>1st of month</option>
-                            <option>15th of month</option>
-                            <option>Last day of month</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Format</label>
-                        <select class="fselect" [(ngModel)]="scheduleFormat">
-                            <option>PDF</option>
-                            <option>Excel</option>
-                            <option>CSV</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Delivery</label>
-                        <select class="fselect" [(ngModel)]="scheduleDelivery">
-                            <option>Email</option>
-                            <option>Dashboard Only</option>
-                            <option>Email + Dashboard</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Email Address</label>
-                        <input type="email" class="finput" [(ngModel)]="scheduleEmail">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('scheduleModal')">Cancel</button>
-                <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="createSchedule()">
-                    <i class="bi bi-calendar-check"></i> Create Schedule
-                </button>
-            </div>
-        </div>
+<!-- Certificate Modal -->
+@if (activeModal === 'certModal' && selectedCert) {
+<div class="st-modal" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5>{{selectedCert.icon}} {{selectedCert.name}}</h5><button class="st-x" (click)="closeModal()"><svg
+        class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body">
+    <div class="st-detail-list">
+      <p><span>Certificate</span><strong>{{selectedCert.name}}</strong></p>
+      <p><span>Details</span><strong>{{selectedCert.desc}}</strong></p>
+      <p><span>Status</span><span class="st-pill ok">Available</span></p>
     </div>
+    <div class="st-note info"><svg class="svg-icon svg-icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg> This is an official SaccoPay-verified document bearing the SACCO stamp.</div>
+  </div>
+  <footer class="st-modal-foot">
+    <button class="st-btn-outline" (click)="closeModal()">Close</button>
+    <button class="st-btn-outline" (click)="openModal('emailStatement')"><svg class="svg-icon svg-icon-sm" width="16"
+        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg> Email</button>
+    <button class="st-btn-primary" (click)="downloadCert(); closeModal()"><svg class="svg-icon svg-icon-sm" width="16"
+        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg> Download</button>
+  </footer>
 </div>
 }
 
-<!-- EDIT SCHEDULE MODAL -->
-@if (showEditScheduleModal) {
-<div class="modal-overlay" (click)="closeModal('editScheduleModal')">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-orange">
-                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Schedule</h5>
-                <button type="button" class="btn-close" (click)="closeModal('editScheduleModal')"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Frequency</label>
-                        <select class="fselect" [(ngModel)]="editFrequency">
-                            <option selected>Monthly</option>
-                            <option>Quarterly</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Day</label>
-                        <select class="fselect" [(ngModel)]="editDay">
-                            <option selected>1st of month</option>
-                            <option>15th</option>
-                            <option>Last day</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Email</label>
-                        <input type="email" class="finput" [(ngModel)]="editEmail">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('editScheduleModal')">Cancel</button>
-                <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="updateSchedule()">
-                    <i class="bi bi-check"></i> Update
-                </button>
-            </div>
-        </div>
-    </div>
+<!-- Request Certificate -->
+@if (activeModal === 'requestCert') {
+<div class="st-modal" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+      </svg> Request Certificate</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body">
+    <p class="muted">{{selectedCert?.name}} requires admin approval before download.</p>
+    <label>Purpose / Reason</label><input type="text" placeholder="e.g. External audit requirement">
+    <label>Preferred Delivery</label><select>
+      <option>Download</option>
+      <option>Email</option>
+      <option>Physical copy</option>
+    </select>
+    <div class="st-note warn"><svg class="svg-icon svg-icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg> Requests are processed within 1–2 business days.</div>
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-outline" (click)="closeModal()">Cancel</button><button
+      class="st-btn-primary" (click)="requestCertSubmit()">Submit Request</button></footer>
 </div>
 }
 
-<!-- STATEMENT DETAIL MODAL -->
-@if (showStmtDetailModal) {
-<div class="modal-overlay" (click)="closeModal('stmtDetailModal')">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-dark">
-                <h5 class="modal-title"><i class="bi bi-file-text me-2"></i>Statement Detail</h5>
-                <button type="button" class="btn-close" (click)="closeModal('stmtDetailModal')"></button>
-            </div>
-            <div class="modal-body">
-                @if (selectedStmt) {
-                <div style="text-align:center;margin-bottom:var(--sp-lg);">
-                    <div style="width:60px;height:60px;border-radius:var(--r-md);background:rgba(244,67,54,0.1);color:#e53935;display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-sm);font-size:1.8rem;">
-                        <i class="bi" [class.bi-file-earmark-pdf-fill]="selectedStmt.format === 'PDF'"
-                           [class.bi-file-earmark-excel-fill]="selectedStmt.format === 'Excel'"
-                           [class.bi-file-earmark-text-fill]="selectedStmt.format === 'CSV'"></i>
-                    </div>
-                    <h5 style="font-weight:700;">{{ selectedStmt.name }}</h5>
-                    <p style="font-size:.82rem;color:var(--text2);">{{ selectedStmt.period }}</p>
-                </div>
-                <div class="drow"><span class="dl">Format</span><span class="dv">{{ selectedStmt.format }}</span></div>
-                <div class="drow"><span class="dl">Size</span><span class="dv">{{ selectedStmt.size }}</span></div>
-                <div class="drow"><span class="dl">Generated</span><span class="dv">{{ selectedStmt.date }}</span></div>
-                <div class="drow"><span class="dl">Status</span><span class="dv" style="color:var(--primary);"><i class="bi bi-check-circle-fill"></i> Verified</span></div>
-                <div class="drow"><span class="dl">SACCO Stamp</span><span class="dv" style="color:var(--primary);">✓ Applied</span></div>
-                }
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('stmtDetailModal')">Close</button>
-                <button class="btn-o" (click)="emailStmt('detail')"><i class="bi bi-envelope"></i> Email</button>
-                <button class="btn-g" (click)="downloadStmt('statement')"><i class="bi bi-download"></i> Download</button>
-            </div>
-        </div>
+<!-- Download Complete -->
+@if (activeModal === 'downloadComplete') {
+<div class="st-modal" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <polyline points="9 16 12 13 15 16" />
+      </svg> Statement Ready</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body centered">
+    <div class="st-status-orb ok"><svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+        aria-hidden="true">
+        <polyline points="20 6 9 17 4 12" />
+      </svg></div>
+    <h4>Statement Generated!</h4>
+    <p class="muted">Your {{stmtType === 'all' ? 'combined' : stmtType}} statement has been prepared.</p>
+    <div class="st-detail-list">
+      <p><span>Format</span><strong>{{format.toUpperCase()}}</strong></p>
+      <p><span>Period</span><strong>{{fromDate}} – {{toDate}}</strong></p>
     </div>
+  </div>
+  <footer class="st-modal-foot">
+    <button class="st-btn-outline" (click)="closeModal()">Close</button>
+    <button class="st-btn-outline" (click)="openModal('emailStatement')"><svg class="svg-icon svg-icon-sm" width="16"
+        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg> Email</button>
+    <button class="st-btn-primary" (click)="generateDownload()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg> Download Now</button>
+  </footer>
 </div>
 }
 
-<!-- CERTIFICATE MODAL -->
-@if (showCertificateModal) {
-<div class="modal-overlay" (click)="closeModal('certificateModal')">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-green" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);">
-                <h5 class="modal-title"><i class="bi bi-patch-check me-2"></i>{{ certModalTitle }}</h5>
-                <button type="button" class="btn-close" (click)="closeModal('certificateModal')"></button>
-            </div>
-            <div class="modal-body">
-                <div style="background:white;border:2px solid #6a1b9a;border-radius:var(--r-md);padding:var(--sp-xl);text-align:center;">
-                    <div style="font-size:.7rem;color:#6a1b9a;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">RONGO SACCO SOCIETY LTD</div>
-                    <h3 style="margin:var(--sp-md) 0;font-weight:800;">{{ certModalTitle }}</h3>
-                    <p style="color:var(--text2);font-size:.85rem;">{{ certModalDesc }}</p>
-                    <div style="margin:var(--sp-lg) 0;padding:var(--sp-md);background:var(--bg3);border-radius:var(--r-sm);font-size:.85rem;">
-                        <div class="drow"><span class="dl">Member</span><span class="dv">John Kamau</span></div>
-                        <div class="drow"><span class="dl">Member ID</span><span class="dv">SP-10015</span></div>
-                        <div class="drow"><span class="dl">Date Issued</span><span class="dv">Dec 18, 2024</span></div>
-                        <div class="drow"><span class="dl">Verification Code</span><span class="dv">RS-CERT-7842-2024</span></div>
-                    </div>
-                    <div style="font-size:.7rem;color:var(--text3);">This is an officially generated digital certificate. Verify authenticity at <strong>verify.rongosacco.co.ke</strong></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('certificateModal')">Close</button>
-                <button class="btn-o" (click)="emailStmt('cert')"><i class="bi bi-envelope"></i> Email</button>
-                <button class="btn-g" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);" (click)="downloadStmt('cert')">
-                    <i class="bi bi-download"></i> Download Certificate
-                </button>
-            </div>
-        </div>
+<!-- Share Statement -->
+@if (activeModal === 'shareStatement') {
+<div class="st-modal sm" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5><svg class="svg-icon svg-icon-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+      </svg> Share Statement</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body">
+    <label>Share via</label>
+    <div class="st-share-btns">
+      <button (click)="closeModal(); showToast('Link copied!','info')"><svg class="svg-icon svg-icon-sm" width="16"
+          height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg> Copy Link</button>
+      <button (click)="openModal('emailStatement')"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg> Email</button>
+      <button (click)="closeModal(); showToast('Sent to WhatsApp')"><svg class="svg-icon svg-icon-sm" width="16"
+          height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path
+            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        </svg> WhatsApp</button>
     </div>
+    <div class="st-note warn"><svg class="svg-icon svg-icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg> Shared links expire in 48 hours.</div>
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-primary" (click)="closeModal()">Done</button></footer>
 </div>
 }
 
-<!-- CERT REQUEST MODAL -->
-@if (showCertRequestModal) {
-<div class="modal-overlay" (click)="closeModal('certRequestModal')">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header mh-orange">
-                <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up me-2"></i>Request Certificate</h5>
-                <button type="button" class="btn-close" (click)="closeModal('certRequestModal')"></button>
-            </div>
-            <div class="modal-body">
-                <div style="padding:var(--sp-md);background:rgba(33,150,243,0.06);border:1px solid rgba(33,150,243,0.15);border-radius:var(--r-md);font-size:.82rem;color:#1565c0;margin-bottom:var(--sp-lg);">
-                    <i class="bi bi-info-circle-fill me-1"></i> The Audit Confirmation Letter requires SACCO admin approval. Processing typically takes 1-3 business days.
-                </div>
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Auditor / Recipient Name</label>
-                        <input type="text" class="finput" [(ngModel)]="certRequestName" placeholder="e.g. ABC Auditors LLP">
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Auditor Email</label>
-                        <input type="email" class="finput" [(ngModel)]="certRequestEmail" placeholder="auditor@firm.com">
-                    </div>
-                    <div class="col-12">
-                        <label style="font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:5px;">Reason for Request</label>
-                        <textarea class="finput" rows="3" [(ngModel)]="certRequestReason" placeholder="Brief reason..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-ghost-s" (click)="closeModal('certRequestModal')">Cancel</button>
-                <button class="btn-g" style="background:linear-gradient(135deg,#e65100,#f57c00);" (click)="submitCertRequest()">
-                    <i class="bi bi-send"></i> Submit Request
-                </button>
-            </div>
-        </div>
+<!-- Statement Options Info -->
+@if (activeModal === 'statOptions') {
+<div class="st-modal" (click)="$event.stopPropagation()">
+  <header class="st-modal-head">
+    <h5><svg class="svg-icon svg-icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg> Statement Options</h5><button class="st-x" (click)="closeModal()"><svg class="svg-icon svg-icon-sm"
+        width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg></button>
+  </header>
+  <div class="st-modal-body">
+    <div class="st-detail-list">
+      <p><span>Header & Branding</span><strong>Shows SACCO logo and contact details at the top</strong></p>
+      <p><span>Running Balance</span><strong>Adds a cumulative balance after every entry</strong></p>
+      <p><span>Charts (PDF only)</span><strong>Inserts visual graphs showing account trends</strong></p>
+      <p><span>SACCO Stamp</span><strong>Adds an official verified stamp; use for bank/court submissions</strong></p>
+      <p><span>Password-protect</span><strong>Encrypts the PDF; password delivered by SMS</strong></p>
     </div>
+  </div>
+  <footer class="st-modal-foot"><button class="st-btn-primary" (click)="closeModal()">Close</button></footer>
 </div>
 }
 
-<!-- PROFILE MODAL -->
-@if (showProfileModal) {
-<div class="modal-overlay" (click)="closeModal('profileModal')">
-    <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-body" style="padding:var(--sp-xl);text-align:center;">
-                <div class="user-chip-av" style="width:68px;height:68px;font-size:1.4rem;margin:0 auto var(--sp-md);">JK</div>
-                <h5 style="font-weight:700;">John Kamau</h5>
-                <p style="font-size:.78rem;color:var(--text2);margin-bottom:var(--sp-lg);">SP-10015 · Rongo SACCO</p>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                    <a routerLink="/profile" class="btn-ghost-s" style="text-decoration:none;justify-content:center;"><i class="bi bi-person me-2"></i>Profile</a>
-                    <a routerLink="/settings" class="btn-ghost-s" style="text-decoration:none;justify-content:center;"><i class="bi bi-gear me-2"></i>Settings</a>
-                    <hr style="margin:4px 0;border-color:var(--border);">
-                    <button class="btn-ghost-s" style="color:var(--red);justify-content:center;" (click)="showToast('Logging out...')">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-}
 
-<!-- TOAST NOTIFICATION -->
-@if (toastVisible) {
-<div class="sp-toast-container">
-    <div class="sp-toast success">
-        <i class="bi bi-check-circle-fill" style="font-size:1.2rem;color:var(--success);flex-shrink:0;"></i>
-        <span style="font-size:.85rem;font-weight:500;">{{ toastMessage }}</span>
-    </div>
+<!-- Toast -->
+@if (toast) {
+<div class="st-toast" [class.success]="toast.type==='success'" [class.info]="toast.type==='info'">
+  <span>
+    @if (toast.type === 'success') {
+    <svg class="svg-icon svg-icon-md" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+    } @else {
+    <svg class="svg-icon svg-icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+    }
+  </span>
+  <p>{{toast.message}}</p>
+  <button class="toast-close" (click)="dismissToast()"><svg class="svg-icon svg-icon-sm" width="16" height="16"
+      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg></button>
 </div>
 }

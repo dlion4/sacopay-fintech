@@ -1,440 +1,278 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-interface Loan {
-  id: string;
+type ModalName =
+  | 'pay'
+  | 'processing'
+  | 'success'
+  | 'autopay'
+  | 'overdraft'
+  | 'history'
+  | 'receipt'
+  | 'notifications'
+  | 'logout'
+  | null;
+
+interface LoanOption {
+  id: 'emergency' | 'development';
   name: string;
+  shortName: string;
+  tone: 'red' | 'blue';
   outstanding: number;
   installment: number;
   dueDate: string;
-  daysUntilDue: number;
-}
-
-interface Payment {
-  date: string;
-  loan: string;
-  amount: number;
-  source: string;
-  status: string;
-  reference: string;
+  dueMeta: string;
 }
 
 interface PaymentSource {
-  id: string;
-  name: string;
-  balance?: number;
+  id: 'wallet' | 'mpesa' | 'card' | 'airtel' | 'overdraft';
+  label: string;
   description: string;
-  icon: string;
+  balance?: number;
+  tone: 'blue' | 'green' | 'purple' | 'red';
 }
 
-interface AutoPayment {
-  loan: string;
+interface PaymentRecord {
   date: string;
+  shortDate: string;
+  ref: string;
+  loan: string;
+  loanTone: 'red' | 'blue';
   amount: number;
-  daysUntilDue: number;
+  source: string;
+  sourceId: PaymentSource['id'];
+  status: 'Paid';
 }
 
 @Component({
-  selector: 'app-loan-repayments',
+  selector: 'app-loan-repayment',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './loan-repayment.html',
-  styleUrls: ['./loan-repayment.scss']
+  templateUrl:'./loan-repayment.html',
+  styleUrl: './loan-repayment.scss',
 })
 export class LoanRepaymentsComponent {
-  // Balances
-  totalOutstanding = signal(103500);
-  walletBalance = signal(12450);
-  nwaBalance = signal(35000);
-  overdraftAvailable = signal(21000);
-  nextDueDate = signal('Mar 1');
-  nextDueDays = signal(4);
-  dueThisMonth = signal(8000);
+  activeModal: ModalName = null;
+  selectedLoanId: LoanOption['id'] = 'emergency';
+  selectedSourceId: PaymentSource['id'] = 'wallet';
+  paymentAmount = 3200;
+  successPayment = {
+    amount: 3200,
+    loan: 'Emergency Loan',
+    ref: 'PAY-2025-0090',
+    source: 'SaccoPay Wallet',
+    newOutstanding: 15300,
+  };
+  selectedReceipt: PaymentRecord | null = null;
+  toast: { message: string; type: 'success' | 'info' | 'warning' } | null = null;
 
-  // Auto-Pay
-  autoPayActive = signal(true);
-  autoPaySource = signal('SaccoPay Wallet');
-  autoPayFrequency = signal('Monthly (on due date)');
-  autoPayFallback = signal('M-Pesa STK Push');
-  nextAutoDeduction = signal({ date: 'Mar 1', amount: 3200 });
+  autoPay = {
+    primarySource: 'wallet',
+    fallbackSource: 'mpesa',
+    emergency: true,
+    development: true,
+    sms: true,
+    reminder: true,
+  };
 
-  // Loans
-  loans = signal<Loan[]>([
+  readonly loans: LoanOption[] = [
     {
       id: 'emergency',
       name: 'Emergency Loan',
+      shortName: 'Emergency',
+      tone: 'red',
       outstanding: 18500,
       installment: 3200,
       dueDate: 'Mar 1',
-      daysUntilDue: 4
+      dueMeta: 'Due Mar 1',
     },
     {
       id: 'development',
       name: 'Development Loan',
+      shortName: 'Development',
+      tone: 'blue',
       outstanding: 85000,
       installment: 4800,
       dueDate: 'Mar 15',
-      daysUntilDue: 18
-    }
-  ]);
+      dueMeta: 'Due Mar 15',
+    },
+  ];
 
-  // Auto Payments
-  upcomingAutoPayments = signal<AutoPayment[]>([
-    { loan: 'Emergency Loan', date: 'Mar 1', amount: 3200, daysUntilDue: 4 },
-    { loan: 'Development Loan', date: 'Mar 15', amount: 4800, daysUntilDue: 18 }
-  ]);
+  readonly paymentSources: PaymentSource[] = [
+    { id: 'wallet', label: 'Wallet', description: 'KES 12,450', balance: 12450, tone: 'blue' },
+    { id: 'mpesa', label: 'M-Pesa', description: 'STK Push', tone: 'green' },
+    { id: 'card', label: 'Card', description: 'Visa/MC', tone: 'purple' },
+    { id: 'airtel', label: 'Airtel', description: 'STK Push', tone: 'red' },
+  ];
 
-  // Payment Sources
-  paymentSources = signal<PaymentSource[]>([
-    { id: 'wallet', name: 'Wallet', balance: 12450, description: 'KES 12,450', icon: 'bi-wallet2' },
-    { id: 'mpesa', name: 'M-Pesa', description: 'STK Push', icon: 'bi-phone' },
-    { id: 'card', name: 'Card', description: 'Visa/MC', icon: 'bi-credit-card' },
-    { id: 'airtel', name: 'Airtel', description: 'STK Push', icon: 'bi-phone' }
-  ]);
-
-  // Payment History
-  paymentHistory = signal<Payment[]>([
+  readonly paymentHistory: PaymentRecord[] = [
     {
       date: 'Feb 15, 2025',
+      shortDate: 'Feb 15',
+      ref: 'PAY-2025-0089',
       loan: 'Development',
+      loanTone: 'blue',
       amount: 4800,
       source: 'Wallet',
+      sourceId: 'wallet',
       status: 'Paid',
-      reference: 'PAY-2025-0089'
     },
     {
       date: 'Feb 14, 2025',
+      shortDate: 'Feb 14',
+      ref: 'PAY-2025-0088',
       loan: 'Emergency',
+      loanTone: 'red',
       amount: 3200,
       source: 'M-Pesa',
+      sourceId: 'mpesa',
       status: 'Paid',
-      reference: 'PAY-2025-0088'
     },
     {
       date: 'Jan 15, 2025',
+      shortDate: 'Jan 15',
+      ref: 'PAY-2025-0067',
       loan: 'Development',
+      loanTone: 'blue',
       amount: 4800,
       source: 'Card',
+      sourceId: 'card',
       status: 'Paid',
-      reference: 'PAY-2025-0067'
-    }
-  ]);
-
-  // Full Payment History for Modal
-  fullPaymentHistory = signal<Payment[]>([
-    {
-      date: 'Feb 15',
-      loan: 'Development',
-      amount: 4800,
-      source: 'Wallet',
-      status: 'Paid',
-      reference: 'PAY-2025-0089'
     },
     {
-      date: 'Feb 14',
+      date: 'Jan 1, 2025',
+      shortDate: 'Jan 1',
+      ref: 'PAY-2025-0045',
       loan: 'Emergency',
-      amount: 3200,
-      source: 'M-Pesa',
-      status: 'Paid',
-      reference: 'PAY-2025-0088'
-    },
-    {
-      date: 'Jan 15',
-      loan: 'Development',
-      amount: 4800,
-      source: 'Card',
-      status: 'Paid',
-      reference: 'PAY-2025-0067'
-    },
-    {
-      date: 'Jan 1',
-      loan: 'Emergency',
+      loanTone: 'red',
       amount: 3200,
       source: 'Wallet',
+      sourceId: 'wallet',
       status: 'Paid',
-      reference: 'PAY-2025-0045'
     },
     {
-      date: 'Dec 15',
+      date: 'Dec 15, 2024',
+      shortDate: 'Dec 15',
+      ref: 'PAY-2024-0890',
       loan: 'Development',
+      loanTone: 'blue',
       amount: 4800,
       source: 'M-Pesa',
+      sourceId: 'mpesa',
       status: 'Paid',
-      reference: 'PAY-2024-0890'
-    }
-  ]);
-
-  // Notifications
-  notifications = signal([
-    {
-      title: 'Payment Due Soon',
-      message: 'Emergency Loan • KES 3,200 • Mar 1',
-      type: 'warning'
     },
-    {
-      title: 'Auto-Pay Completed',
-      message: 'Dev Loan • KES 4,800 from Wallet • Feb 15',
-      type: 'success'
+  ];
+
+  readonly quickAmounts = [
+    { label: 'Installment', multiplier: 1 },
+    { label: '2x', multiplier: 2 },
+    { label: 'Full Balance', multiplier: 0 },
+  ];
+
+  get selectedLoan(): LoanOption {
+    return this.loans.find((loan) => loan.id === this.selectedLoanId) ?? this.loans[0];
+  }
+
+  get selectedSource(): PaymentSource {
+    return this.paymentSources.find((source) => source.id === this.selectedSourceId) ?? this.paymentSources[0];
+  }
+
+  get overdraftInterest(): number {
+    return Math.round(this.paymentAmount * 0.03 * 3);
+  }
+
+  get overdraftTotal(): number {
+    return this.paymentAmount + this.overdraftInterest + 100;
+  }
+
+  openModal(modal: ModalName): void {
+    this.activeModal = modal;
+  }
+
+  closeModal(): void {
+    this.activeModal = null;
+  }
+
+  openPayNow(loanId?: LoanOption['id']): void {
+    if (loanId) {
+      this.selectLoan(loanId);
     }
-  ]);
-
-  // Modal States
-  showPayNowModal = signal(false);
-  showProcessingModal = signal(false);
-  showSuccessModal = signal(false);
-  showAutoPaySetupModal = signal(false);
-  showHistoryModal = signal(false);
-  showNotifModal = signal(false);
-  showLogoutModal = signal(false);
-
-  // Pay Now Form
-  selectedLoan = signal<string | null>(null);
-  paymentAmount = signal<number | null>(null);
-  selectedPaymentSource = signal<string>('wallet');
-  phoneNumber = signal('');
-  cardNumber = signal('');
-
-  // Auto-Pay Setup
-  autoPayPrimarySource = signal('wallet');
-  autoPayFallbackSource = signal('mpesa');
-  autoPaySmsConfirmation = signal(true);
-  autoPayReminder = signal(true);
-  autoPayEmergencyLoan = signal(true);
-  autoPayDevelopmentLoan = signal(true);
-
-  // Success Modal Data
-  successData = signal({
-    amount: 0,
-    loan: '',
-    reference: '',
-    source: '',
-    newBalance: 0
-  });
-
-  // Processing Message
-  processingMessage = signal('Processing payment...');
-
-  // Toast
-  toastMessage = signal('');
-  toastType = signal('info');
-  showToast = signal(false);
-
-  // Methods
-  openPayNow(loanId: string): void {
-    this.selectedLoan.set(loanId);
-    const loan = this.loans().find(l => l.id === loanId);
-    if (loan) {
-      this.paymentAmount.set(loan.installment);
-    }
-    this.showPayNowModal.set(true);
+    this.selectedSourceId = 'wallet';
+    this.activeModal = 'pay';
   }
 
-  closePayNowModal(): void {
-    this.showPayNowModal.set(false);
-    this.resetPayNowForm();
+  selectLoan(loanId: LoanOption['id']): void {
+    this.selectedLoanId = loanId;
+    this.paymentAmount = this.selectedLoan.installment;
   }
 
-  selectLoan(loanId: string): void {
-    this.selectedLoan.set(loanId);
-    const loan = this.loans().find(l => l.id === loanId);
-    if (loan) {
-      this.paymentAmount.set(loan.installment);
-    }
+  selectSource(sourceId: PaymentSource['id']): void {
+    this.selectedSourceId = sourceId;
   }
 
-  selectPaymentSource(sourceId: string): void {
-    this.selectedPaymentSource.set(sourceId);
-  }
-
-  getPaymentSourceDetails(): string {
-    const source = this.selectedPaymentSource();
-    switch (source) {
-      case 'wallet':
-        return `Payment will be deducted from your SaccoPay Wallet (Balance: KES ${this.walletBalance().toLocaleString()}). If insufficient, the remaining will be charged via your fallback method.`;
-      case 'mpesa':
-      case 'airtel':
-        return 'Enter your phone number to receive the STK push notification.';
-      case 'card':
-        return 'Enter your card details to complete the payment.';
-      default:
-        return '';
-    }
-  }
-
-  needsPhoneInput(): boolean {
-    const source = this.selectedPaymentSource();
-    return source === 'mpesa' || source === 'airtel';
-  }
-
-  needsCardInput(): boolean {
-    return this.selectedPaymentSource() === 'card';
+  setQuickAmount(multiplier: number): void {
+    this.paymentAmount = multiplier === 0 ? this.selectedLoan.outstanding : this.selectedLoan.installment * multiplier;
   }
 
   submitPayment(): void {
-    if (!this.selectedLoan() || !this.paymentAmount()) {
-      this.displayToast('Please select a loan and enter an amount', 'error');
-      return;
-    }
+    const loan = this.selectedLoan;
+    const source = this.selectedSource;
+    const amount = Math.max(Number(this.paymentAmount) || 0, 1);
 
-    const loan = this.loans().find(l => l.id === this.selectedLoan());
-    if (!loan) return;
+    this.successPayment = {
+      amount,
+      loan: loan.name,
+      ref: `PAY-2025-${Math.floor(90 + Math.random() * 9).toString().padStart(4, '0')}`,
+      source: source.id === 'wallet' ? 'SaccoPay Wallet' : source.label,
+      newOutstanding: Math.max(loan.outstanding - amount, 0),
+    };
 
-    const amount = this.paymentAmount()!;
-    const source = this.paymentSources().find(s => s.id === this.selectedPaymentSource());
-
-    this.showPayNowModal.set(false);
-    this.showProcessingModal.set(true);
-    this.processingMessage.set(`Deducting from your ${source?.name}...`);
-
-    // Simulate payment processing
-    setTimeout(() => {
-      this.showProcessingModal.set(false);
-      
-      // Update success data
-      const newOutstanding = loan.outstanding - amount;
-      this.successData.set({
-        amount: amount,
-        loan: loan.name,
-        reference: `PAY-2025-00${Math.floor(Math.random() * 1000)}`,
-        source: source?.name || '',
-        newBalance: newOutstanding
-      });
-
-      // Update loan outstanding
-      const updatedLoans = this.loans().map(l => 
-        l.id === this.selectedLoan() 
-          ? { ...l, outstanding: newOutstanding }
-          : l
-      );
-      this.loans.set(updatedLoans);
-
-      // Update total outstanding
-      const newTotal = this.totalOutstanding() - amount;
-      this.totalOutstanding.set(newTotal);
-
-      // Show success modal
-      this.showSuccessModal.set(true);
-
-      // Reset form
-      this.resetPayNowForm();
-    }, 2000);
+    this.activeModal = 'processing';
+    window.setTimeout(() => {
+      this.activeModal = 'success';
+    }, 900);
   }
 
-  resetPayNowForm(): void {
-    this.selectedLoan.set(null);
-    this.paymentAmount.set(null);
-    this.selectedPaymentSource.set('wallet');
-    this.phoneNumber.set('');
-    this.cardNumber.set('');
+  saveAutoPay(): void {
+    this.closeModal();
+    this.showToast('Auto-Pay settings saved successfully.', 'success');
   }
 
-  closeSuccessModal(): void {
-    this.showSuccessModal.set(false);
+  activateOverdraft(): void {
+    const loan = this.selectedLoan;
+    const amount = Math.max(Number(this.paymentAmount) || 0, 1);
+    this.successPayment = {
+      amount,
+      loan: loan.name,
+      ref: `OD-2025-${Math.floor(100 + Math.random() * 899)}`,
+      source: 'SaccoPay Overdraft',
+      newOutstanding: Math.max(loan.outstanding - amount, 0),
+    };
+    this.activeModal = 'processing';
+    window.setTimeout(() => {
+      this.activeModal = 'success';
+    }, 900);
   }
 
-  openAutoPaySetup(): void {
-    this.showAutoPaySetupModal.set(true);
+  openReceipt(record: PaymentRecord): void {
+    this.selectedReceipt = record;
+    this.activeModal = 'receipt';
   }
 
-  closeAutoPaySetup(): void {
-    this.showAutoPaySetupModal.set(false);
+  printReceipt(): void {
+    this.showToast('Receipt prepared for download.', 'success');
   }
 
-  saveAutoPaySetup(): void {
-    this.autoPayActive.set(true);
-    const primarySource = this.paymentSources().find(s => s.id === this.autoPayPrimarySource());
-    const fallbackSource = this.paymentSources().find(s => s.id === this.autoPayFallbackSource());
-    
-    this.autoPaySource.set(primarySource?.name || '');
-    this.autoPayFallback.set(fallbackSource?.name || '');
-    
-    this.displayToast('Auto-Pay setup saved successfully!', 'success');
-    this.closeAutoPaySetup();
+  handleNotification(message: string, type: 'success' | 'warning'): void {
+    this.closeModal();
+    this.showToast(message, type);
   }
 
-  toggleAutoPay(): void {
-    this.autoPayActive.update(active => !active);
-    const message = this.autoPayActive() 
-      ? 'Auto-Pay activated successfully!' 
-      : 'Auto-Pay deactivated';
-    this.displayToast(message, 'info');
-  }
-
-  openHistoryModal(): void {
-    this.showHistoryModal.set(true);
-  }
-
-  closeHistoryModal(): void {
-    this.showHistoryModal.set(false);
-  }
-
-  openNotifications(): void {
-    this.showNotifModal.set(true);
-  }
-
-  closeNotifications(): void {
-    this.showNotifModal.set(false);
-  }
-
-  showNotification(notif: any): void {
-    this.displayToast(notif.message, notif.type);
-    this.closeNotifications();
-  }
-
-  displayToast(message: string, type: string = 'info'): void {
-    this.toastMessage.set(message);
-    this.toastType.set(type);
-    this.showToast.set(true);
-    setTimeout(() => {
-      this.showToast.set(false);
-    }, 3000);
-  }
-
-  showPaymentDetails(payment: Payment): void {
-    this.displayToast(
-      `Payment ${payment.reference} - KES ${payment.amount.toLocaleString()} for ${payment.loan} via ${payment.source}`,
-      'info'
-    );
-  }
-
-  showAutoPaymentDetails(payment: AutoPayment): void {
-    this.displayToast(
-      `${payment.loan}: KES ${payment.amount.toLocaleString()} auto-deduction on ${payment.date}`,
-      'info'
-    );
-  }
-
-  openLogoutModal(): void {
-    this.showLogoutModal.set(true);
-  }
-
-  closeLogoutModal(): void {
-    this.showLogoutModal.set(false);
-  }
-
-  logout(): void {
-    this.displayToast('Logging out...', 'info');
-    // Implement logout logic
-  }
-
-  getSourceIcon(source: string): string {
-    switch (source.toLowerCase()) {
-      case 'wallet':
-        return 'bi-wallet2';
-      case 'm-pesa':
-      case 'mpesa':
-        return 'bi-phone';
-      case 'card':
-        return 'bi-credit-card';
-      case 'airtel':
-        return 'bi-phone';
-      default:
-        return 'bi-cash';
-    }
-  }
-
-  getTotalPaid(): number {
-    return this.fullPaymentHistory().reduce((sum, payment) => sum + payment.amount, 0);
+  showToast(message: string, type: 'success' | 'info' | 'warning' = 'info'): void {
+    this.toast = { message, type };
+    window.setTimeout(() => {
+      this.toast = null;
+    }, 3200);
   }
 }

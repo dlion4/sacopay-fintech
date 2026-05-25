@@ -1,5 +1,7 @@
 /* member-layout.scss */
-/* Keep this file minimal — global styles handle the layout */
+/* ========================================== */
+/* SACCO PAY — Member Layout                  */
+/* ========================================== */
 
 :host {
   display: block;
@@ -7,14 +9,36 @@
   min-height: 100vh;
 }
 
+/* ========================================== */
+/* CSS VARIABLES                              */
+/* ========================================== */
+
+:root {
+  --sidebar-width: 200px;
+  --sidebar-minimized-width: 56px;
+  --header-height: 60px;
+  --bg-color: #f1f5f9;
+  --border-color: #e2e8f0;
+  --transition: 0.25s ease;
+}
+
+/* ========================================== */
+/* LAYOUT WRAPPER                             */
+/* ========================================== */
+
 .sp-layout-wrapper {
   display: flex;
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
+  position: relative;
+  background: var(--bg-color);
 }
 
-/* Backdrop only — rest is handled globally */
+/* ========================================== */
+/* SIDEBAR BACKDROP (Mobile)                */
+/* ========================================== */
+
 .sp-sidebar-backdrop {
   position: fixed;
   inset: 0;
@@ -23,6 +47,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
+  backdrop-filter: blur(4px);
 
   &.show {
     opacity: 1;
@@ -30,6 +55,81 @@
   }
 }
 
-body.sidebar-open {
-  overflow: hidden;
+/* ========================================== */
+/* MAIN CONTENT AREA — NO GAP!              */
+/* ========================================== */
+
+.sp-main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left var(--transition);
+  width: calc(100% - var(--sidebar-width));
+  background: var(--bg-color);
+  /* NO padding-left here — content touches sidebar */
+}
+
+/* ========================================== */
+/* HEADER                                     */
+/* ========================================== */
+
+app-member-header {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  flex-shrink: 0;
+  height: var(--header-height);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ========================================== */
+/* PAGE BODY                                  */
+/* ========================================== */
+
+.sp-page-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: var(--bg-color);
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* ========================================== */
+/* SIDEBAR MINIMIZED — CONTENT ADJUSTS!     */
+/* ========================================== */
+
+.sp-layout-wrapper.sidebar-minimized {
+  .sp-main-content {
+    margin-left: var(--sidebar-minimized-width);
+    width: calc(100% - var(--sidebar-minimized-width));
+  }
+}
+
+/* ========================================== */
+/* MOBILE — SIDEBAR OVERLAYS, NO MARGIN     */
+/* ========================================== */
+
+@media (max-width: 991px) {
+  .sp-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  app-member-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+  }
+
+  .sp-page-body {
+    margin-top: var(--header-height);
+    min-height: calc(100vh - var(--header-height));
+  }
 }
