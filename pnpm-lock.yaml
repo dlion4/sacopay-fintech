@@ -1,0 +1,150 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@angular/material':
+        specifier: ^21.2.11
+        version: 21.2.11(@angular/cdk@21.2.11(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/forms@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2)
+
+packages:
+
+  '@angular/cdk@21.2.11':
+    resolution: {integrity: sha512-QS5f0si1LgDQFgxXtpuDr7gBFVSQLl1fdnx3UA6GrzSmuV0sfzBhBq7NlZGxZTDaKy4ZxY34RFx4Bvm1zo+gBA==}
+    peerDependencies:
+      '@angular/common': ^21.0.0 || ^22.0.0
+      '@angular/core': ^21.0.0 || ^22.0.0
+      '@angular/platform-browser': ^21.0.0 || ^22.0.0
+      rxjs: ^6.5.3 || ^7.4.0
+
+  '@angular/common@21.2.13':
+    resolution: {integrity: sha512-fNvRmGAX0zbsLX/kJjgb6l8HAuGTpfYRNc06taTCIvED2RsRpfwrh79IxYlPBspr+hpFbHa0/kxU6Q5I8V0jKQ==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+    peerDependencies:
+      '@angular/core': 21.2.13
+      rxjs: ^6.5.3 || ^7.4.0
+
+  '@angular/core@21.2.13':
+    resolution: {integrity: sha512-23tS4oNL8nvkHcI4l9rbruQs2WS4yqQmBVQxWakqS9cmRpArLGgveR+hKNU5tPXm5EAi8oLO34/Zy7z70jUpCg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+    peerDependencies:
+      '@angular/compiler': 21.2.13
+      rxjs: ^6.5.3 || ^7.4.0
+      zone.js: ~0.15.0 || ~0.16.0
+    peerDependenciesMeta:
+      '@angular/compiler':
+        optional: true
+      zone.js:
+        optional: true
+
+  '@angular/forms@21.2.13':
+    resolution: {integrity: sha512-efAKdL8eVRlGvcJWrUFcYyRE/togWfopUTw2D5TIkDAndnmmRaWA70wD4n/E1FFV5UdxSBxoyEYE0qVlPiewtQ==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+    peerDependencies:
+      '@angular/common': 21.2.13
+      '@angular/core': 21.2.13
+      '@angular/platform-browser': 21.2.13
+      rxjs: ^6.5.3 || ^7.4.0
+
+  '@angular/material@21.2.11':
+    resolution: {integrity: sha512-XcLJ4nyrKpa1wHqJm53ohxmecVxwK0ppbesGyHIvcxZzgbzwZ8FyU00k6sy+6NWlGuikqmrEu3Gm5A8LRYOFXQ==}
+    peerDependencies:
+      '@angular/cdk': 21.2.11
+      '@angular/common': ^21.0.0 || ^22.0.0
+      '@angular/core': ^21.0.0 || ^22.0.0
+      '@angular/forms': ^21.0.0 || ^22.0.0
+      '@angular/platform-browser': ^21.0.0 || ^22.0.0
+      rxjs: ^6.5.3 || ^7.4.0
+
+  '@angular/platform-browser@21.2.13':
+    resolution: {integrity: sha512-96rcwLHsklqAYRuS2SEBOUdQS5PLkuUIEEIjpYu4rxU2PVvOMapJEImM/QBxrbwjnCgRbj/CivkgfjiR0R0wSA==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+    peerDependencies:
+      '@angular/animations': 21.2.13
+      '@angular/common': 21.2.13
+      '@angular/core': 21.2.13
+    peerDependenciesMeta:
+      '@angular/animations':
+        optional: true
+
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  entities@8.0.0:
+    resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
+    engines: {node: '>=20.19.0'}
+
+  parse5@8.0.1:
+    resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
+
+  rxjs@7.8.2:
+    resolution: {integrity: sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+snapshots:
+
+  '@angular/cdk@21.2.11(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2)':
+    dependencies:
+      '@angular/common': 21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 21.2.13(rxjs@7.8.2)
+      '@angular/platform-browser': 21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))
+      parse5: 8.0.1
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2)':
+    dependencies:
+      '@angular/core': 21.2.13(rxjs@7.8.2)
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@angular/core@21.2.13(rxjs@7.8.2)':
+    dependencies:
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@angular/forms@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2)':
+    dependencies:
+      '@angular/common': 21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 21.2.13(rxjs@7.8.2)
+      '@angular/platform-browser': 21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))
+      '@standard-schema/spec': 1.1.0
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@angular/material@21.2.11(@angular/cdk@21.2.11(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/forms@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2)':
+    dependencies:
+      '@angular/cdk': 21.2.11(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@angular/common': 21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 21.2.13(rxjs@7.8.2)
+      '@angular/forms': 21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))(@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@angular/platform-browser': 21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@angular/platform-browser@21.2.13(@angular/common@21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@21.2.13(rxjs@7.8.2))':
+    dependencies:
+      '@angular/common': 21.2.13(@angular/core@21.2.13(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 21.2.13(rxjs@7.8.2)
+      tslib: 2.8.1
+
+  '@standard-schema/spec@1.1.0': {}
+
+  entities@8.0.0: {}
+
+  parse5@8.0.1:
+    dependencies:
+      entities: 8.0.0
+
+  rxjs@7.8.2:
+    dependencies:
+      tslib: 2.8.1
+
+  tslib@2.8.1: {}
