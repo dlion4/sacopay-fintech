@@ -5,6 +5,7 @@ import { AuthLayoutComponent } from './layout/auth-layout/auth-layout';
 import { MemberLayoutComponent } from './layout/member-layout/member-layout';
 import { AdminLayoutComponent } from './layout/admin-layout/admin-layout';
 import { SharesCapitalComponent } from './features/admin/pages/share-capital/share-capital';
+import { AboutComponent } from './features/home/pages/about/about';
 
 export const routes: Routes = [
     // --- AUTHENTICATION ROUTES (Uses AuthLayout) ---
@@ -40,6 +41,16 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () => import('./features/home/pages/landing/landing').then(m => m.HomeComponent),
                 title: 'SACCOPay | Modern Sacco Payment Processor'
+            },
+            {
+                path: 'about',
+                loadComponent: () => import('./features/home/pages/about/about').then(m => m.AboutComponent),
+                title: 'SACCOPay | About Us'
+            },
+            {
+                path: 'contact',
+                loadComponent: () => import('./features/home/pages/contact/contact').then(m => m.ContactComponent),
+                title: 'SACCOPay | Contact Us'
             }
         ]
     },

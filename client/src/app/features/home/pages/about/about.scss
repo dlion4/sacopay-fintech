@@ -1,0 +1,514 @@
+@import '../landing/landing.scss';
+
+// About Page Specific Styles
+.about-cyber-wrapper {
+   @extend .home-cyber-wrapper !optional;
+  
+  // Hero Section
+  .about-hero {
+    padding: 160px 0 100px 0;
+    position: relative;
+    overflow: hidden;
+    
+    .hero-subtitle {
+      color: #caced0;
+      font-size: 1.3rem;
+      margin-bottom: 50px;
+      max-width: 600px;
+      font-weight: 300;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+    
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+      
+      &-1 {
+        top: -100px;
+        right: -100px;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(0, 255, 102, 0.08) 0%, transparent 60%);
+      }
+      
+      &-2 {
+        bottom: -50px;
+        left: -50px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(0, 255, 102, 0.05) 0%, transparent 60%);
+      }
+    }
+  }
+
+  // Stats Section
+  .stats-section {
+    .stat-item {
+      padding: 1.5rem 0;
+      
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 0 20px rgba(0, 255, 102, 0.3);
+      }
+      
+      .stat-label {
+        color: #888;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+    }
+  }
+
+  // Story Section
+  .story-section {
+    .timeline-container {
+      position: relative;
+      padding-left: 20px;
+      
+      .timeline-item {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 24px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .timeline-marker {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 24px;
+          
+          .timeline-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(0, 255, 102, 0.2);
+            border: 2px solid var(--neon-green);
+            z-index: 2;
+            
+            &-active {
+              background: var(--neon-green);
+              box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+            }
+          }
+          
+          .timeline-line {
+            width: 2px;
+            flex-grow: 1;
+            background: linear-gradient(to bottom, rgba(0, 255, 102, 0.3), transparent);
+            margin-top: 4px;
+          }
+        }
+        
+        .timeline-content {
+          flex-grow: 1;
+          transition: transform 0.3s ease, border-color 0.3s ease;
+          
+          &:hover {
+            transform: translateX(5px);
+            border-color: rgba(0, 255, 102, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  // Mission Section
+  .mission-section {
+    .mission-glow {
+      position: absolute;
+      top: -50px;
+      left: -50px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(0, 255, 102, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  }
+
+  // Values Section
+  .values-section {
+    .value-card {
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      
+      .value-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        background: rgba(0, 255, 102, 0.05);
+        border: 1px solid rgba(0, 255, 102, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+      
+      &:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0, 255, 102, 0.3);
+        box-shadow: 0 15px 40px rgba(0, 255, 102, 0.1);
+        
+        .value-icon-wrapper {
+          background: rgba(0, 255, 102, 0.1);
+          border-color: rgba(0, 255, 102, 0.3);
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  // Tech Section
+  .tech-section {
+    .tech-layer {
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      
+      .layer-indicator {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--neon-green);
+        flex-shrink: 0;
+      }
+      
+      &:hover {
+        transform: translateX(5px);
+        border-color: rgba(0, 255, 102, 0.3);
+      }
+    }
+  }
+
+  // Team Section
+  .team-section {
+    .team-card {
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      
+      .team-avatar-wrapper {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        
+        .team-avatar {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          border: 3px solid rgba(0, 255, 102, 0.2);
+          object-fit: cover;
+          transition: border-color 0.3s ease;
+        }
+        
+        .team-status {
+          position: absolute;
+          bottom: 5px;
+          right: 5px;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          border: 3px solid #0a0c10;
+          
+          &.online {
+            background: var(--neon-green);
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+          }
+          
+          &.away {
+            background: #ffc107;
+          }
+        }
+      }
+      
+      .team-social {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #888;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: rgba(0, 255, 102, 0.1);
+          border-color: var(--neon-green);
+          color: var(--neon-green);
+          transform: translateY(-3px);
+        }
+      }
+      
+      &:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0, 255, 102, 0.3);
+        box-shadow: 0 15px 40px rgba(0, 255, 102, 0.1);
+        
+        .team-avatar {
+          border-color: var(--neon-green);
+        }
+      }
+    }
+  }
+
+  // Partners Section
+  .partners-section {
+    .partner-logo {
+      height: 60px;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+      
+      &:hover {
+        opacity: 1;
+        border-color: rgba(0, 255, 102, 0.3);
+        transform: translateY(-3px);
+      }
+    }
+  }
+
+  // CTA Section
+  .cta-section {
+    .cta-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 255, 102, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+  }
+
+  // Spacing utilities
+  .py-lg-7 {
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
+  }
+  
+  .mb-lg-6 {
+    margin-bottom: 4rem !important;
+  }
+  
+  .mb-lg-7 {
+    margin-bottom: 5rem !important;
+  }
+  
+  .min-vh-75 {
+    min-height: 75vh;
+  }
+}
+
+// Mobile Responsive Fixes
+@media (max-width: 991.98px) {
+  .about-cyber-wrapper {
+    .about-hero {
+      padding: 120px 0 60px 0;
+      
+      .hero-subtitle {
+        font-size: 1.1rem;
+        padding: 0 15px;
+      }
+    }
+    
+    .section-heading {
+      font-size: 2.2rem !important;
+    }
+    
+    .stats-section {
+      .stat-number {
+        font-size: 1.8rem !important;
+      }
+    }
+    
+    .story-section {
+      .timeline-container {
+        padding-left: 10px;
+      }
+    }
+    
+    .py-lg-7 {
+      padding-top: 3rem !important;
+      padding-bottom: 3rem !important;
+    }
+    
+    .mb-lg-6, .mb-lg-7 {
+      margin-bottom: 2rem !important;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .about-cyber-wrapper {
+    .about-hero {
+      padding: 100px 0 40px 0;
+      
+      .hero-heading {
+        font-size: 2.5rem !important;
+        letter-spacing: -1px !important;
+      }
+      
+      .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
+      }
+    }
+    
+    .section-heading {
+      font-size: 1.8rem !important;
+      letter-spacing: -1px !important;
+    }
+    
+    .panel-heading {
+      font-size: 2rem !important;
+    }
+    
+    .stats-section {
+      .stat-item {
+        padding: 1rem 0;
+        
+        .stat-number {
+          font-size: 1.5rem !important;
+        }
+        
+        .stat-label {
+          font-size: 0.8rem;
+        }
+      }
+    }
+    
+    .story-section {
+      .timeline-item {
+        gap: 12px;
+        
+        .timeline-marker {
+          min-width: 20px;
+          
+          .timeline-dot {
+            width: 12px;
+            height: 12px;
+          }
+        }
+      }
+    }
+    
+    .value-card {
+      padding: 1.5rem !important;
+      
+      .value-icon-wrapper {
+        width: 60px;
+        height: 60px;
+      }
+      
+      h4 {
+        font-size: 1.1rem;
+      }
+    }
+    
+    .team-card {
+      padding: 1.5rem !important;
+      
+      .team-avatar-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+    }
+    
+    .tech-section {
+      .tech-layer {
+        padding: 0.75rem !important;
+        
+        .layer-indicator {
+          width: 40px;
+          height: 40px;
+          font-size: 0.7rem;
+        }
+        
+        h6 {
+          font-size: 0.85rem !important;
+        }
+        
+        p {
+          font-size: 0.75rem !important;
+        }
+      }
+    }
+    
+    .cyber-panel {
+      padding: 1.25rem !important;
+    }
+    
+    .glass-card {
+      padding: 1.5rem !important;
+      border-radius: 20px !important;
+    }
+    
+    .btn-neon, .btn-outline-neon {
+      padding: 10px 24px !important;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 575.98px) {
+  .about-cyber-wrapper {
+    .about-hero {
+      .hero-heading {
+        font-size: 2rem !important;
+      }
+    }
+    
+    .section-heading {
+      font-size: 1.6rem !important;
+    }
+    
+    .stats-section {
+      .row {
+        --bs-gutter-y: 0.5rem;
+      }
+      
+      .stat-number {
+        font-size: 1.3rem !important;
+      }
+    }
+    
+    .mission-section {
+      .cyber-panel {
+        p {
+          font-size: 1rem !important;
+        }
+        
+        ul li {
+          font-size: 0.9rem;
+        }
+      }
+    }
+    
+    .cta-section {
+      .section-heading {
+        font-size: 1.5rem !important;
+      }
+      
+      p {
+        font-size: 1rem !important;
+      }
+    }
+  }
+}

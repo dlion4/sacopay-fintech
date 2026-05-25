@@ -1,1 +1,594 @@
-<p>about works!</p>
+<div class="about-cyber-wrapper" [style.backgroundPosition]="bgPosition">
+    <div class="content-layer">
+
+        <!-- Hero Section -->
+        <section class="about-hero">
+            <div class="container">
+                <div class="row align-items-center min-vh-75">
+                    <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                        <span class="badge text-neon px-3 py-2 fw-medium mb-4" style="background: rgba(0,255,102,0.1); border: 1px solid rgba(0,255,102,0.2); border-radius: 30px; font-size: 0.9rem;">
+                            <i class="bi bi-info-circle me-2"></i> About SACCOPay
+                        </span>
+                        <h1 class="hero-heading">
+                            Building the Future of<br>
+                            <span class="text-neon">SACCO Technology</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            Founded in Nairobi with a vision to democratize financial technology for Savings and Credit Cooperative Organizations across Africa.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center mt-5">
+                            <button class="btn btn-neon px-4 py-2" style="border-radius: 10px;" (click)="scrollToSection('story')">
+                                <i class="bi bi-book me-2"></i>Our Story
+                            </button>
+                            <button class="btn btn-outline-neon" (click)="scrollToSection('team')">
+                                <i class="bi bi-people me-2"></i>Meet the Team
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Decorative Elements -->
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Stats Bar -->
+        <section class="stats-section py-5">
+            <div class="container">
+                <div class="glass-card p-4 p-md-5" data-aos="fade-up">
+                    <div class="row text-center g-4">
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <h3 class="stat-number text-neon">2019</h3>
+                                <p class="stat-label">Founded</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <h3 class="stat-number text-neon">50+</h3>
+                                <p class="stat-label">SACCO Partners</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <h3 class="stat-number text-neon">2.5M+</h3>
+                                <p class="stat-label">Members Served</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <h3 class="stat-number text-neon">KES 12B+</h3>
+                                <p class="stat-label">Transactions Processed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Our Story Section -->
+        <section id="story" class="story-section py-5 py-lg-7">
+            <div class="container">
+                <div class="row align-items-center mb-5 mb-lg-7">
+                    <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+                        <div class="cyber-panel p-4 p-md-5 h-100">
+                            <span class="badge text-white px-3 py-1 fw-medium mb-3" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                                01/04 <i class="bi bi-circle-fill text-neon ms-2"></i> Our Story
+                            </span>
+                            <h2 class="section-heading">
+                                From Local<br>
+                                <span class="text-neon">Challenge</span> to<br>
+                                Digital Solution
+                            </h2>
+                            <p style="color: #a0aab2; font-size: 1.15rem; max-width: 500px;" class="mb-4">
+                                SACCOPay was born from a simple observation: SACCOs in Kenya were struggling with outdated systems while members demanded modern digital experiences.
+                            </p>
+                            <p style="color: #888; font-size: 1rem; max-width: 500px;" class="mb-4">
+                                What started as a small project to help a single SACCO in Nairobi automate their loan disbursements has grown into a comprehensive fintech platform serving cooperatives across East Africa.
+                            </p>
+                            <div class="d-flex align-items-center gap-3 mt-4">
+                                <div class="cyber-panel p-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-rocket-takeoff text-neon fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Mission-Driven</h6>
+                                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0;">Every feature built with SACCOs in mind</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6" data-aos="fade-left">
+                        <div class="glass-card p-4 p-md-5 position-relative" style="border-radius: 32px;">
+                            <div class="timeline-container">
+                                <div class="timeline-item" data-aos="fade-up" data-aos-delay="100">
+                                    <div class="timeline-marker">
+                                        <div class="timeline-dot"></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-content cyber-panel p-4">
+                                        <span class="text-neon fw-bold">2019</span>
+                                        <h5 class="fw-bold mt-2 mb-2">The Beginning</h5>
+                                        <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Founded in Nairobi with initial prototype for United Employees SACCO</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item" data-aos="fade-up" data-aos-delay="200">
+                                    <div class="timeline-marker">
+                                        <div class="timeline-dot"></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-content cyber-panel p-4">
+                                        <span class="text-neon fw-bold">2020</span>
+                                        <h5 class="fw-bold mt-2 mb-2">M-Pesa Integration</h5>
+                                        <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">First direct Safaricom API integration for real-time C2B transactions</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item" data-aos="fade-up" data-aos-delay="300">
+                                    <div class="timeline-marker">
+                                        <div class="timeline-dot"></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-content cyber-panel p-4">
+                                        <span class="text-neon fw-bold">2022</span>
+                                        <h5 class="fw-bold mt-2 mb-2">Pan-African Expansion</h5>
+                                        <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Expanded to Uganda and Tanzania with localized banking integrations</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-item" data-aos="fade-up" data-aos-delay="400">
+                                    <div class="timeline-marker">
+                                        <div class="timeline-dot timeline-dot-active"></div>
+                                    </div>
+                                    <div class="timeline-content cyber-panel p-4" style="border-color: rgba(0,255,102,0.3);">
+                                        <span class="text-neon fw-bold">2024 - Present</span>
+                                        <h5 class="fw-bold mt-2 mb-2">AI-Powered Platform</h5>
+                                        <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Launched predictive analytics and automated credit scoring engine</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Mission & Vision -->
+        <section class="mission-section py-5 py-lg-7">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="cyber-panel p-4 p-md-5 h-100 position-relative overflow-hidden">
+                            <div class="mission-glow"></div>
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="cyber-panel p-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-bullseye text-neon fs-2"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0">Our Mission</h3>
+                            </div>
+                            <p style="color: #a0aab2; font-size: 1.15rem; line-height: 1.7;">
+                                To empower Savings and Credit Cooperative Organizations with cutting-edge financial technology that simplifies operations, enhances member experiences, and drives sustainable growth across Africa.
+                            </p>
+                            <ul class="list-unstyled mt-4" style="color: #ccc; line-height: 2;">
+                                <li><i class="bi bi-check2-circle text-neon me-2"></i> Democratize access to enterprise fintech</li>
+                                <li><i class="bi bi-check2-circle text-neon me-2"></i> Reduce operational costs by 60%</li>
+                                <li><i class="bi bi-check2-circle text-neon me-2"></i> Enable real-time financial transparency</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="cyber-panel p-4 p-md-5 h-100 position-relative overflow-hidden">
+                            <div class="mission-glow" style="background: radial-gradient(circle, rgba(0, 255, 102, 0.08) 0%, transparent 70%); right: -50px; left: auto;"></div>
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="cyber-panel p-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-eye text-neon fs-2"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0">Our Vision</h3>
+                            </div>
+                            <p style="color: #a0aab2; font-size: 1.15rem; line-height: 1.7;">
+                                To become the leading technology partner for cooperative financial institutions in Africa, creating an interconnected ecosystem where every SACCO member has access to world-class digital banking services.
+                            </p>
+                            <ul class="list-unstyled mt-4" style="color: #ccc; line-height: 2;">
+                                <li><i class="bi bi-check2-circle text-neon me-2"></i> 500+ SACCOs by 2027</li>
+                                <li><i class="bi bi-check2-circle text-neon me-2"></i> Pan-African regulatory compliance</li>
+                                <li><i class="bi bi-check2-circle text-neon me-2"></i> AI-first financial inclusion</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Core Values -->
+        <section class="values-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5 mb-lg-6" data-aos="fade-down">
+                    <span class="badge text-white px-3 py-1 fw-medium mb-3" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                        02/04 <i class="bi bi-circle-fill text-neon ms-2"></i> Core Values
+                    </span>
+                    <h2 class="section-heading">Principles That<br><span class="text-neon">Drive Us</span></h2>
+                    <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto;">
+                        Our culture is built on a foundation of integrity, innovation, and unwavering commitment to our SACCO partners.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="cyber-panel p-4 p-md-5 h-100 text-center value-card">
+                            <div class="value-icon-wrapper mb-4 mx-auto">
+                                <i class="bi bi-shield-check text-neon fs-1"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Trust & Security</h4>
+                            <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+                                Bank-grade encryption and transparent operations. We handle member data with the same care we'd want for our own families.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="cyber-panel p-4 p-md-5 h-100 text-center value-card">
+                            <div class="value-icon-wrapper mb-4 mx-auto">
+                                <i class="bi bi-lightning-charge text-neon fs-1"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Innovation First</h4>
+                            <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+                                Continuously pushing boundaries with AI, real-time analytics, and seamless integrations that keep our partners ahead of the curve.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="cyber-panel p-4 p-md-5 h-100 text-center value-card">
+                            <div class="value-icon-wrapper mb-4 mx-auto">
+                                <i class="bi bi-people-fill text-neon fs-1"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Member-Centric</h4>
+                            <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+                                Every feature decision starts with the SACCO member experience. Simple, intuitive, and accessible financial tools for everyone.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="cyber-panel p-4 p-md-5 h-100 text-center value-card">
+                            <div class="value-icon-wrapper mb-4 mx-auto">
+                                <i class="bi bi-globe-africa text-neon fs-1"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Local Impact</h4>
+                            <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+                                Deeply rooted in African cooperative traditions. We build for local contexts—M-Pesa integration, mobile-first, and low-bandwidth optimized.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="cyber-panel p-4 p-md-5 h-100 text-center value-card">
+                            <div class="value-icon-wrapper mb-4 mx-auto">
+                                <i class="bi bi-graph-up-arrow text-neon fs-1"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Scalable Growth</h4>
+                            <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+                                From 100-member SACCOs to million-member cooperatives, our infrastructure scales seamlessly without compromising performance.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="cyber-panel p-4 p-md-5 h-100 text-center value-card">
+                            <div class="value-icon-wrapper mb-4 mx-auto">
+                                <i class="bi bi-hand-thumbs-up-fill text-neon fs-1"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Partnership</h4>
+                            <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+                                We're not just vendors—we're long-term technology partners. Dedicated support, continuous training, and shared success metrics.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Technology Stack -->
+        <section class="tech-section py-5 py-lg-7">
+            <div class="container">
+                <div class="row align-items-center mb-5 mb-lg-6">
+                    <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+                        <span class="badge text-white px-3 py-1 fw-medium mb-3" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                            03/04 <i class="bi bi-circle-fill text-neon ms-2"></i> Technology
+                        </span>
+                        <h2 class="section-heading">
+                            Built on Modern,<br>
+                            <span class="text-neon">Scalable Architecture</span>
+                        </h2>
+                        <p style="color: #a0aab2; font-size: 1.15rem; max-width: 500px;" class="mb-4">
+                            Our platform leverages cutting-edge technologies to ensure 99.9% uptime, sub-second response times, and bank-grade security.
+                        </p>
+                        
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="cyber-panel p-3 d-flex align-items-center gap-3">
+                                    <i class="bi bi-code-square text-neon fs-4"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;">Angular 21</h6>
+                                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">Frontend Framework</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="cyber-panel p-3 d-flex align-items-center gap-3">
+                                    <i class="bi bi-hdd-rack text-neon fs-4"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;">Node.js</h6>
+                                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">Backend Runtime</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="cyber-panel p-3 d-flex align-items-center gap-3">
+                                    <i class="bi bi-database text-neon fs-4"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;">PostgreSQL</h6>
+                                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">Primary Database</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="cyber-panel p-3 d-flex align-items-center gap-3">
+                                    <i class="bi bi-cloud-check text-neon fs-4"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;">AWS Cloud</h6>
+                                        <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">Infrastructure</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6" data-aos="fade-left">
+                        <div class="glass-card p-4 p-md-5 position-relative" style="border-radius: 32px;">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(0, 255, 102, 0.1) 0%, transparent 60%); border-radius: 50%; filter: blur(30px);"></div>
+                            
+                            <h4 class="fw-bold mb-4 text-neon">Platform Architecture</h4>
+                            
+                            <div class="tech-layer cyber-panel p-3 mb-3 d-flex align-items-center gap-3">
+                                <div class="layer-indicator" style="background: rgba(0,255,102,0.2);">UI</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white" style="font-size: 0.9rem;">Presentation Layer</h6>
+                                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">Angular 21 + Bootstrap 5 + Responsive Design</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tech-layer cyber-panel p-3 mb-3 d-flex align-items-center gap-3">
+                                <div class="layer-indicator" style="background: rgba(0,255,102,0.15);">API</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white" style="font-size: 0.9rem;">API Gateway</h6>
+                                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">RESTful APIs + GraphQL + WebSocket Real-time</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tech-layer cyber-panel p-3 mb-3 d-flex align-items-center gap-3">
+                                <div class="layer-indicator" style="background: rgba(0,255,102,0.1);">SVC</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white" style="font-size: 0.9rem;">Microservices</h6>
+                                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">Node.js + Docker + Kubernetes Orchestration</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tech-layer cyber-panel p-3 mb-3 d-flex align-items-center gap-3">
+                                <div class="layer-indicator" style="background: rgba(0,255,102,0.08);">DATA</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white" style="font-size: 0.9rem;">Data Layer</h6>
+                                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">PostgreSQL + Redis Cache + S3 Storage</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tech-layer cyber-panel p-3 d-flex align-items-center gap-3" style="border-color: rgba(0,255,102,0.2);">
+                                <div class="layer-indicator" style="background: rgba(0,255,102,0.25);">SEC</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white" style="font-size: 0.9rem;">Security Layer</h6>
+                                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 0;">AES-256 + OAuth 2.0 + MFA + Audit Logging</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Team Section -->
+        <section id="team" class="team-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5 mb-lg-6" data-aos="fade-down">
+                    <span class="badge text-white px-3 py-1 fw-medium mb-3" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                        04/04 <i class="bi bi-circle-fill text-neon ms-2"></i> Leadership
+                    </span>
+                    <h2 class="section-heading">Meet the<br><span class="text-neon">Team</span></h2>
+                    <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto;">
+                        A diverse team of fintech engineers, cooperative finance experts, and design thinkers passionate about African financial inclusion.
+                    </p>
+                </div>
+
+                <div class="row g-4 justify-content-center">
+                    <div class="col-md-6 col-lg-4 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+                        <div class="cyber-panel team-card p-4 text-center h-100">
+                            <div class="team-avatar-wrapper mb-4 mx-auto">
+                                <img src="https://via.placeholder.com/120/1a1c20/00ff66?text=DK" alt="CEO" class="team-avatar">
+                                <div class="team-status online"></div>
+                            </div>
+                            <h5 class="fw-bold mb-1">David Kimani</h5>
+                            <p class="text-neon mb-3" style="font-size: 0.9rem;">Chief Executive Officer</p>
+                            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
+                                15+ years in fintech. Former CTO at Cooperative Bank Digital. Passionate about cooperative finance.
+                            </p>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="#" class="team-social"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="team-social"><i class="bi bi-twitter-x"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 col-xl-3" data-aos="fade-up" data-aos-delay="200">
+                        <div class="cyber-panel team-card p-4 text-center h-100">
+                            <div class="team-avatar-wrapper mb-4 mx-auto">
+                                <img src="https://via.placeholder.com/120/2a2c30/00ff66?text=SN" alt="CTO" class="team-avatar">
+                                <div class="team-status online"></div>
+                            </div>
+                            <h5 class="fw-bold mb-1">Sarah Njoroge</h5>
+                            <p class="text-neon mb-3" style="font-size: 0.9rem;">Chief Technology Officer</p>
+                            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
+                                Ex-Google engineer. Specialist in distributed systems and financial APIs. M-Pesa integration pioneer.
+                            </p>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="#" class="team-social"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="team-social"><i class="bi bi-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 col-xl-3" data-aos="fade-up" data-aos-delay="300">
+                        <div class="cyber-panel team-card p-4 text-center h-100">
+                            <div class="team-avatar-wrapper mb-4 mx-auto">
+                                <img src="https://via.placeholder.com/120/3a3c40/00ff66?text=JO" alt="COO" class="team-avatar">
+                                <div class="team-status away"></div>
+                            </div>
+                            <h5 class="fw-bold mb-1">James Ochieng</h5>
+                            <p class="text-neon mb-3" style="font-size: 0.9rem;">Chief Operations Officer</p>
+                            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
+                                SACCO operations expert. Former SASRA auditor. Ensures regulatory compliance across all deployments.
+                            </p>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="#" class="team-social"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="team-social"><i class="bi bi-envelope"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4 col-xl-3" data-aos="fade-up" data-aos-delay="400">
+                        <div class="cyber-panel team-card p-4 text-center h-100">
+                            <div class="team-avatar-wrapper mb-4 mx-auto">
+                                <img src="https://via.placeholder.com/120/4a4c50/00ff66?text=WM" alt="Head of Product" class="team-avatar">
+                                <div class="team-status online"></div>
+                            </div>
+                            <h5 class="fw-bold mb-1">Wanjiku Mwangi</h5>
+                            <p class="text-neon mb-3" style="font-size: 0.9rem;">Head of Product</p>
+                            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
+                                UX researcher and product strategist. Focused on creating intuitive financial experiences for non-tech users.
+                            </p>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="#" class="team-social"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="team-social"><i class="bi bi-dribbble"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5" data-aos="fade-up">
+                    <div class="cyber-panel p-4 d-inline-block">
+                        <p class="mb-2" style="color: #888; font-size: 1rem;">
+                            <i class="bi bi-people-fill text-neon me-2"></i>
+                            Join our growing team of <span class="text-neon fw-bold">40+ professionals</span>
+                        </p>
+                        <button class="btn btn-outline-neon btn-sm" style="padding: 8px 24px; font-size: 0.9rem;">
+                            <i class="bi bi-briefcase me-2"></i>View Open Positions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Partners / Trust Section -->
+        <section class="partners-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-down">
+                    <h2 class="section-heading" style="font-size: 2.5rem;">Trusted By<br><span class="text-neon">Industry Leaders</span></h2>
+                    <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto;">
+                        Partnered with leading banks, regulators, and technology providers across East Africa.
+                    </p>
+                </div>
+
+                <div class="glass-card p-4 p-md-5" data-aos="fade-up">
+                    <div class="row align-items-center justify-content-center g-4">
+                        <div class="col-6 col-md-4 col-lg-2 text-center">
+                            <div class="partner-logo cyber-panel p-3 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold" style="color: #888; font-size: 1.1rem;">Safaricom</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 text-center">
+                            <div class="partner-logo cyber-panel p-3 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold" style="color: #888; font-size: 1.1rem;">KCB Bank</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 text-center">
+                            <div class="partner-logo cyber-panel p-3 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold" style="color: #888; font-size: 1.1rem;">Equity Bank</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 text-center">
+                            <div class="partner-logo cyber-panel p-3 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold" style="color: #888; font-size: 1.1rem;">Co-op Bank</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 text-center">
+                            <div class="partner-logo cyber-panel p-3 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold" style="color: #888; font-size: 1.1rem;">SASRA</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 text-center">
+                            <div class="partner-logo cyber-panel p-3 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold" style="color: #888; font-size: 1.1rem;">AWS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- CTA Section -->
+        <section class="cta-section py-5 py-lg-7 mb-5">
+            <div class="container">
+                <div class="glass-card p-4 p-md-5 text-center position-relative overflow-hidden" data-aos="zoom-in">
+                    <div class="cta-glow"></div>
+                    
+                    <div class="position-relative" style="z-index: 2;">
+                        <h2 class="section-heading mb-4">
+                            Ready to Transform<br>
+                            <span class="text-neon">Your SACCO?</span>
+                        </h2>
+                        <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto 30px;">
+                            Join 50+ SACCOs already modernizing their operations with SACCOPay. Schedule a personalized demo today.
+                        </p>
+                        
+                        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                            <button class="btn btn-neon px-5 py-3" style="border-radius: 12px; font-weight: 700;">
+                                <i class="bi bi-calendar-check me-2"></i>Schedule Demo
+                            </button>
+                            <button class="btn btn-outline-neon px-5 py-3" style="border-radius: 12px;">
+                                <i class="bi bi-envelope me-2"></i>Contact Sales
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>

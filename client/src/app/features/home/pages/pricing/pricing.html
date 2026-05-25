@@ -1,1 +1,1057 @@
-<p>pricing works!</p>
+<div class="pricing-cyber-wrapper" [style.backgroundPosition]="bgPosition">
+    <div class="content-layer">
+
+        <!-- Hero Section -->
+        <section class="pricing-hero">
+            <div class="container">
+                <div class="row align-items-center min-vh-60">
+                    <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                        <span class="badge text-neon px-3 py-2 fw-medium mb-4 pricing-badge">
+                            <i class="bi bi-tags me-2"></i> Transparent Pricing
+                        </span>
+                        <h1 class="hero-heading">
+                            Simple, Scalable<br>
+                            <span class="text-neon">SACCO Pricing</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            No hidden fees. No surprises. Choose the plan that fits your cooperative's size and growth
+                            ambitions. All plans include core SACCO management features.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center mt-5">
+                            <button class="btn btn-neon px-4 py-2" style="border-radius: 10px;"
+                                (click)="scrollToSection('pricing-tiers')">
+                                <i class="bi bi-grid-3x3-gap me-2"></i>View Plans
+                            </button>
+                            <button class="btn btn-outline-neon" (click)="scrollToSection('payg-section')">
+                                <i class="bi bi-lightning-charge me-2"></i>Pay As You Go
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Pricing Tiers -->
+        <section id="pricing-tiers" class="tiers-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5 mb-lg-6" data-aos="fade-down">
+                    <span class="badge text-white px-3 py-1 fw-medium mb-3"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                        <i class="bi bi-layers text-neon me-2"></i> Four Tiers
+                    </span>
+                    <h2 class="section-heading">Plans Built for Every<br><span class="text-neon">SACCO Stage</span></h2>
+                    <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto;">
+                        From startup cooperatives to enterprise-level SACCOs with millions in assets under management.
+                    </p>
+                </div>
+
+                <div class="row g-4 justify-content-center">
+                    <!-- Free / Core Tier -->
+                    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+                        <div class="cyber-panel pricing-card h-100">
+                            <div class="pricing-header p-4 text-center"
+                                style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div class="tier-icon mb-3 mx-auto">
+                                    <i class="bi bi-seedling text-neon fs-1"></i>
+                                </div>
+                                <h4 class="fw-bold mb-2">Free / Core</h4>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">For new & trial SACCOs</p>
+                                <div class="price-display mt-3">
+                                    <span class="price-currency">KES</span>
+                                    <span class="price-amount">0</span>
+                                    <span class="price-period">/mo</span>
+                                </div>
+                                <span class="badge mt-2"
+                                    style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1);">Up
+                                    to 50 members</span>
+                            </div>
+                            <div class="pricing-body p-4">
+                                <h6 class="fw-bold text-neon mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Core
+                                    Features</h6>
+                                <ul class="feature-list list-unstyled mb-4">
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Member registration & KYC</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Basic savings accounts</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Share capital tracking</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Simple loan applications</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Manual ledger entries</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Email notifications</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>1 admin user</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Community support</li>
+                                </ul>
+                                <h6 class="fw-bold text-white mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Included
+                                    Add-ons</h6>
+                                <ul class="addon-list list-unstyled">
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Basic M-Pesa
+                                        C2B</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Standard
+                                        reports</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-footer p-4 pt-0">
+                                <button class="btn btn-outline-neon w-100" style="border-radius: 10px;"
+                                    (click)="scrollToSection('contact-cta')">
+                                    Get Started Free
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Standard Tier -->
+                    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="200">
+                        <div class="cyber-panel pricing-card h-100">
+                            <div class="pricing-header p-4 text-center"
+                                style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div class="tier-icon mb-3 mx-auto">
+                                    <i class="bi bi-bar-chart-line text-neon fs-1"></i>
+                                </div>
+                                <h4 class="fw-bold mb-2">Standard</h4>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">For growing SACCOs</p>
+                                <div class="price-display mt-3">
+                                    <span class="price-currency">KES</span>
+                                    <span class="price-amount">15,000</span>
+                                    <span class="price-period">/mo</span>
+                                </div>
+                                <span class="badge mt-2"
+                                    style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1);">51
+                                    - 2,000 members</span>
+                            </div>
+                            <div class="pricing-body p-4">
+                                <h6 class="fw-bold text-neon mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                                    Everything in Core, plus</h6>
+                                <ul class="feature-list list-unstyled mb-4">
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Automated loan workflows</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Guarantor management</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Dividend processing</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>M-Pesa STK Push</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Bank reconciliation</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>SMS notifications</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>5 admin users</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Email support (48h SLA)</li>
+                                </ul>
+                                <h6 class="fw-bold text-white mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Included
+                                    Add-ons</h6>
+                                <ul class="addon-list list-unstyled">
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Bulk SMS
+                                        Suite</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Basic BI
+                                        Dashboard</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Mobile member
+                                        app</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-footer p-4 pt-0">
+                                <button class="btn btn-neon w-100" style="border-radius: 10px;"
+                                    (click)="scrollToSection('contact-cta')">
+                                    Choose Standard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Tier -->
+                    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="300">
+                        <div class="cyber-panel pricing-card h-100 featured-tier">
+                            <div class="featured-badge">
+                                <span>Most Popular</span>
+                            </div>
+                            <div class="pricing-header p-4 text-center"
+                                style="border-bottom: 1px solid rgba(0,255,102,0.15);">
+                                <div class="tier-icon mb-3 mx-auto"
+                                    style="background: rgba(0,255,102,0.1); border-color: rgba(0,255,102,0.2);">
+                                    <i class="bi bi-rocket-takeoff text-neon fs-1"></i>
+                                </div>
+                                <h4 class="fw-bold mb-2 text-neon">Premium</h4>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">For established SACCOs</p>
+                                <div class="price-display mt-3">
+                                    <span class="price-currency">KES</span>
+                                    <span class="price-amount">45,000</span>
+                                    <span class="price-period">/mo</span>
+                                </div>
+                                <span class="badge mt-2"
+                                    style="background: rgba(0,255,102,0.1); color: var(--neon-green); border: 1px solid rgba(0,255,102,0.2);">2,001
+                                    - 10,000 members</span>
+                            </div>
+                            <div class="pricing-body p-4">
+                                <h6 class="fw-bold text-neon mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                                    Everything in Standard, plus</h6>
+                                <ul class="feature-list list-unstyled mb-4">
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Advanced loan scoring</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>CRB integration</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Multi-branch support</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Real-time analytics</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Custom report builder</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>WhatsApp Business API</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>15 admin users</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Priority support (24h SLA)
+                                    </li>
+                                </ul>
+                                <h6 class="fw-bold text-white mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Included
+                                    Add-ons</h6>
+                                <ul class="addon-list list-unstyled">
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Advanced BI
+                                        Dashboard</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>AI Credit
+                                        Scoring</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>White-label
+                                        member app</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>API access
+                                    </li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>IPRS Live
+                                        Verification</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-footer p-4 pt-0">
+                                <button class="btn btn-neon w-100" style="border-radius: 10px;"
+                                    (click)="scrollToSection('contact-cta')">
+                                    Choose Premium
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Tier -->
+                    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="400">
+                        <div class="cyber-panel pricing-card h-100">
+                            <div class="pricing-header p-4 text-center"
+                                style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div class="tier-icon mb-3 mx-auto">
+                                    <i class="bi bi-stars text-neon fs-1"></i>
+                                </div>
+                                <h4 class="fw-bold mb-2">Advanced</h4>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">For enterprise SACCOs</p>
+                                <div class="price-display mt-3">
+                                    <span class="price-currency">KES</span>
+                                    <span class="price-amount">97,000</span>
+                                    <span class="price-period">/mo</span>
+                                </div>
+                                <span class="badge mt-2"
+                                    style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1);">10,000+
+                                    members</span>
+                            </div>
+                            <div class="pricing-body p-4">
+                                <h6 class="fw-bold text-neon mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                                    Everything in Premium, plus</h6>
+                                <ul class="feature-list list-unstyled mb-4">
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Unlimited branches</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Dedicated account manager</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Custom integrations</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Full REST API access</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Sandbox environment</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Quarterly business reviews
+                                    </li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>Unlimited admin users</li>
+                                    <li><i class="bi bi-check2-circle text-neon me-2"></i>4-hour support SLA</li>
+                                </ul>
+                                <h6 class="fw-bold text-white mb-3"
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Included
+                                    Add-ons</h6>
+                                <ul class="addon-list list-unstyled">
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>All Premium
+                                        add-ons</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Cross-border
+                                        remittance</li>
+                                    <li class="addon-item"><i
+                                            class="bi bi-plus-circle text-neon me-2"></i>Multi-currency (USD/GBP/EUR)
+                                    </li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Custom
+                                        branding</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Webhook
+                                        support</li>
+                                    <li class="addon-item"><i class="bi bi-plus-circle text-neon me-2"></i>Treasury
+                                        management</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-footer p-4 pt-0">
+                                <button class="btn btn-outline-neon w-100" style="border-radius: 10px;"
+                                    (click)="scrollToSection('contact-cta')">
+                                    Contact Sales
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Contract Terms -->
+        <section class="contracts-section py-5 py-lg-7">
+            <div class="container">
+                <div class="row align-items-center mb-5 mb-lg-6">
+                    <div class="col-lg-6" data-aos="fade-right">
+                        <span class="badge text-white px-3 py-1 fw-medium mb-3"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                            <i class="bi bi-file-earmark-text text-neon me-2"></i> Flexible Contracts
+                        </span>
+                        <h2 class="section-heading">
+                            Commitment<br>
+                            <span class="text-neon">That Rewards You</span>
+                        </h2>
+                        <p style="color: #a0aab2; font-size: 1.15rem; max-width: 500px;" class="mb-4">
+                            Longer commitments unlock greater discounts. All contracts include price lock guarantees—no
+                            increases during your term.
+                        </p>
+                        <div class="contract-commitments">
+                            <div class="commitment-item d-flex align-items-start gap-3 mb-3">
+                                <div class="cyber-panel p-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px;">
+                                    <i class="bi bi-shield-check text-neon"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Price Lock Guarantee</h6>
+                                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">Your rate is frozen for
+                                        the entire contract duration. No mid-term increases.</p>
+                                </div>
+                            </div>
+                            <div class="commitment-item d-flex align-items-start gap-3 mb-3">
+                                <div class="cyber-panel p-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px;">
+                                    <i class="bi bi-arrow-repeat text-neon"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Easy Upgrade Path</h6>
+                                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">Upgrade tiers anytime
+                                        without penalties. Pay only the prorated difference.</p>
+                                </div>
+                            </div>
+                            <div class="commitment-item d-flex align-items-start gap-3">
+                                <div class="cyber-panel p-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px;">
+                                    <i class="bi bi-box-arrow-right text-neon"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Fair Exit Policy</h6>
+                                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">30-day written notice
+                                        for termination. Full data export anytime, free of charge.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6" data-aos="fade-left">
+                        <div class="glass-card p-4 p-md-5" style="border-radius: 32px;">
+                            <h4 class="fw-bold mb-4 text-neon">Contract Discounts</h4>
+
+                            <div class="contract-option cyber-panel p-4 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-0">Monthly</h5>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">No commitment</p>
+                                    </div>
+                                    <span class="badge"
+                                        style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1);">0%
+                                        off</span>
+                                </div>
+                                <p style="color: #666; font-size: 0.85rem; margin-bottom: 0;">Full flexibility. Cancel
+                                    anytime with 30-day notice.</p>
+                            </div>
+
+                            <div class="contract-option cyber-panel p-4 mb-3"
+                                style="border-color: rgba(0,255,102,0.15);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-0 text-neon">3 Months</h5>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">Short-term
+                                            commitment</p>
+                                    </div>
+                                    <span class="badge"
+                                        style="background: rgba(0,255,102,0.1); color: var(--neon-green); border: 1px solid rgba(0,255,102,0.2);">5%
+                                        off</span>
+                                </div>
+                                <p style="color: #666; font-size: 0.85rem; margin-bottom: 0;">Save 5% on total contract
+                                    value. Price locked for 3 months.</p>
+                            </div>
+
+                            <div class="contract-option cyber-panel p-4 mb-3"
+                                style="border-color: rgba(0,255,102,0.2);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-0 text-neon">6 Months</h5>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">Medium-term growth
+                                        </p>
+                                    </div>
+                                    <span class="badge"
+                                        style="background: rgba(0,255,102,0.15); color: var(--neon-green); border: 1px solid rgba(0,255,102,0.3);">10%
+                                        off</span>
+                                </div>
+                                <p style="color: #666; font-size: 0.85rem; margin-bottom: 0;">Save 10% on total contract
+                                    value. Includes free feature upgrades.</p>
+                            </div>
+
+                            <div class="contract-option cyber-panel p-4"
+                                style="border-color: var(--neon-green); background: rgba(0,255,102,0.03);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-0 text-neon">12 Months</h5>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">Maximum savings</p>
+                                    </div>
+                                    <span class="badge"
+                                        style="background: var(--neon-green); color: #000; font-weight: 700;">15% off —
+                                        Best Value</span>
+                                </div>
+                                <p style="color: #666; font-size: 0.85rem; margin-bottom: 0;">Save 15% on total contract
+                                    value. Dedicated onboarding specialist included.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- PAYG Section -->
+        <section id="payg-section" class="payg-section py-5 py-lg-7">
+            <div class="container">
+                <div class="row align-items-center flex-column-reverse flex-lg-row">
+                    <div class="col-lg-6 mb-5 mb-lg-0" data-aos="zoom-in" data-aos-duration="1000">
+                        <div class="glass-card p-4 p-md-5 position-relative"
+                            style="border-radius: 32px; overflow: hidden;">
+                            <div
+                                style="position: absolute; top: -30px; right: -30px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(0, 255, 102, 0.1) 0%, transparent 60%); border-radius: 50%; filter: blur(30px);">
+                            </div>
+
+                            <h4 class="fw-bold mb-4 text-neon">How PAYG Works</h4>
+
+                            <div class="payg-step d-flex gap-3 mb-4">
+                                <div class="step-number cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px; border-radius: 50%;">
+                                    <span class="text-neon fw-bold">1</span>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Sign Up Free</h6>
+                                    <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Create your SACCO
+                                        account with zero upfront cost. No credit card required.</p>
+                                </div>
+                            </div>
+
+                            <div class="payg-step d-flex gap-3 mb-4">
+                                <div class="step-number cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px; border-radius: 50%;">
+                                    <span class="text-neon fw-bold">2</span>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Add Members</h6>
+                                    <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Invite up to 50
+                                        members completely free. Test every core feature.</p>
+                                </div>
+                            </div>
+
+                            <div class="payg-step d-flex gap-3 mb-4">
+                                <div class="step-number cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px; border-radius: 50%;">
+                                    <span class="text-neon fw-bold">3</span>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Pay Per Transaction</h6>
+                                    <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Only pay for premium
+                                        features you use: KES 5 per M-Pesa transaction, KES 2 per SMS.</p>
+                                </div>
+                            </div>
+
+                            <div class="payg-step d-flex gap-3">
+                                <div class="step-number cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 40px; height: 40px; border-radius: 50%;">
+                                    <span class="text-neon fw-bold">4</span>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Scale When Ready</h6>
+                                    <p style="color: #888; font-size: 0.95rem; margin-bottom: 0;">Upgrade to a paid tier
+                                        anytime with all your data intact. No migration needed.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 ps-lg-5" data-aos="fade-left">
+                        <div class="cyber-panel p-4 p-md-5">
+                            <span class="badge text-neon px-3 py-1 fw-medium mb-3"
+                                style="background: rgba(0,255,102,0.1); border: 1px solid rgba(0,255,102,0.2); border-radius: 30px; font-size: 0.8rem;">
+                                <i class="bi bi-lightning-charge me-2"></i> Pay As You Go
+                            </span>
+                            <h2 class="section-heading">
+                                Try Before<br>
+                                <span class="text-neon">You Commit</span>
+                            </h2>
+                            <p style="color: #a0aab2; font-size: 1.15rem; max-width: 500px;" class="mb-4">
+                                Perfect for SACCOs with fewer than 50 members who want to explore premium features
+                                without a monthly subscription.
+                            </p>
+
+                            <div class="payg-features mb-4">
+                                <div class="payg-feature-item d-flex align-items-center gap-3 mb-3 p-3"
+                                    style="background: rgba(255,255,255,0.02); border-radius: 12px;">
+                                    <i class="bi bi-check-circle-fill text-neon fs-5"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white">Zero Monthly Fee</h6>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">No base
+                                            subscription. Only pay for what you use.</p>
+                                    </div>
+                                </div>
+                                <div class="payg-feature-item d-flex align-items-center gap-3 mb-3 p-3"
+                                    style="background: rgba(255,255,255,0.02); border-radius: 12px;">
+                                    <i class="bi bi-check-circle-fill text-neon fs-5"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white">Full Feature Access</h6>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">Unlock any premium
+                                            feature on a per-use basis.</p>
+                                    </div>
+                                </div>
+                                <div class="payg-feature-item d-flex align-items-center gap-3 p-3"
+                                    style="background: rgba(255,255,255,0.02); border-radius: 12px;">
+                                    <i class="bi bi-check-circle-fill text-neon fs-5"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-white">Instant Activation</h6>
+                                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">No approval
+                                            process. Start using features immediately.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payg-rates cyber-panel p-4 mb-4">
+                                <h6 class="fw-bold text-neon mb-3" style="font-size: 0.9rem;">PAYG Rates</h6>
+                                <div class="rate-row d-flex justify-content-between mb-2">
+                                    <span style="color: #888;">M-Pesa STK Push</span>
+                                    <span class="fw-bold text-white">KES 5 / tx</span>
+                                </div>
+                                <div class="rate-row d-flex justify-content-between mb-2">
+                                    <span style="color: #888;">SMS Notification</span>
+                                    <span class="fw-bold text-white">KES 2 / msg</span>
+                                </div>
+                                <div class="rate-row d-flex justify-content-between mb-2">
+                                    <span style="color: #888;">WhatsApp Message</span>
+                                    <span class="fw-bold text-white">KES 3 / msg</span>
+                                </div>
+                                <div class="rate-row d-flex justify-content-between mb-2">
+                                    <span style="color: #888;">CRB Check</span>
+                                    <span class="fw-bold text-white">KES 15 / check</span>
+                                </div>
+                                <div class="rate-row d-flex justify-content-between">
+                                    <span style="color: #888;">IPRS Verification</span>
+                                    <span class="fw-bold text-white">KES 10 / verify</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-info-circle text-neon fs-4"></i>
+                                <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">
+                                    PAYG available exclusively for SACCOs with <span class="text-neon fw-bold">under 50
+                                        members</span>. Upgrade to a tier anytime to unlock unlimited usage.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Feature Comparison -->
+        <section class="comparison-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5 mb-lg-6" data-aos="fade-down">
+                    <span class="badge text-white px-3 py-1 fw-medium mb-3"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                        <i class="bi bi-table text-neon me-2"></i> Compare
+                    </span>
+                    <h2 class="section-heading">What's Included in<br><span class="text-neon">Each Tier</span></h2>
+                    <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto;">
+                        See exactly what you get at every level. No hidden costs.
+                    </p>
+                </div>
+
+                <div class="glass-card p-2 p-md-4" style="border-radius: 24px; overflow-x: auto;" data-aos="fade-up">
+                    <div class="table-responsive">
+                        <table class="table comparison-table mb-0" style="min-width: 800px;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%;">Feature</th>
+                                    <th class="text-center">Free / Core</th>
+                                    <th class="text-center">Standard</th>
+                                    <th class="text-center text-neon">Premium</th>
+                                    <th class="text-center">Advanced</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="category-row">
+                                    <td colspan="5" class="fw-bold text-neon" style="background: rgba(0,255,102,0.03);">
+                                        Core Platform</td>
+                                </tr>
+                                <tr>
+                                    <td>Member Management</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Savings & Deposits</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Loan Processing</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Share Capital</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Dividend Distribution</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr class="category-row">
+                                    <td colspan="5" class="fw-bold text-neon" style="background: rgba(0,255,102,0.03);">
+                                        Payments & Integrations</td>
+                                </tr>
+                                <tr>
+                                    <td>M-Pesa C2B (Paybill)</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>M-Pesa B2C (Disbursement)</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>M-Pesa STK Push</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Bank Integration (KCB, Equity, Co-op)</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Card Payments (Visa/Mastercard)</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr class="category-row">
+                                    <td colspan="5" class="fw-bold text-neon" style="background: rgba(0,255,102,0.03);">
+                                        Compliance & Security</td>
+                                </tr>
+                                <tr>
+                                    <td>SASRA Reporting</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>CRB Integration</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>IPRS Live Verification</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Full Audit Trail</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr class="category-row">
+                                    <td colspan="5" class="fw-bold text-neon" style="background: rgba(0,255,102,0.03);">
+                                        Analytics & Intelligence</td>
+                                </tr>
+                                <tr>
+                                    <td>Basic Reports</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>BI Dashboard</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>AI Credit Scoring</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Predictive Analytics</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr class="category-row">
+                                    <td colspan="5" class="fw-bold text-neon" style="background: rgba(0,255,102,0.03);">
+                                        Communication</td>
+                                </tr>
+                                <tr>
+                                    <td>Email Notifications</td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>SMS Notifications</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>WhatsApp Business API</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                                <tr class="category-row">
+                                    <td colspan="5" class="fw-bold text-neon" style="background: rgba(0,255,102,0.03);">
+                                        Support & Scale</td>
+                                </tr>
+                                <tr>
+                                    <td>Admin Users</td>
+                                    <td class="text-center"><span style="color: #888;">1</span></td>
+                                    <td class="text-center"><span style="color: #888;">5</span></td>
+                                    <td class="text-center"><span style="color: #888;">15</span></td>
+                                    <td class="text-center"><span class="text-neon">Unlimited</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Branches / Offices</td>
+                                    <td class="text-center"><span style="color: #888;">1</span></td>
+                                    <td class="text-center"><span style="color: #888;">3</span></td>
+                                    <td class="text-center"><span style="color: #888;">10</span></td>
+                                    <td class="text-center"><span class="text-neon">Unlimited</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Support SLA</td>
+                                    <td class="text-center"><span style="color: #888;">Community</span></td>
+                                    <td class="text-center"><span style="color: #888;">48 hours</span></td>
+                                    <td class="text-center"><span style="color: #888;">24 hours</span></td>
+                                    <td class="text-center"><span class="text-neon">4 hours</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Dedicated Account Manager</td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-dash text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check-lg text-neon"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- Payment Methods Section -->
+        <section class="payment-methods-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5 mb-lg-6" data-aos="fade-down">
+                    <span class="badge text-white px-3 py-1 fw-medium mb-3"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                        <i class="bi bi-credit-card text-neon me-2"></i> Payments
+                    </span>
+                    <h2 class="section-heading">Payment Methods We<br><span class="text-neon">Support</span></h2>
+                    <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto;">
+                        Collect member deposits and disburse loans through multiple channels. Link your existing
+                        accounts for seamless reconciliation.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Collection Methods -->
+                    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="cyber-panel p-4 p-md-5 h-100">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="cyber-panel p-2 d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-arrow-down-left-circle text-neon fs-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="fw-bold mb-0">Collection Methods</h4>
+                                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">How members pay into
+                                        the SACCO</p>
+                                </div>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3 mb-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-phone text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">M-Pesa STK Push</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Safaricom M-Pesa ·
+                                        Instant debit from member phone</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(0,255,102,0.1); color: var(--neon-green); font-size: 0.75rem;">Instant</span>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3 mb-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-building text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">Bank Transfer</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Equity, KCB, Co-op
+                                        Bank · 2-4 hours verification</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(255,255,255,0.05); color: #888; font-size: 0.75rem;">2-4h</span>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3 mb-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-wallet2 text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">SACCOPay Wallet</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Internal wallet ·
+                                        Instant · No transaction fees</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(0,255,102,0.1); color: var(--neon-green); font-size: 0.75rem;">Free</span>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-credit-card-2-front text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">Card Payment</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Visa, Mastercard ·
+                                        Secured by Stripe</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(255,255,255,0.05); color: #888; font-size: 0.75rem;">Instant</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disbursement Methods -->
+                    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="cyber-panel p-4 p-md-5 h-100">
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <div class="cyber-panel p-2 d-flex align-items-center justify-content-center"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-arrow-up-right-circle text-neon fs-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="fw-bold mb-0">Disbursement Methods</h4>
+                                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 0;">How the SACCO pays
+                                        members</p>
+                                </div>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3 mb-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-phone-vibrate text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">M-Pesa B2C</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Direct to member
+                                        M-Pesa · Instant disbursement</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(0,255,102,0.1); color: var(--neon-green); font-size: 0.75rem;">Instant</span>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3 mb-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-bank text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">Bank Transfer (B2B)</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">KCB B2C, Equity B2C ·
+                                        Same-day processing</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(255,255,255,0.05); color: #888; font-size: 0.75rem;">Same
+                                    day</span>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3 mb-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-cash-stack text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">Bulk Disbursement</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Process thousands of
+                                        payments in one batch</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(0,255,102,0.1); color: var(--neon-green); font-size: 0.75rem;">Bulk</span>
+                            </div>
+
+                            <div class="payment-method-card d-flex align-items-center gap-3 p-3"
+                                style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="method-icon cyber-panel d-flex align-items-center justify-content-center flex-shrink-0"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="bi bi-globe text-neon fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1 text-white">Cross-Border Remittance</h6>
+                                    <p style="color: #888; font-size: 0.85rem; margin-bottom: 0;">Diaspora payments ·
+                                        USD/GBP/EUR to KES</p>
+                                </div>
+                                <span class="badge"
+                                    style="background: rgba(255,255,255,0.05); color: #888; font-size: 0.75rem;">Advanced</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4" data-aos="fade-up">
+                    <div class="cyber-panel p-4 text-center">
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                            <i class="bi bi-shield-check text-neon fs-4"></i>
+                            <h5 class="fw-bold mb-0">Bank-Grade Security</h5>
+                        </div>
+                        <p style="color: #888; font-size: 0.95rem; max-width: 700px; margin: 0 auto;">
+                            All payment methods are secured with AES-256 encryption, PCI-DSS compliance, and two-factor
+                            authentication. Funds are held in segregated accounts with our banking partners.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- FAQ Section -->
+        <section class="faq-section py-5 py-lg-7">
+            <div class="container">
+                <div class="text-center mb-5 mb-lg-6" data-aos="fade-down">
+                    <span class="badge text-white px-3 py-1 fw-medium mb-3"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 0.8rem;">
+                        <i class="bi bi-question-circle text-neon me-2"></i> Pricing FAQ
+                    </span>
+                    <h2 class="section-heading">Common Pricing<br><span class="text-neon">Questions</span></h2>
+                </div>
+
+                <div class="row g-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="faq-container">
+                            <div class="cyber-panel faq-item mb-3" *ngFor="let faq of faqs; let i = index"
+                                [class.active]="activeFaq === i" data-aos="fade-up"
+                                [attr.data-aos-delay]="(i + 1) * 100">
+                                <div class="faq-question d-flex justify-content-between align-items-center p-4"
+                                    (click)="toggleFaq(i)">
+                                    <h6 class="fw-bold mb-0" style="font-size: 1.05rem; padding-right: 20px;">{{
+                                        faq.question }}</h6>
+                                    <div class="faq-icon" [class.rotate]="activeFaq === i">
+                                        <i class="bi bi-chevron-down text-neon fs-5"></i>
+                                    </div>
+                                </div>
+                                <div class="faq-answer" [class.show]="activeFaq === i">
+                                    <div class="p-4 pt-0" style="color: #888; line-height: 1.7;">
+                                        {{ faq.answer }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="glowing-line container"></div>
+
+        <!-- CTA Section -->
+        <section id="contact-cta" class="cta-section py-5 py-lg-7 mb-5">
+            <div class="container">
+                <div class="glass-card p-4 p-md-5 text-center position-relative overflow-hidden" data-aos="zoom-in">
+                    <div class="cta-glow"></div>
+
+                    <div class="position-relative" style="z-index: 2;">
+                        <h2 class="section-heading mb-4">
+                            Ready to Choose<br>
+                            <span class="text-neon">Your Plan?</span>
+                        </h2>
+                        <p style="color: #888; font-size: 1.15rem; max-width: 600px; margin: 0 auto 30px;">
+                            Our team will help you select the perfect tier for your SACCO size and goals. Get a
+                            personalized quote with no obligations.
+                        </p>
+
+                        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                            <button class="btn btn-neon px-5 py-3" style="border-radius: 12px; font-weight: 700;">
+                                <i class="bi bi-calendar-check me-2"></i>Schedule Consultation
+                            </button>
+                            <a href="tel:+254712345678" class="btn btn-outline-neon px-5 py-3"
+                                style="border-radius: 12px;">
+                                <i class="bi bi-telephone me-2"></i>Call Sales Team
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
