@@ -160,3 +160,96 @@ app-member-layout .sp-page-body {
     padding: 28px;
   }
 }
+/* ========================================== */
+/* SACCOPAY — GLOBAL THEME VARIABLES          */
+/* Define once, use everywhere                */
+/* ========================================== */
+
+/* Dark theme (default) */
+body.dark-theme,
+body:not(.light-theme) {
+  --lp-bg: #050608;
+  --lp-text: #ffffff;
+  --lp-text-muted: rgba(255, 255, 255, 0.65);
+  --lp-text-dim: rgba(255, 255, 255, 0.5);
+  --lp-text-faint: rgba(255, 255, 255, 0.35);
+  --lp-header-bg: rgba(5, 6, 8, 0.85);
+  --lp-header-border: rgba(255, 255, 255, 0.06);
+  --lp-mobile-bg: rgba(5, 6, 8, 0.95);
+  --lp-mobile-border: rgba(255, 255, 255, 0.08);
+  --lp-glow-low: rgba(0, 255, 102, 0.12);
+  --lp-glow-mid: rgba(0, 255, 102, 0.08);
+  --lp-glow-high: rgba(0, 255, 102, 0.05);
+  --lp-grid-opacity: 0.1;
+  --lp-card-bg: rgba(255, 255, 255, 0.04);
+  --lp-card-hover-border: rgba(0, 255, 102, 0.4);
+  --lp-card-hover-shadow: rgba(0, 255, 102, 0.15);
+  --lp-panel-bg: rgba(10, 12, 16, 0.6);
+  --lp-btn-outline-border: rgba(255, 255, 255, 0.1);
+  --lp-btn-outline-hover-bg: rgba(0, 255, 102, 0.05);
+  --lp-tab-inactive: rgba(255, 255, 255, 0.6);
+  --lp-tab-hover-bg: rgba(255, 255, 255, 0.05);
+  --lp-footer-gradient-start: transparent;
+  --lp-footer-gradient-mid: rgba(0, 255, 102, 0.02);
+  --lp-footer-gradient-end: rgba(5, 6, 8, 0.98);
+  --lp-footer-top-line: rgba(0, 255, 102, 0.3);
+  --lp-glowing-line: rgba(0, 255, 102, 0.5);
+  --lp-brand-gradient-start: #fff;
+  --lp-brand-gradient-end: #00ff66;
+  --lp-toggler-border: rgba(255, 255, 255, 0.15);
+  --lp-toggler-bg: rgba(255, 255, 255, 0.03);
+  --lp-toggler-hover-bg: rgba(0, 255, 102, 0.05);
+  --lp-nav-hover-bg: rgba(255, 255, 255, 0.05);
+  --lp-nav-hover-mobile-bg: rgba(0, 255, 102, 0.08);
+  --lp-social-border: rgba(255, 255, 255, 0.1);
+  --lp-social-hover-bg: rgba(0, 255, 102, 0.08);
+  --lp-bottom-border: rgba(255, 255, 255, 0.06);
+  --lp-neon-green: #00ff66;
+}
+
+/* Light theme */
+body.light-theme {
+  --lp-bg: #f8f9fa;
+  --lp-text: #1a1a2e;
+  --lp-text-muted: rgba(26, 26, 46, 0.65);
+  --lp-text-dim: rgba(26, 26, 46, 0.5);
+  --lp-text-faint: rgba(26, 26, 46, 0.35);
+  --lp-header-bg: rgba(248, 249, 250, 0.9);
+  --lp-header-border: rgba(0, 0, 0, 0.06);
+  --lp-mobile-bg: rgba(248, 249, 250, 0.98);
+  --lp-mobile-border: rgba(0, 0, 0, 0.08);
+  --lp-glow-low: rgba(0, 200, 83, 0.08);
+  --lp-glow-mid: rgba(0, 200, 83, 0.05);
+  --lp-glow-high: rgba(0, 200, 83, 0.03);
+  --lp-grid-opacity: 0.06;
+  --lp-card-bg: rgba(255, 255, 255, 0.7);
+  --lp-card-hover-border: rgba(0, 200, 83, 0.5);
+  --lp-card-hover-shadow: rgba(0, 200, 83, 0.12);
+  --lp-panel-bg: rgba(255, 255, 255, 0.8);
+  --lp-btn-outline-border: rgba(0, 0, 0, 0.1);
+  --lp-btn-outline-hover-bg: rgba(0, 200, 83, 0.08);
+  --lp-tab-inactive: rgba(26, 26, 46, 0.6);
+  --lp-tab-hover-bg: rgba(0, 0, 0, 0.04);
+  --lp-footer-gradient-start: transparent;
+  --lp-footer-gradient-mid: rgba(0, 200, 83, 0.03);
+  --lp-footer-gradient-end: rgba(240, 242, 245, 0.98);
+  --lp-footer-top-line: rgba(0, 200, 83, 0.4);
+  --lp-glowing-line: rgba(0, 200, 83, 0.4);
+  --lp-brand-gradient-start: #1a1a2e;
+  --lp-brand-gradient-end: #00c853;
+  --lp-toggler-border: rgba(0, 0, 0, 0.15);
+  --lp-toggler-bg: rgba(0, 0, 0, 0.03);
+  --lp-toggler-hover-bg: rgba(0, 200, 83, 0.08);
+  --lp-nav-hover-bg: rgba(0, 0, 0, 0.04);
+  --lp-nav-hover-mobile-bg: rgba(0, 200, 83, 0.08);
+  --lp-social-border: rgba(0, 0, 0, 0.1);
+  --lp-social-hover-bg: rgba(0, 200, 83, 0.08);
+  --lp-bottom-border: rgba(0, 0, 0, 0.06);
+  --lp-neon-green: #00c853;
+}
+
+body {
+  background-color: var(--lp-bg);
+  color: var(--lp-text);
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
